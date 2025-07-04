@@ -81,3 +81,11 @@ database.properties
 
 # Test output
 test-output/
+
+# JDK (Java Development Kit) directories and files
+jdk/
+JDK/
+.jdk/
+# Ignore common JDK installation folders (if accidentally copied)
+jdk*
+JDK*
