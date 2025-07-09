@@ -25,7 +25,7 @@ public class XJdbc {
         var driver = "oracle.jdbc.driver.OracleDriver";
         var dburl = "jdbc:oracle:thin:@localhost:1521:XE";
         var username = "SYSTEM";
-        var password = "sa123";
+        var password = "root123";
         try {
             if (!XJdbc.isReady()) {
                 Class.forName(driver);
@@ -46,7 +46,7 @@ public class XJdbc {
             System.err.println("   - Port: 1521");
             System.err.println("   - SID: XE");
             System.err.println("   - Username: SYSTEM");
-            System.err.println("   - Password: sa123");
+            System.err.println("   - Password: root123");
             throw new RuntimeException("Không thể kết nối đến database", e);
         }
         return connection;
