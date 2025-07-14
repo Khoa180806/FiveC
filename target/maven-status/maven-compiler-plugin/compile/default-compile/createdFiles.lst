@@ -1,6 +1,3 @@
-com\team4\quanliquanmicay\util\XDate.class
 com\team4\quanliquanmicay\DAO\CrudDAO.class
-com\team4\quanliquanmicay\DAO\UserDAO.class
-com\team4\quanliquanmicay\View\Admin\TestAdmin.class
 com\team4\quanliquanmicay\Entity\UserAccount.class
-com\team4\quanliquanmicay\util\XDialog.class
+com\team4\quanliquanmicay\DAO\UserDAO.class
