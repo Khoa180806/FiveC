@@ -1,5 +1,6 @@
 package com.team4.quanliquanmicay.Entity;
 
+import java.util.*;
 import lombok.*;
 
 /**
@@ -10,8 +11,11 @@ import lombok.*;
 @AllArgsConstructor 
 @Builder 
 @Data 
-public class Category {
-    private String categoryId;
-    private String categoryName;
-    private boolean isAvailable;
+
+public class TableForCustomer { 
+    private int table_number;
+    private int amount;
+    private int status;
 }
+
+
