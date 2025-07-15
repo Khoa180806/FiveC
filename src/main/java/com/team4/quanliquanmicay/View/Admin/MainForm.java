@@ -49,6 +49,8 @@ public class MainForm extends javax.swing.JFrame {
         jButton11 = new javax.swing.JButton();
         jButton12 = new javax.swing.JButton();
         mainContentPanel = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextArea2 = new javax.swing.JTextArea();
         jPanel8 = new javax.swing.JPanel();
         jPanel9 = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
@@ -284,6 +286,14 @@ public class MainForm extends javax.swing.JFrame {
 
         mainContentPanel.setBackground(new java.awt.Color(204, 204, 204));
         mainContentPanel.setLayout(new java.awt.CardLayout());
+
+        jTextArea2.setColumns(20);
+        jTextArea2.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
+        jTextArea2.setRows(5);
+        jTextArea2.setText("                                                                                                                 FIVE C – Vị cay đậm chất, hương vị đậm đà!\n\n                                                        Chào mừng bạn đến với FIVE C, quán mì cay mang đậm phong cách Hàn Quốc, nơi mỗi tô mì là một trải nghiệm khó quên!\n\n\n                  Chúng tôi không chỉ mang đến món ăn ngon mà còn mang đến cảm xúc – từ mức cay nhẹ nhàng đến cay xé lưỡi, mỗi khách hàng đều có thể tìm thấy cấp độ dành riêng cho mình.\n\n Vì sao chọn FIVE C ?\n\n             🔥 Mì cay 7 cấp độ – Thử thách vị giác, chinh phục đỉnh cay\n             🥩 Nguyên liệu tươi sạch – Đảm bảo vệ sinh, an toàn sức khỏe\n             👨‍ Không gian ấm cúng, hiện đại – Phù hợp nhóm bạn, gia đình, cặp đôi\n             📱 Phục vụ nhanh – Đặt bàn tiện lợi – Quản lý chuyên nghiệp\n\n THỰC ĐƠN ĐA DẠNG\n\n               Mì cay bò Mỹ, hải sản, kimchi, phô mai\n               Trà sữa, soda Hàn, nước ép trái cay \n                                                                                                                                   Thông điệp từ FIVE C\n\n                                                                                                                                 “Spicy code. Hotter bowl.”\n\n                                                                                                 Mỗi ngày là một tô cay mới – bùng nổ vị giác, tiếp năng lượng cho tâm hồn ");
+        jScrollPane2.setViewportView(jTextArea2);
+
+        mainContentPanel.add(jScrollPane2, "card2");
 
         jPanel9.setBackground(new java.awt.Color(204, 204, 204));
         jPanel9.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(230, 230, 230), 2));
@@ -524,6 +534,8 @@ public class MainForm extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextArea jTextArea2;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField2;
     private javax.swing.JPanel mainContentPanel;
