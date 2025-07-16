@@ -1,5 +1,7 @@
 package com.team4.quanliquanmicay.View;
 
+import javax.swing.SwingUtilities;
+
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
@@ -17,6 +19,10 @@ public class Login extends javax.swing.JFrame {
     public Login() {
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        SwingUtilities.invokeLater(() -> {
+        com.team4.quanliquanmicay.util.XImage.setImageToLabel(jLabel6, "/icons_and_images/anh-mi-cay-haseyo.jpg");
+        });
     }
 
     /**
@@ -148,7 +154,7 @@ public class Login extends javax.swing.JFrame {
                 .addGap(19, 19, 19))
         );
 
-        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/anh-mi-cay-haseyo.jpg"))); // NOI18N
+        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/anh-mi-cay-haseyo.jpg"))); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
