@@ -42,6 +42,7 @@ com\team4\quanliquanmicay\DAO\ProductDAO.class
 com\team4\quanliquanmicay\View\Admin\MainForm$1.class
 com\team4\quanliquanmicay\View\Dialogs\BanJDialog$1.class
 com\team4\quanliquanmicay\Controller\TestController.class
+com\team4\quanliquanmicay\View\PassWord.class
 com\team4\quanliquanmicay\DAO\UserDAO.class
 com\team4\quanliquanmicay\View\Dialogs\InHoaDonJDialog.class
 com\team4\quanliquanmicay\DAO\BillDetailsDAO.class
@@ -69,9 +70,11 @@ com\team4\quanliquanmicay\Entity\BillDetails.class
 com\team4\quanliquanmicay\Impl\PaymentHistoryDAOImpl.class
 com\team4\quanliquanmicay\View\Staff\MainForm.class
 com\team4\quanliquanmicay\Entity\PaymentHistory$PaymentHistoryBuilder.class
+com\team4\quanliquanmicay\View\PassWord$1.class
 com\team4\quanliquanmicay\DAO\CategoryDAO.class
 com\team4\quanliquanmicay\View\Dialogs\DoanhThuJDialog.class
 com\team4\quanliquanmicay\View\Dialogs\InHoaDonJDialog$3.class
+com\team4\quanliquanmicay\View\PassWord$2.class
 com\team4\quanliquanmicay\View\Staff\MainForm$1.class
 com\team4\quanliquanmicay\Entity\TableForCustomer$TableForCustomerBuilder.class
 com\team4\quanliquanmicay\Entity\Customer.class
