@@ -15,6 +15,7 @@ public class NhanVienJDialog extends javax.swing.JFrame {
      */
     public NhanVienJDialog() {
         initComponents();
+        this.setLocationRelativeTo(null);
     }
 
     /**
