@@ -22,5 +22,6 @@ public class UserAccount {
     private Boolean is_enabled;
     private Date created_date;
     private String role_id;
+    private Boolean gender;
 }
 

@@ -5,7 +5,12 @@
 package com.team4.quanliquanmicay.View.Dialogs;
 
 import com.team4.quanliquanmicay.Controller.EmployeeController;
+import com.team4.quanliquanmicay.DAO.UserDAO;
 import com.team4.quanliquanmicay.Entity.UserAccount;
+import com.team4.quanliquanmicay.Impl.UserDAOImpl;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -16,9 +21,16 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
     /**
      * Creates new form NhanVienJDialog
      */
+    private UserDAO userDAO;
     public NhanVienJDialog() {
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        // Khởi tạo DAO
+        this.userDAO = new UserDAOImpl();
+        
+        // Load dữ liệu lên bảng khi khởi động
+        fillToTable();
     }
 
     /**
@@ -491,6 +503,37 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
 
     @Override
     public void fillToTable() {
+        // Xóa dữ liệu cũ trong bảng
+        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
+        model.setRowCount(0);
+        
+        try {
+            // Lấy danh sách nhân viên từ database
+            List<UserAccount> employees = userDAO.findAll();
+            
+            // Đổ dữ liệu vào bảng
+            for (UserAccount emp : employees) {
+                    Object[] row = {
+                    emp.getUser_id(),           // Mã nhân viên
+                    emp.getUsername(),         // Tài khoản
+                    emp.getPass(),         // Mật khẩu
+                    emp.getFullName(),         // Họ và tên
+                    emp.getGender(),           // Giới tính
+                    emp.getPhone_number(),            // SĐT
+                    emp.getEmail(),            // Email
+                    emp.getIs_enabled() ? "Hoạt động" : "Không hoạt động", // Trạng thái
+                    emp.getRole_id(),           // Vai trò
+                    emp.getCreated_date()       // Ngày tạo
+                };
+                model.addRow(row);
+            }
+            
+            System.out.println("Đã load " + employees.size() + " nhân viên lên bảng");
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi load dữ liệu: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @Override
