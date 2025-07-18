@@ -31,6 +31,7 @@ com\team4\quanliquanmicay\DAO\CustomerDAO.class
 com\team4\quanliquanmicay\app\Main.class
 com\team4\quanliquanmicay\util\XTheme$Theme.class
 com\team4\quanliquanmicay\Entity\PaymentMethod$PaymentMethodBuilder.class
+com\team4\quanliquanmicay\Controller\CrudController.class
 com\team4\quanliquanmicay\Impl\BillDAOImpl.class
 com\team4\quanliquanmicay\Entity\Customer$CustomerBuilder.class
 com\team4\quanliquanmicay\DAO\PaymentHistoryDAO.class
@@ -44,6 +45,7 @@ com\team4\quanliquanmicay\View\Login$1.class
 com\team4\quanliquanmicay\Entity\UserRole.class
 com\team4\quanliquanmicay\View\Dialogs\HoaDonJDialog$1.class
 com\team4\quanliquanmicay\DAO\RoleDAO.class
+com\team4\quanliquanmicay\Controller\EmployeeController.class
 com\team4\quanliquanmicay\View\Dialogs\LoaiMonJDialog.class
 com\team4\quanliquanmicay\Entity\PaymentMethod.class
 com\team4\quanliquanmicay\View\Dialogs\DatMonJDialog$2.class
