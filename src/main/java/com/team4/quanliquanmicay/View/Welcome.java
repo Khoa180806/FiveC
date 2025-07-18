@@ -1,6 +1,9 @@
 package com.team4.quanliquanmicay.View;
 
+import com.team4.quanliquanmicay.Controller.WellcomeCotroller;
+import java.awt.Color;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -12,15 +15,16 @@ import javax.swing.SwingUtilities;
  *
  * @author HP
  */
-public class Welcome extends javax.swing.JFrame {
+public class Wellcome extends javax.swing.JFrame implements WellcomeCotroller{
 
     /**
      * Creates new form Welcome
      */
-    public Welcome() {
+    public Wellcome() {
         initComponents();
         this.setLocationRelativeTo(null);
-        
+        UIManager.put("nimbusOrange", Color.RED); // thay màu mặc định nimbus
+
         SwingUtilities.invokeLater(() -> {
         com.team4.quanliquanmicay.util.XImage.setImageToLabel(jLabel4, "/icons_and_images/z6810531607696_a2974bb8a766d61fe1f24293cd57ffb8.jpg");
         });
@@ -37,13 +41,18 @@ public class Welcome extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        jProgressBar1 = new javax.swing.JProgressBar();
+        progressBar = new javax.swing.JProgressBar();
         jPanel3 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(204, 0, 0));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
 
@@ -68,8 +77,8 @@ public class Welcome extends javax.swing.JFrame {
                 .addContainerGap(16, Short.MAX_VALUE))
         );
 
-        jProgressBar1.setBackground(new java.awt.Color(204, 0, 0));
-        jProgressBar1.setForeground(new java.awt.Color(0, 0, 102));
+        progressBar.setBackground(new java.awt.Color(204, 0, 0));
+        progressBar.setForeground(new java.awt.Color(0, 0, 102));
 
         jPanel3.setBackground(new java.awt.Color(153, 0, 0));
         jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
@@ -105,7 +114,7 @@ public class Welcome extends javax.swing.JFrame {
                 .addGap(98, 98, 98)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 800, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 800, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 800, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -117,12 +126,16 @@ public class Welcome extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(16, 16, 16))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+waiting();        // TODO add your handling code here:
+    }//GEN-LAST:event_formWindowOpened
 
     /**
      * @param args the command line arguments
@@ -141,20 +154,22 @@ public class Welcome extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Welcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Wellcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Welcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Wellcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Welcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Wellcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Welcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Wellcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Welcome().setVisible(true);
+                new Wellcome().setVisible(true);
+                
             }
         });
     }
@@ -165,6 +180,21 @@ public class Welcome extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JProgressBar progressBar;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void waiting() {
+this.setLocationRelativeTo(null);
+ new Thread(() -> {
+ try {
+ for (var i = 0; i <= 100; i++) {
+ progressBar.setValue(i);
+ Thread.sleep(10);
+ }
+ Wellcome.this.dispose();
+ } catch (InterruptedException ex) {
+ System.exit(0);
+ }
+ }).start();}
 }
