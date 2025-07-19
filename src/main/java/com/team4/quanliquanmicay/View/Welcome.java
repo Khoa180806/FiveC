@@ -1,6 +1,6 @@
 package com.team4.quanliquanmicay.View;
 
-import com.team4.quanliquanmicay.Controller.WellcomeCotroller;
+import com.team4.quanliquanmicay.Controller.WelcomeCotroller;
 import java.awt.Color;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -15,12 +15,12 @@ import javax.swing.UIManager;
  *
  * @author HP
  */
-public class Wellcome extends javax.swing.JFrame implements WellcomeCotroller{
+public class Welcome extends javax.swing.JFrame implements WelcomeCotroller{
 
     /**
      * Creates new form Welcome
      */
-    public Wellcome() {
+    public Welcome() {
         initComponents();
         this.setLocationRelativeTo(null);
         UIManager.put("nimbusOrange", Color.RED); // thay màu mặc định nimbus
@@ -154,13 +154,13 @@ waiting();        // TODO add your handling code here:
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Wellcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Welcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Wellcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Welcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Wellcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Welcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Wellcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Welcome.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
@@ -168,7 +168,7 @@ waiting();        // TODO add your handling code here:
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Wellcome().setVisible(true);
+                new Welcome().setVisible(true);
                 
             }
         });
@@ -192,7 +192,7 @@ this.setLocationRelativeTo(null);
  progressBar.setValue(i);
  Thread.sleep(10);
  }
- Wellcome.this.dispose();
+ Welcome.this.dispose();
  } catch (InterruptedException ex) {
  System.exit(0);
  }

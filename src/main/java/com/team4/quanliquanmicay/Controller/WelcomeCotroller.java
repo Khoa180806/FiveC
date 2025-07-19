@@ -8,6 +8,6 @@ package com.team4.quanliquanmicay.Controller;
  *
  * @author Windows
  */
-public interface WellcomeCotroller {
+public interface WelcomeCotroller {
   void waiting();
 }
