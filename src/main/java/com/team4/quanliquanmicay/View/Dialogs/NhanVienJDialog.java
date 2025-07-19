@@ -4,18 +4,65 @@
  */
 package com.team4.quanliquanmicay.View.Dialogs;
 
+import com.team4.quanliquanmicay.Controller.EmployeeController;
+import com.team4.quanliquanmicay.DAO.RoleDAO;
+import com.team4.quanliquanmicay.DAO.UserDAO;
+import com.team4.quanliquanmicay.Entity.UserAccount;
+import com.team4.quanliquanmicay.Entity.UserRole;
+import com.team4.quanliquanmicay.Impl.RoleDAOImpl;
+import com.team4.quanliquanmicay.Impl.UserDAOImpl;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+import com.team4.quanliquanmicay.util.XImage;
+import java.text.SimpleDateFormat;
+import com.team4.quanliquanmicay.util.XDialog;
+
 /**
  *
  * @author HP
  */
-public class NhanVienJDialog extends javax.swing.JFrame {
+public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeController {
 
     /**
      * Creates new form NhanVienJDialog
      */
+    private UserDAO userDAO;
+    private RoleDAO roleDAO; // Thêm RoleDAO
+    private Map<String, String> roleMap; // Cache role_id -> name_role
+
     public NhanVienJDialog() {
         initComponents();
         this.setLocationRelativeTo(null);
+
+        // Khởi tạo DAO
+        this.userDAO = new UserDAOImpl();
+        this.roleDAO = new RoleDAOImpl(); // Khởi tạo RoleDAO
+        this.roleMap = new HashMap<>(); // Khởi tạo cache
+
+        // Load roles và status từ DB
+        loadRoles();
+
+        // Load dữ liệu lên bảng khi khởi động
+        fillToTable();
+
+        // Set độ rộng cột
+        setColumnWidths();
+
+        // Thêm event listener cho nút LƯU
+        btnSave.addActionListener(this::btnSaveActionPerformed);
+
+        // Thêm event listener cho bảng (đã có rồi)
+        tableInfo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 1) {
+                    edit(); // Tự động load dữ liệu và ảnh khi click
+                }
+            }
+        });
     }
 
     /**
@@ -27,6 +74,7 @@ public class NhanVienJDialog extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        groupGioiTinh = new javax.swing.ButtonGroup();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
@@ -36,33 +84,33 @@ public class NhanVienJDialog extends javax.swing.JFrame {
         jLabel5 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jCheckBox2 = new javax.swing.JCheckBox();
-        jTextField4 = new javax.swing.JTextField();
+        txtIdEmployee = new javax.swing.JTextField();
+        txtNameEmployee = new javax.swing.JTextField();
+        chkMale = new javax.swing.JCheckBox();
+        chkFemale = new javax.swing.JCheckBox();
+        txtPhoneNumber = new javax.swing.JTextField();
         jPanel4 = new javax.swing.JPanel();
-        jLabel9 = new javax.swing.JLabel();
+        lblImage = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
-        jTextField3 = new javax.swing.JTextField();
+        txtNameAccount = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
-        jTextField6 = new javax.swing.JTextField();
+        txtPassword = new javax.swing.JTextField();
         jLabel12 = new javax.swing.JLabel();
-        jTextField7 = new javax.swing.JTextField();
+        txtEmail = new javax.swing.JTextField();
         jLabel13 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        cboStatus = new javax.swing.JComboBox<>();
         jLabel14 = new javax.swing.JLabel();
-        jComboBox2 = new javax.swing.JComboBox<>();
+        cboRole = new javax.swing.JComboBox<>();
         jLabel2 = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
+        btnClear = new javax.swing.JButton();
+        btnDelete = new javax.swing.JButton();
+        btnUpdate = new javax.swing.JButton();
+        btnSave = new javax.swing.JButton();
+        btnExit = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tableInfo = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -89,17 +137,19 @@ public class NhanVienJDialog extends javax.swing.JFrame {
         jLabel7.setFont(new java.awt.Font("Segoe UI Light", 0, 18)); // NOI18N
         jLabel7.setText("SỐ ĐIỆN THOẠI :");
 
-        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtIdEmployee.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jTextField2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtNameEmployee.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jCheckBox1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jCheckBox1.setText("NAM");
+        groupGioiTinh.add(chkMale);
+        chkMale.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        chkMale.setText("NAM");
 
-        jCheckBox2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jCheckBox2.setText("NỮ");
+        groupGioiTinh.add(chkFemale);
+        chkFemale.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        chkFemale.setText("NỮ");
 
-        jTextField4.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtPhoneNumber.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jPanel4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 255), 2));
 
@@ -109,43 +159,43 @@ public class NhanVienJDialog extends javax.swing.JFrame {
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(lblImage, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
+                .addComponent(lblImage, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         jLabel10.setFont(new java.awt.Font("Segoe UI Light", 0, 18)); // NOI18N
         jLabel10.setText("MÃ NHÂN VIÊN :");
 
-        jTextField3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtNameAccount.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel11.setFont(new java.awt.Font("Segoe UI Light", 0, 18)); // NOI18N
         jLabel11.setText("MẬT KHẨU :");
 
-        jTextField6.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtPassword.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel12.setFont(new java.awt.Font("Segoe UI Light", 0, 18)); // NOI18N
         jLabel12.setText("EMAIL :");
 
-        jTextField7.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtEmail.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel13.setFont(new java.awt.Font("Segoe UI Light", 0, 18)); // NOI18N
         jLabel13.setText("TRẠNG THÁI :");
 
-        jComboBox1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cboStatus.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel14.setFont(new java.awt.Font("Segoe UI Light", 0, 18)); // NOI18N
         jLabel14.setText("VAI TRÒ :");
 
-        jComboBox2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cboRole.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        cboRole.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -167,26 +217,31 @@ public class NhanVienJDialog extends javax.swing.JFrame {
                     .addComponent(jLabel12))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jTextField7, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField2)
+                    .addComponent(txtEmail, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                    .addComponent(txtNameEmployee)
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jCheckBox1)
+                        .addComponent(chkMale)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jCheckBox2))
-                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(chkFemale))
+                    .addComponent(txtIdEmployee)
+                    .addComponent(txtPhoneNumber))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel11)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel13)
-                    .addComponent(jLabel14))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel13)
+                            .addComponent(jLabel14))
+                        .addGap(50, 50, 50))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel11)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(txtPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                    .addComponent(txtNameAccount, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                    .addComponent(cboStatus, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cboRole, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(77, 77, 77))
         );
         jPanel5Layout.setVerticalGroup(
@@ -195,47 +250,50 @@ public class NhanVienJDialog extends javax.swing.JFrame {
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addGap(15, 15, 15)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(jPanel5Layout.createSequentialGroup()
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtIdEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel10))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jLabel4)
-                                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(txtNameEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jCheckBox1)
-                                    .addComponent(jCheckBox2)
+                                    .addComponent(chkMale)
+                                    .addComponent(chkFemale)
                                     .addComponent(jLabel5))
-                                .addGap(6, 6, 6)
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel5Layout.createSequentialGroup()
+                                        .addGap(10, 10, 10)
+                                        .addComponent(jLabel7))
+                                    .addGroup(jPanel5Layout.createSequentialGroup()
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(txtPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel7)
-                                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(jLabel12)
+                                    .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(jPanel5Layout.createSequentialGroup()
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jLabel3)
-                                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(txtNameAccount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jLabel11)
-                                    .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jLabel13)
-                                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(jPanel5Layout.createSequentialGroup()
                                         .addGap(6, 6, 6)
                                         .addComponent(jLabel14))
                                     .addGroup(jPanel5Layout.createSequentialGroup()
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel12)
-                            .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addComponent(cboRole, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -248,25 +306,50 @@ public class NhanVienJDialog extends javax.swing.JFrame {
 
         jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 255, 204), 2));
 
-        jButton3.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
-        jButton3.setText("LÀM MỚI");
+        btnClear.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
+        btnClear.setText("LÀM MỚI");
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
+            }
+        });
 
-        jButton4.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-delete-48.png"))); // NOI18N
-        jButton4.setText("XÓA ");
+        btnDelete.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-delete-48.png"))); // NOI18N
+        btnDelete.setText("XÓA ");
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
 
-        jButton2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
-        jButton2.setText("CẬP NHẬT");
+        btnUpdate.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
+        btnUpdate.setText("CẬP NHẬT");
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
 
-        jButton1.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Add to basket.png"))); // NOI18N
-        jButton1.setText("LƯU");
+        btnSave.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Add to basket.png"))); // NOI18N
+        btnSave.setText("LƯU");
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
 
-        jButton5.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
-        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-exit-32.png"))); // NOI18N
-        jButton5.setText("EXIT");
+        btnExit.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
+        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-exit-32.png"))); // NOI18N
+        btnExit.setText("EXIT");
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
@@ -275,11 +358,11 @@ public class NhanVienJDialog extends javax.swing.JFrame {
             .addGroup(jPanel6Layout.createSequentialGroup()
                 .addContainerGap(71, Short.MAX_VALUE)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnUpdate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnSave, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnClear, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnDelete, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(67, 67, 67))
             .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
@@ -287,21 +370,21 @@ public class NhanVienJDialog extends javax.swing.JFrame {
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
                 .addGap(27, 27, 27)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton5)
+                .addComponent(btnExit)
                 .addGap(16, 16, 16))
         );
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tableInfo.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null, null, null, null, null, null},
                 {null, null, null, null, null, null, null, null, null, null},
@@ -312,7 +395,7 @@ public class NhanVienJDialog extends javax.swing.JFrame {
                 "Mã nhân viên", "Tài khoản", "Mật khẩu", "Họ và tên", "Giới tính", "SĐT", "Email", "Trạng thái", "Vai trò", "Ngày tạo"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tableInfo);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -385,6 +468,123 @@ public class NhanVienJDialog extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        // TODO add your handling code here:
+        clear();
+    }//GEN-LAST:event_btnClearActionPerformed
+
+    /**
+     * Event handler cho nút LƯU (TẠO)
+     */
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {
+        create();
+    }
+
+    /**
+     * Event handler cho nút UPDATE
+     */
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {
+        update();
+    }
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        // TODO add your handling code here:
+        delete();
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
+    /**
+     * Event handler cho nút EXIT ở dòng 496
+     */
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {
+        exitApplication();
+    }
+
+    /**
+     * Thoát ứng dụng với xác nhận
+     */
+    private void exitApplication() {
+        try {
+            // 1. Kiểm tra có thay đổi dữ liệu chưa lưu không
+            if (hasUnsavedChanges()) {
+                if (!handleUnsavedChanges()) {
+                    return; // Người dùng hủy hoặc lưu thất bại
+                }
+            }
+
+            // 2. Xác nhận thoát
+            if (confirmExit()) {
+                performExit();
+            }
+
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi thoát ứng dụng: " + e.getMessage(), "Lỗi hệ thống");
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Kiểm tra có dữ liệu chưa lưu không
+     */
+    private boolean hasUnsavedChanges() {
+        return !txtIdEmployee.getText().trim().isEmpty()
+                || !txtNameAccount.getText().trim().isEmpty()
+                || !txtPassword.getText().trim().isEmpty()
+                || !txtNameEmployee.getText().trim().isEmpty()
+                || !txtPhoneNumber.getText().trim().isEmpty()
+                || !txtEmail.getText().trim().isEmpty()
+                || chkMale.isSelected()
+                || chkFemale.isSelected();
+    }
+
+    /**
+     * Xử lý dữ liệu chưa lưu
+     *
+     * @return true nếu có thể tiếp tục thoát, false nếu cần dừng lại
+     */
+    private boolean handleUnsavedChanges() {
+        boolean saveBeforeExit = XDialog.confirm(
+                "⚠️ Có dữ liệu chưa được lưu!\n\n"
+                + "Bạn có muốn lưu trước khi thoát không?\n\n"
+                + "• Chọn 'Có' để lưu và thoát\n"
+                + "• Chọn 'Không' để thoát mà không lưu",
+                "Dữ liệu chưa lưu"
+        );
+
+        if (saveBeforeExit) {
+            try {
+                create(); // Hoặc update() tùy trường hợp
+                XDialog.alert("Đã lưu dữ liệu thành công!", "Thông báo");
+                return true;
+            } catch (Exception e) {
+                XDialog.alert("Lỗi khi lưu dữ liệu: " + e.getMessage(), "Lỗi");
+                return false; // Lưu thất bại, không thoát
+            }
+        }
+
+        return true; // Không lưu nhưng vẫn thoát
+    }
+
+    /**
+     * Xác nhận thoát ứng dụng
+     */
+    private boolean confirmExit() {
+        return XDialog.confirm(
+                "Bạn có chắc chắn muốn thoát ứng dụng Quản lý Nhân viên?",
+                "Xác nhận thoát"
+        );
+    }
+
+    /**
+     * Thực hiện thoát ứng dụng
+     */
+    private void performExit() {
+        // Cleanup logic nếu cần
+        System.out.println("Đang thoát ứng dụng Quản lý Nhân viên...");
+
+        // Thoát ứng dụng
+        System.exit(0);
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -421,15 +621,16 @@ public class NhanVienJDialog extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox2;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
+    private javax.swing.JButton btnClear;
+    private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnExit;
+    private javax.swing.JButton btnSave;
+    private javax.swing.JButton btnUpdate;
+    private javax.swing.JComboBox<String> cboRole;
+    private javax.swing.JComboBox<String> cboStatus;
+    private javax.swing.JCheckBox chkFemale;
+    private javax.swing.JCheckBox chkMale;
+    private javax.swing.ButtonGroup groupGioiTinh;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -442,7 +643,6 @@ public class NhanVienJDialog extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -450,12 +650,757 @@ public class NhanVienJDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
-    private javax.swing.JTextField jTextField6;
-    private javax.swing.JTextField jTextField7;
+    private javax.swing.JLabel lblImage;
+    private javax.swing.JTable tableInfo;
+    private javax.swing.JTextField txtEmail;
+    private javax.swing.JTextField txtIdEmployee;
+    private javax.swing.JTextField txtNameAccount;
+    private javax.swing.JTextField txtNameEmployee;
+    private javax.swing.JTextField txtPassword;
+    private javax.swing.JTextField txtPhoneNumber;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void loadRoles() {
+        try {
+            // Load các vai trò từ database
+            cboRole.removeAllItems();
+            cboRole.addItem("Tất cả");
+
+            List<UserRole> roles = roleDAO.findAll();
+            for (UserRole role : roles) {
+                // Cache role mapping
+                roleMap.put(role.getRole_id(), role.getName_role());
+
+                // Hiển thị trong ComboBox
+                String displayText = role.getRole_id() + " - " + role.getName_role();
+                cboRole.addItem(displayText);
+            }
+
+            // Load trạng thái
+            cboStatus.removeAllItems();
+            cboStatus.addItem("Tất cả");
+            cboStatus.addItem("Hoạt động");
+            cboStatus.addItem("Không hoạt động");
+
+            // Thêm event listeners cho filter
+            addFilterListeners();
+
+            System.out.println("Đã load " + roles.size() + " roles từ database");
+
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi load roles: " + e.getMessage());
+            e.printStackTrace();
+            loadRolesFallback();
+        }
+    }
+
+    /**
+     * Fallback method nếu không load được từ DB
+     */
+    private void loadRolesFallback() {
+        // Fallback data
+        roleMap.clear();
+        roleMap.put("R001", "Manager");
+        roleMap.put("R002", "Staff");
+
+        cboRole.removeAllItems();
+        cboRole.addItem("Tất cả");
+        cboRole.addItem("R001 - Manager");
+        cboRole.addItem("R002 - Staff");
+
+        cboStatus.removeAllItems();
+        cboStatus.addItem("Tất cả");
+        cboStatus.addItem("Hoạt động");
+        cboStatus.addItem("Không hoạt động");
+
+        addFilterListeners();
+    }
+
+    /**
+     * Thêm event listeners cho ComboBox để filter dữ liệu
+     */
+    private void addFilterListeners() {
+        // Event listener cho cboStatus
+        cboStatus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterAndFillTable();
+            }
+        });
+
+        // Event listener cho cboRole
+        cboRole.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterAndFillTable();
+            }
+        });
+    }
+
+    /**
+     * Filter và fill dữ liệu theo Status và Role được chọn
+     */
+    private void filterAndFillTable() {
+        // Xóa dữ liệu cũ trong bảng
+        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
+        model.setRowCount(0);
+
+        try {
+            // Lấy điều kiện filter
+            String selectedStatus = (String) cboStatus.getSelectedItem();
+            String selectedRole = (String) cboRole.getSelectedItem();
+
+            // Lấy danh sách nhân viên từ database
+            List<UserAccount> employees = userDAO.findAll();
+
+            // Filter theo điều kiện
+            List<UserAccount> filteredEmployees = filterEmployees(employees, selectedStatus, selectedRole);
+
+            // Đổ dữ liệu đã filter vào bảng
+            for (UserAccount emp : filteredEmployees) {
+                // DEBUG: In ra giá trị created_date
+                System.out.println("DEBUG Created Date for " + emp.getUser_id() + ": " + emp.getCreated_date());
+
+                Object[] row = {
+                    emp.getUser_id(), // Mã nhân viên
+                    emp.getUsername(), // Tài khoản
+                    emp.getPass(), // Mật khẩu
+                    emp.getFullName(), // Họ và tên
+                    emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "Không xác định", // Giới tính: 1=Nam, 0=Nữ
+                    emp.getPhone_number(), // SĐT
+                    emp.getEmail(), // Email
+                    emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "Không xác định", // Trạng thái
+                    getRoleName(emp.getRole_id()), // Vai trò - Hiển thị tên thay vì ID
+                    formatDate(emp.getCreated_date()) // Ngày tạo - Format đúng
+                };
+                model.addRow(row);
+            }
+
+            System.out.println("Đã filter và load " + filteredEmployees.size() + "/" + employees.size() + " nhân viên");
+
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi filter dữ liệu: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Filter danh sách nhân viên theo Status và Role
+     */
+    private List<UserAccount> filterEmployees(List<UserAccount> employees, String selectedStatus, String selectedRole) {
+        List<UserAccount> filtered = new ArrayList<>();
+
+        for (UserAccount emp : employees) {
+            boolean matchStatus = true;
+            boolean matchRole = true;
+
+            // Filter theo Status
+            if (selectedStatus != null && !selectedStatus.equals("Tất cả")) {
+                if (selectedStatus.equals("Hoạt động")) {
+                    matchStatus = (emp.getIs_enabled() != null && emp.getIs_enabled() == 1);
+                } else if (selectedStatus.equals("Không hoạt động")) {
+                    matchStatus = (emp.getIs_enabled() != null && emp.getIs_enabled() == 0);
+                }
+            }
+
+            // Filter theo Role - cần extract role_id từ display text
+            if (selectedRole != null && !selectedRole.equals("Tất cả")) {
+                String roleId = extractRoleId(selectedRole);
+                matchRole = roleId.equals(emp.getRole_id());
+            }
+
+            // Chỉ thêm vào danh sách nếu thỏa mãn cả 2 điều kiện
+            if (matchStatus && matchRole) {
+                filtered.add(emp);
+            }
+        }
+
+        return filtered;
+    }
+
+    /**
+     * Extract role_id từ display text (VD: "R001 - Manager" -> "R001")
+     */
+    private String extractRoleId(String displayText) {
+        if (displayText != null && displayText.contains(" - ")) {
+            return displayText.split(" - ")[0];
+        }
+        return displayText; // Fallback
+    }
+
+    /**
+     * Lấy tên vai trò từ cache (nhanh hơn)
+     */
+    private String getRoleName(String roleId) {
+        if (roleId != null && roleMap.containsKey(roleId)) {
+            return roleMap.get(roleId); // Manager, Staff
+        }
+        return "Không xác định";
+    }
+
+    /**
+     * Format ngày tháng để hiển thị trong bảng
+     */
+    private String formatDate(java.util.Date date) {
+        if (date == null) {
+            return "Chưa có";
+        }
+
+        try {
+            // Format ngày theo định dạng dd/MM/yyyy HH:mm
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
+            return sdf.format(date);
+        } catch (Exception e) {
+            System.err.println("Lỗi format date: " + e.getMessage());
+            return date.toString(); // Fallback
+        }
+    }
+
+    /**
+     * Set độ rộng cột cho bảng
+     */
+    private void setColumnWidths() {
+        try {
+            tableInfo.getColumnModel().getColumn(0).setPreferredWidth(80);  // Mã NV
+            tableInfo.getColumnModel().getColumn(1).setPreferredWidth(100); // Tài khoản
+            tableInfo.getColumnModel().getColumn(2).setPreferredWidth(80);  // Mật khẩu
+            tableInfo.getColumnModel().getColumn(3).setPreferredWidth(150); // Họ tên
+            tableInfo.getColumnModel().getColumn(4).setPreferredWidth(60);  // Giới tính
+            tableInfo.getColumnModel().getColumn(5).setPreferredWidth(100); // SĐT
+            tableInfo.getColumnModel().getColumn(6).setPreferredWidth(150); // Email
+            tableInfo.getColumnModel().getColumn(7).setPreferredWidth(100); // Trạng thái
+            tableInfo.getColumnModel().getColumn(8).setPreferredWidth(80);  // Vai trò
+            tableInfo.getColumnModel().getColumn(9).setPreferredWidth(120); // Ngày tạo
+        } catch (Exception e) {
+            System.err.println("Lỗi set column width: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void validateEmployee() {
+        // Validate các trường bắt buộc
+        if (txtIdEmployee.getText().trim().isEmpty()) {
+            throw new RuntimeException("Mã nhân viên không được để trống!");
+        }
+
+        if (txtNameAccount.getText().trim().isEmpty()) {
+            throw new RuntimeException("Tên đăng nhập không được để trống!");
+        }
+
+        if (txtPassword.getText().trim().isEmpty()) {
+            throw new RuntimeException("Mật khẩu không được để trống!");
+        }
+
+        if (txtNameEmployee.getText().trim().isEmpty()) {
+            throw new RuntimeException("Họ tên nhân viên không được để trống!");
+        }
+
+        // Validate giới tính
+        if (!chkMale.isSelected() && !chkFemale.isSelected()) {
+            throw new RuntimeException("Vui lòng chọn giới tính!");
+        }
+    }
+
+    @Override
+    public void open() {
+    }
+
+    @Override
+    public void setForm(UserAccount entity) {
+        // Điền dữ liệu từ entity vào form
+        if (entity != null) {
+            txtIdEmployee.setText(entity.getUser_id());
+            txtNameAccount.setText(entity.getUsername());
+            txtPassword.setText(entity.getPass());
+            txtNameEmployee.setText(entity.getFullName());
+
+            // Xử lý giới tính
+            if (entity.getGender() != null) {
+                if (entity.getGender() == 1) {
+                    chkMale.setSelected(true);  // Nam
+                    chkFemale.setSelected(false);
+                } else {
+                    chkMale.setSelected(false);
+                    chkFemale.setSelected(true);  // Nữ
+                }
+            } else {
+                // Reset giới tính nếu null
+                groupGioiTinh.clearSelection();
+            }
+
+            txtPhoneNumber.setText(entity.getPhone_number());
+            txtEmail.setText(entity.getEmail());
+
+            // KHÔNG thay đổi cboStatus và cboRole khi setForm
+            // Chỉ hiển thị thông tin trong form, không ảnh hưởng đến filter
+            // Hiển thị hình ảnh nếu có
+            if (entity.getImage() != null && !entity.getImage().trim().isEmpty()) {
+                // Gọi method load ảnh
+                loadEmployeeImage(entity.getImage());
+            } else {
+                lblImage.setText("No Image");
+                lblImage.setIcon(null);
+            }
+
+            // Hiển thị role name từ DB
+            displayRoleInfo(entity.getRole_id());
+        }
+    }
+
+    /**
+     * Hiển thị thông tin role (chỉ để xem, không ảnh hưởng filter)
+     */
+    private void displayRoleInfo(String roleId) {
+        try {
+            if (roleId != null) {
+                UserRole role = roleDAO.findById(roleId);
+                if (role != null) {
+                    // Hiển thị trong label hoặc text field chỉ đọc
+                    System.out.println("Employee role: " + role.getRole_id() + " - " + role.getName_role());
+                    // Có thể thêm label để hiển thị: lblRoleInfo.setText(role.getName_role());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi load role info: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public UserAccount getForm() {
+        // Lấy dữ liệu từ form tạo thành entity
+        UserAccount entity = new UserAccount();
+
+        entity.setUser_id(txtIdEmployee.getText().trim());
+        entity.setUsername(txtNameAccount.getText().trim());
+        entity.setPass(txtPassword.getText().trim());
+        entity.setFullName(txtNameEmployee.getText().trim());
+
+        // Xử lý giới tính
+        if (chkMale.isSelected()) {
+            entity.setGender(1);  // Nam
+        } else if (chkFemale.isSelected()) {
+            entity.setGender(0);  // Nữ
+        }
+
+        entity.setPhone_number(txtPhoneNumber.getText().trim());
+        entity.setEmail(txtEmail.getText().trim());
+
+        // Mặc định enabled và role
+        entity.setIs_enabled(1); // Mặc định hoạt động
+        entity.setRole_id("R002"); // Mặc định Staff
+
+        // Xử lý hình ảnh - CHỈ set nếu có ảnh thực sự
+        if (lblImage.getIcon() != null) {
+            // Có ảnh đang hiển thị - lấy tên từ text hoặc giữ nguyên
+            String currentImageText = lblImage.getText();
+            if (currentImageText != null && !currentImageText.equals("No Image")
+                    && !currentImageText.equals("Error") && !currentImageText.trim().isEmpty()) {
+                entity.setImage(currentImageText);
+            } else {
+                // Không set image, để method update() xử lý
+                entity.setImage(null);
+            }
+        } else {
+            // Không có ảnh - không set
+            entity.setImage(null);
+        }
+
+        return entity;
+    }
+
+    @Override
+    public void fillToTable() {
+        // Gọi filterAndFillTable với "Tất cả" cho cả Status và Role
+        cboStatus.setSelectedItem("Tất cả");
+        cboRole.setSelectedItem("Tất cả");
+        filterAndFillTable();
+    }
+
+    @Override
+    public void edit() {
+        // Lấy dòng được chọn trong bảng
+        int selectedRow = tableInfo.getSelectedRow();
+        if (selectedRow >= 0) {
+            // Lấy user_id từ cột đầu tiên
+            String userId = (String) tableInfo.getValueAt(selectedRow, 0);
+
+            // Tìm entity từ database
+            UserAccount entity = userDAO.findById(userId);
+
+            if (entity != null) {
+                // DEBUG: In ra giá trị thực tế
+                System.out.println("Selected Employee: " + entity.getUser_id()
+                        + " - Gender: " + entity.getGender()
+                        + " - Is_enabled: " + entity.getIs_enabled()
+                        + " - Image: " + entity.getImage());
+
+                // Điền dữ liệu vào form (KHÔNG ảnh hưởng đến ComboBox filter)
+                setForm(entity);
+
+                // Cho phép chỉnh sửa
+                setEditable(true);
+            } else {
+                XDialog.alert("Không tìm thấy thông tin nhân viên!");
+            }
+        } else {
+            XDialog.alert("Vui lòng chọn một dòng để chỉnh sửa!");
+        }
+    }
+
+    /**
+     * Load và hiển thị ảnh nhân viên sử dụng XImage utility
+     */
+    private void loadEmployeeImage(String imageName) {
+        try {
+            if (imageName != null && !imageName.trim().isEmpty()) {
+                // Đường dẫn ảnh trong resources/icons_and_images/imageEmployee/
+                String imagePath = "/icons_and_images/imageEmployee/" + imageName;
+
+                System.out.println("Trying to load image: " + imagePath);
+
+                // Kiểm tra ảnh có tồn tại không
+                java.net.URL imageURL = getClass().getResource(imagePath);
+
+                if (imageURL != null) {
+                    // Sử dụng XImage utility để set ảnh
+                    XImage.setImageToLabel(lblImage, imagePath);
+                    lblImage.setText(""); // Xóa text nếu có ảnh
+
+                    System.out.println("✅ Successfully loaded image: " + imageName);
+                } else {
+                    // Thử load từ thư mục gốc icons_and_images
+                    String fallbackPath = "/icons_and_images/" + imageName;
+                    System.out.println("Image not found in imageEmployee, trying: " + fallbackPath);
+
+                    java.net.URL fallbackURL = getClass().getResource(fallbackPath);
+                    if (fallbackURL != null) {
+                        XImage.setImageToLabel(lblImage, fallbackPath);
+                        lblImage.setText("");
+
+                        System.out.println("✅ Successfully loaded image from fallback: " + imageName);
+                    } else {
+                        // Sử dụng placeholder
+                        setPlaceholderImage(imageName);
+                    }
+                }
+            } else {
+                // Không có tên ảnh - sử dụng ảnh mặc định
+                setDefaultImage();
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi load ảnh: " + e.getMessage());
+            setPlaceholderImage(imageName);
+        }
+    }
+
+    /**
+     * Hiển thị ảnh placeholder khi không tìm thấy ảnh
+     */
+    private void setPlaceholderImage(String imageName) {
+        try {
+            String placeholderPath = "/icons_and_images/Unknown person.png";
+            java.net.URL placeholderURL = getClass().getResource(placeholderPath);
+
+            if (placeholderURL != null) {
+                XImage.setImageToLabel(lblImage, placeholderPath);
+                lblImage.setText("");
+                System.out.println("📷 Using placeholder image for: " + imageName);
+            } else {
+                // Fallback text nếu không có placeholder
+                lblImage.setIcon(null);
+                lblImage.setText(imageName != null ? imageName : "No Image");
+            }
+        } catch (Exception e) {
+            lblImage.setIcon(null);
+            lblImage.setText("Error");
+        }
+    }
+
+    /**
+     * Hiển thị ảnh mặc định khi không có tên ảnh
+     */
+    private void setDefaultImage() {
+        try {
+            String defaultPath = "/icons_and_images/User.png";
+            java.net.URL defaultURL = getClass().getResource(defaultPath);
+
+            if (defaultURL != null) {
+                XImage.setImageToLabel(lblImage, defaultPath);
+                lblImage.setText("");
+            } else {
+                lblImage.setIcon(null);
+                lblImage.setText("No Image");
+            }
+        } catch (Exception e) {
+            lblImage.setIcon(null);
+            lblImage.setText("No Image");
+        }
+    }
+
+    /**
+     * Method để test load ảnh (có thể gọi để kiểm tra)
+     */
+    public void testLoadImage() {
+        // Test với một số ảnh có sẵn
+        String[] testImages = {"admin01.jpg", "admin02.jpg", "trump.png", "User.png"};
+
+        for (String imageName : testImages) {
+            System.out.println("Testing image: " + imageName);
+            loadEmployeeImage(imageName);
+
+            try {
+                Thread.sleep(2000); // Delay 2 giây để xem ảnh
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void create() {
+        try {
+            // Validate dữ liệu trước khi tạo
+            validateEmployee();
+
+            // Lấy dữ liệu từ form
+            UserAccount newEmployee = getForm();
+
+            // Kiểm tra user_id đã tồn tại chưa
+            UserAccount existingUser = userDAO.findById(newEmployee.getUser_id());
+            if (existingUser != null) {
+                XDialog.alert("Mã nhân viên đã tồn tại!");
+                return;
+            }
+
+            // Tạo nhân viên mới
+            userDAO.create(newEmployee);
+
+            // Refresh bảng
+            filterAndFillTable();
+
+            // Clear form
+            clear();
+
+            XDialog.alert("✅ Tạo nhân viên thành công!");
+
+        } catch (Exception e) {
+            XDialog.alert("❌ Lỗi: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void update() {
+        try {
+            // 1. Validate dữ liệu trước khi cập nhật
+            validateEmployee();
+
+            // 2. Lấy dữ liệu từ form
+            UserAccount updatedEmployee = getForm();
+
+            // 3. Kiểm tra nhân viên có tồn tại không
+            UserAccount existingEmployee = userDAO.findById(updatedEmployee.getUser_id());
+            if (existingEmployee == null) {
+                XDialog.alert("Không tìm thấy nhân viên với mã: " + updatedEmployee.getUser_id());
+                return;
+            }
+
+            // 4. Kiểm tra username đã tồn tại chưa (ngoại trừ chính nó)
+            List<UserAccount> allUsers = userDAO.findAll();
+            for (UserAccount user : allUsers) {
+                if (!user.getUser_id().equals(updatedEmployee.getUser_id())
+                        && user.getUsername().equals(updatedEmployee.getUsername())) {
+                    XDialog.alert("Tên đăng nhập đã tồn tại!");
+                    return;
+                }
+            }
+
+            // 5. QUAN TRỌNG: Giữ nguyên ngày tạo gốc
+            updatedEmployee.setCreated_date(existingEmployee.getCreated_date());
+
+            // 6. QUAN TRỌNG: Giữ nguyên ảnh gốc nếu không thay đổi
+            if (updatedEmployee.getImage() == null
+                    || updatedEmployee.getImage().equals("default.jpg")
+                    || updatedEmployee.getImage().trim().isEmpty()) {
+                // Giữ nguyên ảnh cũ
+                updatedEmployee.setImage(existingEmployee.getImage());
+            }
+
+            // 7. Cập nhật nhân viên
+            userDAO.update(updatedEmployee);
+
+            // 8. Refresh bảng
+            filterAndFillTable();
+
+            // 9. Clear form (nhưng không clear ảnh)
+            clearFormButKeepImage();
+
+            // 10. Thông báo thành công
+            XDialog.alert("✅ Cập nhật nhân viên thành công!");
+
+        } catch (RuntimeException e) {
+            // Lỗi validation - đã hiển thị message rồi
+            XDialog.alert("❌ " + e.getMessage());
+        } catch (Exception e) {
+            // Lỗi hệ thống khác
+            XDialog.alert("❌ Lỗi khi cập nhật nhân viên: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Clear form nhưng giữ nguyên ảnh
+     */
+    private void clearFormButKeepImage() {
+        txtIdEmployee.setText("");
+        txtNameAccount.setText("");
+        txtPassword.setText("");
+        txtNameEmployee.setText("");
+        txtPhoneNumber.setText("");
+        txtEmail.setText("");
+
+        // Reset giới tính
+        groupGioiTinh.clearSelection();
+
+        // KHÔNG reset ảnh khi update
+        // lblImage.setText("");
+        // lblImage.setIcon(null);
+        // Clear selection trong bảng
+        tableInfo.clearSelection();
+    }
+
+    @Override
+    public void delete() {
+        try {
+            // 1. Kiểm tra có dòng nào được chọn không
+            int selectedRow = tableInfo.getSelectedRow();
+            if (selectedRow < 0) {
+                XDialog.alert("Vui lòng chọn một nhân viên để xóa!", "Thông báo");
+                return;
+            }
+
+            // 2. Lấy thông tin nhân viên được chọn
+            String userId = (String) tableInfo.getValueAt(selectedRow, 0);
+            String fullName = (String) tableInfo.getValueAt(selectedRow, 3);
+
+            // 3. Xác nhận xóa
+            boolean confirmed = XDialog.confirm(
+                    "Bạn có chắc chắn muốn xóa nhân viên:\n"
+                    + "Mã: " + userId + "\n"
+                    + "Tên: " + fullName + "\n\n"
+                    + "⚠️ Hành động này không thể hoàn tác!",
+                    "Xác nhận xóa"
+            );
+
+            if (!confirmed) {
+                return; // Người dùng chọn "No" hoặc đóng dialog
+            }
+
+            // 4. Kiểm tra nhân viên có tồn tại không
+            UserAccount employee = userDAO.findById(userId);
+            if (employee == null) {
+                XDialog.alert("Không tìm thấy nhân viên với mã: " + userId, "Lỗi");
+                return;
+            }
+
+            // 5. Kiểm tra ràng buộc nghiệp vụ (tùy chọn)
+            // Ví dụ: Không cho xóa Manager cuối cùng
+            if ("R001".equals(employee.getRole_id())) {
+                List<UserAccount> allManagers = userDAO.findAll().stream()
+                        .filter(u -> "R001".equals(u.getRole_id()))
+                        .collect(java.util.stream.Collectors.toList());
+
+                if (allManagers.size() <= 1) {
+                    XDialog.alert(
+                            "Không thể xóa Manager cuối cùng trong hệ thống!",
+                            "Lỗi ràng buộc nghiệp vụ"
+                    );
+                    return;
+                }
+            }
+
+            // 6. Thực hiện xóa
+            userDAO.deleteById(userId);
+
+            // 7. Refresh bảng
+            filterAndFillTable();
+
+            // 8. Clear form
+            clear();
+
+            // 9. Thông báo thành công
+            XDialog.alert(
+                    "✅ Đã xóa nhân viên thành công!\n"
+                    + "Mã: " + userId + "\n"
+                    + "Tên: " + fullName,
+                    "Xóa thành công"
+            );
+
+        } catch (Exception e) {
+            // 10. Xử lý lỗi
+            XDialog.alert(
+                    "❌ Lỗi khi xóa nhân viên: " + e.getMessage(),
+                    "Lỗi hệ thống"
+            );
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void clear() {
+        // Xóa toàn bộ dữ liệu trên form
+        txtIdEmployee.setText("");
+        txtNameAccount.setText("");
+        txtPassword.setText("");
+        txtNameEmployee.setText("");
+        txtPhoneNumber.setText("");
+        txtEmail.setText("");
+
+        // Reset giới tính
+        groupGioiTinh.clearSelection();
+
+        // KHÔNG reset cboStatus và cboRole khi clear form
+        // Để giữ nguyên điều kiện filter hiện tại
+        // Reset hình ảnh
+        lblImage.setText("");
+        lblImage.setIcon(null);
+
+        // KHÔNG gọi fillToTable() để tránh làm mất filter hiện tại
+    }
+
+    /**
+     * Method riêng để reset filter về "Tất cả"
+     */
+    public void resetFilter() {
+        cboStatus.setSelectedItem("Tất cả");
+        cboRole.setSelectedItem("Tất cả");
+        filterAndFillTable();
+    }
+
+    @Override
+    public void setEditable(boolean editable) {
+        // Cho phép/không cho phép chỉnh sửa form
+        txtIdEmployee.setEditable(!editable); // ID không được sửa
+        txtNameAccount.setEditable(editable);
+        txtPassword.setEditable(editable);
+        txtNameEmployee.setEditable(editable);
+        txtPhoneNumber.setEditable(editable);
+        txtEmail.setEditable(editable);
+
+        chkMale.setEnabled(editable);
+        chkFemale.setEnabled(editable);
+        cboStatus.setEnabled(editable);
+        cboRole.setEnabled(editable);
+    }
+
+    @Override
+    public void checkAll() {
+    }
+
+    @Override
+    public void uncheckAll() {
+    }
+
+    @Override
+    public void deleteCheckedItems() {
+    }
 }

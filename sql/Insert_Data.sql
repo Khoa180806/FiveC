@@ -319,3 +319,10 @@ UNION ALL
 SELECT 'BILL_DETAIL' AS TABLE_NAME
     ,COUNT(*) AS TOTAL_RECORDS 
 FROM BILL_DETAIL;
+
+-- Chạy SQL này trong Oracle để cập nhật ngày cho nhân viên đã tồn tại
+UPDATE USER_ACCOUNT 
+SET created_date = SYSDATE 
+WHERE created_date IS NULL;
+
+COMMIT;
