@@ -63,4 +63,11 @@ public class UserDAOImpl implements UserDAO {
         return XQuery.getSingleBean(UserAccount.class, findByIdSql, user_id);
     }
 
+    public static void main(String[] args) {
+       UserDAOImpl dao = new UserDAOImpl();
+       List<UserAccount> list = dao.findAll();
+       for(UserAccount u : list){
+           System.out.println(u.getFullName());
+       }
+    }
 }

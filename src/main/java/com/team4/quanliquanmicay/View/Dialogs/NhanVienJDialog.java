@@ -513,7 +513,7 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
             
             // Đổ dữ liệu vào bảng
             for (UserAccount emp : employees) {
-                    Object[] row = {
+                Object[] row = {
                     emp.getUser_id(),           // Mã nhân viên
                     emp.getUsername(),         // Tài khoản
                     emp.getPass(),         // Mật khẩu
