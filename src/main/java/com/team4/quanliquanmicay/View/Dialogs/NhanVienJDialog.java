@@ -33,28 +33,28 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     private UserDAO userDAO;
     private RoleDAO roleDAO; // Thêm RoleDAO
     private Map<String, String> roleMap; // Cache role_id -> name_role
-    
+
     public NhanVienJDialog() {
         initComponents();
         this.setLocationRelativeTo(null);
-        
+
         // Khởi tạo DAO
         this.userDAO = new UserDAOImpl();
         this.roleDAO = new RoleDAOImpl(); // Khởi tạo RoleDAO
         this.roleMap = new HashMap<>(); // Khởi tạo cache
-        
+
         // Load roles và status từ DB
         loadRoles();
-        
+
         // Load dữ liệu lên bảng khi khởi động
         fillToTable();
-        
+
         // Set độ rộng cột
         setColumnWidths();
-        
+
         // Thêm event listener cho nút LƯU
         btnSave.addActionListener(this::btnSaveActionPerformed);
-        
+
         // Thêm event listener cho bảng (đã có rồi)
         tableInfo.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -492,9 +492,98 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         delete();
     }//GEN-LAST:event_btnDeleteActionPerformed
 
-    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnExitActionPerformed
+    /**
+     * Event handler cho nút EXIT ở dòng 496
+     */
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {
+        exitApplication();
+    }
+
+    /**
+     * Thoát ứng dụng với xác nhận
+     */
+    private void exitApplication() {
+        try {
+            // 1. Kiểm tra có thay đổi dữ liệu chưa lưu không
+            if (hasUnsavedChanges()) {
+                if (!handleUnsavedChanges()) {
+                    return; // Người dùng hủy hoặc lưu thất bại
+                }
+            }
+
+            // 2. Xác nhận thoát
+            if (confirmExit()) {
+                performExit();
+            }
+
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi thoát ứng dụng: " + e.getMessage(), "Lỗi hệ thống");
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Kiểm tra có dữ liệu chưa lưu không
+     */
+    private boolean hasUnsavedChanges() {
+        return !txtIdEmployee.getText().trim().isEmpty()
+                || !txtNameAccount.getText().trim().isEmpty()
+                || !txtPassword.getText().trim().isEmpty()
+                || !txtNameEmployee.getText().trim().isEmpty()
+                || !txtPhoneNumber.getText().trim().isEmpty()
+                || !txtEmail.getText().trim().isEmpty()
+                || chkMale.isSelected()
+                || chkFemale.isSelected();
+    }
+
+    /**
+     * Xử lý dữ liệu chưa lưu
+     *
+     * @return true nếu có thể tiếp tục thoát, false nếu cần dừng lại
+     */
+    private boolean handleUnsavedChanges() {
+        boolean saveBeforeExit = XDialog.confirm(
+                "⚠️ Có dữ liệu chưa được lưu!\n\n"
+                + "Bạn có muốn lưu trước khi thoát không?\n\n"
+                + "• Chọn 'Có' để lưu và thoát\n"
+                + "• Chọn 'Không' để thoát mà không lưu",
+                "Dữ liệu chưa lưu"
+        );
+
+        if (saveBeforeExit) {
+            try {
+                create(); // Hoặc update() tùy trường hợp
+                XDialog.alert("Đã lưu dữ liệu thành công!", "Thông báo");
+                return true;
+            } catch (Exception e) {
+                XDialog.alert("Lỗi khi lưu dữ liệu: " + e.getMessage(), "Lỗi");
+                return false; // Lưu thất bại, không thoát
+            }
+        }
+
+        return true; // Không lưu nhưng vẫn thoát
+    }
+
+    /**
+     * Xác nhận thoát ứng dụng
+     */
+    private boolean confirmExit() {
+        return XDialog.confirm(
+                "Bạn có chắc chắn muốn thoát ứng dụng Quản lý Nhân viên?",
+                "Xác nhận thoát"
+        );
+    }
+
+    /**
+     * Thực hiện thoát ứng dụng
+     */
+    private void performExit() {
+        // Cleanup logic nếu cần
+        System.out.println("Đang thoát ứng dụng Quản lý Nhân viên...");
+
+        // Thoát ứng dụng
+        System.exit(0);
+    }
 
     /**
      * @param args the command line arguments
@@ -577,35 +666,35 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             // Load các vai trò từ database
             cboRole.removeAllItems();
             cboRole.addItem("Tất cả");
-            
+
             List<UserRole> roles = roleDAO.findAll();
             for (UserRole role : roles) {
                 // Cache role mapping
                 roleMap.put(role.getRole_id(), role.getName_role());
-                
+
                 // Hiển thị trong ComboBox
                 String displayText = role.getRole_id() + " - " + role.getName_role();
                 cboRole.addItem(displayText);
             }
-            
+
             // Load trạng thái
             cboStatus.removeAllItems();
             cboStatus.addItem("Tất cả");
             cboStatus.addItem("Hoạt động");
             cboStatus.addItem("Không hoạt động");
-            
+
             // Thêm event listeners cho filter
             addFilterListeners();
-            
+
             System.out.println("Đã load " + roles.size() + " roles từ database");
-            
+
         } catch (Exception e) {
             XDialog.alert("Lỗi khi load roles: " + e.getMessage());
             e.printStackTrace();
             loadRolesFallback();
         }
     }
-    
+
     /**
      * Fallback method nếu không load được từ DB
      */
@@ -614,17 +703,17 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         roleMap.clear();
         roleMap.put("R001", "Manager");
         roleMap.put("R002", "Staff");
-        
+
         cboRole.removeAllItems();
         cboRole.addItem("Tất cả");
         cboRole.addItem("R001 - Manager");
         cboRole.addItem("R002 - Staff");
-        
+
         cboStatus.removeAllItems();
         cboStatus.addItem("Tất cả");
         cboStatus.addItem("Hoạt động");
         cboStatus.addItem("Không hoạt động");
-        
+
         addFilterListeners();
     }
 
@@ -638,7 +727,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                 filterAndFillTable();
             }
         });
-        
+
         // Event listener cho cboRole
         cboRole.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -654,40 +743,40 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         // Xóa dữ liệu cũ trong bảng
         DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
         model.setRowCount(0);
-        
+
         try {
             // Lấy điều kiện filter
             String selectedStatus = (String) cboStatus.getSelectedItem();
             String selectedRole = (String) cboRole.getSelectedItem();
-            
+
             // Lấy danh sách nhân viên từ database
             List<UserAccount> employees = userDAO.findAll();
-            
+
             // Filter theo điều kiện
             List<UserAccount> filteredEmployees = filterEmployees(employees, selectedStatus, selectedRole);
-            
+
             // Đổ dữ liệu đã filter vào bảng
             for (UserAccount emp : filteredEmployees) {
                 // DEBUG: In ra giá trị created_date
                 System.out.println("DEBUG Created Date for " + emp.getUser_id() + ": " + emp.getCreated_date());
-                
+
                 Object[] row = {
-                    emp.getUser_id(),           // Mã nhân viên
-                    emp.getUsername(),         // Tài khoản
-                    emp.getPass(),         // Mật khẩu
-                    emp.getFullName(),         // Họ và tên
-                    emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "Không xác định",           // Giới tính: 1=Nam, 0=Nữ
-                    emp.getPhone_number(),            // SĐT
-                    emp.getEmail(),            // Email
+                    emp.getUser_id(), // Mã nhân viên
+                    emp.getUsername(), // Tài khoản
+                    emp.getPass(), // Mật khẩu
+                    emp.getFullName(), // Họ và tên
+                    emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "Không xác định", // Giới tính: 1=Nam, 0=Nữ
+                    emp.getPhone_number(), // SĐT
+                    emp.getEmail(), // Email
                     emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "Không xác định", // Trạng thái
-                    getRoleName(emp.getRole_id()),     // Vai trò - Hiển thị tên thay vì ID
-                    formatDate(emp.getCreated_date())  // Ngày tạo - Format đúng
+                    getRoleName(emp.getRole_id()), // Vai trò - Hiển thị tên thay vì ID
+                    formatDate(emp.getCreated_date()) // Ngày tạo - Format đúng
                 };
                 model.addRow(row);
             }
-            
+
             System.out.println("Đã filter và load " + filteredEmployees.size() + "/" + employees.size() + " nhân viên");
-            
+
         } catch (Exception e) {
             XDialog.alert("Lỗi khi filter dữ liệu: " + e.getMessage());
             e.printStackTrace();
@@ -699,11 +788,11 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
      */
     private List<UserAccount> filterEmployees(List<UserAccount> employees, String selectedStatus, String selectedRole) {
         List<UserAccount> filtered = new ArrayList<>();
-        
+
         for (UserAccount emp : employees) {
             boolean matchStatus = true;
             boolean matchRole = true;
-            
+
             // Filter theo Status
             if (selectedStatus != null && !selectedStatus.equals("Tất cả")) {
                 if (selectedStatus.equals("Hoạt động")) {
@@ -712,22 +801,22 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                     matchStatus = (emp.getIs_enabled() != null && emp.getIs_enabled() == 0);
                 }
             }
-            
+
             // Filter theo Role - cần extract role_id từ display text
             if (selectedRole != null && !selectedRole.equals("Tất cả")) {
                 String roleId = extractRoleId(selectedRole);
                 matchRole = roleId.equals(emp.getRole_id());
             }
-            
+
             // Chỉ thêm vào danh sách nếu thỏa mãn cả 2 điều kiện
             if (matchStatus && matchRole) {
                 filtered.add(emp);
             }
         }
-        
+
         return filtered;
     }
-    
+
     /**
      * Extract role_id từ display text (VD: "R001 - Manager" -> "R001")
      */
@@ -755,7 +844,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         if (date == null) {
             return "Chưa có";
         }
-        
+
         try {
             // Format ngày theo định dạng dd/MM/yyyy HH:mm
             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
@@ -792,19 +881,19 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         if (txtIdEmployee.getText().trim().isEmpty()) {
             throw new RuntimeException("Mã nhân viên không được để trống!");
         }
-        
+
         if (txtNameAccount.getText().trim().isEmpty()) {
             throw new RuntimeException("Tên đăng nhập không được để trống!");
         }
-        
+
         if (txtPassword.getText().trim().isEmpty()) {
             throw new RuntimeException("Mật khẩu không được để trống!");
         }
-        
+
         if (txtNameEmployee.getText().trim().isEmpty()) {
             throw new RuntimeException("Họ tên nhân viên không được để trống!");
         }
-        
+
         // Validate giới tính
         if (!chkMale.isSelected() && !chkFemale.isSelected()) {
             throw new RuntimeException("Vui lòng chọn giới tính!");
@@ -823,7 +912,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             txtNameAccount.setText(entity.getUsername());
             txtPassword.setText(entity.getPass());
             txtNameEmployee.setText(entity.getFullName());
-            
+
             // Xử lý giới tính
             if (entity.getGender() != null) {
                 if (entity.getGender() == 1) {
@@ -837,13 +926,12 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                 // Reset giới tính nếu null
                 groupGioiTinh.clearSelection();
             }
-            
+
             txtPhoneNumber.setText(entity.getPhone_number());
             txtEmail.setText(entity.getEmail());
-            
+
             // KHÔNG thay đổi cboStatus và cboRole khi setForm
             // Chỉ hiển thị thông tin trong form, không ảnh hưởng đến filter
-            
             // Hiển thị hình ảnh nếu có
             if (entity.getImage() != null && !entity.getImage().trim().isEmpty()) {
                 // Gọi method load ảnh
@@ -852,7 +940,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                 lblImage.setText("No Image");
                 lblImage.setIcon(null);
             }
-            
+
             // Hiển thị role name từ DB
             displayRoleInfo(entity.getRole_id());
         }
@@ -880,32 +968,32 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     public UserAccount getForm() {
         // Lấy dữ liệu từ form tạo thành entity
         UserAccount entity = new UserAccount();
-        
+
         entity.setUser_id(txtIdEmployee.getText().trim());
         entity.setUsername(txtNameAccount.getText().trim());
         entity.setPass(txtPassword.getText().trim());
         entity.setFullName(txtNameEmployee.getText().trim());
-        
+
         // Xử lý giới tính
         if (chkMale.isSelected()) {
             entity.setGender(1);  // Nam
         } else if (chkFemale.isSelected()) {
             entity.setGender(0);  // Nữ
         }
-        
+
         entity.setPhone_number(txtPhoneNumber.getText().trim());
         entity.setEmail(txtEmail.getText().trim());
-        
+
         // Mặc định enabled và role
         entity.setIs_enabled(1); // Mặc định hoạt động
         entity.setRole_id("R002"); // Mặc định Staff
-        
+
         // Xử lý hình ảnh - CHỈ set nếu có ảnh thực sự
         if (lblImage.getIcon() != null) {
             // Có ảnh đang hiển thị - lấy tên từ text hoặc giữ nguyên
             String currentImageText = lblImage.getText();
-            if (currentImageText != null && !currentImageText.equals("No Image") && 
-                !currentImageText.equals("Error") && !currentImageText.trim().isEmpty()) {
+            if (currentImageText != null && !currentImageText.equals("No Image")
+                    && !currentImageText.equals("Error") && !currentImageText.trim().isEmpty()) {
                 entity.setImage(currentImageText);
             } else {
                 // Không set image, để method update() xử lý
@@ -934,20 +1022,20 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         if (selectedRow >= 0) {
             // Lấy user_id từ cột đầu tiên
             String userId = (String) tableInfo.getValueAt(selectedRow, 0);
-            
+
             // Tìm entity từ database
             UserAccount entity = userDAO.findById(userId);
-            
+
             if (entity != null) {
                 // DEBUG: In ra giá trị thực tế
-                System.out.println("Selected Employee: " + entity.getUser_id() + 
-                                 " - Gender: " + entity.getGender() + 
-                                 " - Is_enabled: " + entity.getIs_enabled() +
-                                 " - Image: " + entity.getImage());
-                
+                System.out.println("Selected Employee: " + entity.getUser_id()
+                        + " - Gender: " + entity.getGender()
+                        + " - Is_enabled: " + entity.getIs_enabled()
+                        + " - Image: " + entity.getImage());
+
                 // Điền dữ liệu vào form (KHÔNG ảnh hưởng đến ComboBox filter)
                 setForm(entity);
-                
+
                 // Cho phép chỉnh sửa
                 setEditable(true);
             } else {
@@ -966,28 +1054,28 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             if (imageName != null && !imageName.trim().isEmpty()) {
                 // Đường dẫn ảnh trong resources/icons_and_images/imageEmployee/
                 String imagePath = "/icons_and_images/imageEmployee/" + imageName;
-                
+
                 System.out.println("Trying to load image: " + imagePath);
-                
+
                 // Kiểm tra ảnh có tồn tại không
                 java.net.URL imageURL = getClass().getResource(imagePath);
-                
+
                 if (imageURL != null) {
                     // Sử dụng XImage utility để set ảnh
                     XImage.setImageToLabel(lblImage, imagePath);
                     lblImage.setText(""); // Xóa text nếu có ảnh
-                    
+
                     System.out.println("✅ Successfully loaded image: " + imageName);
                 } else {
                     // Thử load từ thư mục gốc icons_and_images
                     String fallbackPath = "/icons_and_images/" + imageName;
                     System.out.println("Image not found in imageEmployee, trying: " + fallbackPath);
-                    
+
                     java.net.URL fallbackURL = getClass().getResource(fallbackPath);
                     if (fallbackURL != null) {
                         XImage.setImageToLabel(lblImage, fallbackPath);
                         lblImage.setText("");
-                        
+
                         System.out.println("✅ Successfully loaded image from fallback: " + imageName);
                     } else {
                         // Sử dụng placeholder
@@ -1011,7 +1099,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         try {
             String placeholderPath = "/icons_and_images/Unknown person.png";
             java.net.URL placeholderURL = getClass().getResource(placeholderPath);
-            
+
             if (placeholderURL != null) {
                 XImage.setImageToLabel(lblImage, placeholderPath);
                 lblImage.setText("");
@@ -1034,7 +1122,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         try {
             String defaultPath = "/icons_and_images/User.png";
             java.net.URL defaultURL = getClass().getResource(defaultPath);
-            
+
             if (defaultURL != null) {
                 XImage.setImageToLabel(lblImage, defaultPath);
                 lblImage.setText("");
@@ -1054,11 +1142,11 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     public void testLoadImage() {
         // Test với một số ảnh có sẵn
         String[] testImages = {"admin01.jpg", "admin02.jpg", "trump.png", "User.png"};
-        
+
         for (String imageName : testImages) {
             System.out.println("Testing image: " + imageName);
             loadEmployeeImage(imageName);
-            
+
             try {
                 Thread.sleep(2000); // Delay 2 giây để xem ảnh
             } catch (InterruptedException e) {
@@ -1072,28 +1160,28 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         try {
             // Validate dữ liệu trước khi tạo
             validateEmployee();
-            
+
             // Lấy dữ liệu từ form
             UserAccount newEmployee = getForm();
-            
+
             // Kiểm tra user_id đã tồn tại chưa
             UserAccount existingUser = userDAO.findById(newEmployee.getUser_id());
             if (existingUser != null) {
                 XDialog.alert("Mã nhân viên đã tồn tại!");
                 return;
             }
-            
+
             // Tạo nhân viên mới
             userDAO.create(newEmployee);
-            
+
             // Refresh bảng
             filterAndFillTable();
-            
+
             // Clear form
             clear();
-            
+
             XDialog.alert("✅ Tạo nhân viên thành công!");
-            
+
         } catch (Exception e) {
             XDialog.alert("❌ Lỗi: " + e.getMessage());
             e.printStackTrace();
@@ -1105,50 +1193,50 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         try {
             // 1. Validate dữ liệu trước khi cập nhật
             validateEmployee();
-            
+
             // 2. Lấy dữ liệu từ form
             UserAccount updatedEmployee = getForm();
-            
+
             // 3. Kiểm tra nhân viên có tồn tại không
             UserAccount existingEmployee = userDAO.findById(updatedEmployee.getUser_id());
             if (existingEmployee == null) {
                 XDialog.alert("Không tìm thấy nhân viên với mã: " + updatedEmployee.getUser_id());
                 return;
             }
-            
+
             // 4. Kiểm tra username đã tồn tại chưa (ngoại trừ chính nó)
             List<UserAccount> allUsers = userDAO.findAll();
             for (UserAccount user : allUsers) {
-                if (!user.getUser_id().equals(updatedEmployee.getUser_id()) && 
-                    user.getUsername().equals(updatedEmployee.getUsername())) {
+                if (!user.getUser_id().equals(updatedEmployee.getUser_id())
+                        && user.getUsername().equals(updatedEmployee.getUsername())) {
                     XDialog.alert("Tên đăng nhập đã tồn tại!");
                     return;
                 }
             }
-            
+
             // 5. QUAN TRỌNG: Giữ nguyên ngày tạo gốc
             updatedEmployee.setCreated_date(existingEmployee.getCreated_date());
-            
+
             // 6. QUAN TRỌNG: Giữ nguyên ảnh gốc nếu không thay đổi
-            if (updatedEmployee.getImage() == null || 
-                updatedEmployee.getImage().equals("default.jpg") || 
-                updatedEmployee.getImage().trim().isEmpty()) {
+            if (updatedEmployee.getImage() == null
+                    || updatedEmployee.getImage().equals("default.jpg")
+                    || updatedEmployee.getImage().trim().isEmpty()) {
                 // Giữ nguyên ảnh cũ
                 updatedEmployee.setImage(existingEmployee.getImage());
             }
-            
+
             // 7. Cập nhật nhân viên
             userDAO.update(updatedEmployee);
-            
+
             // 8. Refresh bảng
             filterAndFillTable();
-            
+
             // 9. Clear form (nhưng không clear ảnh)
             clearFormButKeepImage();
-            
+
             // 10. Thông báo thành công
             XDialog.alert("✅ Cập nhật nhân viên thành công!");
-            
+
         } catch (RuntimeException e) {
             // Lỗi validation - đã hiển thị message rồi
             XDialog.alert("❌ " + e.getMessage());
@@ -1169,14 +1257,13 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         txtNameEmployee.setText("");
         txtPhoneNumber.setText("");
         txtEmail.setText("");
-        
+
         // Reset giới tính
         groupGioiTinh.clearSelection();
-        
+
         // KHÔNG reset ảnh khi update
         // lblImage.setText("");
         // lblImage.setIcon(null);
-        
         // Clear selection trong bảng
         tableInfo.clearSelection();
     }
@@ -1190,69 +1277,69 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                 XDialog.alert("Vui lòng chọn một nhân viên để xóa!", "Thông báo");
                 return;
             }
-            
+
             // 2. Lấy thông tin nhân viên được chọn
             String userId = (String) tableInfo.getValueAt(selectedRow, 0);
             String fullName = (String) tableInfo.getValueAt(selectedRow, 3);
-            
+
             // 3. Xác nhận xóa
             boolean confirmed = XDialog.confirm(
-                "Bạn có chắc chắn muốn xóa nhân viên:\n" +
-                "Mã: " + userId + "\n" +
-                "Tên: " + fullName + "\n\n" +
-                "⚠️ Hành động này không thể hoàn tác!", 
-                "Xác nhận xóa"
+                    "Bạn có chắc chắn muốn xóa nhân viên:\n"
+                    + "Mã: " + userId + "\n"
+                    + "Tên: " + fullName + "\n\n"
+                    + "⚠️ Hành động này không thể hoàn tác!",
+                    "Xác nhận xóa"
             );
-            
+
             if (!confirmed) {
                 return; // Người dùng chọn "No" hoặc đóng dialog
             }
-            
+
             // 4. Kiểm tra nhân viên có tồn tại không
             UserAccount employee = userDAO.findById(userId);
             if (employee == null) {
                 XDialog.alert("Không tìm thấy nhân viên với mã: " + userId, "Lỗi");
                 return;
             }
-            
+
             // 5. Kiểm tra ràng buộc nghiệp vụ (tùy chọn)
             // Ví dụ: Không cho xóa Manager cuối cùng
             if ("R001".equals(employee.getRole_id())) {
                 List<UserAccount> allManagers = userDAO.findAll().stream()
-                    .filter(u -> "R001".equals(u.getRole_id()))
-                    .collect(java.util.stream.Collectors.toList());
-                
+                        .filter(u -> "R001".equals(u.getRole_id()))
+                        .collect(java.util.stream.Collectors.toList());
+
                 if (allManagers.size() <= 1) {
                     XDialog.alert(
-                        "Không thể xóa Manager cuối cùng trong hệ thống!", 
-                        "Lỗi ràng buộc nghiệp vụ"
+                            "Không thể xóa Manager cuối cùng trong hệ thống!",
+                            "Lỗi ràng buộc nghiệp vụ"
                     );
                     return;
                 }
             }
-            
+
             // 6. Thực hiện xóa
             userDAO.deleteById(userId);
-            
+
             // 7. Refresh bảng
             filterAndFillTable();
-            
+
             // 8. Clear form
             clear();
-            
+
             // 9. Thông báo thành công
             XDialog.alert(
-                "✅ Đã xóa nhân viên thành công!\n" +
-                "Mã: " + userId + "\n" +
-                "Tên: " + fullName, 
-                "Xóa thành công"
+                    "✅ Đã xóa nhân viên thành công!\n"
+                    + "Mã: " + userId + "\n"
+                    + "Tên: " + fullName,
+                    "Xóa thành công"
             );
-            
+
         } catch (Exception e) {
             // 10. Xử lý lỗi
             XDialog.alert(
-                "❌ Lỗi khi xóa nhân viên: " + e.getMessage(), 
-                "Lỗi hệ thống"
+                    "❌ Lỗi khi xóa nhân viên: " + e.getMessage(),
+                    "Lỗi hệ thống"
             );
             e.printStackTrace();
         }
@@ -1267,17 +1354,16 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         txtNameEmployee.setText("");
         txtPhoneNumber.setText("");
         txtEmail.setText("");
-        
+
         // Reset giới tính
         groupGioiTinh.clearSelection();
-        
+
         // KHÔNG reset cboStatus và cboRole khi clear form
         // Để giữ nguyên điều kiện filter hiện tại
-        
         // Reset hình ảnh
         lblImage.setText("");
         lblImage.setIcon(null);
-        
+
         // KHÔNG gọi fillToTable() để tránh làm mất filter hiện tại
     }
 
@@ -1299,7 +1385,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         txtNameEmployee.setEditable(editable);
         txtPhoneNumber.setEditable(editable);
         txtEmail.setEditable(editable);
-        
+
         chkMale.setEnabled(editable);
         chkFemale.setEnabled(editable);
         cboStatus.setEnabled(editable);
