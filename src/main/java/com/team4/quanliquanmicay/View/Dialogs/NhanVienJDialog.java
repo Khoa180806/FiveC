@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.HashMap;
 import com.team4.quanliquanmicay.util.XImage;
 import java.text.SimpleDateFormat;
+import com.team4.quanliquanmicay.util.XDialog;
 
 /**
  *
@@ -488,6 +489,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         // TODO add your handling code here:
+        delete();
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
@@ -598,7 +600,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             System.out.println("Đã load " + roles.size() + " roles từ database");
             
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi load roles: " + e.getMessage());
+            XDialog.alert("Lỗi khi load roles: " + e.getMessage());
             e.printStackTrace();
             loadRolesFallback();
         }
@@ -687,7 +689,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             System.out.println("Đã filter và load " + filteredEmployees.size() + "/" + employees.size() + " nhân viên");
             
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi filter dữ liệu: " + e.getMessage());
+            XDialog.alert("Lỗi khi filter dữ liệu: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -949,10 +951,10 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                 // Cho phép chỉnh sửa
                 setEditable(true);
             } else {
-                JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin nhân viên!");
+                XDialog.alert("Không tìm thấy thông tin nhân viên!");
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn một dòng để chỉnh sửa!");
+            XDialog.alert("Vui lòng chọn một dòng để chỉnh sửa!");
         }
     }
 
@@ -1077,7 +1079,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             // Kiểm tra user_id đã tồn tại chưa
             UserAccount existingUser = userDAO.findById(newEmployee.getUser_id());
             if (existingUser != null) {
-                JOptionPane.showMessageDialog(this, "Mã nhân viên đã tồn tại!");
+                XDialog.alert("Mã nhân viên đã tồn tại!");
                 return;
             }
             
@@ -1090,10 +1092,10 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             // Clear form
             clear();
             
-            JOptionPane.showMessageDialog(this, "✅ Tạo nhân viên thành công!");
+            XDialog.alert("✅ Tạo nhân viên thành công!");
             
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "❌ Lỗi: " + e.getMessage());
+            XDialog.alert("❌ Lỗi: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -1110,7 +1112,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             // 3. Kiểm tra nhân viên có tồn tại không
             UserAccount existingEmployee = userDAO.findById(updatedEmployee.getUser_id());
             if (existingEmployee == null) {
-                JOptionPane.showMessageDialog(this, "Không tìm thấy nhân viên với mã: " + updatedEmployee.getUser_id());
+                XDialog.alert("Không tìm thấy nhân viên với mã: " + updatedEmployee.getUser_id());
                 return;
             }
             
@@ -1119,7 +1121,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             for (UserAccount user : allUsers) {
                 if (!user.getUser_id().equals(updatedEmployee.getUser_id()) && 
                     user.getUsername().equals(updatedEmployee.getUsername())) {
-                    JOptionPane.showMessageDialog(this, "Tên đăng nhập đã tồn tại!");
+                    XDialog.alert("Tên đăng nhập đã tồn tại!");
                     return;
                 }
             }
@@ -1145,14 +1147,14 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             clearFormButKeepImage();
             
             // 10. Thông báo thành công
-            JOptionPane.showMessageDialog(this, "✅ Cập nhật nhân viên thành công!");
+            XDialog.alert("✅ Cập nhật nhân viên thành công!");
             
         } catch (RuntimeException e) {
             // Lỗi validation - đã hiển thị message rồi
-            JOptionPane.showMessageDialog(this, "❌ " + e.getMessage());
+            XDialog.alert("❌ " + e.getMessage());
         } catch (Exception e) {
             // Lỗi hệ thống khác
-            JOptionPane.showMessageDialog(this, "❌ Lỗi khi cập nhật nhân viên: " + e.getMessage());
+            XDialog.alert("❌ Lỗi khi cập nhật nhân viên: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -1181,6 +1183,79 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
 
     @Override
     public void delete() {
+        try {
+            // 1. Kiểm tra có dòng nào được chọn không
+            int selectedRow = tableInfo.getSelectedRow();
+            if (selectedRow < 0) {
+                XDialog.alert("Vui lòng chọn một nhân viên để xóa!", "Thông báo");
+                return;
+            }
+            
+            // 2. Lấy thông tin nhân viên được chọn
+            String userId = (String) tableInfo.getValueAt(selectedRow, 0);
+            String fullName = (String) tableInfo.getValueAt(selectedRow, 3);
+            
+            // 3. Xác nhận xóa
+            boolean confirmed = XDialog.confirm(
+                "Bạn có chắc chắn muốn xóa nhân viên:\n" +
+                "Mã: " + userId + "\n" +
+                "Tên: " + fullName + "\n\n" +
+                "⚠️ Hành động này không thể hoàn tác!", 
+                "Xác nhận xóa"
+            );
+            
+            if (!confirmed) {
+                return; // Người dùng chọn "No" hoặc đóng dialog
+            }
+            
+            // 4. Kiểm tra nhân viên có tồn tại không
+            UserAccount employee = userDAO.findById(userId);
+            if (employee == null) {
+                XDialog.alert("Không tìm thấy nhân viên với mã: " + userId, "Lỗi");
+                return;
+            }
+            
+            // 5. Kiểm tra ràng buộc nghiệp vụ (tùy chọn)
+            // Ví dụ: Không cho xóa Manager cuối cùng
+            if ("R001".equals(employee.getRole_id())) {
+                List<UserAccount> allManagers = userDAO.findAll().stream()
+                    .filter(u -> "R001".equals(u.getRole_id()))
+                    .collect(java.util.stream.Collectors.toList());
+                
+                if (allManagers.size() <= 1) {
+                    XDialog.alert(
+                        "Không thể xóa Manager cuối cùng trong hệ thống!", 
+                        "Lỗi ràng buộc nghiệp vụ"
+                    );
+                    return;
+                }
+            }
+            
+            // 6. Thực hiện xóa
+            userDAO.deleteById(userId);
+            
+            // 7. Refresh bảng
+            filterAndFillTable();
+            
+            // 8. Clear form
+            clear();
+            
+            // 9. Thông báo thành công
+            XDialog.alert(
+                "✅ Đã xóa nhân viên thành công!\n" +
+                "Mã: " + userId + "\n" +
+                "Tên: " + fullName, 
+                "Xóa thành công"
+            );
+            
+        } catch (Exception e) {
+            // 10. Xử lý lỗi
+            XDialog.alert(
+                "❌ Lỗi khi xóa nhân viên: " + e.getMessage(), 
+                "Lỗi hệ thống"
+            );
+            e.printStackTrace();
+        }
     }
 
     @Override
