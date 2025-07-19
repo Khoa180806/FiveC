@@ -53,9 +53,6 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         setColumnWidths();
 
         // Thêm event listener cho nút LƯU
-        btnSave.addActionListener(this::btnSaveActionPerformed);
-
-        // Thêm event listener cho bảng (đã có rồi)
         tableInfo.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 if (evt.getClickCount() == 1) {
@@ -63,6 +60,12 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                 }
             }
         });
+
+        // ✅ ADD: Performance optimizations
+        setupPerformanceOptimizations();
+
+        // ✅ PRODUCTION: Load image instantly (thay thế testLoadImage)
+        preloadDefaultImages();
     }
 
     /**
@@ -468,10 +471,62 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
-        // TODO add your handling code here:
-        clear();
-    }//GEN-LAST:event_btnClearActionPerformed
+    /**
+     * Event handler cho nút LÀM MỚI
+     */
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {
+        clearForNewEntry();
+    }
+
+    /**
+     * Clear form và chuẩn bị cho việc tạo nhân viên mới
+     */
+    private void clearForNewEntry() {
+        // 1. Clear toàn bộ dữ liệu trên form
+        txtIdEmployee.setText("");
+        txtNameAccount.setText("");
+        txtPassword.setText("");
+        txtNameEmployee.setText("");
+        txtPhoneNumber.setText("");
+        txtEmail.setText("");
+        
+        // 2. Reset giới tính
+        groupGioiTinh.clearSelection();
+        
+        // 3. Reset hình ảnh
+        lblImage.setText("No Image");
+        lblImage.setIcon(null);
+        
+        // 4. Clear selection trong bảng
+        tableInfo.clearSelection();
+        
+        // 5. ✅ QUAN TRỌNG: Enable mã nhân viên để có thể tạo mới
+        txtIdEmployee.setEditable(true);
+        
+        // 6. Enable tất cả các trường khác
+        setAllFieldsEditable(true);
+        
+        // 7. Focus vào mã nhân viên để bắt đầu nhập
+        txtIdEmployee.requestFocus();
+        
+        System.out.println("✅ Đã clear form và sẵn sàng tạo nhân viên mới!");
+    }
+
+    /**
+     * Set editable cho tất cả các trường (trừ ID nếu cần)
+     */
+    private void setAllFieldsEditable(boolean editable) {
+        txtNameAccount.setEditable(editable);
+        txtPassword.setEditable(editable);
+        txtNameEmployee.setEditable(editable);
+        txtPhoneNumber.setEditable(editable);
+        txtEmail.setEditable(editable);
+        
+        chkMale.setEnabled(editable);
+        chkFemale.setEnabled(editable);
+        cboStatus.setEnabled(editable);
+        cboRole.setEnabled(editable);
+    }
 
     /**
      * Event handler cho nút LƯU (TẠO)
@@ -875,28 +930,181 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         }
     }
 
+    /**
+     * ✅ INTERFACE: Validate employee (required by EmployeeController)
+     */
     @Override
     public void validateEmployee() {
+        // Chỉ validate nếu có dữ liệu trong form
+        if (txtIdEmployee.getText().trim().isEmpty() && 
+            txtNameAccount.getText().trim().isEmpty() &&
+            txtPassword.getText().trim().isEmpty() &&
+            txtNameEmployee.getText().trim().isEmpty()) {
+            // Form trống hoàn toàn - không cần validate
+            return;
+        }
+        
         // Validate các trường bắt buộc
         if (txtIdEmployee.getText().trim().isEmpty()) {
             throw new RuntimeException("Mã nhân viên không được để trống!");
         }
-
+        
         if (txtNameAccount.getText().trim().isEmpty()) {
             throw new RuntimeException("Tên đăng nhập không được để trống!");
         }
-
+        
         if (txtPassword.getText().trim().isEmpty()) {
             throw new RuntimeException("Mật khẩu không được để trống!");
         }
-
+        
         if (txtNameEmployee.getText().trim().isEmpty()) {
             throw new RuntimeException("Họ tên nhân viên không được để trống!");
         }
-
+        
         // Validate giới tính
         if (!chkMale.isSelected() && !chkFemale.isSelected()) {
             throw new RuntimeException("Vui lòng chọn giới tính!");
+        }
+    }
+
+    /**
+     * ✅ ENHANCED: Validate business rules (phone + email format)
+     */
+    private void validateBusinessRules(UserAccount employee) {
+        // 1. Validate số điện thoại
+        validatePhoneNumberFormat(employee.getPhone_number());
+        
+        // 2. Validate email
+        validateEmailFormat(employee.getEmail());
+    }
+
+    /**
+     * ✅ PHONE: Enhanced validation với đầu số Việt Nam
+     */
+    private void validatePhoneNumberFormat(String phone) {
+        if (phone == null || phone.trim().isEmpty()) {
+            throw new RuntimeException("Số điện thoại không được để trống!");
+        }
+        
+        String cleanPhone = phone.trim();
+        
+        // Trường hợp 1: Số quốc tế +84
+        if (cleanPhone.startsWith("+84")) {
+            if (cleanPhone.length() < 12 || cleanPhone.length() > 13) {
+                throw new RuntimeException("Số điện thoại +84 phải có 12-13 số (VD: +84901234567)!");
+            }
+            
+            String numberPart = cleanPhone.substring(3);
+            if (!numberPart.matches("\\d+")) {
+                throw new RuntimeException("Số điện thoại chỉ được chứa số sau +84!");
+            }
+            
+            // Check đầu số Việt Nam hợp lệ
+            if (numberPart.length() >= 2) {
+                String prefix = numberPart.substring(0, 2);
+                if (!isValidVietnamesePrefix(prefix)) {
+                    throw new RuntimeException("Đầu số " + prefix + " không hợp lệ cho điện thoại Việt Nam!");
+                }
+            }
+        }
+        // Trường hợp 2: Số nội địa 0x
+        else {
+            if (cleanPhone.length() != 10) {
+                throw new RuntimeException("Số điện thoại phải có đúng 10 số (VD: 0901234567)!");
+            }
+            
+            if (!cleanPhone.matches("\\d+")) {
+                throw new RuntimeException("Số điện thoại chỉ được chứa các chữ số!");
+            }
+            
+            if (!cleanPhone.startsWith("0")) {
+                throw new RuntimeException("Số điện thoại phải bắt đầu bằng số 0!");
+            }
+            
+            // Check đầu số Việt Nam
+            String prefix = cleanPhone.substring(1, 3); // Lấy 2 số sau 0
+            if (!isValidVietnamesePrefix(prefix)) {
+                throw new RuntimeException("Đầu số " + cleanPhone.substring(0, 3) + " không hợp lệ!");
+            }
+        }
+    }
+
+    /**
+     * ✅ CHECK: Đầu số điện thoại Việt Nam hợp lệ (2024)
+     */
+    private boolean isValidVietnamesePrefix(String prefix) {
+        String[] validPrefixes = {
+            // Viettel
+            "96", "97", "98", "32", "33", "34", "35", "36", "37", "38", "39",
+            // MobiFone  
+            "90", "93", "70", "79", "77", "76", "78", "89",
+            // VinaPhone
+            "91", "94", "83", "84", "85", "81", "82", "88",
+            // Vietnamobile
+            "92", "56", "58", "99",
+            // Gmobile & Others
+            "87", "86"
+        };
+        
+        for (String valid : validPrefixes) {
+            if (prefix.equals(valid)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * ✅ EMAIL: Enhanced validation - chỉ cho phép gmail.com và fivec.com
+     */
+    private void validateEmailFormat(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new RuntimeException("Email không được để trống!");
+        }
+        
+        String cleanEmail = email.trim().toLowerCase();
+        
+        // Basic format check
+        if (!cleanEmail.contains("@")) {
+            throw new RuntimeException("Email phải chứa ký tự @!");
+        }
+        
+        String[] parts = cleanEmail.split("@");
+        if (parts.length != 2 || parts[0].isEmpty() || parts[1].isEmpty()) {
+            throw new RuntimeException("Email không đúng định dạng!");
+        }
+        
+        String localPart = parts[0];
+        String domain = parts[1];
+        
+        // Check local part format
+        if (!localPart.matches("[a-zA-Z0-9._-]+")) {
+            throw new RuntimeException("Phần trước @ chỉ được chứa chữ, số, dấu chấm, gạch dưới và gạch ngang!");
+        }
+        
+        if (localPart.length() < 1 || localPart.length() > 50) {
+            throw new RuntimeException("Phần trước @ phải có độ dài từ 1-50 ký tự!");
+        }
+        
+        // ✅ FIX: Chỉ cho phép domain cụ thể
+        if (!domain.equals("gmail.com") && !domain.equals("fivec.com")) {
+            throw new RuntimeException("Email chỉ được sử dụng domain @gmail.com hoặc @fivec.com!");
+        }
+    }
+
+    /**
+     * ✅ UNIQUE: Check ID trùng lặp (chỉ ID là unique theo yêu cầu)
+     */
+    private void validateUniqueEmployeeId(String userId) {
+        try {
+            UserAccount existing = userDAO.findById(userId);
+            if (existing != null) {
+                throw new RuntimeException("Mã nhân viên '" + userId + "' đã tồn tại!");
+            }
+        } catch (RuntimeException e) {
+            throw e; // Re-throw validation errors
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi kiểm tra dữ liệu: " + e.getMessage());
         }
     }
 
@@ -968,40 +1176,71 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     public UserAccount getForm() {
         // Lấy dữ liệu từ form tạo thành entity
         UserAccount entity = new UserAccount();
-
-        entity.setUser_id(txtIdEmployee.getText().trim());
-        entity.setUsername(txtNameAccount.getText().trim());
-        entity.setPass(txtPassword.getText().trim());
-        entity.setFullName(txtNameEmployee.getText().trim());
-
+        
+        // ✅ Đảm bảo không NULL
+        String userId = txtIdEmployee.getText();
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new RuntimeException("Mã nhân viên không được để trống!");
+        }
+        entity.setUser_id(userId.trim());
+        
+        String username = txtNameAccount.getText();
+        if (username == null || username.trim().isEmpty()) {
+            throw new RuntimeException("Tên đăng nhập không được để trống!");
+        }
+        entity.setUsername(username.trim());
+        
+        String password = txtPassword.getText();
+        if (password == null || password.trim().isEmpty()) {
+            throw new RuntimeException("Mật khẩu không được để trống!");
+        }
+        entity.setPass(password.trim());
+        
+        String fullName = txtNameEmployee.getText();
+        if (fullName == null || fullName.trim().isEmpty()) {
+            throw new RuntimeException("Họ tên không được để trống!");
+        }
+        entity.setFullName(fullName.trim());
+        
         // Xử lý giới tính
         if (chkMale.isSelected()) {
             entity.setGender(1);  // Nam
         } else if (chkFemale.isSelected()) {
             entity.setGender(0);  // Nữ
+        } else {
+            throw new RuntimeException("Vui lòng chọn giới tính!");
         }
-
-        entity.setPhone_number(txtPhoneNumber.getText().trim());
-        entity.setEmail(txtEmail.getText().trim());
-
+        
+        // ✅ Đảm bảo email và phone không NULL
+        String email = txtEmail.getText();
+        entity.setEmail(email != null ? email.trim() : "");
+        
+        String phone = txtPhoneNumber.getText();
+        entity.setPhone_number(phone != null ? phone.trim() : "");
+        
         // Mặc định enabled và role
         entity.setIs_enabled(1); // Mặc định hoạt động
-        entity.setRole_id("R002"); // Mặc định Staff
-
-        // Xử lý hình ảnh - CHỈ set nếu có ảnh thực sự
+        
+        // ✅ Lấy role từ ComboBox thay vì hardcode
+        String selectedRole = (String) cboRole.getSelectedItem();
+        if (selectedRole != null && !selectedRole.equals("Tất cả")) {
+            String roleId = extractRoleId(selectedRole);
+            entity.setRole_id(roleId);
+        } else {
+            entity.setRole_id("R002"); // Mặc định Staff
+        }
+        
+        // Xử lý hình ảnh
         if (lblImage.getIcon() != null) {
-            // Có ảnh đang hiển thị - lấy tên từ text hoặc giữ nguyên
             String currentImageText = lblImage.getText();
             if (currentImageText != null && !currentImageText.equals("No Image")
                     && !currentImageText.equals("Error") && !currentImageText.trim().isEmpty()) {
                 entity.setImage(currentImageText);
             } else {
-                // Không set image, để method update() xử lý
-                entity.setImage(null);
+                entity.setImage("default.jpg");
             }
         } else {
-            // Không có ảnh - không set
-            entity.setImage(null);
+            entity.setImage("default.jpg");
         }
 
         return entity;
@@ -1009,41 +1248,12 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
 
     @Override
     public void fillToTable() {
-        // Gọi filterAndFillTable với "Tất cả" cho cả Status và Role
-        cboStatus.setSelectedItem("Tất cả");
-        cboRole.setSelectedItem("Tất cả");
-        filterAndFillTable();
+        fillToTableWithCache(); // Thay vì filterAndFillTable();
     }
 
     @Override
     public void edit() {
-        // Lấy dòng được chọn trong bảng
-        int selectedRow = tableInfo.getSelectedRow();
-        if (selectedRow >= 0) {
-            // Lấy user_id từ cột đầu tiên
-            String userId = (String) tableInfo.getValueAt(selectedRow, 0);
-
-            // Tìm entity từ database
-            UserAccount entity = userDAO.findById(userId);
-
-            if (entity != null) {
-                // DEBUG: In ra giá trị thực tế
-                System.out.println("Selected Employee: " + entity.getUser_id()
-                        + " - Gender: " + entity.getGender()
-                        + " - Is_enabled: " + entity.getIs_enabled()
-                        + " - Image: " + entity.getImage());
-
-                // Điền dữ liệu vào form (KHÔNG ảnh hưởng đến ComboBox filter)
-                setForm(entity);
-
-                // Cho phép chỉnh sửa
-                setEditable(true);
-            } else {
-                XDialog.alert("Không tìm thấy thông tin nhân viên!");
-            }
-        } else {
-            XDialog.alert("Vui lòng chọn một dòng để chỉnh sửa!");
-        }
+        editWithCache(); // Thay vì code cũ
     }
 
     /**
@@ -1155,100 +1365,26 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         }
     }
 
+    /**
+     * ✅ CREATE: Tạo nhân viên mới với validation đầy đủ
+     */
+    private boolean isProcessing = false; // Flag để prevent double click
+
     @Override
     public void create() {
-        try {
-            // Validate dữ liệu trước khi tạo
-            validateEmployee();
-
-            // Lấy dữ liệu từ form
-            UserAccount newEmployee = getForm();
-
-            // Kiểm tra user_id đã tồn tại chưa
-            UserAccount existingUser = userDAO.findById(newEmployee.getUser_id());
-            if (existingUser != null) {
-                XDialog.alert("Mã nhân viên đã tồn tại!");
-                return;
-            }
-
-            // Tạo nhân viên mới
-            userDAO.create(newEmployee);
-
-            // Refresh bảng
-            filterAndFillTable();
-
-            // Clear form
-            clear();
-
-            XDialog.alert("✅ Tạo nhân viên thành công!");
-
-        } catch (Exception e) {
-            XDialog.alert("❌ Lỗi: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void update() {
-        try {
-            // 1. Validate dữ liệu trước khi cập nhật
-            validateEmployee();
-
-            // 2. Lấy dữ liệu từ form
-            UserAccount updatedEmployee = getForm();
-
-            // 3. Kiểm tra nhân viên có tồn tại không
-            UserAccount existingEmployee = userDAO.findById(updatedEmployee.getUser_id());
-            if (existingEmployee == null) {
-                XDialog.alert("Không tìm thấy nhân viên với mã: " + updatedEmployee.getUser_id());
-                return;
-            }
-
-            // 4. Kiểm tra username đã tồn tại chưa (ngoại trừ chính nó)
-            List<UserAccount> allUsers = userDAO.findAll();
-            for (UserAccount user : allUsers) {
-                if (!user.getUser_id().equals(updatedEmployee.getUser_id())
-                        && user.getUsername().equals(updatedEmployee.getUsername())) {
-                    XDialog.alert("Tên đăng nhập đã tồn tại!");
-                    return;
-                }
-            }
-
-            // 5. QUAN TRỌNG: Giữ nguyên ngày tạo gốc
-            updatedEmployee.setCreated_date(existingEmployee.getCreated_date());
-
-            // 6. QUAN TRỌNG: Giữ nguyên ảnh gốc nếu không thay đổi
-            if (updatedEmployee.getImage() == null
-                    || updatedEmployee.getImage().equals("default.jpg")
-                    || updatedEmployee.getImage().trim().isEmpty()) {
-                // Giữ nguyên ảnh cũ
-                updatedEmployee.setImage(existingEmployee.getImage());
-            }
-
-            // 7. Cập nhật nhân viên
-            userDAO.update(updatedEmployee);
-
-            // 8. Refresh bảng
-            filterAndFillTable();
-
-            // 9. Clear form (nhưng không clear ảnh)
-            clearFormButKeepImage();
-
-            // 10. Thông báo thành công
-            XDialog.alert("✅ Cập nhật nhân viên thành công!");
-
-        } catch (RuntimeException e) {
-            // Lỗi validation - đã hiển thị message rồi
-            XDialog.alert("❌ " + e.getMessage());
-        } catch (Exception e) {
-            // Lỗi hệ thống khác
-            XDialog.alert("❌ Lỗi khi cập nhật nhân viên: " + e.getMessage());
-            e.printStackTrace();
-        }
+        createWithCache(); // Thay vì code cũ
     }
 
     /**
-     * Clear form nhưng giữ nguyên ảnh
+     * ✅ UPDATE: Cập nhật nhân viên với preserve important fields
+     */
+    @Override
+    public void update() {
+        updateWithCache(); // Thay vì code cũ
+    }
+
+    /**
+     * ✅ CLEAR: Clear form và prepare cho new entry
      */
     private void clearFormButKeepImage() {
         txtIdEmployee.setText("");
@@ -1258,14 +1394,53 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         txtPhoneNumber.setText("");
         txtEmail.setText("");
 
-        // Reset giới tính
+        // Reset gender selection
         groupGioiTinh.clearSelection();
 
-        // KHÔNG reset ảnh khi update
-        // lblImage.setText("");
-        // lblImage.setIcon(null);
-        // Clear selection trong bảng
+        // Clear table selection
         tableInfo.clearSelection();
+        
+        // Enable ID field for next create
+        txtIdEmployee.setEditable(true);
+        
+        // Note: Image is preserved intentionally
+    }
+
+    /**
+     * ✅ LOG: Professional logging for operations
+     */
+    private void logEmployeeInfo(String operation, UserAccount employee) {
+        System.out.println("=== " + operation + " EMPLOYEE ===");
+        System.out.println("ID: " + employee.getUser_id());
+        System.out.println("Username: " + employee.getUsername());
+        System.out.println("Full Name: " + employee.getFullName());
+        System.out.println("Email: " + employee.getEmail());
+        System.out.println("Phone: " + employee.getPhone_number());
+        System.out.println("Gender: " + (employee.getGender() == 1 ? "Nam" : "Nữ"));
+        System.out.println("Role: " + employee.getRole_id());
+        System.out.println("Time: " + new java.util.Date());
+        System.out.println("========================");
+    }
+
+    /**
+     * ✅ UTILITY: Check if string is blank
+     */
+    private boolean isBlank(String str) {
+        return str == null || str.trim().isEmpty();
+    }
+
+    /**
+     * ✅ FORM: Check if form is completely empty
+     */
+    private boolean isFormEmpty() {
+        return isBlank(txtIdEmployee.getText()) &&
+               isBlank(txtNameAccount.getText()) &&
+               isBlank(txtPassword.getText()) &&
+               isBlank(txtNameEmployee.getText()) &&
+               isBlank(txtPhoneNumber.getText()) &&
+               isBlank(txtEmail.getText()) &&
+               !chkMale.isSelected() &&
+               !chkFemale.isSelected();
     }
 
     @Override
@@ -1322,7 +1497,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             userDAO.deleteById(userId);
 
             // 7. Refresh bảng
-            filterAndFillTable();
+            invalidateCache(); // Invalidate cache after deletion
+            fillToTableWithCache();
 
             // 8. Clear form
             clear();
@@ -1347,24 +1523,20 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
 
     @Override
     public void clear() {
-        // Xóa toàn bộ dữ liệu trên form
+        // Method clear() gốc - chỉ clear dữ liệu, không thay đổi editable
         txtIdEmployee.setText("");
         txtNameAccount.setText("");
         txtPassword.setText("");
         txtNameEmployee.setText("");
         txtPhoneNumber.setText("");
         txtEmail.setText("");
-
+        
         // Reset giới tính
         groupGioiTinh.clearSelection();
-
-        // KHÔNG reset cboStatus và cboRole khi clear form
-        // Để giữ nguyên điều kiện filter hiện tại
+        
         // Reset hình ảnh
         lblImage.setText("");
         lblImage.setIcon(null);
-
-        // KHÔNG gọi fillToTable() để tránh làm mất filter hiện tại
     }
 
     /**
@@ -1402,5 +1574,350 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
 
     @Override
     public void deleteCheckedItems() {
+    }
+
+// =============================================================================
+// PERFORMANCE OPTIMIZATION - THÊM VÀO CUỐI FILE (KHÔNG ĐỘNG VÀO CODE CŨ)
+// =============================================================================
+
+    // ✅ CACHE: Performance variables
+    private List<UserAccount> employeeCache = new ArrayList<>();
+    private boolean isCacheValid = false;
+    private javax.swing.Timer debounceTimer;
+
+    /**
+     * ✅ OPTIMIZED: Initialize performance cache
+     */
+    private void initializePerformanceCache() {
+        // Setup debounce timer for filtering
+        debounceTimer = new javax.swing.Timer(300, e -> performFilterAndFill());
+        debounceTimer.setRepeats(false);
+        
+        // Pre-size cache
+        employeeCache = new ArrayList<>(100);
+    }
+
+    /**
+     * ✅ FAST: Enhanced loadRoles với caching
+     */
+    private void loadRolesWithCache() {
+        if (roleMap.isEmpty()) {
+            try {
+                List<UserRole> roles = roleDAO.findAll();
+                for (UserRole role : roles) {
+                    roleMap.put(role.getRole_id(), role.getName_role());
+                }
+            } catch (Exception e) {
+                System.err.println("Load roles error: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * ✅ FAST: Enhanced fillToTable với smart caching
+     */
+    private void fillToTableWithCache() {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            try {
+                // Use cache if valid
+                if (!isCacheValid || employeeCache.isEmpty()) {
+                    employeeCache = userDAO.findAll();
+                    isCacheValid = true;
+                    System.out.println("✅ Loaded " + employeeCache.size() + " employees to cache");
+                }
+                
+                // Fast table population
+                populateTableFromCache();
+                
+            } catch (Exception e) {
+                System.err.println("Fill table error: " + e.getMessage());
+                XDialog.alert("Lỗi load dữ liệu: " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * ✅ FAST: Populate table from cache
+     */
+    private void populateTableFromCache() {
+        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
+        model.setRowCount(0);
+
+        String selectedStatus = (String) cboStatus.getSelectedItem();
+        String selectedRole = (String) cboRole.getSelectedItem();
+
+        for (UserAccount emp : employeeCache) {
+            if (matchesFilters(emp, selectedStatus, selectedRole)) {
+                model.addRow(createRowData(emp));
+            }
+        }
+    }
+
+    /**
+     * ✅ FAST: Filter matching logic
+     */
+    private boolean matchesFilters(UserAccount emp, String status, String role) {
+        // Status filter
+        if (status != null && !status.equals("Tất cả")) {
+            if (status.equals("Hoạt động") && (emp.getIs_enabled() == null || emp.getIs_enabled() != 1)) {
+                return false;
+            }
+            if (status.equals("Không hoạt động") && (emp.getIs_enabled() == null || emp.getIs_enabled() != 0)) {
+                return false;
+            }
+        }
+
+        // Role filter
+        if (role != null && !role.equals("Tất cả")) {
+            String roleId = role.contains(" - ") ? role.split(" - ")[0] : role;
+            if (!roleId.equals(emp.getRole_id())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * ✅ FAST: Create row data
+     */
+    private Object[] createRowData(UserAccount emp) {
+        return new Object[]{
+            emp.getUser_id(),
+            emp.getUsername(),
+            emp.getPass(),
+            emp.getFullName(),
+            emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "N/A",
+            emp.getPhone_number(),
+            emp.getEmail(),
+            emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "N/A",
+            roleMap.getOrDefault(emp.getRole_id(), "N/A"),
+            formatDateFast(emp.getCreated_date())
+        };
+    }
+
+    /**
+     * ✅ FAST: Date formatting với reusable formatter
+     */
+    private String formatDateFast(java.util.Date date) {
+        if (date == null) return "N/A";
+        
+        // Simple and fast formatting
+        return new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(date);
+    }
+
+    /**
+     * ✅ OPTIMIZED: Enhanced edit với cache lookup
+     */
+    private void editWithCache() {
+        int selectedRow = tableInfo.getSelectedRow();
+        if (selectedRow < 0) {
+            XDialog.alert("Vui lòng chọn một dòng để chỉnh sửa!");
+            return;
+        }
+
+        String userId = (String) tableInfo.getValueAt(selectedRow, 0);
+
+        // Try cache first (much faster)
+        UserAccount entity = null;
+        for (UserAccount emp : employeeCache) {
+            if (userId.equals(emp.getUser_id())) {
+                entity = emp;
+                break;
+            }
+        }
+
+        // Fallback to database if not in cache
+        if (entity == null) {
+            entity = userDAO.findById(userId);
+        }
+
+        if (entity != null) {
+            setForm(entity);
+            txtIdEmployee.setEditable(false);
+            setAllFieldsEditable(true);
+        } else {
+            XDialog.alert("Không tìm thấy thông tin nhân viên!");
+        }
+    }
+
+    /**
+     * ✅ FAST: Enhanced image loading
+     */
+    private void loadImageFast(String imageName) {
+        if (imageName == null || imageName.trim().isEmpty()) {
+            setDefaultImageFast();
+            return;
+        }
+
+        // Try multiple paths quickly
+        String[] paths = {
+            "/icons_and_images/imageEmployee/" + imageName,
+            "/icons_and_images/" + imageName
+        };
+
+        for (String path : paths) {
+            try {
+                if (getClass().getResource(path) != null) {
+                    XImage.setImageToLabel(lblImage, path);
+                    lblImage.setText("");
+                    return;
+                }
+            } catch (Exception e) {
+                // Continue to next path
+            }
+        }
+
+        // Fallback
+        setPlaceholderImageFast(imageName);
+    }
+
+    /**
+     * ✅ FAST: Default and placeholder images
+     */
+    private void setDefaultImageFast() {
+        try {
+            XImage.setImageToLabel(lblImage, "/icons_and_images/User.png");
+            lblImage.setText("");
+        } catch (Exception e) {
+            lblImage.setIcon(null);
+            lblImage.setText("No Image");
+        }
+    }
+
+    private void setPlaceholderImageFast(String imageName) {
+        try {
+            XImage.setImageToLabel(lblImage, "/icons_and_images/Unknown person.png");
+            lblImage.setText("");
+        } catch (Exception e) {
+            lblImage.setIcon(null);
+            lblImage.setText(imageName);
+        }
+    }
+
+    /**
+     * ✅ CACHE: Invalidate cache after CRUD operations
+     */
+    private void invalidateCache() {
+        isCacheValid = false;
+        employeeCache.clear();
+    }
+
+    /**
+     * ✅ OPTIMIZED: Enhanced create với cache management
+     */
+    private void createWithCache() {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        try {
+            if (isFormEmpty()) {
+                XDialog.alert("⚠️ Vui lòng nhập thông tin nhân viên!");
+                return;
+            }
+
+            validateEmployee();
+            UserAccount newEmployee = getForm();
+            validateUniqueEmployeeId(newEmployee.getUser_id());
+            validateBusinessRules(newEmployee);
+
+            // Create in database
+            userDAO.create(newEmployee);
+
+            // Invalidate cache and refresh
+            invalidateCache();
+            fillToTableWithCache();
+            clearForNewEntry();
+
+            XDialog.alert("✅ Tạo nhân viên thành công!\nMã: " + newEmployee.getUser_id());
+
+        } catch (RuntimeException e) {
+            XDialog.alert("❌ " + e.getMessage());
+        } catch (Exception e) {
+            XDialog.alert("❌ Lỗi hệ thống: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            isProcessing = false;
+        }
+    }
+
+    /**
+     * ✅ OPTIMIZED: Enhanced update với cache management
+     */
+    private void updateWithCache() {
+        if (isProcessing) return;
+        isProcessing = true;
+
+        try {
+            validateEmployee();
+            UserAccount updatedEmployee = getForm();
+
+            UserAccount existingEmployee = userDAO.findById(updatedEmployee.getUser_id());
+            if (existingEmployee == null) {
+                XDialog.alert("Không tìm thấy nhân viên với mã: " + updatedEmployee.getUser_id());
+                return;
+            }
+
+            validateBusinessRules(updatedEmployee);
+
+            // Preserve important fields
+            updatedEmployee.setCreated_date(existingEmployee.getCreated_date());
+            if (updatedEmployee.getImage() == null || 
+                updatedEmployee.getImage().equals("default.jpg") ||
+                updatedEmployee.getImage().trim().isEmpty()) {
+                updatedEmployee.setImage(existingEmployee.getImage());
+            }
+
+            // Update in database
+            userDAO.update(updatedEmployee);
+
+            // Invalidate cache and refresh
+            invalidateCache();
+            fillToTableWithCache();
+            clearFormButKeepImage();
+
+            XDialog.alert("✅ Cập nhật nhân viên thành công!");
+
+        } catch (RuntimeException e) {
+            XDialog.alert("❌ " + e.getMessage());
+        } catch (Exception e) {
+            XDialog.alert("❌ Lỗi khi cập nhật: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            isProcessing = false;
+        }
+    }
+
+    /**
+     * ✅ DEBOUNCED: Filter với debouncing để tránh lag
+     */
+    private void performFilterAndFill() {
+        if (debounceTimer != null && debounceTimer.isRunning()) {
+            debounceTimer.restart();
+        } else {
+            populateTableFromCache();
+        }
+    }
+
+    /**
+     * ✅ INITIALIZE: Call this in constructor to setup performance
+     */
+    private void setupPerformanceOptimizations() {
+        initializePerformanceCache();
+        loadRolesWithCache();
+        
+        // Setup fast filtering
+        cboStatus.addActionListener(e -> debounceTimer.restart());
+        cboRole.addActionListener(e -> debounceTimer.restart());
+    }
+
+    /**
+     * ✅ PRODUCTION: Load image instantly (thay thế testLoadImage)
+     */
+    private void preloadDefaultImages() {
+        // Preload các ảnh mặc định để performance tốt hơn
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            setDefaultImageFast();
+        });
     }
 }
