@@ -4,6 +4,7 @@ import com.team4.quanliquanmicay.Entity.UserAccount;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,18 +70,84 @@ public class XQuery {
     private static <B> B readBean(ResultSet resultSet, Class<B> beanClass) throws Exception {
         B bean = beanClass.getDeclaredConstructor().newInstance();
         Method[] methods = beanClass.getDeclaredMethods();
+        
         for(Method method: methods){
             String name = method.getName();
             if (name.startsWith("set") && method.getParameterCount() == 1) {
+                String fieldName = name.substring(3);
+                
+                // Thử nhiều cách để tìm cột
+                boolean success = false;
+                Object value = null;
+                
+                // Cách 1: Thử theo index cột (dựa vào thứ tự trong SQL)
                 try {
-                    Object value = resultSet.getObject(name.substring(3));
-                    method.invoke(bean, value);
-                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SQLException e) {
-                    System.out.printf("+ Column '%s' not found!\r\n", name.substring(3));
+                    int columnIndex = getColumnIndex(fieldName);
+                    if (columnIndex > 0) {
+                        value = resultSet.getObject(columnIndex);
+                        method.invoke(bean, value);
+                        System.out.printf("SUCCESS (by index %d): Set %s = %s\r\n", columnIndex, fieldName, value);
+                        success = true;
+                    }
+                } catch (Exception e) {
+                    // Ignore và thử cách khác
+                }
+                
+                // Cách 2: Thử với tên cột UPPERCASE
+                if (!success) {
+                    try {
+                        String columnName = fieldName.toUpperCase();
+                        value = resultSet.getObject(columnName);
+                        method.invoke(bean, value);
+                        System.out.printf("SUCCESS (by name): Set %s = %s\r\n", fieldName, value);
+                        success = true;
+                    } catch (Exception e) {
+                        // Ignore
+                    }
+                }
+                
+                // Cách 3: Thử với tên gốc
+                if (!success) {
+                    try {
+                        value = resultSet.getObject(fieldName);
+                        method.invoke(bean, value);
+                        System.out.printf("SUCCESS (original): Set %s = %s\r\n", fieldName, value);
+                        success = true;
+                    } catch (Exception e) {
+                        // Ignore
+                    }
+                }
+                
+                if (!success) {
+                    System.out.printf("+ Column '%s' not found!\r\n", fieldName);
                 }
             }
         }
         return bean;
+    }
+    
+    /**
+     * Lấy index cột dựa vào tên field
+     * Dựa vào kết quả Oracle trước:
+     * Column 1: USER_ID, Column 2: USERNAME, Column 3: PASS, Column 4: FULLNAME, 
+     * Column 5: GENDER, Column 6: EMAIL, Column 7: PHONE_NUMBER, Column 8: IMAGE, 
+     * Column 9: IS_ENABLED, Column 10: CREATED_DATE, Column 11: ROLE_ID
+     */
+    private static int getColumnIndex(String fieldName) {
+        switch (fieldName) {
+            case "User_id": return 1;       // USER_ID
+            case "Username": return 2;      // USERNAME  
+            case "Pass": return 3;          // PASS
+            case "FullName": return 4;      // FULLNAME
+            case "Gender": return 5;        // GENDER ← Đây là vị trí đúng
+            case "Email": return 6;         // EMAIL
+            case "Phone_number": return 7;  // PHONE_NUMBER
+            case "Image": return 8;         // IMAGE
+            case "Is_enabled": return 9;    // IS_ENABLED ← Đây là vị trí đúng
+            case "Created_date": return 10; // CREATED_DATE
+            case "Role_id": return 11;      // ROLE_ID
+            default: return -1;
+        }
     }
     
     public static void main(String[] args) {

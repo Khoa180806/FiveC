@@ -518,10 +518,10 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
                     emp.getUsername(),         // Tài khoản
                     emp.getPass(),         // Mật khẩu
                     emp.getFullName(),         // Họ và tên
-                    emp.getGender(),           // Giới tính
+                    emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "Không xác định",           // Giới tính: 1=Nam, 0=Nữ
                     emp.getPhone_number(),            // SĐT
                     emp.getEmail(),            // Email
-                    emp.getIs_enabled() ? "Hoạt động" : "Không hoạt động", // Trạng thái
+                    emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "Không xác định", // Trạng thái
                     emp.getRole_id(),           // Vai trò
                     emp.getCreated_date()       // Ngày tạo
                 };

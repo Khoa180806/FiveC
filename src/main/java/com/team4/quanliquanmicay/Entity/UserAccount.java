@@ -16,12 +16,12 @@ public class UserAccount {
     private String username;
     private String pass;
     private String fullName;
+    private Integer gender;        // Sử dụng Integer thay vì Boolean để nhận NUMBER(1)
     private String email;
     private String phone_number;
     private String image;
-    private Boolean is_enabled;
+    private Integer is_enabled;    // Sử dụng Integer thay vì Boolean để nhận NUMBER(1)
     private Date created_date;
     private String role_id;
-    private Boolean gender;
 }
 

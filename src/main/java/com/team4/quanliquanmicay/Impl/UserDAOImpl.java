@@ -8,11 +8,11 @@ import java.util.List;
 
 public class UserDAOImpl implements UserDAO {
 
-    String createSql = "INSERT INTO USER_ACCOUNT(user_id, username, pass, fullName, email, phone_number, image, is_enabled, created_date, role_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    String updateSql = "UPDATE USER_ACCOUNT SET pass=?, fullName=?, email=?, phone_number=?, image=?, is_enabled=?, created_date=?, role_id=? WHERE user_id=?";
+    String createSql = "INSERT INTO USER_ACCOUNT(user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, created_date, role_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    String updateSql = "UPDATE USER_ACCOUNT SET pass=?, fullName=?, gender=?, email=?, phone_number=?, image=?, is_enabled=?, created_date=?, role_id=? WHERE user_id=?";
     String deleteSql = "DELETE FROM USER_ACCOUNT WHERE user_id=?";
-    String findAllSql = "SELECT user_id, username, pass, fullName, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT";
-    String findByIdSql = "SELECT user_id, username, pass, fullName, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT WHERE user_id=?";
+    String findAllSql = "SELECT user_id, username, pass, fullName, gender AS Gender, email, phone_number, image, is_enabled AS Is_enabled, created_date, role_id FROM USER_ACCOUNT";
+    String findByIdSql = "SELECT user_id, username, pass, fullName, gender AS Gender, email, phone_number, image, is_enabled AS Is_enabled, created_date, role_id FROM USER_ACCOUNT WHERE user_id=?";
 
     @Override
     public UserAccount create(UserAccount entity) {
@@ -21,6 +21,7 @@ public class UserDAOImpl implements UserDAO {
             entity.getUsername(),
             entity.getPass(),
             entity.getFullName(),
+            entity.getGender(),
             entity.getEmail(),
             entity.getPhone_number(),
             entity.getImage(),
@@ -37,6 +38,7 @@ public class UserDAOImpl implements UserDAO {
         Object[] values = {
             entity.getPass(),
             entity.getFullName(),
+            entity.getGender(),
             entity.getEmail(),
             entity.getPhone_number(),
             entity.getImage(),

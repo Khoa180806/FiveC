@@ -12,7 +12,6 @@ com\team4\quanliquanmicay\Entity\Product$ProductBuilder.class
 com\team4\quanliquanmicay\View\Admin\MainForm$2.class
 com\team4\quanliquanmicay\DAO\CustomerDAO.class
 com\team4\quanliquanmicay\app\Main.class
-com\team4\quanliquanmicay\util\XTheme$Theme.class
 com\team4\quanliquanmicay\Controller\CrudController.class
 com\team4\quanliquanmicay\Entity\Customer$CustomerBuilder.class
 com\team4\quanliquanmicay\View\ChangePassword$2.class
@@ -25,6 +24,7 @@ com\team4\quanliquanmicay\Controller\EmployeeController.class
 com\team4\quanliquanmicay\Entity\PaymentMethod.class
 com\team4\quanliquanmicay\DAO\ProductDAO.class
 com\team4\quanliquanmicay\View\Dialogs\BanJDialog$1.class
+com\team4\quanliquanmicay\View\Welcome$2.class
 com\team4\quanliquanmicay\DAO\UserDAO.class
 com\team4\quanliquanmicay\View\Dialogs\InHoaDonJDialog.class
 com\team4\quanliquanmicay\DAO\BillDetailsDAO.class
@@ -83,6 +83,7 @@ com\team4\quanliquanmicay\View\Dialogs\NhanVienJDialog.class
 com\team4\quanliquanmicay\View\Welcome.class
 com\team4\quanliquanmicay\View\Dialogs\InHoaDonJDialog$1.class
 com\team4\quanliquanmicay\View\Dialogs\DatMonJDialog.class
+com\team4\quanliquanmicay\Controller\WelcomeCotroller.class
 com\team4\quanliquanmicay\util\XJdbc.class
 com\team4\quanliquanmicay\Impl\PaymentMethodDAOImpl.class
 com\team4\quanliquanmicay\Impl\BillDetailsDAOImpl.class
