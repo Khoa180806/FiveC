@@ -1,6 +1,7 @@
 package com.team4.quanliquanmicay.View;
 
 import com.team4.quanliquanmicay.Controller.WelcomeCotroller;
+import com.team4.quanliquanmicay.util.XTheme;
 import java.awt.Color;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -21,9 +22,9 @@ public class Welcome extends javax.swing.JFrame implements WelcomeCotroller{
      * Creates new form Welcome
      */
     public Welcome() {
+        XTheme.applyLightTheme();
         initComponents();
         this.setLocationRelativeTo(null);
-        UIManager.put("nimbusOrange", Color.RED); // thay màu mặc định nimbus
 
         SwingUtilities.invokeLater(() -> {
         com.team4.quanliquanmicay.util.XImage.setImageToLabel(jLabel4, "/icons_and_images/z6810531607696_a2974bb8a766d61fe1f24293cd57ffb8.jpg");
@@ -77,8 +78,8 @@ public class Welcome extends javax.swing.JFrame implements WelcomeCotroller{
                 .addContainerGap(16, Short.MAX_VALUE))
         );
 
-        progressBar.setBackground(new java.awt.Color(204, 0, 0));
-        progressBar.setForeground(new java.awt.Color(0, 0, 102));
+        progressBar.setBackground(new java.awt.Color(255, 255, 255));
+        progressBar.setForeground(new java.awt.Color(204, 0, 0));
 
         jPanel3.setBackground(new java.awt.Color(153, 0, 0));
         jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
@@ -186,15 +187,15 @@ waiting();        // TODO add your handling code here:
     @Override
     public void waiting() {
 this.setLocationRelativeTo(null);
- new Thread(() -> {
- try {
- for (var i = 0; i <= 100; i++) {
- progressBar.setValue(i);
- Thread.sleep(10);
- }
- Welcome.this.dispose();
- } catch (InterruptedException ex) {
- System.exit(0);
- }
- }).start();}
+    new Thread(() -> {
+        try {
+            for (var i = 0; i <= 100; i++) {
+            progressBar.setValue(i);
+            Thread.sleep(10);
+            }
+            Welcome.this.dispose();
+        } catch (InterruptedException ex) {
+            System.exit(0);
+        }
+    }).start();}
 }
