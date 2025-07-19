@@ -1,11 +1,8 @@
 package com.team4.quanliquanmicay.util;
 
 import com.team4.quanliquanmicay.Entity.UserAccount;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 

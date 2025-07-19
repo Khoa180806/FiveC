@@ -5,8 +5,11 @@
 package com.team4.quanliquanmicay.View.Dialogs;
 
 import com.team4.quanliquanmicay.Controller.EmployeeController;
+import com.team4.quanliquanmicay.DAO.RoleDAO;
 import com.team4.quanliquanmicay.DAO.UserDAO;
 import com.team4.quanliquanmicay.Entity.UserAccount;
+import com.team4.quanliquanmicay.Entity.UserRole;
+import com.team4.quanliquanmicay.Impl.RoleDAOImpl;
 import com.team4.quanliquanmicay.Impl.UserDAOImpl;
 import java.util.List;
 import javax.swing.JOptionPane;
@@ -14,25 +17,32 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.ImageIcon;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  *
  * @author HP
  */
-public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeController{
+public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeController {
 
     /**
      * Creates new form NhanVienJDialog
      */
     private UserDAO userDAO;
+    private RoleDAO roleDAO; // Thêm RoleDAO
+    private Map<String, String> roleMap; // Cache role_id -> name_role
+    
     public NhanVienJDialog() {
         initComponents();
         this.setLocationRelativeTo(null);
         
         // Khởi tạo DAO
         this.userDAO = new UserDAOImpl();
+        this.roleDAO = new RoleDAOImpl(); // Khởi tạo RoleDAO
+        this.roleMap = new HashMap<>(); // Khởi tạo cache
         
-        // Load roles và status
+        // Load roles và status từ DB
         loadRoles();
         
         // Load dữ liệu lên bảng khi khởi động
@@ -292,22 +302,47 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
         btnClear.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
         btnClear.setText("LÀM MỚI");
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
+            }
+        });
 
         btnDelete.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         btnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-delete-48.png"))); // NOI18N
         btnDelete.setText("XÓA ");
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
 
         btnUpdate.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
         btnUpdate.setText("CẬP NHẬT");
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
 
         btnSave.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Add to basket.png"))); // NOI18N
         btnSave.setText("LƯU");
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
 
         btnExit.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
         btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-exit-32.png"))); // NOI18N
         btnExit.setText("EXIT");
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
@@ -426,6 +461,27 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        // TODO add your handling code here:
+        clear();
+    }//GEN-LAST:event_btnClearActionPerformed
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnSaveActionPerformed
+
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnExitActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -503,19 +559,58 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
 
     @Override
     public void loadRoles() {
-        // Load các vai trò vào combo box
+        try {
+            // Load các vai trò từ database
+            cboRole.removeAllItems();
+            cboRole.addItem("Tất cả");
+            
+            List<UserRole> roles = roleDAO.findAll();
+            for (UserRole role : roles) {
+                // Cache role mapping
+                roleMap.put(role.getRole_id(), role.getName_role());
+                
+                // Hiển thị trong ComboBox
+                String displayText = role.getRole_id() + " - " + role.getName_role();
+                cboRole.addItem(displayText);
+            }
+            
+            // Load trạng thái
+            cboStatus.removeAllItems();
+            cboStatus.addItem("Tất cả");
+            cboStatus.addItem("Hoạt động");
+            cboStatus.addItem("Không hoạt động");
+            
+            // Thêm event listeners cho filter
+            addFilterListeners();
+            
+            System.out.println("Đã load " + roles.size() + " roles từ database");
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi load roles: " + e.getMessage());
+            e.printStackTrace();
+            loadRolesFallback();
+        }
+    }
+    
+    /**
+     * Fallback method nếu không load được từ DB
+     */
+    private void loadRolesFallback() {
+        // Fallback data
+        roleMap.clear();
+        roleMap.put("R001", "Manager");
+        roleMap.put("R002", "Staff");
+        
         cboRole.removeAllItems();
-        cboRole.addItem("Tất cả"); // Thêm option "Tất cả"
-        cboRole.addItem("R001"); // Manager
-        cboRole.addItem("R002"); // Staff
+        cboRole.addItem("Tất cả");
+        cboRole.addItem("R001 - Manager");
+        cboRole.addItem("R002 - Staff");
         
-        // Load trạng thái
         cboStatus.removeAllItems();
-        cboStatus.addItem("Tất cả");          // Thêm option "Tất cả"
-        cboStatus.addItem("Hoạt động");       // index 1 -> is_enabled = 1
-        cboStatus.addItem("Không hoạt động"); // index 2 -> is_enabled = 0
+        cboStatus.addItem("Tất cả");
+        cboStatus.addItem("Hoạt động");
+        cboStatus.addItem("Không hoạt động");
         
-        // Thêm event listeners cho filter
         addFilterListeners();
     }
 
@@ -568,7 +663,7 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
                     emp.getPhone_number(),            // SĐT
                     emp.getEmail(),            // Email
                     emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "Không xác định", // Trạng thái
-                    emp.getRole_id(),           // Vai trò
+                    getRoleName(emp.getRole_id()),     // Vai trò - Hiển thị tên thay vì ID
                     emp.getCreated_date()       // Ngày tạo
                 };
                 model.addRow(row);
@@ -601,9 +696,10 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
                 }
             }
             
-            // Filter theo Role
+            // Filter theo Role - cần extract role_id từ display text
             if (selectedRole != null && !selectedRole.equals("Tất cả")) {
-                matchRole = selectedRole.equals(emp.getRole_id());
+                String roleId = extractRoleId(selectedRole);
+                matchRole = roleId.equals(emp.getRole_id());
             }
             
             // Chỉ thêm vào danh sách nếu thỏa mãn cả 2 điều kiện
@@ -613,6 +709,26 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
         }
         
         return filtered;
+    }
+    
+    /**
+     * Extract role_id từ display text (VD: "R001 - Manager" -> "R001")
+     */
+    private String extractRoleId(String displayText) {
+        if (displayText != null && displayText.contains(" - ")) {
+            return displayText.split(" - ")[0];
+        }
+        return displayText; // Fallback
+    }
+
+    /**
+     * Lấy tên vai trò từ cache (nhanh hơn)
+     */
+    private String getRoleName(String roleId) {
+        if (roleId != null && roleMap.containsKey(roleId)) {
+            return roleMap.get(roleId); // Manager, Staff
+        }
+        return "Không xác định";
     }
 
     @Override
@@ -641,24 +757,46 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
                     chkMale.setSelected(false);
                     chkFemale.setSelected(true);  // Nữ
                 }
+            } else {
+                // Reset giới tính nếu null
+                groupGioiTinh.clearSelection();
             }
             
             txtPhoneNumber.setText(entity.getPhone_number());
             txtEmail.setText(entity.getEmail());
             
-            // Xử lý trạng thái
-            if (entity.getIs_enabled() != null) {
-                cboStatus.setSelectedIndex(entity.getIs_enabled());
-            }
-            
-            // Xử lý vai trò - cần load roles trước
-            loadRoles();
-            cboRole.setSelectedItem(entity.getRole_id());
+            // KHÔNG thay đổi cboStatus và cboRole khi setForm
+            // Chỉ hiển thị thông tin trong form, không ảnh hưởng đến filter
             
             // Hiển thị hình ảnh nếu có
             if (entity.getImage() != null && !entity.getImage().trim().isEmpty()) {
-                lblImage.setText(entity.getImage());
+                // Gọi method load ảnh
+                loadEmployeeImage(entity.getImage());
+            } else {
+                lblImage.setText("No Image");
+                lblImage.setIcon(null);
             }
+            
+            // Hiển thị role name từ DB
+            displayRoleInfo(entity.getRole_id());
+        }
+    }
+
+    /**
+     * Hiển thị thông tin role (chỉ để xem, không ảnh hưởng filter)
+     */
+    private void displayRoleInfo(String roleId) {
+        try {
+            if (roleId != null) {
+                UserRole role = roleDAO.findById(roleId);
+                if (role != null) {
+                    // Hiển thị trong label hoặc text field chỉ đọc
+                    System.out.println("Employee role: " + role.getRole_id() + " - " + role.getName_role());
+                    // Có thể thêm label để hiển thị: lblRoleInfo.setText(role.getName_role());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi load role info: " + e.getMessage());
         }
     }
 
@@ -682,11 +820,21 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
         entity.setPhone_number(txtPhoneNumber.getText().trim());
         entity.setEmail(txtEmail.getText().trim());
         
-        // Xử lý trạng thái
-        entity.setIs_enabled(cboStatus.getSelectedIndex());
+        // Lấy role_id từ ComboBox (extract từ display text)
+        String selectedRole = (String) cboRole.getSelectedItem();
+        if (selectedRole != null && !selectedRole.equals("Tất cả")) {
+            entity.setRole_id(extractRoleId(selectedRole));
+        }
         
-        // Xử lý vai trò
-        entity.setRole_id(cboRole.getSelectedItem().toString());
+        // Xử lý trạng thái từ ComboBox
+        String selectedStatus = (String) cboStatus.getSelectedItem();
+        if (selectedStatus != null) {
+            if (selectedStatus.equals("Hoạt động")) {
+                entity.setIs_enabled(1);
+            } else if (selectedStatus.equals("Không hoạt động")) {
+                entity.setIs_enabled(0);
+            }
+        }
         
         // Xử lý hình ảnh
         entity.setImage(lblImage.getText());
@@ -723,11 +871,8 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
                                  " - Is_enabled: " + entity.getIs_enabled() +
                                  " - Image: " + entity.getImage());
                 
-                // Điền dữ liệu vào form
+                // Điền dữ liệu vào form (KHÔNG ảnh hưởng đến ComboBox filter)
                 setForm(entity);
-                
-                // Hiển thị ảnh
-                loadEmployeeImage(entity.getImage());
                 
                 // Cho phép chỉnh sửa
                 setEditable(true);
@@ -806,16 +951,23 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
         // Reset giới tính
         groupGioiTinh.clearSelection();
         
-        // Reset combo box về "Tất cả"
-        cboStatus.setSelectedItem("Tất cả");
-        cboRole.setSelectedItem("Tất cả");
+        // KHÔNG reset cboStatus và cboRole khi clear form
+        // Để giữ nguyên điều kiện filter hiện tại
         
         // Reset hình ảnh
         lblImage.setText("");
         lblImage.setIcon(null);
         
-        // Reload toàn bộ dữ liệu
-        fillToTable();
+        // KHÔNG gọi fillToTable() để tránh làm mất filter hiện tại
+    }
+
+    /**
+     * Method riêng để reset filter về "Tất cả"
+     */
+    public void resetFilter() {
+        cboStatus.setSelectedItem("Tất cả");
+        cboRole.setSelectedItem("Tất cả");
+        filterAndFillTable();
     }
 
     @Override
