@@ -76,21 +76,37 @@ public class XQuery {
             if (name.startsWith("set") && method.getParameterCount() == 1) {
                 String fieldName = name.substring(3);
                 
-                // Thử nhiều cách để tìm cột
                 boolean success = false;
                 Object value = null;
                 
-                // Cách 1: Thử theo index cột (dựa vào thứ tự trong SQL)
+                // Cách 1: Thử theo index cột
                 try {
                     int columnIndex = getColumnIndex(fieldName);
                     if (columnIndex > 0) {
                         value = resultSet.getObject(columnIndex);
+                        
+                        // DEBUG: In ra giá trị thô từ database
+                        System.out.printf("DEBUG Raw Value for %s (index %d): %s (type: %s)\r\n", 
+                            fieldName, columnIndex, value, value != null ? value.getClass().getSimpleName() : "null");
+                        
+                        // Xử lý conversion cho Oracle NUMBER -> Java Integer
+                        if (value != null && (fieldName.equals("Gender") || fieldName.equals("Is_enabled"))) {
+                            if (value instanceof java.math.BigDecimal) {
+                                value = ((java.math.BigDecimal) value).intValue();
+                                System.out.printf("DEBUG Converted %s: %s -> %s\r\n", fieldName, "BigDecimal", value);
+                            } else if (value instanceof Number) {
+                                value = ((Number) value).intValue();
+                                System.out.printf("DEBUG Converted %s: %s -> %s\r\n", fieldName, "Number", value);
+                            }
+                        }
+                        
                         method.invoke(bean, value);
                         System.out.printf("SUCCESS (by index %d): Set %s = %s\r\n", columnIndex, fieldName, value);
                         success = true;
                     }
                 } catch (Exception e) {
-                    // Ignore và thử cách khác
+                    System.out.printf("ERROR at index %d for %s: %s\r\n", getColumnIndex(fieldName), fieldName, e.getMessage());
+                    // Continue to try other methods
                 }
                 
                 // Cách 2: Thử với tên cột UPPERCASE
@@ -100,18 +116,6 @@ public class XQuery {
                         value = resultSet.getObject(columnName);
                         method.invoke(bean, value);
                         System.out.printf("SUCCESS (by name): Set %s = %s\r\n", fieldName, value);
-                        success = true;
-                    } catch (Exception e) {
-                        // Ignore
-                    }
-                }
-                
-                // Cách 3: Thử với tên gốc
-                if (!success) {
-                    try {
-                        value = resultSet.getObject(fieldName);
-                        method.invoke(bean, value);
-                        System.out.printf("SUCCESS (original): Set %s = %s\r\n", fieldName, value);
                         success = true;
                     } catch (Exception e) {
                         // Ignore
@@ -128,24 +132,26 @@ public class XQuery {
     
     /**
      * Lấy index cột dựa vào tên field
-     * Dựa vào kết quả Oracle trước:
-     * Column 1: USER_ID, Column 2: USERNAME, Column 3: PASS, Column 4: FULLNAME, 
-     * Column 5: GENDER, Column 6: EMAIL, Column 7: PHONE_NUMBER, Column 8: IMAGE, 
-     * Column 9: IS_ENABLED, Column 10: CREATED_DATE, Column 11: ROLE_ID
+     * Từ debug output, ta thấy các cột thành công:
+     * Index 1: User_id, Index 2: Username, Index 3: Pass, Index 4: FullName
+     * Index 6: Email, Index 7: Phone_number, Index 8: Image
+     * Index 10: Created_date, Index 11: Role_id
+     * 
+     * Vậy Gender = Index 5, Is_enabled = Index 9
      */
     private static int getColumnIndex(String fieldName) {
         switch (fieldName) {
-            case "User_id": return 1;       // USER_ID
-            case "Username": return 2;      // USERNAME  
-            case "Pass": return 3;          // PASS
-            case "FullName": return 4;      // FULLNAME
-            case "Gender": return 5;        // GENDER ← Đây là vị trí đúng
-            case "Email": return 6;         // EMAIL
-            case "Phone_number": return 7;  // PHONE_NUMBER
-            case "Image": return 8;         // IMAGE
-            case "Is_enabled": return 9;    // IS_ENABLED ← Đây là vị trí đúng
-            case "Created_date": return 10; // CREATED_DATE
-            case "Role_id": return 11;      // ROLE_ID
+            case "User_id": return 1;       // ✓ SUCCESS
+            case "Username": return 2;      // ✓ SUCCESS  
+            case "Pass": return 3;          // ✓ SUCCESS
+            case "FullName": return 4;      // ✓ SUCCESS
+            case "Gender": return 5;        // ❌ Column not found - PROBLEM HERE
+            case "Email": return 6;         // ✓ SUCCESS
+            case "Phone_number": return 7;  // ✓ SUCCESS
+            case "Image": return 8;         // ✓ SUCCESS
+            case "Is_enabled": return 9;    // ❌ Column not found - PROBLEM HERE
+            case "Created_date": return 10; // ✓ SUCCESS
+            case "Role_id": return 11;      // ✓ SUCCESS
             default: return -1;
         }
     }

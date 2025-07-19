@@ -11,6 +11,8 @@ import com.team4.quanliquanmicay.Impl.UserDAOImpl;
 import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.ImageIcon;
+import java.awt.Image;
 
 /**
  *
@@ -29,8 +31,20 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
         // Khởi tạo DAO
         this.userDAO = new UserDAOImpl();
         
+        // Load roles và status
+        loadRoles();
+        
         // Load dữ liệu lên bảng khi khởi động
         fillToTable();
+        
+        // Thêm event listener cho bảng
+        tableInfo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 1) {
+                    edit(); // Tự động load dữ liệu và ảnh khi click
+                }
+            }
+        });
     }
 
     /**
@@ -54,8 +68,8 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
         jLabel8 = new javax.swing.JLabel();
         txtIdEmployee = new javax.swing.JTextField();
         txtNameEmployee = new javax.swing.JTextField();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jCheckBox2 = new javax.swing.JCheckBox();
+        chkMale = new javax.swing.JCheckBox();
+        chkFemale = new javax.swing.JCheckBox();
         txtPhoneNumber = new javax.swing.JTextField();
         jPanel4 = new javax.swing.JPanel();
         lblImage = new javax.swing.JLabel();
@@ -109,13 +123,13 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
 
         txtNameEmployee.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        groupGioiTinh.add(jCheckBox1);
-        jCheckBox1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jCheckBox1.setText("NAM");
+        groupGioiTinh.add(chkMale);
+        chkMale.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        chkMale.setText("NAM");
 
-        groupGioiTinh.add(jCheckBox2);
-        jCheckBox2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jCheckBox2.setText("NỮ");
+        groupGioiTinh.add(chkFemale);
+        chkFemale.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        chkFemale.setText("NỮ");
 
         txtPhoneNumber.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
@@ -186,25 +200,30 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(txtEmail, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
-                    .addComponent(txtIdEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtNameEmployee)
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jCheckBox1)
+                        .addComponent(chkMale)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jCheckBox2))
-                    .addComponent(txtPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(chkFemale))
+                    .addComponent(txtIdEmployee)
+                    .addComponent(txtPhoneNumber))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel11)
-                    .addComponent(jLabel3)
-                    .addComponent(jLabel13)
-                    .addComponent(jLabel14))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtNameAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cboRole, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel13)
+                            .addComponent(jLabel14))
+                        .addGap(50, 50, 50))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel11)
+                            .addComponent(jLabel3))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(txtPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                    .addComponent(txtNameAccount, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                    .addComponent(cboStatus, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cboRole, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(77, 77, 77))
         );
         jPanel5Layout.setVerticalGroup(
@@ -213,10 +232,10 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addGap(15, 15, 15)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(jPanel5Layout.createSequentialGroup()
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(txtIdEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtIdEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(jLabel10))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -224,22 +243,29 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
                                     .addComponent(txtNameEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jCheckBox1)
-                                    .addComponent(jCheckBox2)
+                                    .addComponent(chkMale)
+                                    .addComponent(chkFemale)
                                     .addComponent(jLabel5))
-                                .addGap(6, 6, 6)
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel5Layout.createSequentialGroup()
+                                        .addGap(10, 10, 10)
+                                        .addComponent(jLabel7))
+                                    .addGroup(jPanel5Layout.createSequentialGroup()
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(txtPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel7)
-                                    .addComponent(txtPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(jLabel12)
+                                    .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(jPanel5Layout.createSequentialGroup()
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jLabel3)
-                                    .addComponent(txtNameAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(txtNameAccount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jLabel11)
-                                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jLabel13)
                                     .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -249,11 +275,7 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
                                         .addComponent(jLabel14))
                                     .addGroup(jPanel5Layout.createSequentialGroup()
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(cboRole, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel12)
-                            .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                        .addComponent(cboRole, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -446,9 +468,9 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
     private javax.swing.JButton btnUpdate;
     private javax.swing.JComboBox<String> cboRole;
     private javax.swing.JComboBox<String> cboStatus;
+    private javax.swing.JCheckBox chkFemale;
+    private javax.swing.JCheckBox chkMale;
     private javax.swing.ButtonGroup groupGioiTinh;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -480,6 +502,15 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
 
     @Override
     public void loadRoles() {
+        // Load các vai trò vào combo box
+        cboRole.removeAllItems();
+        cboRole.addItem("R001"); // Manager
+        cboRole.addItem("R002"); // Staff
+        
+        // Load trạng thái
+        cboStatus.removeAllItems();
+        cboStatus.addItem("Hoạt động");     // index 0 -> is_enabled = 1
+        cboStatus.addItem("Không hoạt động"); // index 1 -> is_enabled = 0
     }
 
     @Override
@@ -492,13 +523,76 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
 
     @Override
     public void setForm(UserAccount entity) {
+        // Điền dữ liệu từ entity vào form
+        if (entity != null) {
+            txtIdEmployee.setText(entity.getUser_id());
+            txtNameAccount.setText(entity.getUsername());
+            txtPassword.setText(entity.getPass());
+            txtNameEmployee.setText(entity.getFullName());
+            
+            // Xử lý giới tính
+            if (entity.getGender() != null) {
+                if (entity.getGender() == 1) {
+                    chkMale.setSelected(true);  // Nam
+                    chkFemale.setSelected(false);
+                } else {
+                    chkMale.setSelected(false);
+                    chkFemale.setSelected(true);  // Nữ
+                }
+            }
+            
+            txtPhoneNumber.setText(entity.getPhone_number());
+            txtEmail.setText(entity.getEmail());
+            
+            // Xử lý trạng thái
+            if (entity.getIs_enabled() != null) {
+                cboStatus.setSelectedIndex(entity.getIs_enabled());
+            }
+            
+            // Xử lý vai trò - cần load roles trước
+            loadRoles();
+            cboRole.setSelectedItem(entity.getRole_id());
+            
+            // Hiển thị hình ảnh nếu có
+            if (entity.getImage() != null && !entity.getImage().trim().isEmpty()) {
+                lblImage.setText(entity.getImage());
+            }
+        }
     }
 
     @Override
     public UserAccount getForm() {
+        // Lấy dữ liệu từ form tạo thành entity
+        UserAccount entity = new UserAccount();
         
-        return null;
+        entity.setUser_id(txtIdEmployee.getText().trim());
+        entity.setUsername(txtNameAccount.getText().trim());
+        entity.setPass(txtPassword.getText().trim());
+        entity.setFullName(txtNameEmployee.getText().trim());
         
+        // Xử lý giới tính
+        if (chkMale.isSelected()) {
+            entity.setGender(1);  // Nam
+        } else if (chkFemale.isSelected()) {
+            entity.setGender(0);  // Nữ
+        }
+        
+        entity.setPhone_number(txtPhoneNumber.getText().trim());
+        entity.setEmail(txtEmail.getText().trim());
+        
+        // Xử lý trạng thái
+        entity.setIs_enabled(cboStatus.getSelectedIndex());
+        
+        // Xử lý vai trò
+        entity.setRole_id(cboRole.getSelectedItem().toString());
+        
+        // Xử lý hình ảnh
+        entity.setImage(lblImage.getText());
+        
+        // Ngày tạo mặc định
+        entity.setCreated_date(new java.util.Date());
+        
+        return entity;
     }
 
     @Override
@@ -513,6 +607,11 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
             
             // Đổ dữ liệu vào bảng
             for (UserAccount emp : employees) {
+                // DEBUG: In ra giá trị thực tế
+                System.out.println("DEBUG Employee: " + emp.getUser_id() + 
+                                 " - Gender: " + emp.getGender() + 
+                                 " - Is_enabled: " + emp.getIs_enabled());
+                
                 Object[] row = {
                     emp.getUser_id(),           // Mã nhân viên
                     emp.getUsername(),         // Tài khoản
@@ -524,6 +623,7 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
                     emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "Không xác định", // Trạng thái
                     emp.getRole_id(),           // Vai trò
                     emp.getCreated_date()       // Ngày tạo
+                    // Không thêm cột Image vào bảng
                 };
                 model.addRow(row);
             }
@@ -538,6 +638,78 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
 
     @Override
     public void edit() {
+        // Lấy dòng được chọn trong bảng
+        int selectedRow = tableInfo.getSelectedRow();
+        if (selectedRow >= 0) {
+            // Lấy user_id từ cột đầu tiên
+            String userId = (String) tableInfo.getValueAt(selectedRow, 0);
+            
+            // Tìm entity từ database
+            UserAccount entity = userDAO.findById(userId);
+            
+            if (entity != null) {
+                // DEBUG: In ra giá trị thực tế
+                System.out.println("Selected Employee: " + entity.getUser_id() + 
+                                 " - Gender: " + entity.getGender() + 
+                                 " - Is_enabled: " + entity.getIs_enabled() +
+                                 " - Image: " + entity.getImage());
+                
+                // Điền dữ liệu vào form
+                setForm(entity);
+                
+                // Hiển thị ảnh
+                loadEmployeeImage(entity.getImage());
+                
+                // Cho phép chỉnh sửa
+                setEditable(true);
+            } else {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin nhân viên!");
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một dòng để chỉnh sửa!");
+        }
+    }
+
+    /**
+     * Load và hiển thị ảnh nhân viên
+     */
+    private void loadEmployeeImage(String imageName) {
+        try {
+            if (imageName != null && !imageName.trim().isEmpty()) {
+                // Đường dẫn ảnh trong resources hoặc thư mục cụ thể
+                String imagePath = "/images/employees/" + imageName;
+                
+                // Thử load ảnh từ resources
+                java.net.URL imageURL = getClass().getResource(imagePath);
+                
+                if (imageURL != null) {
+                    ImageIcon imageIcon = new ImageIcon(imageURL);
+                    
+                    // Resize ảnh cho phù hợp với lblImage
+                    Image image = imageIcon.getImage();
+                    Image scaledImage = image.getScaledInstance(
+                        lblImage.getWidth() > 0 ? lblImage.getWidth() : 116, 
+                        lblImage.getHeight() > 0 ? lblImage.getHeight() : 167, 
+                        Image.SCALE_SMOOTH
+                    );
+                    
+                    lblImage.setIcon(new ImageIcon(scaledImage));
+                    lblImage.setText(""); // Xóa text nếu có ảnh
+                } else {
+                    // Nếu không tìm thấy ảnh, hiển thị tên file
+                    lblImage.setIcon(null);
+                    lblImage.setText(imageName);
+                }
+            } else {
+                // Không có ảnh
+                lblImage.setIcon(null);
+                lblImage.setText("No Image");
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi load ảnh: " + e.getMessage());
+            lblImage.setIcon(null);
+            lblImage.setText("Error");
+        }
     }
 
     @Override
@@ -554,10 +726,40 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
 
     @Override
     public void clear() {
+        // Xóa toàn bộ dữ liệu trên form
+        txtIdEmployee.setText("");
+        txtNameAccount.setText("");
+        txtPassword.setText("");
+        txtNameEmployee.setText("");
+        txtPhoneNumber.setText("");
+        txtEmail.setText("");
+        
+        // Reset giới tính
+        groupGioiTinh.clearSelection();
+        
+        // Reset combo box
+        cboStatus.setSelectedIndex(0);
+        cboRole.setSelectedIndex(0);
+        
+        // Reset hình ảnh
+        lblImage.setText("");
+        lblImage.setIcon(null);
     }
 
     @Override
     public void setEditable(boolean editable) {
+        // Cho phép/không cho phép chỉnh sửa form
+        txtIdEmployee.setEditable(!editable); // ID không được sửa
+        txtNameAccount.setEditable(editable);
+        txtPassword.setEditable(editable);
+        txtNameEmployee.setEditable(editable);
+        txtPhoneNumber.setEditable(editable);
+        txtEmail.setEditable(editable);
+        
+        chkMale.setEnabled(editable);
+        chkFemale.setEnabled(editable);
+        cboStatus.setEnabled(editable);
+        cboRole.setEnabled(editable);
     }
 
     @Override
