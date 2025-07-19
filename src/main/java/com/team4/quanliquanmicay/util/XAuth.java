@@ -1,7 +1,7 @@
 package com.team4.quanliquanmicay.util;
 
 import com.team4.quanliquanmicay.Entity.UserAccount;
-import java.util.Date;
+import java.sql.Date; // Thay đổi import
 
 /**
  *
@@ -18,7 +18,7 @@ public class XAuth {
         .phone_number("0123456789")
         .image("manager.png") 
         .is_enabled(1)                // Sử dụng Integer: 1 = Hoạt động
-        .created_date(new Date())
+        .created_date(new Date(System.currentTimeMillis())) // Sử dụng java.sql.Date
         .role_id("R001")
         .build(); // biến user này sẽ được thay thế sau khi đăng nhập
 }

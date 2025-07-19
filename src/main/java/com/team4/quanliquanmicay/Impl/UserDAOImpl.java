@@ -8,11 +8,16 @@ import java.util.List;
 
 public class UserDAOImpl implements UserDAO {
 
-    String createSql = "INSERT INTO USER_ACCOUNT(user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, created_date, role_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    String updateSql = "UPDATE USER_ACCOUNT SET pass=?, fullName=?, gender=?, email=?, phone_number=?, image=?, is_enabled=?, created_date=?, role_id=? WHERE user_id=?";
+    // INSERT không bao gồm created_date để Oracle tự động gán SYSDATE
+    String createSql = "INSERT INTO USER_ACCOUNT(user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, role_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    String updateSql = "UPDATE USER_ACCOUNT SET username=?, pass=?, fullName=?, gender=?, email=?, phone_number=?, image=?, is_enabled=?, role_id=? WHERE user_id=?";
+    
     String deleteSql = "DELETE FROM USER_ACCOUNT WHERE user_id=?";
-    String findAllSql = "SELECT user_id, username, pass, fullName, gender AS Gender, email, phone_number, image, is_enabled AS Is_enabled, created_date, role_id FROM USER_ACCOUNT";
-    String findByIdSql = "SELECT user_id, username, pass, fullName, gender AS Gender, email, phone_number, image, is_enabled AS Is_enabled, created_date, role_id FROM USER_ACCOUNT WHERE user_id=?";
+    
+    String findAllSql = "SELECT user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT ORDER BY created_date DESC";
+    
+    String findByIdSql = "SELECT user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT WHERE user_id=?";
 
     @Override
     public UserAccount create(UserAccount entity) {
@@ -26,9 +31,10 @@ public class UserDAOImpl implements UserDAO {
             entity.getPhone_number(),
             entity.getImage(),
             entity.getIs_enabled(),
-            entity.getCreated_date(),
-            entity.getRole_id(),
+            entity.getRole_id()
+            // Oracle sẽ tự động gán created_date = SYSDATE
         };
+        
         XJdbc.executeUpdate(createSql, values);
         return entity;
     }
@@ -36,6 +42,7 @@ public class UserDAOImpl implements UserDAO {
     @Override
     public void update(UserAccount entity) {
         Object[] values = {
+            entity.getUsername(),
             entity.getPass(),
             entity.getFullName(),
             entity.getGender(),
@@ -43,7 +50,6 @@ public class UserDAOImpl implements UserDAO {
             entity.getPhone_number(),
             entity.getImage(),
             entity.getIs_enabled(),
-            entity.getCreated_date(),
             entity.getRole_id(),
             entity.getUser_id(),
         };
