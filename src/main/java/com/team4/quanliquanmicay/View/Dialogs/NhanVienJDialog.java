@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.ImageIcon;
 import java.awt.Image;
+import java.util.ArrayList;
 
 /**
  *
@@ -504,13 +505,114 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
     public void loadRoles() {
         // Load các vai trò vào combo box
         cboRole.removeAllItems();
+        cboRole.addItem("Tất cả"); // Thêm option "Tất cả"
         cboRole.addItem("R001"); // Manager
         cboRole.addItem("R002"); // Staff
         
         // Load trạng thái
         cboStatus.removeAllItems();
-        cboStatus.addItem("Hoạt động");     // index 0 -> is_enabled = 1
-        cboStatus.addItem("Không hoạt động"); // index 1 -> is_enabled = 0
+        cboStatus.addItem("Tất cả");          // Thêm option "Tất cả"
+        cboStatus.addItem("Hoạt động");       // index 1 -> is_enabled = 1
+        cboStatus.addItem("Không hoạt động"); // index 2 -> is_enabled = 0
+        
+        // Thêm event listeners cho filter
+        addFilterListeners();
+    }
+
+    /**
+     * Thêm event listeners cho ComboBox để filter dữ liệu
+     */
+    private void addFilterListeners() {
+        // Event listener cho cboStatus
+        cboStatus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterAndFillTable();
+            }
+        });
+        
+        // Event listener cho cboRole
+        cboRole.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterAndFillTable();
+            }
+        });
+    }
+
+    /**
+     * Filter và fill dữ liệu theo Status và Role được chọn
+     */
+    private void filterAndFillTable() {
+        // Xóa dữ liệu cũ trong bảng
+        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
+        model.setRowCount(0);
+        
+        try {
+            // Lấy điều kiện filter
+            String selectedStatus = (String) cboStatus.getSelectedItem();
+            String selectedRole = (String) cboRole.getSelectedItem();
+            
+            // Lấy danh sách nhân viên từ database
+            List<UserAccount> employees = userDAO.findAll();
+            
+            // Filter theo điều kiện
+            List<UserAccount> filteredEmployees = filterEmployees(employees, selectedStatus, selectedRole);
+            
+            // Đổ dữ liệu đã filter vào bảng
+            for (UserAccount emp : filteredEmployees) {
+                Object[] row = {
+                    emp.getUser_id(),           // Mã nhân viên
+                    emp.getUsername(),         // Tài khoản
+                    emp.getPass(),         // Mật khẩu
+                    emp.getFullName(),         // Họ và tên
+                    emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "Không xác định",           // Giới tính: 1=Nam, 0=Nữ
+                    emp.getPhone_number(),            // SĐT
+                    emp.getEmail(),            // Email
+                    emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "Không xác định", // Trạng thái
+                    emp.getRole_id(),           // Vai trò
+                    emp.getCreated_date()       // Ngày tạo
+                };
+                model.addRow(row);
+            }
+            
+            System.out.println("Đã filter và load " + filteredEmployees.size() + "/" + employees.size() + " nhân viên");
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi filter dữ liệu: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Filter danh sách nhân viên theo Status và Role
+     */
+    private List<UserAccount> filterEmployees(List<UserAccount> employees, String selectedStatus, String selectedRole) {
+        List<UserAccount> filtered = new ArrayList<>();
+        
+        for (UserAccount emp : employees) {
+            boolean matchStatus = true;
+            boolean matchRole = true;
+            
+            // Filter theo Status
+            if (selectedStatus != null && !selectedStatus.equals("Tất cả")) {
+                if (selectedStatus.equals("Hoạt động")) {
+                    matchStatus = (emp.getIs_enabled() != null && emp.getIs_enabled() == 1);
+                } else if (selectedStatus.equals("Không hoạt động")) {
+                    matchStatus = (emp.getIs_enabled() != null && emp.getIs_enabled() == 0);
+                }
+            }
+            
+            // Filter theo Role
+            if (selectedRole != null && !selectedRole.equals("Tất cả")) {
+                matchRole = selectedRole.equals(emp.getRole_id());
+            }
+            
+            // Chỉ thêm vào danh sách nếu thỏa mãn cả 2 điều kiện
+            if (matchStatus && matchRole) {
+                filtered.add(emp);
+            }
+        }
+        
+        return filtered;
     }
 
     @Override
@@ -597,43 +699,10 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
 
     @Override
     public void fillToTable() {
-        // Xóa dữ liệu cũ trong bảng
-        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
-        model.setRowCount(0);
-        
-        try {
-            // Lấy danh sách nhân viên từ database
-            List<UserAccount> employees = userDAO.findAll();
-            
-            // Đổ dữ liệu vào bảng
-            for (UserAccount emp : employees) {
-                // DEBUG: In ra giá trị thực tế
-                System.out.println("DEBUG Employee: " + emp.getUser_id() + 
-                                 " - Gender: " + emp.getGender() + 
-                                 " - Is_enabled: " + emp.getIs_enabled());
-                
-                Object[] row = {
-                    emp.getUser_id(),           // Mã nhân viên
-                    emp.getUsername(),         // Tài khoản
-                    emp.getPass(),         // Mật khẩu
-                    emp.getFullName(),         // Họ và tên
-                    emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "Không xác định",           // Giới tính: 1=Nam, 0=Nữ
-                    emp.getPhone_number(),            // SĐT
-                    emp.getEmail(),            // Email
-                    emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "Không xác định", // Trạng thái
-                    emp.getRole_id(),           // Vai trò
-                    emp.getCreated_date()       // Ngày tạo
-                    // Không thêm cột Image vào bảng
-                };
-                model.addRow(row);
-            }
-            
-            System.out.println("Đã load " + employees.size() + " nhân viên lên bảng");
-            
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi load dữ liệu: " + e.getMessage());
-            e.printStackTrace();
-        }
+        // Gọi filterAndFillTable với "Tất cả" cho cả Status và Role
+        cboStatus.setSelectedItem("Tất cả");
+        cboRole.setSelectedItem("Tất cả");
+        filterAndFillTable();
     }
 
     @Override
@@ -737,13 +806,16 @@ public class NhanVienJDialog extends javax.swing.JFrame  implements EmployeeCont
         // Reset giới tính
         groupGioiTinh.clearSelection();
         
-        // Reset combo box
-        cboStatus.setSelectedIndex(0);
-        cboRole.setSelectedIndex(0);
+        // Reset combo box về "Tất cả"
+        cboStatus.setSelectedItem("Tất cả");
+        cboRole.setSelectedItem("Tất cả");
         
         // Reset hình ảnh
         lblImage.setText("");
         lblImage.setIcon(null);
+        
+        // Reload toàn bộ dữ liệu
+        fillToTable();
     }
 
     @Override
