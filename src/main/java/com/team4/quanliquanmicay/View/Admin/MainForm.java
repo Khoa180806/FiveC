@@ -1,5 +1,6 @@
 package com.team4.quanliquanmicay.View.Admin;
 
+import com.team4.quanliquanmicay.util.XTheme;
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
@@ -15,6 +16,7 @@ public class MainForm extends javax.swing.JFrame {
      * Creates new form MainForm
      */
     public MainForm() {
+        XTheme.applyLightTheme();
         initComponents();
         this.setLocationRelativeTo(null);
     }

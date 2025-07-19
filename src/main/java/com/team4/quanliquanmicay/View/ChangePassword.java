@@ -4,6 +4,7 @@
  */
 package com.team4.quanliquanmicay.View;
 
+import com.team4.quanliquanmicay.util.XTheme;
 /**
  *
  * @author HP
@@ -14,6 +15,7 @@ public class ChangePassword extends javax.swing.JFrame {
      * Creates new form PassWord
      */
     public ChangePassword() {
+        XTheme.applyLightTheme();
         initComponents();
         this.setLocationRelativeTo(null);
     }
