@@ -19,6 +19,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import com.team4.quanliquanmicay.util.XImage;
 
 /**
  *
@@ -885,44 +886,111 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * Load và hiển thị ảnh nhân viên
+     * Load và hiển thị ảnh nhân viên sử dụng XImage utility
      */
     private void loadEmployeeImage(String imageName) {
         try {
             if (imageName != null && !imageName.trim().isEmpty()) {
-                // Đường dẫn ảnh trong resources hoặc thư mục cụ thể
-                String imagePath = "/images/employees/" + imageName;
+                // Đường dẫn ảnh trong resources/icons_and_images/imageEmployee/
+                String imagePath = "/icons_and_images/imageEmployee/" + imageName;
                 
-                // Thử load ảnh từ resources
+                System.out.println("Trying to load image: " + imagePath);
+                
+                // Kiểm tra ảnh có tồn tại không
                 java.net.URL imageURL = getClass().getResource(imagePath);
                 
                 if (imageURL != null) {
-                    ImageIcon imageIcon = new ImageIcon(imageURL);
-                    
-                    // Resize ảnh cho phù hợp với lblImage
-                    Image image = imageIcon.getImage();
-                    Image scaledImage = image.getScaledInstance(
-                        lblImage.getWidth() > 0 ? lblImage.getWidth() : 116, 
-                        lblImage.getHeight() > 0 ? lblImage.getHeight() : 167, 
-                        Image.SCALE_SMOOTH
-                    );
-                    
-                    lblImage.setIcon(new ImageIcon(scaledImage));
+                    // Sử dụng XImage utility để set ảnh
+                    XImage.setImageToLabel(lblImage, imagePath);
                     lblImage.setText(""); // Xóa text nếu có ảnh
+                    
+                    System.out.println("✅ Successfully loaded image: " + imageName);
                 } else {
-                    // Nếu không tìm thấy ảnh, hiển thị tên file
-                    lblImage.setIcon(null);
-                    lblImage.setText(imageName);
+                    // Thử load từ thư mục gốc icons_and_images
+                    String fallbackPath = "/icons_and_images/" + imageName;
+                    System.out.println("Image not found in imageEmployee, trying: " + fallbackPath);
+                    
+                    java.net.URL fallbackURL = getClass().getResource(fallbackPath);
+                    if (fallbackURL != null) {
+                        XImage.setImageToLabel(lblImage, fallbackPath);
+                        lblImage.setText("");
+                        
+                        System.out.println("✅ Successfully loaded image from fallback: " + imageName);
+                    } else {
+                        // Sử dụng placeholder
+                        setPlaceholderImage(imageName);
+                    }
                 }
             } else {
-                // Không có ảnh
+                // Không có tên ảnh - sử dụng ảnh mặc định
+                setDefaultImage();
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi load ảnh: " + e.getMessage());
+            setPlaceholderImage(imageName);
+        }
+    }
+
+    /**
+     * Hiển thị ảnh placeholder khi không tìm thấy ảnh
+     */
+    private void setPlaceholderImage(String imageName) {
+        try {
+            String placeholderPath = "/icons_and_images/Unknown person.png";
+            java.net.URL placeholderURL = getClass().getResource(placeholderPath);
+            
+            if (placeholderURL != null) {
+                XImage.setImageToLabel(lblImage, placeholderPath);
+                lblImage.setText("");
+                System.out.println("📷 Using placeholder image for: " + imageName);
+            } else {
+                // Fallback text nếu không có placeholder
+                lblImage.setIcon(null);
+                lblImage.setText(imageName != null ? imageName : "No Image");
+            }
+        } catch (Exception e) {
+            lblImage.setIcon(null);
+            lblImage.setText("Error");
+        }
+    }
+
+    /**
+     * Hiển thị ảnh mặc định khi không có tên ảnh
+     */
+    private void setDefaultImage() {
+        try {
+            String defaultPath = "/icons_and_images/User.png";
+            java.net.URL defaultURL = getClass().getResource(defaultPath);
+            
+            if (defaultURL != null) {
+                XImage.setImageToLabel(lblImage, defaultPath);
+                lblImage.setText("");
+            } else {
                 lblImage.setIcon(null);
                 lblImage.setText("No Image");
             }
         } catch (Exception e) {
-            System.err.println("Lỗi load ảnh: " + e.getMessage());
             lblImage.setIcon(null);
-            lblImage.setText("Error");
+            lblImage.setText("No Image");
+        }
+    }
+
+    /**
+     * Method để test load ảnh (có thể gọi để kiểm tra)
+     */
+    public void testLoadImage() {
+        // Test với một số ảnh có sẵn
+        String[] testImages = {"admin01.jpg", "admin02.jpg", "trump.png", "User.png"};
+        
+        for (String imageName : testImages) {
+            System.out.println("Testing image: " + imageName);
+            loadEmployeeImage(imageName);
+            
+            try {
+                Thread.sleep(2000); // Delay 2 giây để xem ảnh
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
