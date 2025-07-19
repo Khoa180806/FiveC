@@ -479,9 +479,12 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         create();
     }
 
-    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnUpdateActionPerformed
+    /**
+     * Event handler cho nút UPDATE
+     */
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {
+        update();
+    }
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         // TODO add your handling code here:
@@ -663,16 +666,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             
             // Đổ dữ liệu đã filter vào bảng
             for (UserAccount emp : filteredEmployees) {
-                // DEBUG: Kiểm tra created_date
-                System.out.println("DEBUG Employee " + emp.getUser_id() + 
-                                  " - Created_date: " + emp.getCreated_date());
-                
-                // Format ngày tạo
-                String createdDateStr = "Chưa có";
-                if (emp.getCreated_date() != null) {
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                    createdDateStr = sdf.format(emp.getCreated_date());
-                }
+                // DEBUG: In ra giá trị created_date
+                System.out.println("DEBUG Created Date for " + emp.getUser_id() + ": " + emp.getCreated_date());
                 
                 Object[] row = {
                     emp.getUser_id(),           // Mã nhân viên
@@ -684,7 +679,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                     emp.getEmail(),            // Email
                     emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "Không xác định", // Trạng thái
                     getRoleName(emp.getRole_id()),     // Vai trò - Hiển thị tên thay vì ID
-                    createdDateStr  // Ngày tạo - Format đúng
+                    formatDate(emp.getCreated_date())  // Ngày tạo - Format đúng
                 };
                 model.addRow(row);
             }
@@ -903,14 +898,22 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         entity.setIs_enabled(1); // Mặc định hoạt động
         entity.setRole_id("R002"); // Mặc định Staff
         
-        // Xử lý hình ảnh
-        String imageName = lblImage.getText();
-        if (imageName != null && !imageName.equals("No Image") && !imageName.equals("Error") && !imageName.trim().isEmpty()) {
-            entity.setImage(imageName);
+        // Xử lý hình ảnh - CHỈ set nếu có ảnh thực sự
+        if (lblImage.getIcon() != null) {
+            // Có ảnh đang hiển thị - lấy tên từ text hoặc giữ nguyên
+            String currentImageText = lblImage.getText();
+            if (currentImageText != null && !currentImageText.equals("No Image") && 
+                !currentImageText.equals("Error") && !currentImageText.trim().isEmpty()) {
+                entity.setImage(currentImageText);
+            } else {
+                // Không set image, để method update() xử lý
+                entity.setImage(null);
+            }
         } else {
-            entity.setImage("default.jpg"); // Hoặc null
+            // Không có ảnh - không set
+            entity.setImage(null);
         }
-  
+
         return entity;
     }
 
@@ -1097,6 +1100,83 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
 
     @Override
     public void update() {
+        try {
+            // 1. Validate dữ liệu trước khi cập nhật
+            validateEmployee();
+            
+            // 2. Lấy dữ liệu từ form
+            UserAccount updatedEmployee = getForm();
+            
+            // 3. Kiểm tra nhân viên có tồn tại không
+            UserAccount existingEmployee = userDAO.findById(updatedEmployee.getUser_id());
+            if (existingEmployee == null) {
+                JOptionPane.showMessageDialog(this, "Không tìm thấy nhân viên với mã: " + updatedEmployee.getUser_id());
+                return;
+            }
+            
+            // 4. Kiểm tra username đã tồn tại chưa (ngoại trừ chính nó)
+            List<UserAccount> allUsers = userDAO.findAll();
+            for (UserAccount user : allUsers) {
+                if (!user.getUser_id().equals(updatedEmployee.getUser_id()) && 
+                    user.getUsername().equals(updatedEmployee.getUsername())) {
+                    JOptionPane.showMessageDialog(this, "Tên đăng nhập đã tồn tại!");
+                    return;
+                }
+            }
+            
+            // 5. QUAN TRỌNG: Giữ nguyên ngày tạo gốc
+            updatedEmployee.setCreated_date(existingEmployee.getCreated_date());
+            
+            // 6. QUAN TRỌNG: Giữ nguyên ảnh gốc nếu không thay đổi
+            if (updatedEmployee.getImage() == null || 
+                updatedEmployee.getImage().equals("default.jpg") || 
+                updatedEmployee.getImage().trim().isEmpty()) {
+                // Giữ nguyên ảnh cũ
+                updatedEmployee.setImage(existingEmployee.getImage());
+            }
+            
+            // 7. Cập nhật nhân viên
+            userDAO.update(updatedEmployee);
+            
+            // 8. Refresh bảng
+            filterAndFillTable();
+            
+            // 9. Clear form (nhưng không clear ảnh)
+            clearFormButKeepImage();
+            
+            // 10. Thông báo thành công
+            JOptionPane.showMessageDialog(this, "✅ Cập nhật nhân viên thành công!");
+            
+        } catch (RuntimeException e) {
+            // Lỗi validation - đã hiển thị message rồi
+            JOptionPane.showMessageDialog(this, "❌ " + e.getMessage());
+        } catch (Exception e) {
+            // Lỗi hệ thống khác
+            JOptionPane.showMessageDialog(this, "❌ Lỗi khi cập nhật nhân viên: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Clear form nhưng giữ nguyên ảnh
+     */
+    private void clearFormButKeepImage() {
+        txtIdEmployee.setText("");
+        txtNameAccount.setText("");
+        txtPassword.setText("");
+        txtNameEmployee.setText("");
+        txtPhoneNumber.setText("");
+        txtEmail.setText("");
+        
+        // Reset giới tính
+        groupGioiTinh.clearSelection();
+        
+        // KHÔNG reset ảnh khi update
+        // lblImage.setText("");
+        // lblImage.setIcon(null);
+        
+        // Clear selection trong bảng
+        tableInfo.clearSelection();
     }
 
     @Override
@@ -1161,12 +1241,5 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
 
     @Override
     public void deleteCheckedItems() {
-    }
-
-    // Thêm method này để test
-    public void refreshTable() {
-        System.out.println("=== REFRESHING TABLE ===");
-        filterAndFillTable();
-        System.out.println("=== TABLE REFRESHED ===");
     }
 }
