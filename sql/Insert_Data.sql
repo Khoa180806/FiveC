@@ -2,8 +2,9 @@
 -- DATABASE QUẢN LÝ QUÁN MÌ CAY - INSERT DATA
 -- Dữ liệu demo cho hệ thống
 -- Author: FiveC
--- Version: 1.0
+-- Version: 2.0
 -- Date: 03/07/2025
+-- Description: Dữ liệu demo cho Oracle 11g
 -- ========================================
 
 SET SERVEROUTPUT ON;
@@ -14,15 +15,15 @@ END;
 /
 
 -- ========================================
--- 1. INSERT USE_ROLE - VAI TRÒ NGƯỜI DÙNG
+-- 1. INSERT USER_ROLE - VAI TRÒ NGƯỜI DÙNG
 -- ========================================
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('Bước 1: Insert dữ liệu USE_ROLE...');
+    DBMS_OUTPUT.PUT_LINE('Bước 1: Insert dữ liệu USER_ROLE...');
 END;
 /
 
-INSERT INTO USE_ROLE (role_id, name_role) VALUES ('R001', N'Manager');
-INSERT INTO USE_ROLE (role_id, name_role) VALUES ('R002', N'Staff');
+INSERT INTO USER_ROLE (role_id, name_role) VALUES ('R001', N'Manager');
+INSERT INTO USER_ROLE (role_id, name_role) VALUES ('R002', N'Staff');
 
 -- ========================================
 -- 2. INSERT USER_ACCOUNT - TÀI KHOẢN NHÂN VIÊN
@@ -32,20 +33,20 @@ BEGIN
 END;
 /
 
-INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, email, phone_number, image, is_enabled, role_id) 
-VALUES ('U001', 'manager01', 'manager123', N'Nguyễn Văn Manager', 'manager@quanmicay.com', '0328456789', 'manager.jpg', 1, 'R001');
+INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, role_id) 
+VALUES ('U001', 'manager01', 'manager123', N'Nguyễn Văn Manager', 1, 'manager@quanmicay.com', '0328456789', 'manager.jpg', 1, 'R001');
 
-INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, email, phone_number, image, is_enabled, role_id) 
-VALUES ('U002', 'manager02', 'manager123', N'Trần Thị Quản Lý', 'manager02@quanmicay.com', '0912345678', 'manager2.jpg', 1, 'R001');
+INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, role_id) 
+VALUES ('U002', 'manager02', 'manager123', N'Trần Thị Quản Lý', 0, 'manager02@quanmicay.com', '0912345678', 'manager2.jpg', 1, 'R001');
 
-INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, email, phone_number, image, is_enabled, role_id) 
-VALUES ('U003', 'staff01', 'staff123', N'Lê Văn Phục Vụ', 'staff01@quanmicay.com', '0909876543', 'staff01.jpg', 1, 'R002');
+INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, role_id) 
+VALUES ('U003', 'staff01', 'staff123', N'Lê Văn Phục Vụ', 1, 'staff01@quanmicay.com', '0909876543', 'staff01.jpg', 1, 'R002');
 
-INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, email, phone_number, image, is_enabled, role_id) 
-VALUES ('U004', 'staff02', 'staff123', N'Phạm Thị Bếp', 'staff02@quanmicay.com', '0967123987', 'staff02.jpg', 1, 'R002');
+INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, role_id) 
+VALUES ('U004', 'staff02', 'staff123', N'Phạm Thị Bếp', 0, 'staff02@quanmicay.com', '0967123987', 'staff02.jpg', 1, 'R002');
 
-INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, email, phone_number, image, is_enabled, role_id) 
-VALUES ('U005', 'staff03', 'staff123', N'Hoàng Văn Thu Ngân', 'staff03@quanmicay.com', '0834567890', 'staff03.jpg', 1, 'R002');
+INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, role_id) 
+VALUES ('U005', 'staff03', 'staff123', N'Hoàng Văn Thu Ngân', 1, 'staff03@quanmicay.com', '0834567890', 'staff03.jpg', 1, 'R002');
 
 -- ========================================
 -- 3. INSERT CUSTOMER - KHÁCH HÀNG
@@ -279,22 +280,49 @@ BEGIN
 END;
 /
 
-SELECT 'USE_ROLE' AS TABLE_NAME, COUNT(*) AS TOTAL_RECORDS FROM USE_ROLE
+SELECT 'USER_ROLE' AS TABLE_NAME
+    ,COUNT(*) AS TOTAL_RECORDS 
+FROM USER_ROLE
 UNION ALL
-SELECT 'USER_ACCOUNT' AS TABLE_NAME, COUNT(*) AS TOTAL_RECORDS FROM USER_ACCOUNT
+SELECT 'USER_ACCOUNT' AS TABLE_NAME
+    ,COUNT(*) AS TOTAL_RECORDS 
+FROM USER_ACCOUNT
 UNION ALL
-SELECT 'CUSTOMER' AS TABLE_NAME, COUNT(*) AS TOTAL_RECORDS FROM CUSTOMER
+SELECT 'CUSTOMER' AS TABLE_NAME
+    ,COUNT(*) AS TOTAL_RECORDS 
+FROM CUSTOMER
 UNION ALL
-SELECT 'CATE' AS TABLE_NAME, COUNT(*) AS TOTAL_RECORDS FROM CATE
+SELECT 'CATE' AS TABLE_NAME
+    ,COUNT(*) AS TOTAL_RECORDS 
+FROM CATE
 UNION ALL
-SELECT 'PRODUCT' AS TABLE_NAME, COUNT(*) AS TOTAL_RECORDS FROM PRODUCT
+SELECT 'PRODUCT' AS TABLE_NAME
+    ,COUNT(*) AS TOTAL_RECORDS 
+FROM PRODUCT
 UNION ALL
-SELECT 'TABLE_FOR_CUSTOMER' AS TABLE_NAME, COUNT(*) AS TOTAL_RECORDS FROM TABLE_FOR_CUSTOMER
+SELECT 'TABLE_FOR_CUSTOMER' AS TABLE_NAME
+    ,COUNT(*) AS TOTAL_RECORDS 
+FROM TABLE_FOR_CUSTOMER
 UNION ALL
-SELECT 'PAYMENT_METHOD' AS TABLE_NAME, COUNT(*) AS TOTAL_RECORDS FROM PAYMENT_METHOD
+SELECT 'PAYMENT_METHOD' AS TABLE_NAME
+    ,COUNT(*) AS TOTAL_RECORDS 
+FROM PAYMENT_METHOD
 UNION ALL
-SELECT 'PAYMENT_HISTORY' AS TABLE_NAME, COUNT(*) AS TOTAL_RECORDS FROM PAYMENT_HISTORY
+SELECT 'PAYMENT_HISTORY' AS TABLE_NAME
+    ,COUNT(*) AS TOTAL_RECORDS 
+FROM PAYMENT_HISTORY
 UNION ALL
-SELECT 'BILL' AS TABLE_NAME, COUNT(*) AS TOTAL_RECORDS FROM BILL
+SELECT 'BILL' AS TABLE_NAME
+    ,COUNT(*) AS TOTAL_RECORDS 
+FROM BILL
 UNION ALL
-SELECT 'BILL_DETAIL' AS TABLE_NAME, COUNT(*) AS TOTAL_RECORDS FROM BILL_DETAIL
+SELECT 'BILL_DETAIL' AS TABLE_NAME
+    ,COUNT(*) AS TOTAL_RECORDS 
+FROM BILL_DETAIL;
+
+-- Chạy SQL này trong Oracle để cập nhật ngày cho nhân viên đã tồn tại
+UPDATE USER_ACCOUNT 
+SET created_date = SYSDATE 
+WHERE created_date IS NULL;
+
+COMMIT;

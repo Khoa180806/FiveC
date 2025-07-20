@@ -23,9 +23,9 @@ public class XJdbc {
      */
     public static Connection openConnection() {
         var driver = "oracle.jdbc.driver.OracleDriver";
-        var dburl = "jdbc:oracle:thin:@localhost:1521:XE";
+        var dburl = "jdbc:oracle:thin:@localhost:1521/XE";
         var username = "SYSTEM";
-        var password = "sa123";
+        var password = "root123";
         try {
             if (!XJdbc.isReady()) {
                 Class.forName(driver);
