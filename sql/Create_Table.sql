@@ -1,5 +1,5 @@
 -- ========================================
--- DATABASE QUẢN LÝ QUÁN MÌ CAY - SCRIPT CREATE DATABASE HOÀN CHỈNH
+-- DATABASE QUẢN L�? QU�?N MÌ CAY - SCRIPT CREATE DATABASE HOÀN CHỈNH
 -- CHỈ CẦN BẤM EXECUTE MỘT LẦN
 -- Author: FiveC
 -- Version: 2.0
@@ -10,7 +10,7 @@
 SET SERVEROUTPUT ON;
 
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('=== BẮT ĐẦU TẠO DATABASE QUẢN LÝ QUÁN MÌ CAY ===');
+    DBMS_OUTPUT.PUT_LINE('=== BẮT �?ẦU TẠO DATABASE QUẢN L�? QU�?N MÌ CAY ===');
 END;
 /
 
@@ -70,7 +70,7 @@ END;
 -- Xóa các bảng theo thứ tự (foreign key)
 BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE BILL_DETAIL CASCADE CONSTRAINTS';
-    DBMS_OUTPUT.PUT_LINE('- Đã xóa BILL_DETAIL');
+    DBMS_OUTPUT.PUT_LINE('- �?ã xóa BILL_DETAIL');
 EXCEPTION
     WHEN OTHERS THEN NULL;
 END;
@@ -78,7 +78,7 @@ END;
 
 BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE BILL CASCADE CONSTRAINTS';
-    DBMS_OUTPUT.PUT_LINE('- Đã xóa BILL');
+    DBMS_OUTPUT.PUT_LINE('- �?ã xóa BILL');
 EXCEPTION
     WHEN OTHERS THEN NULL;
 END;
@@ -86,7 +86,7 @@ END;
 
 BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE PAYMENT_HISTORY CASCADE CONSTRAINTS';
-    DBMS_OUTPUT.PUT_LINE('- Đã xóa PAYMENT_HISTORY');
+    DBMS_OUTPUT.PUT_LINE('- �?ã xóa PAYMENT_HISTORY');
 EXCEPTION
     WHEN OTHERS THEN NULL;
 END;
@@ -94,7 +94,7 @@ END;
 
 BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE PRODUCT CASCADE CONSTRAINTS';
-    DBMS_OUTPUT.PUT_LINE('- Đã xóa PRODUCT');
+    DBMS_OUTPUT.PUT_LINE('- �?ã xóa PRODUCT');
 EXCEPTION
     WHEN OTHERS THEN NULL;
 END;
@@ -107,14 +107,14 @@ BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE PAYMENT_METHOD CASCADE CONSTRAINTS';
     EXECUTE IMMEDIATE 'DROP TABLE CATE CASCADE CONSTRAINTS';
     EXECUTE IMMEDIATE 'DROP TABLE USER_ROLE CASCADE CONSTRAINTS';
-    DBMS_OUTPUT.PUT_LINE('- Đã xóa các bảng còn lại');
+    DBMS_OUTPUT.PUT_LINE('- �?ã xóa các bảng còn lại');
 EXCEPTION
     WHEN OTHERS THEN NULL;
 END;
 /
 
 -- ========================================
--- PHẦN 2: TẠO CÁC SEQUENCE CHO AUTO INCREMENT
+-- PHẦN 2: TẠO C�?C SEQUENCE CHO AUTO INCREMENT
 -- ========================================
 
 BEGIN
@@ -141,7 +141,7 @@ CREATE SEQUENCE SEQ_BILL_DETAIL_ID
     NOCYCLE;
 
 -- ========================================
--- PHẦN 3: TẠO CÁC BẢNG MỚI
+-- PHẦN 3: TẠO C�?C BẢNG MỚI
 -- ========================================
 
 BEGIN
@@ -247,7 +247,7 @@ CREATE TABLE BILL (
     ,total_amount NUMBER(9,0) DEFAULT 0
     ,checkin DATE DEFAULT SYSDATE
     ,checkout DATE
-    ,status NVARCHAR2(50) DEFAULT N'Đang phục vụ'
+    ,status NVARCHAR2(50) DEFAULT N'�?ang phục vụ'
     ,CONSTRAINT FK_Bill_User FOREIGN KEY (user_id) REFERENCES USER_ACCOUNT(user_id)
     ,CONSTRAINT FK_Bill_Customer FOREIGN KEY (phone_number) REFERENCES CUSTOMER(phone_number)
     ,CONSTRAINT FK_Bill_PaymentHistory FOREIGN KEY (payment_history_id) REFERENCES PAYMENT_HISTORY(payment_history_id)
@@ -271,7 +271,7 @@ CREATE TABLE BILL_DETAIL (
 );
 
 -- ========================================
--- PHẦN 4: TẠO CÁC TRIGGER CHO AUTO INCREMENT
+-- PHẦN 4: TẠO C�?C TRIGGER CHO AUTO INCREMENT
 -- ========================================
 
 BEGIN
@@ -313,6 +313,6 @@ END;
 /
 
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('✅ Đã tạo thành công tất cả 10 bảng và 3 trigger!');
+    DBMS_OUTPUT.PUT_LINE('✅ �?ã tạo thành công tất cả 10 bảng và 3 trigger!');
 END;
 /

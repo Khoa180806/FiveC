@@ -9,6 +9,7 @@ import com.team4.quanliquanmicay.util.XQuery;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.ArrayList;
 
 public class TableForCustomerDAOImpl implements TableForCustomerDAO {
     String createSql = "INSERT INTO TABLE_FOR_CUSTOMER(table_number, amount, status) VALUES(?, ?, ?)";
@@ -45,6 +46,27 @@ public class TableForCustomerDAOImpl implements TableForCustomerDAO {
 
     @Override
     public List<TableForCustomer> findAll() {
+        List<TableForCustomer> list = new ArrayList<>();
+        String sql = "SELECT table_number, amount, status FROM TABLE_FOR_CUSTOMER";
+        
+        try {
+            ResultSet rs = XJdbc.executeQuery(sql);
+            while (rs.next()) {
+                TableForCustomer table = new TableForCustomer();
+                table.setTable_number(rs.getInt("table_number"));
+                table.setAmount(rs.getInt("amount"));
+                table.setStatus(rs.getInt("status"));
+                list.add(table);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return list;
+    }
+
+    @Override
+    public List<TableForCustomer> selectAll() {
         return XQuery.getBeanList(TableForCustomer.class, findAllSql);
     }
 
@@ -54,4 +76,13 @@ public class TableForCustomerDAOImpl implements TableForCustomerDAO {
         return XQuery.getSingleBean(TableForCustomer.class, findByIdSql, table_number);
     }
 
+    private int convertStatusToInt(String status) {
+        switch (status) {
+            case "Trống": return 0;
+            case "Hoạt Động": return 1;
+            case "Đang Chờ": return 2;
+            case "Ngưng Phục Vụ": return 3;
+            default: return 0;
+        }
+    }
 }
