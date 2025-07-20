@@ -12,7 +12,6 @@ com\team4\quanliquanmicay\Entity\Product$ProductBuilder.class
 com\team4\quanliquanmicay\View\Admin\MainForm$2.class
 com\team4\quanliquanmicay\DAO\CustomerDAO.class
 com\team4\quanliquanmicay\app\Main.class
-com\team4\quanliquanmicay\util\XTheme$Theme.class
 com\team4\quanliquanmicay\Entity\Customer$CustomerBuilder.class
 com\team4\quanliquanmicay\View\ChangePassword$2.class
 com\team4\quanliquanmicay\DAO\BillDAO.class
@@ -74,7 +73,6 @@ com\team4\quanliquanmicay\View\Dialogs\HoaDonJDialog$1.class
 com\team4\quanliquanmicay\View\Dialogs\LoaiMonJDialog.class
 com\team4\quanliquanmicay\View\Dialogs\DatMonJDialog$2.class
 com\team4\quanliquanmicay\View\Admin\MainForm$1.class
-com\team4\quanliquanmicay\Controller\TestController.class
 com\team4\quanliquanmicay\util\XQuery.class
 com\team4\quanliquanmicay\View\Dialogs\NhanVienJDialog.class
 com\team4\quanliquanmicay\View\Dialogs\InHoaDonJDialog$1.class

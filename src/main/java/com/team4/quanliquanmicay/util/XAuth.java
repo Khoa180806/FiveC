@@ -16,7 +16,7 @@ public class XAuth {
         .email("admin@example.com")
         .phone_number("0123456789")
         .image("manager.png") 
-        .is_enabled(true)
+        .is_enabled(1)
         .created_date(new Date())
         .role_id("R001")
         .build(); // biến user này sẽ được thay thế sau khi đăng nhập

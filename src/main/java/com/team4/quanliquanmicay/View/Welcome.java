@@ -22,6 +22,7 @@ public class Welcome extends javax.swing.JFrame implements WelcomeCotroller{
      * Creates new form Welcome
      */
     public Welcome() {
+        this.setUndecorated(true); // Ẩn thanh tiêu đề
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);

@@ -13,7 +13,8 @@ public class UserDAOImpl implements UserDAO {
     String deleteSql = "DELETE FROM USER_ACCOUNT WHERE user_id=?";
     String findAllSql = "SELECT user_id, username, pass, fullName, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT";
     String findByIdSql = "SELECT user_id, username, pass, fullName, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT WHERE user_id=?";
-
+    String findByUsernameSql = "SELECT user_id, username, pass, fullName, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT WHERE username=?";
+    
     @Override
     public UserAccount create(UserAccount entity) {
         Object[] values = {
@@ -62,5 +63,9 @@ public class UserDAOImpl implements UserDAO {
     public UserAccount findById(String user_id) {
         return XQuery.getSingleBean(UserAccount.class, findByIdSql, user_id);
     }
-
+    
+    @Override
+    public UserAccount findByUsername(String username){
+        return XQuery.getSingleBean(UserAccount.class, findByUsernameSql, username);
+    }
 }
