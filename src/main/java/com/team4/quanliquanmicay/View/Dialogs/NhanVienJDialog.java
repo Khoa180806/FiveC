@@ -821,11 +821,11 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                     emp.getPass(), // Mật khẩu
                     emp.getFullName(), // Họ và tên
                     emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "Không xác định", // Giới tính: 1=Nam, 0=Nữ
-                    emp.getPhone_number(), // SĐT
-                    emp.getEmail(), // Email
-                    emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "Không xác định", // Trạng thái
-                    getRoleName(emp.getRole_id()), // Vai trò - Hiển thị tên thay vì ID
-                    formatDate(emp.getCreated_date()) // Ngày tạo - Format đúng
+                    emp.getPhone_number() != null ? emp.getPhone_number() : "Không xác định", // SĐT
+                    emp.getEmail() != null ? emp.getEmail() : "Không xác định", // Email  
+                    emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động", // Trạng thái 
+                    getRoleName(emp.getRole_id()) != null ? getRoleName(emp.getRole_id()) : "Không xác định", // Vai trò
+                    formatDate(emp.getCreated_date()) != null ? formatDate(emp.getCreated_date()) : "Không xác định" // Ngày tạo
                 };
                 model.addRow(row);
             }
@@ -851,9 +851,9 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             // Filter theo Status
             if (selectedStatus != null && !selectedStatus.equals("Tất cả")) {
                 if (selectedStatus.equals("Hoạt động")) {
-                    matchStatus = (emp.getIs_enabled() != null && emp.getIs_enabled() == 1);
+                    matchStatus = (emp.getIs_enabled() == 1);
                 } else if (selectedStatus.equals("Không hoạt động")) {
-                    matchStatus = (emp.getIs_enabled() != null && emp.getIs_enabled() == 0);
+                    matchStatus = (emp.getIs_enabled() == 0); 
                 }
             }
 
@@ -1659,10 +1659,10 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     private boolean matchesFilters(UserAccount emp, String status, String role) {
         // Status filter
         if (status != null && !status.equals("Tất cả")) {
-            if (status.equals("Hoạt động") && (emp.getIs_enabled() == null || emp.getIs_enabled() != 1)) {
+            if (status.equals("Hoạt động") && (emp.getIs_enabled() != 1)) {
                 return false;
             }
-            if (status.equals("Không hoạt động") && (emp.getIs_enabled() == null || emp.getIs_enabled() != 0)) {
+            if (status.equals("Không hoạt động") && (emp.getIs_enabled() != 0)) {
                 return false;
             }
         }
@@ -1690,7 +1690,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "N/A",
             emp.getPhone_number(),
             emp.getEmail(),
-            emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "N/A",
+            emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động",
             roleMap.getOrDefault(emp.getRole_id(), "N/A"),
             formatDateFast(emp.getCreated_date())
         };
