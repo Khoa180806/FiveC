@@ -17,8 +17,8 @@ public class XAuth {
         .email("admin@example.com")
         .phone_number("0123456789")
         .image("manager.png") 
-        .is_enabled(1)                // Sử dụng Integer: 1 = Hoạt động
-        .created_date(new Date(System.currentTimeMillis())) // Sử dụng java.sql.Date
+        .is_enabled(1)
+        .created_date(new Date(System.currentTimeMillis()))
         .role_id("R001")
         .build(); // biến user này sẽ được thay thế sau khi đăng nhập
 }
