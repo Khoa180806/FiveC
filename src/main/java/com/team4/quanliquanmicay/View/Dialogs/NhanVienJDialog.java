@@ -44,8 +44,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         
         // Setup all functionality
         loadRoles();
-        setupStatusComboBox();
-        setupRoleComboBox();
+        setupStatusComboBox(); // ✅ SAFE: Protected by disableComboBoxUpdates flag
+        setupRoleComboBox();   // ✅ SAFE: Protected by disableComboBoxUpdates flag
         fillToTable();
         setColumnWidths();
         setupEventListeners();
@@ -53,11 +53,6 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         preloadDefaultImages();
         setupImageSelection();
         setupSearchFunctionality();
-        
-        // ✅ FREEZE: Lock image size immediately after setup
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            freezeImageSize();
-        });
         
         // ✅ FINAL: Capture and freeze initial layout size
         javax.swing.SwingUtilities.invokeLater(() -> {
@@ -68,6 +63,10 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             if (frozenTableSize == null) {
                 frozenTableSize = new java.awt.Dimension(jScrollPane1.getSize());
                 System.out.println("📐 Captured initial table size: " + frozenTableSize);
+                
+                // ✅ CAPTURE: Store initial image label size
+                originalImageSize = new java.awt.Dimension(lblImage.getSize());
+                System.out.println("🖼️ Captured initial image size: " + originalImageSize);
                 
                 // ✅ SETUP: Periodic size enforcement timer
                 setupSizeEnforcementTimer();
@@ -132,10 +131,11 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         txtPassword = new javax.swing.JTextField();
         jLabel12 = new javax.swing.JLabel();
         txtEmail = new javax.swing.JTextField();
-        jLabel13 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
         jLabel14 = new javax.swing.JLabel();
-        cboStatus = new javax.swing.JComboBox<>();
         cboRole = new javax.swing.JComboBox<>();
+        cboStatus = new javax.swing.JComboBox<>();
+        jLabel13 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         btnClear = new javax.swing.JButton();
@@ -222,17 +222,50 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
 
         txtEmail.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jLabel13.setFont(new java.awt.Font("Segoe UI Light", 0, 18)); // NOI18N
-        jLabel13.setText("TRẠNG THÁI :");
-
         jLabel14.setFont(new java.awt.Font("Segoe UI Light", 0, 18)); // NOI18N
         jLabel14.setText("VAI TRÒ :");
 
-        cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        cboStatus.setDoubleBuffered(true);
-        cboStatus.setEditor(null);
-
         cboRole.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jLabel13.setFont(new java.awt.Font("Segoe UI Light", 0, 18)); // NOI18N
+        jLabel13.setText("TRẠNG THÁI :");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(16, 16, 16)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel13)
+                    .addComponent(jLabel14))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(cboRole, 0, 151, Short.MAX_VALUE)
+                    .addComponent(cboStatus, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(30, 30, 30))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel13)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(4, 4, 4)
+                        .addComponent(cboStatus, javax.swing.GroupLayout.DEFAULT_SIZE, 31, Short.MAX_VALUE)))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(cboRole, javax.swing.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
+                        .addGap(1, 1, 1))
+                    .addComponent(jLabel14))
+                .addGap(17, 17, 17))
+        );
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -262,24 +295,21 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                         .addComponent(chkFemale))
                     .addComponent(txtIdEmployee)
                     .addComponent(txtPhoneNumber))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel13)
-                            .addComponent(jLabel14))
-                        .addGap(50, 50, 50))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel11)
                             .addComponent(jLabel3))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(txtPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-                    .addComponent(txtNameAccount, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-                    .addComponent(cboStatus, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(cboRole, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(77, 77, 77))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(txtPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
+                            .addComponent(txtNameAccount, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
+                        .addGap(77, 77, 77))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -288,30 +318,6 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addGap(15, 15, 15)
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel3)
-                                    .addComponent(txtNameAccount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel11)
-                                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel5Layout.createSequentialGroup()
-                                        .addGap(0, 0, Short.MAX_VALUE)
-                                        .addComponent(jLabel13))
-                                    .addGroup(jPanel5Layout.createSequentialGroup()
-                                        .addComponent(cboStatus)
-                                        .addGap(3, 3, 3)))
-                                .addGap(6, 6, 6)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(jPanel5Layout.createSequentialGroup()
-                                        .addComponent(jLabel14)
-                                        .addGap(15, 15, 15))
-                                    .addGroup(jPanel5Layout.createSequentialGroup()
-                                        .addComponent(cboRole)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))))
                             .addGroup(jPanel5Layout.createSequentialGroup()
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(txtIdEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -332,14 +338,23 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                                     .addGroup(jPanel5Layout.createSequentialGroup()
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(txtPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel12)
-                            .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel12)
+                                    .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel3)
+                                    .addComponent(txtNameAccount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel11)
+                                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel8))
         );
 
@@ -719,6 +734,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -952,8 +968,9 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                 java.net.URL imageURL = getClass().getResource(imagePath);
 
                 if (imageURL != null) {
-                    // ✅ FIXED SIZE: Set ảnh với kích thước cố định
-                    setImageWithFixedSize(imagePath);
+                    // Sử dụng XImage utility để set ảnh
+                    XImage.setImageToLabel(lblImage, imagePath);
+                    lblImage.setText(""); // Xóa text nếu có ảnh
 
                     System.out.println("✅ Successfully loaded image: " + imageName);
                 } else {
@@ -963,7 +980,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
 
                     java.net.URL fallbackURL = getClass().getResource(fallbackPath);
                     if (fallbackURL != null) {
-                        setImageWithFixedSize(fallbackPath);
+                        XImage.setImageToLabel(lblImage, fallbackPath);
+                        lblImage.setText("");
 
                         System.out.println("✅ Successfully loaded image from fallback: " + imageName);
                     } else {
@@ -988,7 +1006,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         try {
             String placeholderPath = "/icons_and_images/Unknown person.png";
             if (getClass().getResource(placeholderPath) != null) {
-                setImageWithFixedSize(placeholderPath);
+                XImage.setImageToLabel(lblImage, placeholderPath);
+                lblImage.setText("");
                 System.out.println("📷 Using placeholder image for: " + imageName);
             } else {
                 lblImage.setIcon(null);
@@ -1440,7 +1459,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         for (String path : paths) {
             try {
                 if (getClass().getResource(path) != null) {
-                    setImageWithFixedSize(path);
+                    XImage.setImageToLabel(lblImage, path);
+                    lblImage.setText("");
                     return;
                 }
             } catch (Exception e) {
@@ -1457,7 +1477,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
      */
     private void setDefaultImageFast() {
         try {
-            setImageWithFixedSize("/icons_and_images/User.png");
+            XImage.setImageToLabel(lblImage, "/icons_and_images/User.png");
+            lblImage.setText("");
         } catch (Exception e) {
             lblImage.setIcon(null);
             lblImage.setText("No Image");
@@ -1466,7 +1487,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
 
     private void setPlaceholderImageFast(String imageName) {
         try {
-            setImageWithFixedSize("/icons_and_images/Unknown person.png");
+            XImage.setImageToLabel(lblImage, "/icons_and_images/Unknown person.png");
+            lblImage.setText("");
         } catch (Exception e) {
             lblImage.setIcon(null);
             lblImage.setText(imageName);
@@ -2140,10 +2162,6 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             cboStatus.setIgnoreRepaint(true);
             cboRole.setIgnoreRepaint(true);
             
-            // ✅ DISABLE: Component validation to prevent layout recalculation  
-            cboStatus.setEnabled(false);
-            cboRole.setEnabled(false);
-            
             // Basic info - lightweight operations only
             txtIdEmployee.setText(entity.getUser_id());
             txtNameAccount.setText(entity.getUsername());
@@ -2178,11 +2196,9 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             // ✅ RESTORE: Re-enable layout and maintain frozen size
             setIgnoreRepaint(false);
             
-            // ✅ RESTORE: ComboBox repaint and enable
+            // ✅ RESTORE: ComboBox repaint
             cboStatus.setIgnoreRepaint(false);
             cboRole.setIgnoreRepaint(false);
-            cboStatus.setEnabled(true);
-            cboRole.setEnabled(true);
             
             // ✅ ENFORCE: Keep table at frozen size
             if (frozenTableSize != null) {
@@ -2200,7 +2216,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
      */
     private void setDefaultImageWithClickable() {
         try {
-            setImageWithFixedSize("/icons_and_images/User.png");
+            XImage.setImageToLabel(lblImage, "/icons_and_images/User.png");
+            lblImage.setText("");
             
             // Ensure tooltip is set
             lblImage.setToolTipText("Click để chọn ảnh nhân viên");
@@ -2396,7 +2413,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         String text = txtSearch.getText();
         return text.equals("Tìm theo tên nhân viên...") ? "" : text.trim();
     }
-
+ // Từ dòng này trở đi chỉ để fix cái lỗi tự động tăng khoảng cách . hơn 300 dòng code chỉ để set playout ổn định, hiện bug, code chay, codde linh hoạt ,tùy cách chọn
     // =============================================================================
     // COMBOBOX SETUP AND MANAGEMENT - STATUS & ROLE
     // =============================================================================
@@ -2409,6 +2426,12 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         cboStatus.addItem("Hoạt động");
         cboStatus.addItem("Không hoạt động");
         cboStatus.setSelectedIndex(0); // Default: Hoạt động
+        
+        // ✅ FIX: Set fixed size để không bị tràn layout
+        java.awt.Dimension fixedSize = new java.awt.Dimension(150, 25);
+        cboStatus.setPreferredSize(fixedSize);
+        cboStatus.setMinimumSize(fixedSize);
+        cboStatus.setMaximumSize(fixedSize);
     }
     
     /**
@@ -2428,6 +2451,12 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             cboRole.addItem("R002 - Staff");
             cboRole.setSelectedIndex(1); // Default: Staff
         }
+        
+        // ✅ FIX: Set fixed size để không bị tràn layout
+        java.awt.Dimension fixedSize = new java.awt.Dimension(150, 25);
+        cboRole.setPreferredSize(fixedSize);
+        cboRole.setMinimumSize(fixedSize);
+        cboRole.setMaximumSize(fixedSize);
     }
     
     /**
@@ -2452,30 +2481,21 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
     
     /**
-     * ✅ OPTIMIZED: Set Role ComboBox theo role_id - no layout changes
+     * ✅ SETTER: Set Role ComboBox theo role_id
      */
     private void setRoleComboBox(String roleId) {
-        try {
-            if (roleId != null) {
-                // Tìm item có chứa roleId
-                for (int i = 0; i < cboRole.getItemCount(); i++) {
-                    String item = cboRole.getItemAt(i);
-                    if (item.startsWith(roleId + " - ")) {
-                        // ✅ SAFE: Chỉ set nếu khác với current selection
-                        if (cboRole.getSelectedIndex() != i) {
-                            cboRole.setSelectedIndex(i);
-                        }
-                        return;
-                    }
+        if (roleId != null) {
+            // Tìm item có chứa roleId
+            for (int i = 0; i < cboRole.getItemCount(); i++) {
+                String item = cboRole.getItemAt(i);
+                if (item.startsWith(roleId + " - ")) {
+                    cboRole.setSelectedIndex(i);
+                    return;
                 }
             }
-            // Default fallback
-            if (cboRole.getItemCount() > 0 && cboRole.getSelectedIndex() != 0) {
-                cboRole.setSelectedIndex(0);
-            }
-        } catch (Exception e) {
-            System.err.println("Error setting role combo: " + e.getMessage());
         }
+        // Default fallback
+        if (cboRole.getItemCount() > 0) cboRole.setSelectedIndex(0);
     }
     
     /**
@@ -2589,48 +2609,6 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
     
     /**
-     * ✅ FIXED SIZE: Set image to label without changing label dimensions
-     */
-    private void setImageWithFixedSize(String imagePath) {
-        try {
-            if (originalImageSize == null) return;
-            
-            // Load and scale image to fit the fixed label size
-            java.net.URL imageURL = getClass().getResource(imagePath);
-            if (imageURL != null) {
-                javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
-                
-                // Scale image to fit the original label size
-                java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
-                    originalImageSize.width, 
-                    originalImageSize.height, 
-                    java.awt.Image.SCALE_SMOOTH
-                );
-                
-                javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
-                
-                // Set the scaled icon
-                lblImage.setIcon(scaledIcon);
-                lblImage.setText("");
-                
-                // ✅ ENFORCE: Keep the original size
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-                
-            } else {
-                // Fallback to text if image not found
-                lblImage.setIcon(null);
-                lblImage.setText("No Image");
-            }
-        } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText("Error");
-        }
-    }
-
-    /**
      * ✅ SILENT: Load image without affecting layout - FIXED SIZE
      */
     private void loadEmployeeImageSilent(String imageName) {
@@ -2676,6 +2654,48 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         }
     }
     
+    /**
+     * ✅ FIXED SIZE: Set image to label without changing label dimensions
+     */
+    private void setImageWithFixedSize(String imagePath) {
+        try {
+            if (originalImageSize == null) return;
+            
+            // Load and scale image to fit the fixed label size
+            java.net.URL imageURL = getClass().getResource(imagePath);
+            if (imageURL != null) {
+                javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
+                
+                // Scale image to fit the original label size
+                java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
+                    originalImageSize.width, 
+                    originalImageSize.height, 
+                    java.awt.Image.SCALE_SMOOTH
+                );
+                
+                javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
+                
+                // Set the scaled icon
+                lblImage.setIcon(scaledIcon);
+                lblImage.setText("");
+                
+                // ✅ ENFORCE: Keep the original size
+                lblImage.setSize(originalImageSize);
+                lblImage.setPreferredSize(originalImageSize);
+                lblImage.setMinimumSize(originalImageSize);
+                lblImage.setMaximumSize(originalImageSize);
+                
+            } else {
+                // Fallback to text if image not found
+                lblImage.setIcon(null);
+                lblImage.setText("No Image");
+            }
+        } catch (Exception e) {
+            lblImage.setIcon(null);
+            lblImage.setText("Error");
+        }
+    }
+    
     // =============================================================================
     // LAYOUT FREEZE PROTECTION
     // =============================================================================
@@ -2702,26 +2722,6 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             
         } catch (Exception e) {
             System.err.println("Error freezing layout: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * ✅ UNFREEZE: Restore normal layout behavior (if needed)
-     */
-    private void unfreezeLayout() {
-        if (!layoutFrozen) return;
-        
-        try {
-            layoutFrozen = false;
-            
-            // ✅ RESTORE: Table auto-resize
-            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-            
-            // ✅ UNLOCK: Window resize
-            setResizable(true);
-            
-        } catch (Exception e) {
-            System.err.println("Error unfreezing layout: " + e.getMessage());
         }
     }
     
@@ -2766,31 +2766,9 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             System.out.println("✅ Size enforcement timer started - will prevent table expansion");
             
         } catch (Exception e) {
-                         System.err.println("Error setting up size enforcement timer: " + e.getMessage());
-         }
-     }
-     
-     /**
-      * ✅ FREEZE: Lock image label size permanently
-      */
-     private void freezeImageSize() {
-         try {
-             if (originalImageSize == null) {
-                 // Capture current size if not already captured
-                 originalImageSize = new java.awt.Dimension(lblImage.getSize());
-                 System.out.println("🖼️ Captured image size: " + originalImageSize);
-             }
-             
-             // ✅ LOCK: Set all size constraints
-             lblImage.setSize(originalImageSize);
-             lblImage.setPreferredSize(originalImageSize);
-             lblImage.setMinimumSize(originalImageSize);
-             lblImage.setMaximumSize(originalImageSize);
-             
-             System.out.println("🔒 Image label size frozen at: " + originalImageSize);
-             
-         } catch (Exception e) {
-             System.err.println("Error freezing image size: " + e.getMessage());
-         }
-     }
+            System.err.println("Error setting up size enforcement timer: " + e.getMessage());
+        }
+    }
+    
+
 }
