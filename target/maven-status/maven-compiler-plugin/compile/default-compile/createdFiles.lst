@@ -62,7 +62,6 @@ com\team4\quanliquanmicay\util\XDate.class
 com\team4\quanliquanmicay\Entity\PaymentHistory.class
 com\team4\quanliquanmicay\Entity\Category.class
 com\team4\quanliquanmicay\View\Dialogs\BanJDialog.class
-com\team4\quanliquanmicay\util\XFormat.class
 com\team4\quanliquanmicay\DAO\CrudDAO.class
 com\team4\quanliquanmicay\util\XDialog.class
 com\team4\quanliquanmicay\View\Dialogs\MonAnJDialog.class

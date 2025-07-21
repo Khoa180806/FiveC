@@ -1,4 +1,6 @@
 D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\app\Main.java
+D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\Controller\CrudController.java
+D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\Controller\EmployeeController.java
 D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\Controller\LoginController.java
 D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\Controller\WelcomeCotroller.java
 D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\DAO\BillDAO.java
@@ -38,7 +40,6 @@ D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\util\XChart.
 D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\util\XDate.java
 D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\util\XDialog.java
 D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\util\XExcel.java
-D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\util\XFormat.java
 D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\util\XIcon.java
 D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\util\XImage.java
 D:\HocTap\PRO1041_DA1\FiveC\src\main\java\com\team4\quanliquanmicay\util\XJdbc.java
