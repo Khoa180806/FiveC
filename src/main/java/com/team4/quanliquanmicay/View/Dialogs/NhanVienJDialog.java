@@ -1490,6 +1490,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             validateEmployee();
             UserAccount newEmployee = getForm();
             validateUniqueEmployeeId(newEmployee.getUser_id());
+            validateUniqueUsername(newEmployee.getUsername());
             validateBusinessRules(newEmployee);
 
             // Create in database
@@ -1529,6 +1530,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                 return;
             }
 
+            // Validate username không trùng với nhân viên khác
+            validateUniqueUsernameForUpdate(updatedEmployee.getUsername(), updatedEmployee.getUser_id());
             validateBusinessRules(updatedEmployee);
 
             // Preserve important fields
@@ -1626,6 +1629,9 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         if (txtNameAccount.getText().trim().isEmpty()) {
             throw new RuntimeException("Tên đăng nhập không được để trống!");
         }
+        
+        // ✅ ENHANCED: Validate username format
+        validateUsernameFormat(txtNameAccount.getText().trim());
         
         if (txtPassword.getText().trim().isEmpty()) {
             throw new RuntimeException("Mật khẩu không được để trống!");
@@ -1767,7 +1773,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * Check ID trùng lặp
+     * ✅ VALIDATION: Check ID trùng lặp
      */
     private void validateUniqueEmployeeId(String userId) {
         try {
@@ -1779,6 +1785,111 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             throw e; // Re-throw validation errors
         } catch (Exception e) {
             throw new RuntimeException("Lỗi kiểm tra dữ liệu: " + e.getMessage());
+        }
+    }
+
+    /**
+     * ✅ VALIDATION: Check username trùng lặp (for CREATE) - optimized with cache
+     */
+    private void validateUniqueUsername(String username) {
+        try {
+            // Sử dụng cache để tối ưu hiệu suất
+            List<UserAccount> allEmployees = getEmployeesFromCacheOrDB();
+            
+            for (UserAccount emp : allEmployees) {
+                if (emp.getUsername() != null && emp.getUsername().equalsIgnoreCase(username.trim())) {
+                    throw new RuntimeException("Tên đăng nhập '" + username + "' đã được sử dụng!");
+                }
+            }
+            
+        } catch (RuntimeException e) {
+            throw e; // Re-throw validation errors
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi kiểm tra tên đăng nhập: " + e.getMessage());
+        }
+    }
+
+    /**
+     * ✅ VALIDATION: Check username trùng lặp (for UPDATE) - optimized with cache
+     */
+    private void validateUniqueUsernameForUpdate(String username, String currentUserId) {
+        try {
+            // Sử dụng cache để tối ưu hiệu suất  
+            List<UserAccount> allEmployees = getEmployeesFromCacheOrDB();
+            
+            for (UserAccount emp : allEmployees) {
+                if (emp.getUsername() != null && 
+                    emp.getUsername().equalsIgnoreCase(username.trim()) &&
+                    !emp.getUser_id().equals(currentUserId)) { // Loại trừ chính nhân viên đang sửa
+                    throw new RuntimeException("Tên đăng nhập '" + username + "' đã được sử dụng bởi nhân viên khác!");
+                }
+            }
+            
+        } catch (RuntimeException e) {
+            throw e; // Re-throw validation errors
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi kiểm tra tên đăng nhập: " + e.getMessage());
+        }
+    }
+
+    /**
+     * ✅ PERFORMANCE: Get employees from cache hoặc DB nếu cache empty
+     */
+    private List<UserAccount> getEmployeesFromCacheOrDB() {
+        if (employeeCache != null && !employeeCache.isEmpty() && isCacheValid) {
+            return employeeCache; // Sử dụng cache
+        } else {
+            return userDAO.findAll(); // Fallback to DB
+        }
+    }
+
+    /**
+     * ✅ VALIDATION: Validate username format và quy tắc
+     */
+    private void validateUsernameFormat(String username) {
+        if (username == null || username.trim().isEmpty()) {
+            throw new RuntimeException("Tên đăng nhập không được để trống!");
+        }
+        
+        String cleanUsername = username.trim();
+        
+        // 1. Kiểm tra độ dài
+        if (cleanUsername.length() < 3) {
+            throw new RuntimeException("Tên đăng nhập phải có ít nhất 3 ký tự!");
+        }
+        
+        if (cleanUsername.length() > 20) {
+            throw new RuntimeException("Tên đăng nhập không được vượt quá 20 ký tự!");
+        }
+        
+        // 2. Kiểm tra ký tự hợp lệ (chữ, số, dấu gạch dưới, chấm)
+        if (!cleanUsername.matches("^[a-zA-Z0-9._]+$")) {
+            throw new RuntimeException("Tên đăng nhập chỉ được chứa chữ cái, số, dấu chấm (.) và gạch dưới (_)!");
+        }
+        
+        // 3. Không được bắt đầu bằng số
+        if (Character.isDigit(cleanUsername.charAt(0))) {
+            throw new RuntimeException("Tên đăng nhập không được bắt đầu bằng số!");
+        }
+        
+        // 4. Không được bắt đầu hoặc kết thúc bằng dấu chấm hoặc gạch dưới
+        if (cleanUsername.startsWith(".") || cleanUsername.startsWith("_") ||
+            cleanUsername.endsWith(".") || cleanUsername.endsWith("_")) {
+            throw new RuntimeException("Tên đăng nhập không được bắt đầu hoặc kết thúc bằng dấu chấm (.) hoặc gạch dưới (_)!");
+        }
+        
+        // 5. Không được có 2 dấu chấm hoặc gạch dưới liên tiếp
+        if (cleanUsername.contains("..") || cleanUsername.contains("__") || 
+            cleanUsername.contains("._") || cleanUsername.contains("_.")) {
+            throw new RuntimeException("Tên đăng nhập không được có các ký tự đặc biệt liên tiếp!");
+        }
+        
+        // 6. Kiểm tra từ khóa bị cấm
+        String[] forbiddenWords = {"admin", "root", "administrator", "system", "test", "demo", "guest"};
+        for (String forbidden : forbiddenWords) {
+            if (cleanUsername.toLowerCase().contains(forbidden)) {
+                throw new RuntimeException("Tên đăng nhập không được chứa từ khóa: " + forbidden);
+            }
         }
     }
 
