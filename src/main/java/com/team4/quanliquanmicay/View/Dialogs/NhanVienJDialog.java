@@ -23,6 +23,8 @@ import com.team4.quanliquanmicay.util.XDialog;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
 
 /**
  *
@@ -72,6 +74,9 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         
         // ✅ IMAGE SELECTION: Add click listener to lblImage for image selection
         setupImageSelection();
+        
+        // ✅ SEARCH FUNCTIONALITY: Setup real-time search by employee name
+        setupSearchFunctionality();
     }
 
     /**
@@ -541,7 +546,10 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         // 6. Enable tất cả các trường khác
         setAllFieldsEditable(true);
         
-        // 7. Focus vào mã nhân viên để bắt đầu nhập
+        // 7. Clear search box về trạng thái ban đầu
+        clearSearch();
+        
+        // 8. Focus vào mã nhân viên để bắt đầu nhập
         txtIdEmployee.requestFocus();
         
         System.out.println("✅ Đã clear form và sẵn sàng tạo nhân viên mới!");
@@ -1274,7 +1282,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * ✅ FAST: Enhanced fillToTable với smart caching
+     * ✅ FAST: Enhanced fillToTable với smart caching và search support
      */
     private void fillToTableWithCache() {
         javax.swing.SwingUtilities.invokeLater(() -> {
@@ -1286,8 +1294,15 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                     System.out.println("✅ Loaded " + employeeCache.size() + " employees to cache");
                 }
                 
-                // Fast table population
-                populateTableFromCache();
+                // Check if there's an active search
+                String currentSearch = getCurrentSearchKeyword();
+                if (!currentSearch.isEmpty()) {
+                    // Apply current search filter
+                    filterEmployeesByName(currentSearch);
+                } else {
+                    // Fast table population (show all)
+                    populateTableFromCache();
+                }
                 
             } catch (Exception e) {
                 System.err.println("Fill table error: " + e.getMessage());
@@ -1545,13 +1560,25 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * ✅ DEBOUNCED: Filter với debouncing để tránh lag
+     * ✅ DEBOUNCED: Filter với debouncing để tránh lag - updated for search support
      */
     private void performFilterAndFill() {
-        if (debounceTimer != null && debounceTimer.isRunning()) {
-            debounceTimer.restart();
+        // Check if there's an active search
+        String currentSearch = getCurrentSearchKeyword();
+        if (!currentSearch.isEmpty()) {
+            // Apply search filter instead of normal filter
+            if (debounceTimer != null && debounceTimer.isRunning()) {
+                debounceTimer.restart();
+            } else {
+                filterEmployeesByName(currentSearch);
+            }
         } else {
-            populateTableFromCache();
+            // Normal table population
+            if (debounceTimer != null && debounceTimer.isRunning()) {
+                debounceTimer.restart();
+            } else {
+                populateTableFromCache();
+            }
         }
     }
 
@@ -2093,5 +2120,206 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             lblImage.setText("Click để chọn ảnh");
             lblImage.setToolTipText("Click để chọn ảnh nhân viên");
         }
+    }
+
+    // =============================================================================
+    // REAL-TIME SEARCH FUNCTIONALITY - TÌM KIẾM THEO TÊN NHÂN VIÊN
+    // =============================================================================
+    
+    /**
+     * ✅ SETUP: Initialize real-time search functionality
+     */
+    private void setupSearchFunctionality() {
+        // Set placeholder text cho search box
+        txtSearch.setText("Tìm theo tên nhân viên...");
+        txtSearch.setForeground(java.awt.Color.GRAY);
+        
+        // Add focus listener để clear placeholder
+        txtSearch.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (txtSearch.getText().equals("Tìm theo tên nhân viên...")) {
+                    txtSearch.setText("");
+                    txtSearch.setForeground(java.awt.Color.BLACK);
+                }
+            }
+            
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (txtSearch.getText().trim().isEmpty()) {
+                    txtSearch.setText("Tìm theo tên nhân viên...");
+                    txtSearch.setForeground(java.awt.Color.GRAY);
+                    // Reset về hiển thị tất cả khi không có từ khóa
+                    filterEmployeesByName("");
+                }
+            }
+        });
+        
+        // Add document listener để search real-time khi gõ
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                performSearch();
+            }
+            
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                performSearch();
+            }
+            
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                performSearch();
+            }
+        });
+        
+        System.out.println("✅ Setup search functionality - ready to search by employee name!");
+    }
+    
+    /**
+     * ✅ SEARCH: Perform search with debouncing
+     */
+    private void performSearch() {
+        // Chỉ search nếu không phải placeholder text
+        String searchText = txtSearch.getText();
+        if (!searchText.equals("Tìm theo tên nhân viên...")) {
+            // Debounce search để tránh lag khi gõ nhanh
+            if (debounceTimer != null) {
+                debounceTimer.stop();
+            }
+            
+            debounceTimer = new javax.swing.Timer(200, e -> {
+                filterEmployeesByName(searchText.trim());
+            });
+            debounceTimer.setRepeats(false);
+            debounceTimer.start();
+        }
+    }
+    
+    /**
+     * ✅ FILTER: Filter employees by name (support Vietnamese)
+     */
+    private void filterEmployeesByName(String searchKeyword) {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            try {
+                // Ensure cache is available
+                if (!isCacheValid || employeeCache.isEmpty()) {
+                    employeeCache = userDAO.findAll();
+                    isCacheValid = true;
+                }
+                
+                DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
+                model.setRowCount(0);
+                
+                if (searchKeyword.isEmpty()) {
+                    // Hiển thị tất cả nếu không có từ khóa
+                    for (UserAccount emp : employeeCache) {
+                        model.addRow(createRowData(emp));
+                    }
+                    System.out.println("📋 Displaying all " + employeeCache.size() + " employees");
+                } else {
+                    // Filter theo tên
+                    String normalizedKeyword = normalizeVietnamese(searchKeyword.toLowerCase());
+                    int matchCount = 0;
+                    
+                    for (UserAccount emp : employeeCache) {
+                        if (emp.getFullName() != null) {
+                            String normalizedName = normalizeVietnamese(emp.getFullName().toLowerCase());
+                            
+                            // Check if name contains the search keyword
+                            if (isNameMatched(normalizedName, normalizedKeyword)) {
+                                model.addRow(createRowData(emp));
+                                matchCount++;
+                            }
+                        }
+                    }
+                    
+                    System.out.println("🔍 Found " + matchCount + " employees matching: '" + searchKeyword + "'");
+                }
+                
+            } catch (Exception e) {
+                System.err.println("❌ Search error: " + e.getMessage());
+                XDialog.alert("Lỗi tìm kiếm: " + e.getMessage());
+            }
+        });
+    }
+    
+    /**
+     * ✅ MATCHING: Advanced name matching logic
+     */
+    private boolean isNameMatched(String fullName, String searchKeyword) {
+        // 1. Exact substring match
+        if (fullName.contains(searchKeyword)) {
+            return true;
+        }
+        
+        // 2. Word boundary match (tìm theo từng từ)
+        String[] nameWords = fullName.split("\\s+");
+        for (String word : nameWords) {
+            if (word.startsWith(searchKeyword)) {
+                return true;
+            }
+        }
+        
+        // 3. Initials match (VD: "nvm" -> "Nguyen Van Manager")
+        if (searchKeyword.length() >= 2) {
+            StringBuilder initials = new StringBuilder();
+            for (String word : nameWords) {
+                if (!word.isEmpty()) {
+                    initials.append(word.charAt(0));
+                }
+            }
+            if (initials.toString().toLowerCase().contains(searchKeyword)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * ✅ VIETNAMESE: Normalize Vietnamese text for better search
+     */
+    private String normalizeVietnamese(String text) {
+        if (text == null) return "";
+        
+        // Simple normalization - remove accents
+        String normalized = text
+            .replaceAll("[àáạảãâầấậẩẫăằắặẳẵ]", "a")
+            .replaceAll("[èéẹẻẽêềếệểễ]", "e")
+            .replaceAll("[ìíịỉĩ]", "i")
+            .replaceAll("[òóọỏõôồốộổỗơờớợởỡ]", "o")
+            .replaceAll("[ùúụủũưừứựửữ]", "u")
+            .replaceAll("[ỳýỵỷỹ]", "y")
+            .replaceAll("[đ]", "d")
+            .replaceAll("[ÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴ]", "A")
+            .replaceAll("[ÈÉẸẺẼÊỀẾỆỂỄ]", "E")
+            .replaceAll("[ÌÍỊỈĨ]", "I")
+            .replaceAll("[ÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠ]", "O")
+            .replaceAll("[ÙÚỤỦŨƯỪỨỰỬỮ]", "U")
+            .replaceAll("[ỲÝỴỶỸ]", "Y")
+            .replaceAll("[Đ]", "D");
+            
+        return normalized;
+    }
+    
+    /**
+     * ✅ RESET: Clear search and show all employees
+     */
+    public void clearSearch() {
+        txtSearch.setText("Tìm theo tên nhân viên...");
+        txtSearch.setForeground(java.awt.Color.GRAY);
+        filterEmployeesByName(""); // Show all
+    }
+    
+    /**
+     * ✅ UTILITY: Get current search keyword
+     */
+    public String getCurrentSearchKeyword() {
+        String text = txtSearch.getText();
+        if (text.equals("Tìm theo tên nhân viên...")) {
+            return "";
+        }
+        return text.trim();
     }
 }
