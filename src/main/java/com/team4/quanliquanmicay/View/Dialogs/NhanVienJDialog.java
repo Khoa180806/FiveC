@@ -12,19 +12,13 @@ import com.team4.quanliquanmicay.Entity.UserRole;
 import com.team4.quanliquanmicay.Impl.RoleDAOImpl;
 import com.team4.quanliquanmicay.Impl.UserDAOImpl;
 import java.util.List;
-import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import com.team4.quanliquanmicay.util.XImage;
-import java.text.SimpleDateFormat;
-import com.team4.quanliquanmicay.util.XDialog;
+import java.util.*;
+import com.team4.quanliquanmicay.util.*;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
+import javax.swing.event.*;
 
 /**
  *
@@ -41,42 +35,33 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
 
     public NhanVienJDialog() {
         initComponents();
-        this.setLocationRelativeTo(null);
-
-        // Khởi tạo DAO
-        this.userDAO = new UserDAOImpl();
-        this.roleDAO = new RoleDAOImpl(); // Khởi tạo RoleDAO
-        this.roleMap = new HashMap<>(); // Khởi tạo cache
-
-        // Load roles và status từ DB
+        setLocationRelativeTo(null);
+        
+        // Initialize DAOs và cache
+        userDAO = new UserDAOImpl();
+        roleDAO = new RoleDAOImpl();
+        roleMap = new HashMap<>();
+        
+        // Setup all functionality
         loadRoles();
-
-        // Load dữ liệu lên bảng khi khởi động
         fillToTable();
-
-        // Set độ rộng cột
         setColumnWidths();
-
-        // Thêm event listener cho nút LƯU
+        setupEventListeners();
+        setupPerformanceOptimizations();
+        preloadDefaultImages();
+        setupImageSelection();
+        setupSearchFunctionality();
+    }
+    
+    /**
+     * ✅ CONSOLIDATED: Setup all event listeners
+     */
+    private void setupEventListeners() {
         tableInfo.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (evt.getClickCount() == 1) {
-                    edit(); // Tự động load dữ liệu và ảnh khi click
-                }
+                if (evt.getClickCount() == 1) edit();
             }
         });
-
-        // ✅ ADD: Performance optimizations
-        setupPerformanceOptimizations();
-
-        // ✅ PRODUCTION: Load image instantly (thay thế testLoadImage)
-        preloadDefaultImages();
-        
-        // ✅ IMAGE SELECTION: Add click listener to lblImage for image selection
-        setupImageSelection();
-        
-        // ✅ SEARCH FUNCTIONALITY: Setup real-time search by employee name
-        setupSearchFunctionality();
     }
 
     /**
@@ -600,34 +585,19 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * ✅ SIMPLIFIED: Thoát ứng dụng đơn giản - chỉ 1 dialog duy nhất
+     * ✅ OPTIMIZED: Thoát ứng dụng đơn giản - chỉ 1 dialog duy nhất
      */
     private void exitApplication() {
         try {
             boolean hasData = hasUnsavedChanges();
-            boolean shouldExit = false;
+            String message = hasData ? 
+                "⚠️ Còn dữ liệu trong form!\n\nBạn có muốn thoát không?\n(Dữ liệu sẽ bị mất nếu chưa lưu)" :
+                "Bạn có muốn thoát ứng dụng không?";
             
-            if (hasData) {
-                // Có dữ liệu trong form
-                shouldExit = XDialog.confirm(
-                    "⚠️ Còn dữ liệu trong form!\n\n" +
-                    "Bạn có muốn thoát không?\n" +
-                    "(Dữ liệu sẽ bị mất nếu chưa lưu)",
-                    "Xác nhận thoát"
-                );
-            } else {
-                // Không có dữ liệu
-                shouldExit = XDialog.confirm(
-                    "Bạn có muốn thoát ứng dụng không?",
-                    "Xác nhận thoát"
-                );
-            }
-            
-            if (shouldExit) {
+            if (XDialog.confirm(message, "Xác nhận thoát")) {
                 System.out.println("Đang thoát ứng dụng Quản lý Nhân viên...");
                 System.exit(0);
             }
-            
         } catch (Exception e) {
             XDialog.alert("Lỗi khi thoát ứng dụng: " + e.getMessage(), "Lỗi hệ thống");
             e.printStackTrace();
@@ -635,17 +605,13 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * ✅ SIMPLE CHECK: Kiểm tra có dữ liệu trong form không
+     * ✅ OPTIMIZED: Kiểm tra có dữ liệu trong form không
      */
     private boolean hasUnsavedChanges() {
-        return !txtIdEmployee.getText().trim().isEmpty()
-                || !txtNameAccount.getText().trim().isEmpty()
-                || !txtPassword.getText().trim().isEmpty()
-                || !txtNameEmployee.getText().trim().isEmpty()
-                || !txtPhoneNumber.getText().trim().isEmpty()
-                || !txtEmail.getText().trim().isEmpty()
-                || chkMale.isSelected()
-                || chkFemale.isSelected();
+        return !isBlank(txtIdEmployee.getText()) || !isBlank(txtNameAccount.getText()) ||
+               !isBlank(txtPassword.getText()) || !isBlank(txtNameEmployee.getText()) ||
+               !isBlank(txtPhoneNumber.getText()) || !isBlank(txtEmail.getText()) ||
+               chkMale.isSelected() || chkFemale.isSelected();
     }
 
     /**
@@ -794,30 +760,22 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * Lấy tên vai trò từ cache
+     * ✅ OPTIMIZED: Lấy tên vai trò từ cache
      */
     private String getRoleName(String roleId) {
-        if (roleId != null && roleMap.containsKey(roleId)) {
-            return roleMap.get(roleId); // Manager, Staff
-        }
-        return "N/A";
+        return (roleId != null && roleMap.containsKey(roleId)) ? roleMap.get(roleId) : "N/A";
     }
 
     /**
-     * Format ngày tháng để hiển thị trong bảng
+     * ✅ OPTIMIZED: Format ngày tháng để hiển thị trong bảng
      */
     private String formatDate(java.util.Date date) {
-        if (date == null) {
-            return "N/A";
-        }
-
+        if (date == null) return "N/A";
         try {
-            // Format ngày theo định dạng dd/MM/yyyy HH:mm
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm");
-            return sdf.format(date);
+            return new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(date);
         } catch (Exception e) {
             System.err.println("Lỗi format date: " + e.getMessage());
-            return date.toString(); // Fallback
+            return date.toString();
         }
     }
 
@@ -878,21 +836,18 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         entity.setUser_id(userId.trim());
         
         String username = txtNameAccount.getText();
-        if (username == null || username.trim().isEmpty()) {
+        if (username == null || username.trim().isEmpty()) 
             throw new RuntimeException("Tên đăng nhập không được để trống!");
-        }
         entity.setUsername(username.trim());
         
         String password = txtPassword.getText();
-        if (password == null || password.trim().isEmpty()) {
+        if (password == null || password.trim().isEmpty()) 
             throw new RuntimeException("Mật khẩu không được để trống!");
-        }
         entity.setPass(password.trim());
         
         String fullName = txtNameEmployee.getText();
-        if (fullName == null || fullName.trim().isEmpty()) {
+        if (fullName == null || fullName.trim().isEmpty()) 
             throw new RuntimeException("Họ tên không được để trống!");
-        }
         entity.setFullName(fullName.trim());
         
         // Xử lý giới tính
@@ -983,19 +938,16 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * Hiển thị ảnh placeholder khi không tìm thấy ảnh
+     * ✅ OPTIMIZED: Hiển thị ảnh placeholder khi không tìm thấy ảnh
      */
     private void setPlaceholderImage(String imageName) {
         try {
             String placeholderPath = "/icons_and_images/Unknown person.png";
-            java.net.URL placeholderURL = getClass().getResource(placeholderPath);
-
-            if (placeholderURL != null) {
+            if (getClass().getResource(placeholderPath) != null) {
                 XImage.setImageToLabel(lblImage, placeholderPath);
                 lblImage.setText("");
                 System.out.println("📷 Using placeholder image for: " + imageName);
             } else {
-                // Fallback text nếu không có placeholder
                 lblImage.setIcon(null);
                 lblImage.setText(imageName != null ? imageName : "No Image");
             }
@@ -1006,11 +958,9 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * Hiển thị ảnh mặc định khi không có tên ảnh
+     * ✅ OPTIMIZED: Hiển thị ảnh mặc định khi không có tên ảnh
      */
-    private void setDefaultImage() {
-        setDefaultImageWithClickable(); // Use enhanced version
-    }
+    private void setDefaultImage() { setDefaultImageWithClickable(); }
 
     /**
      * Method để test load ảnh (có thể gọi để kiểm tra)
@@ -1089,24 +1039,15 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * ✅ UTILITY: Check if string is blank
+     * ✅ OPTIMIZED: Utility methods
      */
-    private boolean isBlank(String str) {
-        return str == null || str.trim().isEmpty();
-    }
-
-    /**
-     * ✅ FORM: Check if form is completely empty
-     */
+    private boolean isBlank(String str) { return str == null || str.trim().isEmpty(); }
+    
     private boolean isFormEmpty() {
-        return isBlank(txtIdEmployee.getText()) &&
-               isBlank(txtNameAccount.getText()) &&
-               isBlank(txtPassword.getText()) &&
-               isBlank(txtNameEmployee.getText()) &&
-               isBlank(txtPhoneNumber.getText()) &&
-               isBlank(txtEmail.getText()) &&
-               !chkMale.isSelected() &&
-               !chkFemale.isSelected();
+        return isBlank(txtIdEmployee.getText()) && isBlank(txtNameAccount.getText()) &&
+               isBlank(txtPassword.getText()) && isBlank(txtNameEmployee.getText()) &&
+               isBlank(txtPhoneNumber.getText()) && isBlank(txtEmail.getText()) &&
+               !chkMale.isSelected() && !chkFemale.isSelected();
     }
 
     @Override
@@ -1368,13 +1309,10 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * ✅ FAST: Date formatting với reusable formatter
+     * ✅ OPTIMIZED: Fast date formatting
      */
     private String formatDateFast(java.util.Date date) {
-        if (date == null) return "N/A";
-        
-        // Simple and fast formatting
-        return new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(date);
+        return date == null ? "N/A" : new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(date);
     }
 
     /**
@@ -1608,43 +1546,30 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * Validate employee (required by EmployeeController)
+     * ✅ OPTIMIZED: Validate employee (required by EmployeeController)
      */
     @Override
     public void validateEmployee() {
-        // Chỉ validate nếu có dữ liệu trong form
-        if (txtIdEmployee.getText().trim().isEmpty() && 
-            txtNameAccount.getText().trim().isEmpty() &&
-            txtPassword.getText().trim().isEmpty() &&
-            txtNameEmployee.getText().trim().isEmpty()) {
-            // Form trống hoàn toàn - không cần validate
-            return;
+        // Early return nếu form trống
+        if (isBlank(txtIdEmployee.getText()) && isBlank(txtNameAccount.getText()) &&
+            isBlank(txtPassword.getText()) && isBlank(txtNameEmployee.getText())) return;
+        
+        // Validate các trường bắt buộc - consolidated
+        String[] fields = {txtIdEmployee.getText(), txtNameAccount.getText(), 
+                          txtPassword.getText(), txtNameEmployee.getText()};
+        String[] fieldNames = {"Mã nhân viên", "Tên đăng nhập", "Mật khẩu", "Họ tên nhân viên"};
+        
+        for (int i = 0; i < fields.length; i++) {
+            if (isBlank(fields[i])) 
+                throw new RuntimeException(fieldNames[i] + " không được để trống!");
         }
         
-        // Validate các trường bắt buộc
-        if (txtIdEmployee.getText().trim().isEmpty()) {
-            throw new RuntimeException("Mã nhân viên không được để trống!");
-        }
-        
-        if (txtNameAccount.getText().trim().isEmpty()) {
-            throw new RuntimeException("Tên đăng nhập không được để trống!");
-        }
-        
-        // ✅ ENHANCED: Validate username format
+        // Validate username format
         validateUsernameFormat(txtNameAccount.getText().trim());
         
-        if (txtPassword.getText().trim().isEmpty()) {
-            throw new RuntimeException("Mật khẩu không được để trống!");
-        }
-        
-        if (txtNameEmployee.getText().trim().isEmpty()) {
-            throw new RuntimeException("Họ tên nhân viên không được để trống!");
-        }
-        
         // Validate giới tính
-        if (!chkMale.isSelected() && !chkFemale.isSelected()) {
+        if (!chkMale.isSelected() && !chkFemale.isSelected()) 
             throw new RuntimeException("Vui lòng chọn giới tính!");
-        }
     }
 
     /**
@@ -1653,8 +1578,6 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     private void validateBusinessRules(UserAccount employee) {
         // 1. Validate số điện thoại
         validatePhoneNumberFormat(employee.getPhone_number());
-        
-        // 2. Validate email
         validateEmailFormat(employee.getEmail());
     }
 
@@ -1662,50 +1585,42 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
      * Phone validation với đầu số Việt Nam
      */
     private void validatePhoneNumberFormat(String phone) {
-        if (phone == null || phone.trim().isEmpty()) {
+        if (phone == null || phone.trim().isEmpty()) 
             throw new RuntimeException("Số điện thoại không được để trống!");
-        }
         
         String cleanPhone = phone.trim();
         
         // Trường hợp 1: Số quốc tế +84
         if (cleanPhone.startsWith("+84")) {
-            if (cleanPhone.length() < 12 || cleanPhone.length() > 13) {
+            if (cleanPhone.length() < 12 || cleanPhone.length() > 13) 
                 throw new RuntimeException("Số điện thoại +84 phải có 12-13 số (VD: +84901234567)!");
-            }
             
             String numberPart = cleanPhone.substring(3);
-            if (!numberPart.matches("\\d+")) {
+            if (!numberPart.matches("\\d+")) 
                 throw new RuntimeException("Số điện thoại chỉ được chứa số sau +84!");
-            }
             
             // Check đầu số Việt Nam hợp lệ
             if (numberPart.length() >= 2) {
                 String prefix = numberPart.substring(0, 2);
-                if (!isValidVietnamesePrefix(prefix)) {
+                if (!isValidVietnamesePrefix(prefix)) 
                     throw new RuntimeException("Đầu số " + prefix + " không hợp lệ cho điện thoại Việt Nam!");
-                }
             }
         }
         // Trường hợp 2: Số nội địa 0x
         else {
-            if (cleanPhone.length() != 10) {
+            if (cleanPhone.length() != 10) 
                 throw new RuntimeException("Số điện thoại phải có đúng 10 số (VD: 0901234567)!");
-            }
             
-            if (!cleanPhone.matches("\\d+")) {
+            if (!cleanPhone.matches("\\d+")) 
                 throw new RuntimeException("Số điện thoại chỉ được chứa các chữ số!");
-            }
             
-            if (!cleanPhone.startsWith("0")) {
+            if (!cleanPhone.startsWith("0")) 
                 throw new RuntimeException("Số điện thoại phải bắt đầu bằng số 0!");
-            }
             
             // Check đầu số Việt Nam
             String prefix = cleanPhone.substring(1, 3); // Lấy 2 số sau 0
-            if (!isValidVietnamesePrefix(prefix)) {
+            if (!isValidVietnamesePrefix(prefix)) 
                 throw new RuntimeException("Đầu số " + cleanPhone.substring(0, 3) + " không hợp lệ!");
-            }
         }
     }
 
@@ -1738,38 +1653,32 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
      * Email validation - chỉ cho phép gmail.com và fivec.com
      */
     private void validateEmailFormat(String email) {
-        if (email == null || email.trim().isEmpty()) {
+        if (email == null || email.trim().isEmpty()) 
             throw new RuntimeException("Email không được để trống!");
-        }
         
         String cleanEmail = email.trim().toLowerCase();
         
         // Basic format check
-        if (!cleanEmail.contains("@")) {
+        if (!cleanEmail.contains("@")) 
             throw new RuntimeException("Email phải chứa ký tự @!");
-        }
         
         String[] parts = cleanEmail.split("@");
-        if (parts.length != 2 || parts[0].isEmpty() || parts[1].isEmpty()) {
+        if (parts.length != 2 || parts[0].isEmpty() || parts[1].isEmpty()) 
             throw new RuntimeException("Email không đúng định dạng!");
-        }
         
         String localPart = parts[0];
         String domain = parts[1];
         
         // Check local part format
-        if (!localPart.matches("[a-zA-Z0-9._-]+")) {
+        if (!localPart.matches("[a-zA-Z0-9._-]+")) 
             throw new RuntimeException("Phần trước @ chỉ được chứa chữ, số, dấu chấm, gạch dưới và gạch ngang!");
-        }
         
-        if (localPart.length() < 1 || localPart.length() > 50) {
+        if (localPart.length() < 1 || localPart.length() > 50) 
             throw new RuntimeException("Phần trước @ phải có độ dài từ 1-50 ký tự!");
-        }
         
         // Chỉ cho phép domain cụ thể
-        if (!domain.equals("gmail.com") && !domain.equals("fivec.com")) {
+        if (!domain.equals("gmail.com") && !domain.equals("fivec.com")) 
             throw new RuntimeException("Email chỉ được sử dụng domain @gmail.com hoặc @fivec.com!");
-        }
     }
 
     /**
@@ -1778,9 +1687,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     private void validateUniqueEmployeeId(String userId) {
         try {
             UserAccount existing = userDAO.findById(userId);
-            if (existing != null) {
+            if (existing != null) 
                 throw new RuntimeException("Mã nhân viên '" + userId + "' đã tồn tại!");
-            }
         } catch (RuntimeException e) {
             throw e; // Re-throw validation errors
         } catch (Exception e) {
@@ -1797,9 +1705,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             List<UserAccount> allEmployees = getEmployeesFromCacheOrDB();
             
             for (UserAccount emp : allEmployees) {
-                if (emp.getUsername() != null && emp.getUsername().equalsIgnoreCase(username.trim())) {
+                if (emp.getUsername() != null && emp.getUsername().equalsIgnoreCase(username.trim())) 
                     throw new RuntimeException("Tên đăng nhập '" + username + "' đã được sử dụng!");
-                }
             }
             
         } catch (RuntimeException e) {
@@ -1820,9 +1727,8 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             for (UserAccount emp : allEmployees) {
                 if (emp.getUsername() != null && 
                     emp.getUsername().equalsIgnoreCase(username.trim()) &&
-                    !emp.getUser_id().equals(currentUserId)) { // Loại trừ chính nhân viên đang sửa
+                    !emp.getUser_id().equals(currentUserId)) // Loại trừ chính nhân viên đang sửa
                     throw new RuntimeException("Tên đăng nhập '" + username + "' đã được sử dụng bởi nhân viên khác!");
-                }
             }
             
         } catch (RuntimeException e) {
@@ -1833,63 +1739,52 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * ✅ PERFORMANCE: Get employees from cache hoặc DB nếu cache empty
+     * ✅ OPTIMIZED: Get employees from cache hoặc DB nếu cache empty
      */
     private List<UserAccount> getEmployeesFromCacheOrDB() {
-        if (employeeCache != null && !employeeCache.isEmpty() && isCacheValid) {
-            return employeeCache; // Sử dụng cache
-        } else {
-            return userDAO.findAll(); // Fallback to DB
-        }
+        return (employeeCache != null && !employeeCache.isEmpty() && isCacheValid) ? 
+            employeeCache : userDAO.findAll();
     }
 
     /**
      * ✅ VALIDATION: Validate username format và quy tắc
      */
     private void validateUsernameFormat(String username) {
-        if (username == null || username.trim().isEmpty()) {
+        if (username == null || username.trim().isEmpty()) 
             throw new RuntimeException("Tên đăng nhập không được để trống!");
-        }
         
         String cleanUsername = username.trim();
         
         // 1. Kiểm tra độ dài
-        if (cleanUsername.length() < 3) {
+        if (cleanUsername.length() < 3) 
             throw new RuntimeException("Tên đăng nhập phải có ít nhất 3 ký tự!");
-        }
         
-        if (cleanUsername.length() > 20) {
+        if (cleanUsername.length() > 20) 
             throw new RuntimeException("Tên đăng nhập không được vượt quá 20 ký tự!");
-        }
         
         // 2. Kiểm tra ký tự hợp lệ (chữ, số, dấu gạch dưới, chấm)
-        if (!cleanUsername.matches("^[a-zA-Z0-9._]+$")) {
+        if (!cleanUsername.matches("^[a-zA-Z0-9._]+$")) 
             throw new RuntimeException("Tên đăng nhập chỉ được chứa chữ cái, số, dấu chấm (.) và gạch dưới (_)!");
-        }
         
         // 3. Không được bắt đầu bằng số
-        if (Character.isDigit(cleanUsername.charAt(0))) {
+        if (Character.isDigit(cleanUsername.charAt(0))) 
             throw new RuntimeException("Tên đăng nhập không được bắt đầu bằng số!");
-        }
         
         // 4. Không được bắt đầu hoặc kết thúc bằng dấu chấm hoặc gạch dưới
         if (cleanUsername.startsWith(".") || cleanUsername.startsWith("_") ||
-            cleanUsername.endsWith(".") || cleanUsername.endsWith("_")) {
+            cleanUsername.endsWith(".") || cleanUsername.endsWith("_")) 
             throw new RuntimeException("Tên đăng nhập không được bắt đầu hoặc kết thúc bằng dấu chấm (.) hoặc gạch dưới (_)!");
-        }
         
         // 5. Không được có 2 dấu chấm hoặc gạch dưới liên tiếp
         if (cleanUsername.contains("..") || cleanUsername.contains("__") || 
-            cleanUsername.contains("._") || cleanUsername.contains("_.")) {
+            cleanUsername.contains("._") || cleanUsername.contains("_.")) 
             throw new RuntimeException("Tên đăng nhập không được có các ký tự đặc biệt liên tiếp!");
-        }
         
         // 6. Kiểm tra từ khóa bị cấm
         String[] forbiddenWords = {"admin", "root", "administrator", "system", "test", "demo", "guest"};
         for (String forbidden : forbiddenWords) {
-            if (cleanUsername.toLowerCase().contains(forbidden)) {
+            if (cleanUsername.toLowerCase().contains(forbidden)) 
                 throw new RuntimeException("Tên đăng nhập không được chứa từ khóa: " + forbidden);
-            }
         }
     }
 
@@ -2153,66 +2048,54 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
     
     /**
-     * ✅ UTILITY: Get file extension
+     * ✅ OPTIMIZED: Get file extension
      */
     private String getFileExtension(String fileName) {
-        if (fileName != null && fileName.contains(".")) {
-            return fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
-        }
-        return "jpg"; // Default
+        return (fileName != null && fileName.contains(".")) ? 
+            fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase() : "jpg";
     }
     
     /**
-     * ✅ ENHANCED: Enhanced setForm to preserve image display
+     * ✅ OPTIMIZED: Enhanced setForm to preserve image display
      */
     @Override
     public void setForm(UserAccount entity) {
-        // Điền dữ liệu từ entity vào form
-        if (entity != null) {
-            txtIdEmployee.setText(entity.getUser_id());
-            txtNameAccount.setText(entity.getUsername());
-            txtPassword.setText(entity.getPass());
-            txtNameEmployee.setText(entity.getFullName());
+        if (entity == null) return;
+        
+        // Basic info
+        txtIdEmployee.setText(entity.getUser_id());
+        txtNameAccount.setText(entity.getUsername());
+        txtPassword.setText(entity.getPass());
+        txtNameEmployee.setText(entity.getFullName());
+        txtPhoneNumber.setText(entity.getPhone_number());
+        txtEmail.setText(entity.getEmail());
 
-            // Xử lý giới tính
-            if (entity.getGender() != null) {
-                if (entity.getGender() == 1) {
-                    chkMale.setSelected(true);  // Nam
-                    chkFemale.setSelected(false);
-                } else {
-                    chkMale.setSelected(false);
-                    chkFemale.setSelected(true);  // Nữ
-                }
-            } else {
-                // Reset giới tính nếu null
-                groupGioiTinh.clearSelection();
-            }
-
-            txtPhoneNumber.setText(entity.getPhone_number());
-            txtEmail.setText(entity.getEmail());
-
-            // Hiển thị trạng thái và vai trò trong TextField (chỉ để xem)
-            String statusText = entity.getIs_enabled() != null ? 
-                (entity.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "N/A";
-            txtStatus.setText(statusText);
-            
-            String roleText = getRoleName(entity.getRole_id());
-            txtRole.setText(roleText);
-            
-            // Set read-only cho Status và Role
-            txtStatus.setEditable(false);
-            txtRole.setEditable(false);
-
-            // ✅ ENHANCED: Load image with click functionality preserved
-            if (entity.getImage() != null && !entity.getImage().trim().isEmpty()) {
-                loadEmployeeImage(entity.getImage());
-            } else {
-                setDefaultImageWithClickable();
-            }
-
-            // Hiển thị role name từ DB
-            displayRoleInfo(entity.getRole_id());
+        // Gender handling - optimized
+        if (entity.getGender() != null) {
+            boolean isMale = entity.getGender() == 1;
+            chkMale.setSelected(isMale);
+            chkFemale.setSelected(!isMale);
+        } else {
+            groupGioiTinh.clearSelection();
         }
+
+        // Status và role - optimized with ternary
+        txtStatus.setText(entity.getIs_enabled() != null ? 
+            (entity.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "N/A");
+        txtRole.setText(getRoleName(entity.getRole_id()));
+        
+        // Set read-only
+        txtStatus.setEditable(false);
+        txtRole.setEditable(false);
+
+        // Image handling - optimized
+        if (entity.getImage() != null && !entity.getImage().trim().isEmpty()) {
+            loadEmployeeImage(entity.getImage());
+        } else {
+            setDefaultImageWithClickable();
+        }
+
+        displayRoleInfo(entity.getRole_id());
     }
     
     /**
@@ -2295,9 +2178,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         String searchText = txtSearch.getText();
         if (!searchText.equals("Tìm theo tên nhân viên...")) {
             // Debounce search để tránh lag khi gõ nhanh
-            if (debounceTimer != null) {
-                debounceTimer.stop();
-            }
+            if (debounceTimer != null)     debounceTimer.stop();
             
             debounceTimer = new javax.swing.Timer(200, e -> {
                 filterEmployeesByName(searchText.trim());
@@ -2360,29 +2241,21 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
      */
     private boolean isNameMatched(String fullName, String searchKeyword) {
         // 1. Exact substring match
-        if (fullName.contains(searchKeyword)) {
-            return true;
-        }
+        if (fullName.contains(searchKeyword)) return true;
         
         // 2. Word boundary match (tìm theo từng từ)
         String[] nameWords = fullName.split("\\s+");
         for (String word : nameWords) {
-            if (word.startsWith(searchKeyword)) {
-                return true;
-            }
+            if (word.startsWith(searchKeyword)) return true;
         }
         
         // 3. Initials match (VD: "nvm" -> "Nguyen Van Manager")
         if (searchKeyword.length() >= 2) {
             StringBuilder initials = new StringBuilder();
             for (String word : nameWords) {
-                if (!word.isEmpty()) {
-                    initials.append(word.charAt(0));
-                }
+                if (!word.isEmpty()) initials.append(word.charAt(0));
             }
-            if (initials.toString().toLowerCase().contains(searchKeyword)) {
-                return true;
-            }
+            if (initials.toString().toLowerCase().contains(searchKeyword)) return true;
         }
         
         return false;
@@ -2415,22 +2288,16 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
     
     /**
-     * ✅ RESET: Clear search and show all employees
+     * ✅ OPTIMIZED: Search utility methods
      */
     public void clearSearch() {
         txtSearch.setText("Tìm theo tên nhân viên...");
         txtSearch.setForeground(java.awt.Color.GRAY);
-        filterEmployeesByName(""); // Show all
+        filterEmployeesByName("");
     }
     
-    /**
-     * ✅ UTILITY: Get current search keyword
-     */
     public String getCurrentSearchKeyword() {
         String text = txtSearch.getText();
-        if (text.equals("Tìm theo tên nhân viên...")) {
-            return "";
-        }
-        return text.trim();
+        return text.equals("Tìm theo tên nhân viên...") ? "" : text.trim();
     }
 }
