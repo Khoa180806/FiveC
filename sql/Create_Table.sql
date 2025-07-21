@@ -214,7 +214,7 @@ CREATE TABLE TABLE_FOR_CUSTOMER (
     ,amount NUMBER(2) NOT NULL
     ,status NUMBER(1) DEFAULT 1
     ,CONSTRAINT CHK_Table_Amount CHECK (amount > 0)
-    ,CONSTRAINT CHK_Table_Status CHECK (status IN (0, 1))
+    ,CONSTRAINT CHK_Table_Status CHECK (status IN (0, 1,2))
 );
 
 -- 7. BẢNG PAYMENT_METHOD

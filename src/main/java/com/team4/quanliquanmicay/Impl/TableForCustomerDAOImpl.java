@@ -36,7 +36,7 @@ public class TableForCustomerDAOImpl implements TableForCustomerDAO {
             entity.getStatus(),
             entity.getTable_number()
         };
-        XJdbc.executeQuery(createSql, values);
+        XJdbc.executeQuery(updateSql, values);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class TableForCustomerDAOImpl implements TableForCustomerDAO {
         return list;
     }
 
-    @Override
+
     public List<TableForCustomer> selectAll() {
         return XQuery.getBeanList(TableForCustomer.class, findAllSql);
     }
@@ -76,13 +76,5 @@ public class TableForCustomerDAOImpl implements TableForCustomerDAO {
         return XQuery.getSingleBean(TableForCustomer.class, findByIdSql, table_number);
     }
 
-    private int convertStatusToInt(String status) {
-        switch (status) {
-            case "Trống": return 0;
-            case "Hoạt Động": return 1;
-            case "Đang Chờ": return 2;
-            case "Ngưng Phục Vụ": return 3;
-            default: return 0;
-        }
-    }
+   
 }

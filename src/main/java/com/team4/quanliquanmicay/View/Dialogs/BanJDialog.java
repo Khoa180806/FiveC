@@ -26,8 +26,11 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
      */
     public BanJDialog() {
         initComponents();
-        this.setLocationRelativeTo(null);
-        this.tableDAO = new TableForCustomerDAOImpl(); // Thêm dòng này
+        this.setLocationRelativeTo(null); 
+        this.tableDAO = new TableForCustomerDAOImpl();
+        pnlNormalTable.setLayout(new java.awt.GridLayout(2, 6, 15, 15)); // 3 hàng 4 cột
+        pnlVipTable.setLayout(new java.awt.GridLayout(2, 6, 15, 15));    // 2 hàng 6 cột
+        jTabbedPane1.setSelectedIndex(0); // Luôn hiển thị tab Normal Table trước
     }
 
     /**
@@ -46,25 +49,17 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
         pnlInfor = new javax.swing.JPanel();
         lblTable_Number = new javax.swing.JLabel();
         lblTable_Status = new javax.swing.JLabel();
-        lblBill_Id = new javax.swing.JLabel();
         txtTable_Number = new javax.swing.JTextField();
-        txtBill_Id = new javax.swing.JTextField();
+        txtAmount = new javax.swing.JTextField();
         cboTable_Status = new javax.swing.JComboBox<>();
         btnChangeTable = new javax.swing.JButton();
+        lblAmount1 = new javax.swing.JLabel();
         pnlTable = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         pnlNormalTable = new javax.swing.JPanel();
         pnlVipTable = new javax.swing.JPanel();
         pnlTitle2 = new javax.swing.JPanel();
         lblTitle2 = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
-        lblTable_Number2 = new javax.swing.JLabel();
-        lblAmount = new javax.swing.JLabel();
-        lblTable_Status2 = new javax.swing.JLabel();
-        txtTable_Number2 = new javax.swing.JTextField();
-        cboTable_Status2 = new javax.swing.JComboBox<>();
-        jLabel2 = new javax.swing.JLabel();
-        txtAmount = new javax.swing.JTextField();
         jPanel35 = new javax.swing.JPanel();
         btnAdd = new javax.swing.JButton();
         btnExit = new javax.swing.JButton();
@@ -118,20 +113,26 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
         lblTable_Status.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Task list.png"))); // NOI18N
         lblTable_Status.setText("TRẠNG THÁI :");
 
-        lblBill_Id.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        lblBill_Id.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Favourites.png"))); // NOI18N
-        lblBill_Id.setText("MÃ HÓA ĐƠN :");
-
         txtTable_Number.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        txtBill_Id.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtAmount.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
+        cboTable_Status.setEditable(true);
         cboTable_Status.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         cboTable_Status.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Trống", "Đang Chờ ", "Hoạt Động", " " }));
 
         btnChangeTable.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnChangeTable.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Tick.png"))); // NOI18N
         btnChangeTable.setText("CHUYỂN BÀN");
+        btnChangeTable.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnChangeTableActionPerformed(evt);
+            }
+        });
+
+        lblAmount1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        lblAmount1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Search.png"))); // NOI18N
+        lblAmount1.setText("SỐ CHỖ NGỒI :");
 
         javax.swing.GroupLayout pnlInforLayout = new javax.swing.GroupLayout(pnlInfor);
         pnlInfor.setLayout(pnlInforLayout);
@@ -140,19 +141,15 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
             .addGroup(pnlInforLayout.createSequentialGroup()
                 .addGap(24, 24, 24)
                 .addGroup(pnlInforLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pnlInforLayout.createSequentialGroup()
-                        .addGroup(pnlInforLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblTable_Status)
-                            .addComponent(lblTable_Number))
-                        .addGap(31, 31, 31))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlInforLayout.createSequentialGroup()
-                        .addComponent(lblBill_Id)
-                        .addGap(18, 18, 18)))
+                    .addComponent(lblTable_Status)
+                    .addComponent(lblTable_Number)
+                    .addComponent(lblAmount1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlInforLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(cboTable_Status, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtTable_Number)
-                    .addComponent(txtBill_Id, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(txtAmount, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                    .addComponent(cboTable_Status, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 73, Short.MAX_VALUE)
                 .addComponent(btnChangeTable)
                 .addGap(24, 24, 24))
         );
@@ -168,9 +165,9 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
                     .addComponent(lblTable_Status)
                     .addComponent(cboTable_Status, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlInforLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtBill_Id, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblBill_Id))
+                .addGroup(pnlInforLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblAmount1))
                 .addContainerGap())
             .addGroup(pnlInforLayout.createSequentialGroup()
                 .addGap(15, 15, 15)
@@ -183,15 +180,18 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
 
         jTabbedPane1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
 
+        pnlNormalTable.setPreferredSize(new java.awt.Dimension(1180, 479));
+        pnlNormalTable.setRequestFocusEnabled(false);
+
         javax.swing.GroupLayout pnlNormalTableLayout = new javax.swing.GroupLayout(pnlNormalTable);
         pnlNormalTable.setLayout(pnlNormalTableLayout);
         pnlNormalTableLayout.setHorizontalGroup(
             pnlNormalTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 642, Short.MAX_VALUE)
+            .addGap(0, 1195, Short.MAX_VALUE)
         );
         pnlNormalTableLayout.setVerticalGroup(
             pnlNormalTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 434, Short.MAX_VALUE)
+            .addGap(0, 407, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("1-12", pnlNormalTable);
@@ -200,11 +200,11 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
         pnlVipTable.setLayout(pnlVipTableLayout);
         pnlVipTableLayout.setHorizontalGroup(
             pnlVipTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 642, Short.MAX_VALUE)
+            .addGap(0, 1195, Short.MAX_VALUE)
         );
         pnlVipTableLayout.setVerticalGroup(
             pnlVipTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 434, Short.MAX_VALUE)
+            .addGap(0, 407, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("13-24", pnlVipTable);
@@ -241,72 +241,6 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
                 .addGap(16, 16, 16)
                 .addComponent(lblTitle2)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
-
-        lblTable_Number2.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        lblTable_Number2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Notes.png"))); // NOI18N
-        lblTable_Number2.setText("BÀN SỐ :");
-
-        lblAmount.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        lblAmount.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Search.png"))); // NOI18N
-        lblAmount.setText("SỐ CHỖ NGỒI :");
-
-        lblTable_Status2.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        lblTable_Status2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Print preview.png"))); // NOI18N
-        lblTable_Status2.setText("TRẠNG THÁI :");
-
-        txtTable_Number2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
-        cboTable_Status2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        cboTable_Status2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Trống", "Hoạt Động", "Đang Chờ", "Ngưng Phục Vụ", " " }));
-
-        txtAmount.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addContainerGap(63, Short.MAX_VALUE)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(lblTable_Number2)
-                                .addGap(57, 57, 57))
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(lblAmount)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
-                            .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(lblTable_Status2)
-                                .addGap(18, 18, 18)))
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtTable_Number2, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(cboTable_Status2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 297, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(56, 56, 56))
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(31, 31, 31)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtTable_Number2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblTable_Number2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblAmount)
-                    .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cboTable_Status2, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblTable_Status2))
-                .addGap(18, 18, 18)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(27, Short.MAX_VALUE))
         );
 
         jPanel35.setBackground(new java.awt.Color(153, 0, 0));
@@ -391,24 +325,19 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(pnlTable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(pnlInfor, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(pnlTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel35, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel35, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(pnlTitle2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addContainerGap())
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(58, 58, 58)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addComponent(pnlTitle2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(pnlTable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -420,13 +349,8 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel35, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(pnlInfor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(31, 31, 31)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnlTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(92, 92, 92)))
+                .addGap(27, 27, 27)
+                .addComponent(pnlTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -434,11 +358,17 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 1200, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 1200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(25, 25, 25))
         );
 
         pack();
@@ -473,8 +403,12 @@ System.exit(0);
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
         // Cập nhật bàn
-        update();
+       this. update();
     }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void btnChangeTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeTableActionPerformed
+ changeTable();
+    }//GEN-LAST:event_btnChangeTableActionPerformed
 
     /**
      * @param args the command line arguments
@@ -519,19 +453,13 @@ System.exit(0);
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnUpdate;
     private javax.swing.JComboBox<String> cboTable_Status;
-    private javax.swing.JComboBox<String> cboTable_Status2;
     private javax.swing.JButton jButton5;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel35;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JLabel lblAmount;
-    private javax.swing.JLabel lblBill_Id;
+    private javax.swing.JLabel lblAmount1;
     private javax.swing.JLabel lblTable_Number;
-    private javax.swing.JLabel lblTable_Number2;
     private javax.swing.JLabel lblTable_Status;
-    private javax.swing.JLabel lblTable_Status2;
     private javax.swing.JLabel lblTitle;
     private javax.swing.JLabel lblTitle2;
     private javax.swing.JPanel pnlInfor;
@@ -541,9 +469,7 @@ System.exit(0);
     private javax.swing.JPanel pnlTitle2;
     private javax.swing.JPanel pnlVipTable;
     private javax.swing.JTextField txtAmount;
-    private javax.swing.JTextField txtBill_Id;
     private javax.swing.JTextField txtTable_Number;
-    private javax.swing.JTextField txtTable_Number2;
     // End of variables declaration//GEN-END:variables
 
     private TableForCustomerDAO tableDAO;
@@ -571,43 +497,28 @@ System.exit(0);
 
     // Cập nhật phương thức loadTable để không tự động tạo bàn mới
     private void loadTable() {
-        // Tải và hiển thị các bàn lên cửa sổ quản lý bàn
         List<TableForCustomer> tables = tableDAO.findAll();
         
         // Xóa tất cả bàn cũ trong panel
         pnlNormalTable.removeAll();
         pnlVipTable.removeAll();
         
-        // Tạo 12 bàn đầu tiên cho tab Normal (1-12)
-        for (int i = 1; i <= 12; i++) {
-            TableForCustomer table = findTableByNumber(tables, i);
-            if (table == null) {
-                // Nếu bàn chưa tồn tại, tạo bàn mới với thông tin mặc định (không lưu DB)
-                table = new TableForCustomer();
-                table.setTable_number(i);
-                table.setAmount(4); // Mặc định 4 chỗ ngồi
-                table.setStatus(0); // Trống
-            }
-            // Kiểm tra null trước khi tạo button
-            if (table != null) {
-                pnlNormalTable.add(this.createButton(table));
-            }
+        // Tạo map để tra cứu nhanh
+        java.util.Map<Integer, TableForCustomer> tableMap = new java.util.HashMap<>();
+        for (TableForCustomer t : tables) {
+            tableMap.put(t.getTable_number(), t);
         }
-        
-        // Tạo các bàn còn lại cho tab VIP (13-24)
+
+        // 1-12: Normal
+        for (int i = 1; i <= 12; i++) {
+            TableForCustomer table = tableMap.get(i);
+            pnlNormalTable.add(this.createButton(i, table));
+        }
+
+        // 13-24: VIP
         for (int i = 13; i <= 24; i++) {
-            TableForCustomer table = findTableByNumber(tables, i);
-            if (table == null) {
-                // Nếu bàn chưa tồn tại, tạo bàn mới với thông tin mặc định (không lưu DB)
-                table = new TableForCustomer();
-                table.setTable_number(i);
-                table.setAmount(6); // Mặc định 6 chỗ ngồi cho VIP
-                table.setStatus(0); // Trống
-            }
-            // Kiểm tra null trước khi tạo button
-            if (table != null) {
-                pnlVipTable.add(this.createButton(table));
-            }
+            TableForCustomer table = tableMap.get(i);
+            pnlVipTable.add(this.createButton(i, table));
         }
         
         // Cập nhật giao diện
@@ -637,40 +548,28 @@ System.exit(0);
         }
     }
 
-    private JButton createButton(TableForCustomer table) {
-        // Kiểm tra null trước khi tạo button
-        if (table == null) {
-            System.err.println("Table is null, cannot create button");
-            return new JButton("Error");
-        }
-        
-        // Tạo JButton cho bàn
+    private JButton createButton(int tableNumber, TableForCustomer table) {
         JButton btnTable = new JButton();
-        btnTable.setText(String.format("Bàn #%d", table.getTable_number()));
-        btnTable.setPreferredSize(new Dimension(80, 80));
-        
-        // Kiểm tra trạng thái bàn để set enabled/disabled
-        boolean isAvailable = table.getStatus() == 0; // 0 = Trống
-        btnTable.setEnabled(isAvailable);
-        
-        // Set màu nền dựa trên trạng thái
-        if (isAvailable) {
-            btnTable.setBackground(Color.GREEN);
-        } else if (table.getStatus() == 1) { // 1 = Hoạt động
-            btnTable.setBackground(Color.RED);
+        btnTable.setText(String.format("Bàn #%d", tableNumber));
+        btnTable.setPreferredSize(new Dimension(120, 120));
+
+        if (table == null) {
+            btnTable.setEnabled(false);
+            btnTable.setBackground(Color.LIGHT_GRAY);
         } else {
-            btnTable.setBackground(Color.GRAY);
+            btnTable.setEnabled(true);
+            switch (table.getStatus()) {
+                case 0: btnTable.setBackground(Color.GREEN); break; // Trống
+                case 1: btnTable.setBackground(Color.YELLOW); break; // Đang hoạt động
+                case 2: btnTable.setBackground(Color.RED); break;    // Ngừng hoạt động
+                default: btnTable.setBackground(Color.LIGHT_GRAY);
+            }
+            btnTable.setActionCommand(String.valueOf(table.getTable_number()));
+            btnTable.addActionListener((ActionEvent e) -> {
+                int num = Integer.parseInt(e.getActionCommand());
+                this.selectTable(num);
+            });
         }
-        
-        // Lưu số bàn vào action command
-        btnTable.setActionCommand(String.valueOf(table.getTable_number()));
-        
-        // Thêm sự kiện click
-        btnTable.addActionListener((ActionEvent e) -> {
-            int tableNumber = Integer.parseInt(e.getActionCommand());
-            this.selectTable(tableNumber);
-        });
-        
         return btnTable;
     }
 
@@ -697,8 +596,7 @@ System.exit(0);
         switch (status) {
             case "Trống": return 0;
             case "Hoạt Động": return 1;
-            case "Đang Chờ": return 2;
-            case "Ngưng Phục Vụ": return 3;
+            case "Ngưng Phục Vụ": return 2;
             default: return 0;
         }
     }
@@ -707,8 +605,8 @@ System.exit(0);
         switch (status) {
             case 0: return "Trống";
             case 1: return "Hoạt Động";
-            case 2: return "Đang Chờ";
-            case 3: return "Ngưng Phục Vụ";
+
+            case 2: return "Ngưng Phục Vụ";
             default: return "Trống";
         }
     }
@@ -724,9 +622,9 @@ System.exit(0);
             cboTable_Status.setSelectedItem(convertIntToStatus(table.getStatus()));
             
             // Fill thông tin vào form bên phải (form chỉnh sửa)
-            txtTable_Number2.setText(String.valueOf(table.getTable_number()));
+   
             txtAmount.setText(String.valueOf(table.getAmount()));
-            cboTable_Status2.setSelectedItem(convertIntToStatus(table.getStatus()));
+
             
             System.out.println("Đã fill thông tin bàn số " + table.getTable_number() + " lên form");
         }
@@ -737,9 +635,9 @@ System.exit(0);
     public Object getForm() {
         TableForCustomer table = new TableForCustomer();
         try {
-            table.setTable_number(Integer.parseInt(txtTable_Number2.getText()));
+            table.setTable_number(Integer.parseInt(txtTable_Number.getText()));
             table.setAmount(Integer.parseInt(txtAmount.getText()));
-            String statusText = (String) cboTable_Status2.getSelectedItem();
+            String statusText = (String) cboTable_Status.getSelectedItem();
             table.setStatus(convertStatusToInt(statusText));
         } catch (NumberFormatException e) {
             System.err.println("Lỗi chuyển đổi dữ liệu: " + e.getMessage());
@@ -760,43 +658,202 @@ System.exit(0);
     // Cập nhật phương thức create để không kiểm tra trùng lặp nữa
     @Override
     public void create() {
-        TableForCustomer table = (TableForCustomer) getForm();
-        tableDAO.create(table);
-        loadTable(); // Reload lại để hiển thị bàn mới
-        clear();
+        // Lấy dữ liệu từ form
+        String tableNumberStr = txtTable_Number.getText().trim();
+        String amountStr = txtAmount.getText().trim();
+        String statusText = (String) cboTable_Status.getSelectedItem();
+
+        // Kiểm tra trống thông tin
+        if (tableNumberStr.isEmpty() || amountStr.isEmpty() || statusText == null || statusText.trim().isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin bàn!");
+            return;
+        }
+
+        int tableNumber, amount;
+        try {
+            tableNumber = Integer.parseInt(tableNumberStr);
+            amount = Integer.parseInt(amountStr);
+        } catch (NumberFormatException e) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Số bàn và số chỗ ngồi phải là số nguyên!");
+            return;
+        }
+
+        // Kiểm tra trùng số bàn
+        if (tableDAO.findById(tableNumber) != null) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Số bàn này đã tồn tại! Vui lòng nhập số bàn khác.");
+            return;
+        }
+
+        // Tạo mới bàn
+        TableForCustomer table = new TableForCustomer();
+        table.setTable_number(tableNumber);
+        table.setAmount(amount);
+        table.setStatus(convertStatusToInt(statusText));
+
+        try {
+            tableDAO.create(table);
+            javax.swing.JOptionPane.showMessageDialog(this, "Thêm bàn thành công!");
+            loadTable(); // Reload lại để hiển thị bàn mới
+            clear();
+        } catch (Exception ex) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Có lỗi xảy ra khi thêm bàn: " + ex.getMessage());
+        }
     }
 
     // Cập nhật phương thức update
     @Override
     public void update() {
-        TableForCustomer table = (TableForCustomer) getForm();
-        tableDAO.update(table);
-        loadTable();
-        clear();
+        // Lấy thông tin mới từ form
+        TableForCustomer newTable = (TableForCustomer) getForm();
+
+        // Lấy thông tin cũ từ DB
+        TableForCustomer oldTable = tableDAO.findById(newTable.getTable_number());
+        if (oldTable == null) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Không tìm thấy bàn này trong hệ thống!");
+            return;
+        }
+
+        // So sánh và tạo thông tin hiển thị
+        StringBuilder message = new StringBuilder();
+        message.append("Bạn có chắc chắn muốn cập nhật bàn này không?\n\n");
+        message.append("THÔNG TIN CŨ:\n");
+        message.append("Số bàn: ").append(oldTable.getTable_number()).append("\n");
+        message.append("Số chỗ ngồi: ").append(oldTable.getAmount()).append("\n");
+        message.append("Trạng thái: ").append(convertIntToStatus(oldTable.getStatus())).append("\n\n");
+        message.append("THÔNG TIN MỚI:\n");
+        message.append("Số bàn: ").append(newTable.getTable_number()).append("\n");
+        message.append("Số chỗ ngồi: ").append(newTable.getAmount()).append("\n");
+        message.append("Trạng thái: ").append(convertIntToStatus(newTable.getStatus())).append("\n");
+
+        int confirm = javax.swing.JOptionPane.showConfirmDialog(
+            this,
+            message.toString(),
+            "Xác nhận cập nhật",
+            javax.swing.JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+            try {
+                tableDAO.update(newTable);
+                javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Cập nhật bàn thành công!",
+                    "Thành công",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE
+                );
+                loadTable();
+                clear();
+            } catch (Exception ex) {
+                javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Cập nhật bàn thất bại!\n" + ex.getMessage(),
+                    "Lỗi",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+        // Nếu chọn "Không" thì không làm gì cả
     }
 
     // Cập nhật phương thức delete
     @Override
     public void delete() {
-        try {
-            int tableNumber = Integer.parseInt(txtTable_Number2.getText());
-            tableDAO.deleteById(tableNumber);
-            loadTable();
-            clear();
-        } catch (NumberFormatException e) {
-            System.err.println("Lỗi: Vui lòng nhập số bàn hợp lệ");
+        String tableNumberStr = txtTable_Number.getText().trim();
+
+        // 1. Kiểm tra đã nhập số bàn chưa
+        if (tableNumberStr.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Vui lòng nhập số bàn cần xóa!",
+                "Thiếu thông tin",
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            return;
         }
+
+        int tableNumber;
+        try {
+            tableNumber = Integer.parseInt(tableNumberStr);
+        } catch (NumberFormatException e) {
+            javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Số bàn phải là số nguyên!",
+                "Lỗi định dạng",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
+        // 2. Kiểm tra bàn có tồn tại không
+        TableForCustomer table = tableDAO.findById(tableNumber);
+        if (table == null) {
+            javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Không tìm thấy bàn số " + tableNumber + " trong hệ thống!",
+                "Không tìm thấy",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+            return;
+        }
+
+        // 3. Hiển thị thông tin bàn và xác nhận xóa
+        StringBuilder message = new StringBuilder();
+        message.append("Bạn có chắc chắn muốn xóa bàn này không?\n\n");
+        message.append("Số bàn: ").append(table.getTable_number()).append("\n");
+        message.append("Số chỗ ngồi: ").append(table.getAmount()).append("\n");
+        message.append("Trạng thái: ").append(convertIntToStatus(table.getStatus())).append("\n");
+
+        int confirm = javax.swing.JOptionPane.showConfirmDialog(
+            this,
+            message.toString(),
+            "Xác nhận xóa bàn",
+            javax.swing.JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+            try {
+                tableDAO.deleteById(tableNumber);
+                javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Xóa bàn thành công!",
+                    "Thành công",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE
+                );
+                loadTable();
+                clear();
+            } catch (Exception ex) {
+                javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Xóa bàn thất bại!\n" + ex.getMessage(),
+                    "Lỗi",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+        // Nếu chọn "Không" thì không làm gì cả
     }
 
     // Cập nhật phương thức clear
     @Override
     public void clear() {
-        txtTable_Number.setText("");
-        txtTable_Number2.setText("");
-        txtAmount.setText("");
-        txtBill_Id.setText("");
-        cboTable_Status.setSelectedIndex(0);
-        cboTable_Status2.setSelectedIndex(0);
+        try {
+            txtTable_Number.setText("");
+            txtAmount.setText("");
+            cboTable_Status.setSelectedIndex(0);
+            javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Làm mới thành công!",
+                "Thông báo",
+                javax.swing.JOptionPane.INFORMATION_MESSAGE
+            );
+        } catch (Exception ex) {
+            javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Làm mới thất bại!\n" + ex.getMessage(),
+                "Lỗi",
+                javax.swing.JOptionPane.ERROR_MESSAGE
+            );
+        }
     }
 
     @Override
@@ -817,5 +874,144 @@ System.exit(0);
     @Override
     public void deleteCheckedItems() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    private void changeTable() {
+        String currentTableStr = txtTable_Number.getText().trim();
+        if (currentTableStr.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng chọn bàn cần chuyển!");
+            return;
+        }
+        int currentTableNumber;
+        try {
+            currentTableNumber = Integer.parseInt(currentTableStr);
+        } catch (NumberFormatException e) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Số bàn không hợp lệ!");
+            return;
+        }
+
+        TableForCustomer currentTable = tableDAO.findById(currentTableNumber);
+        if (currentTable == null) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Không tìm thấy bàn này trong hệ thống!");
+            return;
+        }
+
+        // Lấy danh sách bàn trống (status = 0, khác bàn hiện tại)
+        List<TableForCustomer> allTables = tableDAO.findAll();
+        List<TableForCustomer> emptyTables = new java.util.ArrayList<>();
+        for (TableForCustomer t : allTables) {
+            if (t.getStatus() == 0 && t.getTable_number() != currentTableNumber) {
+                emptyTables.add(t);
+            }
+        }
+
+        if (emptyTables.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(
+                this,
+                "Không có bàn trống nào để chuyển!\nVui lòng thử lại sau.",
+                "Thông báo",
+                javax.swing.JOptionPane.INFORMATION_MESSAGE
+            );
+            return;
+        }
+
+        // Tạo mảng số bàn để hiển thị cho người dùng chọn
+        Integer[] tableNumbers = emptyTables.stream()
+                .map(TableForCustomer::getTable_number)
+                .toArray(Integer[]::new);
+
+        Integer selectedTableNumber = (Integer) javax.swing.JOptionPane.showInputDialog(
+                this,
+                "Chọn bàn muốn chuyển sang:",
+                "Chuyển bàn",
+                javax.swing.JOptionPane.QUESTION_MESSAGE,
+                null,
+                tableNumbers,
+                tableNumbers[0]
+        );
+
+        if (selectedTableNumber == null) {
+            // Người dùng bấm Cancel hoặc đóng dialog
+            return;
+        }
+
+        // Tìm bàn mới được chọn
+        TableForCustomer newTable = null;
+        for (TableForCustomer t : emptyTables) {
+            if (t.getTable_number() == selectedTableNumber) {
+                newTable = t;
+                break;
+            }
+        }
+        if (newTable == null) {
+            javax.swing.JOptionPane.showMessageDialog(this, "Không tìm thấy bàn mới để chuyển!");
+            return;
+        }
+
+        // Xác nhận trước khi chuyển trạng thái
+        int confirm = javax.swing.JOptionPane.showConfirmDialog(
+            this,
+            String.format("Bạn có chắc chắn muốn chuyển sang bàn số %d không?", newTable.getTable_number()),
+            "Xác nhận chuyển bàn",
+            javax.swing.JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+            try {
+                newTable.setStatus(1); // Đang phục vụ
+                currentTable.setStatus(0); // Trống
+
+                tableDAO.update(newTable);
+                tableDAO.update(currentTable);
+
+                javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    String.format("Chuyển thành công sang bàn số %d!", newTable.getTable_number()),
+                    "Thành công",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE
+                );
+                loadTable();
+                setForm(newTable);
+            } catch (Exception ex) {
+                javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Chuyển trạng thái bàn thất bại!\n" + ex.getMessage(),
+                    "Lỗi",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+        // Nếu chọn "Không" thì không làm gì cả
+    }
+
+    private void updateTableStatus(TableForCustomer table, int newStatus) {
+        int confirm = javax.swing.JOptionPane.showConfirmDialog(
+            this,
+            "Bạn có chắc chắn muốn chuyển trạng thái bàn này không?",
+            "Xác nhận chuyển trạng thái",
+            javax.swing.JOptionPane.YES_NO_OPTION
+        );
+        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+            try {
+                table.setStatus(newStatus);
+                tableDAO.update(table);
+                javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Chuyển trạng thái bàn thành công!",
+                    "Thành công",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE
+                );
+                loadTable();
+                setForm(table);
+            } catch (Exception ex) {
+                javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Chuyển trạng thái bàn thất bại!\n" + ex.getMessage(),
+                    "Lỗi",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
+        // Nếu chọn "Không" thì không làm gì cả
     }
 }
