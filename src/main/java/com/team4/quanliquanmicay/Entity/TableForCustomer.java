@@ -16,6 +16,7 @@ public class TableForCustomer {
     private int table_number;
     private int amount;
     private int status;
+ 
 }
 
 

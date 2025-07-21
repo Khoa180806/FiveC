@@ -90,8 +90,10 @@ public class XQuery {
                                     value = new java.util.Date(timestamp.getTime());
                                     System.out.printf("DEBUG Converted %s: Timestamp -> java.util.Date\r\n", fieldName);
                                 }
-                                // Xử lý Gender và Is_enabled: BigDecimal -> Integer
-                                else if ((fieldName.equals("Gender") || fieldName.equals("Is_enabled")) && value instanceof java.math.BigDecimal) {
+                                // Xử lý Gender, Is_enabled, Amount, Status: BigDecimal -> Integer
+                                else if ((fieldName.equals("Gender") || fieldName.equals("Is_enabled") || 
+                                         fieldName.equals("Amount") || fieldName.equals("Status") || 
+                                         fieldName.equals("Table_number")) && value instanceof java.math.BigDecimal) {
                                     value = ((java.math.BigDecimal) value).intValue();
                                     System.out.printf("DEBUG Converted %s: BigDecimal -> %s\r\n", fieldName, value);
                                 }
@@ -106,7 +108,7 @@ public class XQuery {
                         // Continue to try other methods
                     }
                     
-                    // Cách 2: Thử với tên cột UPPERCASE (nếu index không thành công)
+                    // Cách 2: Thử với tên cột UPPERCASE (Oracle mặc định)
                     if (!success) {
                         try {
                             String columnName = fieldName.toUpperCase();
@@ -118,13 +120,42 @@ public class XQuery {
                                     java.sql.Timestamp timestamp = (java.sql.Timestamp) value;
                                     value = new java.util.Date(timestamp.getTime());
                                 }
-                                else if ((fieldName.equals("Gender") || fieldName.equals("Is_enabled")) && value instanceof java.math.BigDecimal) {
+                                else if ((fieldName.equals("Gender") || fieldName.equals("Is_enabled") || 
+                                         fieldName.equals("Amount") || fieldName.equals("Status") || 
+                                         fieldName.equals("Table_number")) && value instanceof java.math.BigDecimal) {
                                     value = ((java.math.BigDecimal) value).intValue();
                                 }
                             }
                             
                             method.invoke(bean, value);
-                            System.out.printf("SUCCESS (by name): Set %s = %s\r\n", fieldName, value);
+                            System.out.printf("SUCCESS (by uppercase): Set %s = %s\r\n", fieldName, value);
+                            success = true;
+                        } catch (Exception e) {
+                            // Ignore
+                        }
+                    }
+                    
+                    // Cách 3: Thử với tên cột lowercase
+                    if (!success) {
+                        try {
+                            String columnName = fieldName.toLowerCase();
+                            value = resultSet.getObject(columnName);
+                            
+                            // Xử lý conversion tương tự
+                            if (value != null) {
+                                if (fieldName.equals("Created_date") && value instanceof java.sql.Timestamp) {
+                                    java.sql.Timestamp timestamp = (java.sql.Timestamp) value;
+                                    value = new java.util.Date(timestamp.getTime());
+                                }
+                                else if ((fieldName.equals("Gender") || fieldName.equals("Is_enabled") || 
+                                         fieldName.equals("Amount") || fieldName.equals("Status") || 
+                                         fieldName.equals("Table_number")) && value instanceof java.math.BigDecimal) {
+                                    value = ((java.math.BigDecimal) value).intValue();
+                                }
+                            }
+                            
+                            method.invoke(bean, value);
+                            System.out.printf("SUCCESS (by lowercase): Set %s = %s\r\n", fieldName, value);
                             success = true;
                         } catch (Exception e) {
                             // Ignore
@@ -143,10 +174,11 @@ public class XQuery {
     }
     
     /**
-     * Lấy index cột dựa vào tên field - đã được fix
+     * Lấy index cột dựa vào tên field - ĐÃ THÊM TABLE_FOR_CUSTOMER
      */
     private static int getColumnIndex(String fieldName) {
         switch (fieldName) {
+            // USER_ACCOUNT mapping
             case "User_id": return 1;
             case "Username": return 2;
             case "Pass": return 3;
@@ -156,8 +188,14 @@ public class XQuery {
             case "Phone_number": return 7;
             case "Image": return 8;
             case "Is_enabled": return 9;
-            case "Created_date": return 10;  // Fix index này
+            case "Created_date": return 10;
             case "Role_id": return 11;
+            
+            // TABLE_FOR_CUSTOMER mapping - THÊM VÀO
+            case "Table_number": return 1;
+            case "Amount": return 2;
+            case "Status": return 3;
+            
             default: return -1;
         }
     }
@@ -184,8 +222,10 @@ public class XQuery {
                 return;
             }
             
-            // Xử lý Gender và Is_enabled (BigDecimal -> Integer)
-            if ((fieldName.equals("Gender") || fieldName.equals("Is_enabled")) && value instanceof java.math.BigDecimal) {
+            // Xử lý Gender, Is_enabled, Amount, Status, Table_number (BigDecimal -> Integer)
+            if ((fieldName.equals("Gender") || fieldName.equals("Is_enabled") || 
+                 fieldName.equals("Amount") || fieldName.equals("Status") || 
+                 fieldName.equals("Table_number")) && value instanceof java.math.BigDecimal) {
                 java.math.BigDecimal bd = (java.math.BigDecimal) value;
                 Integer intValue = bd.intValue();
                 System.out.println("DEBUG Converted " + fieldName + ": BigDecimal -> " + intValue);
