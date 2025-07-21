@@ -89,6 +89,7 @@ com\team4\quanliquanmicay\util\XQuery.class
 com\team4\quanliquanmicay\View\Dialogs\NhanVienJDialog$2.class
 com\team4\quanliquanmicay\View\Dialogs\NhanVienJDialog.class
 com\team4\quanliquanmicay\View\Welcome.class
+com\team4\quanliquanmicay\View\Dialogs\NhanVienJDialog$10.class
 com\team4\quanliquanmicay\View\Dialogs\InHoaDonJDialog$1.class
 com\team4\quanliquanmicay\View\Dialogs\DatMonJDialog.class
 com\team4\quanliquanmicay\Controller\WelcomeCotroller.class
