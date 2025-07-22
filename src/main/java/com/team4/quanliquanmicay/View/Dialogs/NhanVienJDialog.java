@@ -42,6 +42,9 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         roleDAO = new RoleDAOImpl();
         roleMap = new HashMap<>();
         
+        // ✅ EARLY CAPTURE: Capture initial image size ngay sau initComponents
+        captureInitialImageSize();
+        
         // Setup all functionality
         loadRoles();
         setupStatusComboBox(); // ✅ SAFE: Protected by disableComboBoxUpdates flag
@@ -64,14 +67,49 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                 frozenTableSize = new java.awt.Dimension(jScrollPane1.getSize());
                 System.out.println("📐 Captured initial table size: " + frozenTableSize);
                 
-                // ✅ CAPTURE: Store initial image label size
-                originalImageSize = new java.awt.Dimension(lblImage.getSize());
-                System.out.println("🖼️ Captured initial image size: " + originalImageSize);
+                // ✅ VERIFY: Re-capture image size if needed
+                if (originalImageSize == null) {
+                    captureInitialImageSize();
+                }
                 
                 // ✅ SETUP: Periodic size enforcement timer
                 setupSizeEnforcementTimer();
             }
         });
+    }
+    
+    /**
+     * ✅ NEW: Capture initial image label size immediately
+     */
+    private void captureInitialImageSize() {
+        try {
+            // Force layout validation to get correct size
+            lblImage.validate();
+            java.awt.Dimension currentSize = lblImage.getSize();
+            
+            // Set default size if not properly initialized
+            if (currentSize.width <= 0 || currentSize.height <= 0) {
+                currentSize = new java.awt.Dimension(116, 167); // From layout manager
+            }
+            
+            originalImageSize = new java.awt.Dimension(currentSize);
+            System.out.println("🖼️ Captured initial image size: " + originalImageSize);
+            
+            // Set border to indicate clickable area với size cố định
+            lblImage.setBorder(javax.swing.BorderFactory.createTitledBorder(
+                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(100, 149, 237), 2),
+                "Click để chọn ảnh",
+                javax.swing.border.TitledBorder.CENTER,
+                javax.swing.border.TitledBorder.BOTTOM,
+                new java.awt.Font("Arial", java.awt.Font.ITALIC, 10),
+                new java.awt.Color(100, 149, 237)
+            ));
+            
+        } catch (Exception e) {
+            // Fallback to default size
+            originalImageSize = new java.awt.Dimension(116, 167);
+            System.out.println("⚠️ Using fallback image size: " + originalImageSize);
+        }
     }
     
     /**
@@ -1064,9 +1102,48 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
 
     /**
-     * ✅ OPTIMIZED: Hiển thị ảnh mặc định khi không có tên ảnh
+     * ✅ OPTIMIZED: Hiển thị ảnh mặc định khi không có tên ảnh với size cố định
      */
-    private void setDefaultImage() { setDefaultImageWithClickable(); }
+    private void setDefaultImage() { 
+        setDefaultImageWithClickable(); // Sử dụng phương thức đã được cải thiện
+    }
+    
+    /**
+     * ✅ ENHANCED: Set default image but keep clickable với size cố định
+     */
+    private void setDefaultImageWithClickable() {
+        try {
+            // ✅ ENFORCE SIZE: Sử dụng phương thức với size cố định
+            if (originalImageSize != null) {
+                setImageWithFixedSize("/icons_and_images/User.png");
+            } else {
+                // Fallback nếu originalImageSize chưa sẵn sàng
+                XImage.setImageToLabel(lblImage, "/icons_and_images/User.png");
+                // Force capture size ngay sau khi set image
+                captureInitialImageSize();
+                // Set lại image với size cố định
+                setImageWithFixedSize("/icons_and_images/User.png");
+            }
+            
+            lblImage.setText("");
+            
+            // Ensure tooltip is set
+            lblImage.setToolTipText("Click để chọn ảnh nhân viên");
+            
+        } catch (Exception e) {
+            lblImage.setIcon(null);
+            lblImage.setText("Click để chọn ảnh");
+            lblImage.setToolTipText("Click để chọn ảnh nhân viên");
+            
+            // ✅ ENFORCE: Keep size even on error
+            if (originalImageSize != null) {
+                lblImage.setSize(originalImageSize);
+                lblImage.setPreferredSize(originalImageSize);
+                lblImage.setMinimumSize(originalImageSize);
+                lblImage.setMaximumSize(originalImageSize);
+            }
+        }
+    }
 
     /**
      * Method để test load ảnh (có thể gọi để kiểm tra)
@@ -2246,26 +2323,264 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
     
     /**
-     * ✅ ENHANCED: Set default image but keep clickable
+     * ✅ SILENT: Load image without affecting layout - FIXED SIZE
      */
-    private void setDefaultImageWithClickable() {
+    private void loadEmployeeImageSilent(String imageName) {
         try {
-            XImage.setImageToLabel(lblImage, "/icons_and_images/User.png");
-            lblImage.setText("");
-            
-            // Ensure tooltip is set
-            lblImage.setToolTipText("Click để chọn ảnh nhân viên");
-            
+            if (imageName != null && !imageName.trim().isEmpty()) {
+                String imagePath = "/icons_and_images/imageEmployee/" + imageName;
+                if (getClass().getResource(imagePath) != null) {
+                    // Only update if different
+                    if (!imageName.equals(lblImage.getToolTipText())) {
+                        setImageWithFixedSize(imagePath);
+                        lblImage.setToolTipText(imageName); // Store for comparison
+                    }
+                } else {
+                    setDefaultImageSilent();
+                }
+            } else {
+                setDefaultImageSilent();
+            }
         } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText("Click để chọn ảnh");
-            lblImage.setToolTipText("Click để chọn ảnh nhân viên");
+            // Silent fail
         }
     }
+    
+    /**
+     * ✅ SILENT: Set default image without layout changes - FIXED SIZE
+     */
+    private void setDefaultImageSilent() {
+        try {
+            if (!"default".equals(lblImage.getToolTipText())) {
+                setImageWithFixedSize("/icons_and_images/User.png");
+                lblImage.setToolTipText("default"); // Mark as default
+            }
+        } catch (Exception e) {
+            lblImage.setIcon(null);
+            lblImage.setText("No Image");
+            lblImage.setToolTipText("error");
+            
+            // ✅ ENFORCE: Keep size even on error
+            if (originalImageSize != null) {
+                lblImage.setSize(originalImageSize);
+                lblImage.setPreferredSize(originalImageSize);
+            }
+        }
+    }
+    
+    /**
+     * ✅ FIXED SIZE: Set image to label without changing label dimensions
+     */
+    private void setImageWithFixedSize(String imagePath) {
+        try {
+            // ✅ SAFETY: Ensure originalImageSize is available
+            if (originalImageSize == null) {
+                captureInitialImageSize();
+                if (originalImageSize == null) {
+                    // Ultimate fallback
+                    originalImageSize = new java.awt.Dimension(116, 167);
+                    System.out.println("⚠️ Using ultimate fallback image size: " + originalImageSize);
+                }
+            }
+            
+            // Load and scale image to fit the fixed label size
+            java.net.URL imageURL = getClass().getResource(imagePath);
+            if (imageURL != null) {
+                javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
+                
+                // ✅ VALIDATION: Check if image loaded successfully
+                if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
+                    // Scale image to fit the original label size
+                    java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
+                        originalImageSize.width, 
+                        originalImageSize.height, 
+                        java.awt.Image.SCALE_SMOOTH
+                    );
+                    
+                    javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
+                    
+                    // Set the scaled icon
+                    lblImage.setIcon(scaledIcon);
+                    lblImage.setText("");
+                } else {
+                    // Image không load được
+                    lblImage.setIcon(null);
+                    lblImage.setText("No Image");
+                }
+                
+                // ✅ ENFORCE: Keep the original size regardless of image content
+                lblImage.setSize(originalImageSize);
+                lblImage.setPreferredSize(originalImageSize);
+                lblImage.setMinimumSize(originalImageSize);
+                lblImage.setMaximumSize(originalImageSize);
+                
+                System.out.println("🖼️ Set image with fixed size: " + originalImageSize + " for path: " + imagePath);
+                
+            } else {
+                // Fallback to text if image not found
+                lblImage.setIcon(null);
+                lblImage.setText("No Image");
+                
+                // ✅ STILL ENFORCE: Keep size even when no image
+                lblImage.setSize(originalImageSize);
+                lblImage.setPreferredSize(originalImageSize);
+                lblImage.setMinimumSize(originalImageSize);
+                lblImage.setMaximumSize(originalImageSize);
+            }
+        } catch (Exception e) {
+            lblImage.setIcon(null);
+            lblImage.setText("Error");
+            
+            // ✅ ENFORCE: Keep size even on error
+            if (originalImageSize != null) {
+                lblImage.setSize(originalImageSize);
+                lblImage.setPreferredSize(originalImageSize);
+                lblImage.setMinimumSize(originalImageSize);
+                lblImage.setMaximumSize(originalImageSize);
+            }
+            
+            System.err.println("❌ Error setting image: " + e.getMessage());
+        }
+    }
+    
+    // =============================================================================
+    // LAYOUT FREEZE PROTECTION
+    // =============================================================================
+    
+    /**
+     * ✅ FREEZE: Prevent any layout changes
+     */
+    private void freezeLayout() {
+        if (layoutFrozen) return;
+        
+        try {
+            layoutFrozen = true;
+            
+            // ✅ DISABLE: Auto-resize capabilities
+            if (frozenTableSize != null) {
+                jScrollPane1.setPreferredSize(frozenTableSize);
+                jScrollPane1.setMinimumSize(frozenTableSize);
+                jScrollPane1.setMaximumSize(frozenTableSize);
+                tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+            }
+            
+            // ✅ LOCK: Window resize
+            setResizable(false);
+            
+        } catch (Exception e) {
+            System.err.println("Error freezing layout: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * ✅ ENFORCE: Force table to stay at frozen size
+     */
+    private void enforceTableSize() {
+        if (frozenTableSize != null && !layoutFrozen) {
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                try {
+                    if (!jScrollPane1.getSize().equals(frozenTableSize)) {
+                        jScrollPane1.setSize(frozenTableSize);
+                        jScrollPane1.setPreferredSize(frozenTableSize);
+                        System.out.println("🔒 Enforced table size: " + frozenTableSize);
+                    }
+                } catch (Exception e) {
+                    // Silent fail
+                }
+            });
+        }
+    }
+    
+    /**
+     * ✅ SETUP: Periodic size enforcement to prevent table expansion
+     */
+    private void setupSizeEnforcementTimer() {
+        try {
+            // Create timer that runs every 500ms to check and enforce table size
+            sizeEnforcementTimer = new javax.swing.Timer(500, e -> {
+                if (frozenTableSize != null) {
+                    java.awt.Dimension currentSize = jScrollPane1.getSize();
+                    if (!currentSize.equals(frozenTableSize)) {
+                        System.out.println("⚠️ Table size drift detected: " + currentSize + " -> " + frozenTableSize);
+                        enforceTableSize();
+                    }
+                }
+            });
+            
+            sizeEnforcementTimer.setRepeats(true);
+            sizeEnforcementTimer.start();
+            
+            System.out.println("✅ Size enforcement timer started - will prevent table expansion");
+            
+        } catch (Exception e) {
+            System.err.println("Error setting up size enforcement timer: " + e.getMessage());
+        }
+    }
+    
 
     // =============================================================================
-    // REAL-TIME SEARCH FUNCTIONALITY - TÌM KIẾM THEO TÊN NHÂN VIÊN
+    // COMBOBOX SETUP AND SEARCH FUNCTIONALITY
     // =============================================================================
+    
+    /**
+     * ✅ SETUP: Initialize Status ComboBox với các tùy chọn
+     */
+    private void setupStatusComboBox() {
+        cboStatus.removeAllItems();
+        cboStatus.addItem("Hoạt động");
+        cboStatus.addItem("Không hoạt động");
+        cboStatus.setSelectedIndex(0); // Default: Hoạt động
+        
+        // ✅ FIX: Set fixed size để không bị tràn layout
+        java.awt.Dimension fixedSize = new java.awt.Dimension(150, 25);
+        cboStatus.setPreferredSize(fixedSize);
+        cboStatus.setMinimumSize(fixedSize);
+        cboStatus.setMaximumSize(fixedSize);
+    }
+    
+    /**
+     * ✅ SETUP: Initialize Role ComboBox với data từ database
+     */
+    private void setupRoleComboBox() {
+        cboRole.removeAllItems();
+        try {
+            List<UserRole> roles = roleDAO.findAll();
+            for (UserRole role : roles) {
+                cboRole.addItem(role.getRole_id() + " - " + role.getName_role());
+            }
+            if (cboRole.getItemCount() > 0) cboRole.setSelectedIndex(0);
+        } catch (Exception e) {
+            // Fallback data nếu không load được từ DB
+            cboRole.addItem("R001 - Manager");
+            cboRole.addItem("R002 - Staff");
+            cboRole.setSelectedIndex(1); // Default: Staff
+        }
+        
+        // ✅ FIX: Set fixed size để không bị tràn layout
+        java.awt.Dimension fixedSize = new java.awt.Dimension(150, 25);
+        cboRole.setPreferredSize(fixedSize);
+        cboRole.setMinimumSize(fixedSize);
+        cboRole.setMaximumSize(fixedSize);
+    }
+    
+    /**
+     * ✅ GETTER: Lấy giá trị Status từ ComboBox (1=Hoạt động, 0=Không hoạt động)
+     */
+    private Integer getStatusFromComboBox() {
+        String selected = (String) cboStatus.getSelectedItem();
+        return "Hoạt động".equals(selected) ? 1 : 0;
+    }
+    
+    /**
+     * ✅ GETTER: Lấy role_id từ ComboBox (VD: "R001 - Manager" -> "R001")
+     */
+    private String getRoleIdFromComboBox() {
+        String selected = (String) cboRole.getSelectedItem();
+        if (selected != null && selected.contains(" - ")) {
+            return selected.split(" - ")[0];
+        }
+        return "R002"; // Fallback: Staff
+    }
     
     /**
      * ✅ SETUP: Initialize real-time search functionality
@@ -2325,7 +2640,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         String searchText = txtSearch.getText();
         if (!searchText.equals("Tìm theo tên nhân viên...")) {
             // Debounce search để tránh lag khi gõ nhanh
-            if (debounceTimer != null)     debounceTimer.stop();
+            if (debounceTimer != null) debounceTimer.stop();
             
             debounceTimer = new javax.swing.Timer(200, e -> {
                 filterEmployeesByName(searchText.trim());
@@ -2336,102 +2651,36 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     }
     
     /**
-     * ✅ FILTER: Filter employees by name (support Vietnamese)
+     * ✅ FILTER: Filter employees by name (basic version)
      */
     private void filterEmployeesByName(String searchKeyword) {
         javax.swing.SwingUtilities.invokeLater(() -> {
             try {
-                // Ensure cache is available
-                if (!isCacheValid || employeeCache.isEmpty()) {
-                    employeeCache = userDAO.findAll();
-                    isCacheValid = true;
-                }
-                
                 DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
                 model.setRowCount(0);
                 
+                // Get all employees
+                List<UserAccount> employees = userDAO.findAll();
+                
                 if (searchKeyword.isEmpty()) {
                     // Hiển thị tất cả nếu không có từ khóa
-                    for (UserAccount emp : employeeCache) {
+                    for (UserAccount emp : employees) {
                         model.addRow(createRowData(emp));
                     }
-                    System.out.println("📋 Displaying all " + employeeCache.size() + " employees");
                 } else {
                     // Filter theo tên
-                    String normalizedKeyword = normalizeVietnamese(searchKeyword.toLowerCase());
-                    int matchCount = 0;
-                    
-                    for (UserAccount emp : employeeCache) {
-                        if (emp.getFullName() != null) {
-                            String normalizedName = normalizeVietnamese(emp.getFullName().toLowerCase());
-                            
-                            // Check if name contains the search keyword
-                            if (isNameMatched(normalizedName, normalizedKeyword)) {
-                                model.addRow(createRowData(emp));
-                                matchCount++;
-                            }
+                    for (UserAccount emp : employees) {
+                        if (emp.getFullName() != null && 
+                            emp.getFullName().toLowerCase().contains(searchKeyword.toLowerCase())) {
+                            model.addRow(createRowData(emp));
                         }
                     }
-                    
-                    System.out.println("🔍 Found " + matchCount + " employees matching: '" + searchKeyword + "'");
                 }
                 
             } catch (Exception e) {
                 System.err.println("❌ Search error: " + e.getMessage());
-                XDialog.alert("Lỗi tìm kiếm: " + e.getMessage());
             }
         });
-    }
-    
-    /**
-     * ✅ MATCHING: Advanced name matching logic
-     */
-    private boolean isNameMatched(String fullName, String searchKeyword) {
-        // 1. Exact substring match
-        if (fullName.contains(searchKeyword)) return true;
-        
-        // 2. Word boundary match (tìm theo từng từ)
-        String[] nameWords = fullName.split("\\s+");
-        for (String word : nameWords) {
-            if (word.startsWith(searchKeyword)) return true;
-        }
-        
-        // 3. Initials match (VD: "nvm" -> "Nguyen Van Manager")
-        if (searchKeyword.length() >= 2) {
-            StringBuilder initials = new StringBuilder();
-            for (String word : nameWords) {
-                if (!word.isEmpty()) initials.append(word.charAt(0));
-            }
-            if (initials.toString().toLowerCase().contains(searchKeyword)) return true;
-        }
-        
-        return false;
-    }
-    
-    /**
-     * ✅ VIETNAMESE: Normalize Vietnamese text for better search
-     */
-    private String normalizeVietnamese(String text) {
-        if (text == null) return "";
-        
-        // Simple normalization - remove accents
-        String normalized = text
-            .replaceAll("[àáạảãâầấậẩẫăằắặẳẵ]", "a")
-            .replaceAll("[èéẹẻẽêềếệểễ]", "e")
-            .replaceAll("[ìíịỉĩ]", "i")
-            .replaceAll("[òóọỏõôồốộổỗơờớợởỡ]", "o")
-            .replaceAll("[ùúụủũưừứựửữ]", "u")
-            .replaceAll("[ỳýỵỷỹ]", "y")
-            .replaceAll("[đ]", "d")
-            .replaceAll("[ÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴ]", "A")
-            .replaceAll("[ÈÉẸẺẼÊỀẾỆỂỄ]", "E")
-            .replaceAll("[ÌÍỊỈĨ]", "I")
-            .replaceAll("[ÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠ]", "O")
-            .replaceAll("[ÙÚỤỦŨƯỪỨỰỬỮ]", "U")
-            .replaceAll("[ỲÝỴỶỸ]", "Y")
-            .replaceAll("[Đ]", "D");
-            
-        return normalized;
     }
     
     /**
@@ -2447,113 +2696,6 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         String text = txtSearch.getText();
         return text.equals("Tìm theo tên nhân viên...") ? "" : text.trim();
     }
- // Từ dòng này trở đi chỉ để fix cái lỗi tự động tăng khoảng cách . hơn 300 dòng code chỉ để set playout ổn định, hiện bug, code chay, codde linh hoạt ,tùy cách chọn
-    // =============================================================================
-    // COMBOBOX SETUP AND MANAGEMENT - STATUS & ROLE
-    // =============================================================================
-    
-    /**
-     * ✅ SETUP: Initialize Status ComboBox với các tùy chọn
-     */
-    private void setupStatusComboBox() {
-        cboStatus.removeAllItems();
-        cboStatus.addItem("Hoạt động");
-        cboStatus.addItem("Không hoạt động");
-        cboStatus.setSelectedIndex(0); // Default: Hoạt động
-        
-        // ✅ FIX: Set fixed size để không bị tràn layout
-        java.awt.Dimension fixedSize = new java.awt.Dimension(150, 25);
-        cboStatus.setPreferredSize(fixedSize);
-        cboStatus.setMinimumSize(fixedSize);
-        cboStatus.setMaximumSize(fixedSize);
-    }
-    
-    /**
-     * ✅ SETUP: Initialize Role ComboBox với data từ database
-     */
-    private void setupRoleComboBox() {
-        cboRole.removeAllItems();
-        try {
-            List<UserRole> roles = roleDAO.findAll();
-            for (UserRole role : roles) {
-                cboRole.addItem(role.getRole_id() + " - " + role.getName_role());
-            }
-            if (cboRole.getItemCount() > 0) cboRole.setSelectedIndex(0);
-        } catch (Exception e) {
-            // Fallback data nếu không load được từ DB
-            cboRole.addItem("R001 - Manager");
-            cboRole.addItem("R002 - Staff");
-            cboRole.setSelectedIndex(1); // Default: Staff
-        }
-        
-        // ✅ FIX: Set fixed size để không bị tràn layout
-        java.awt.Dimension fixedSize = new java.awt.Dimension(150, 25);
-        cboRole.setPreferredSize(fixedSize);
-        cboRole.setMinimumSize(fixedSize);
-        cboRole.setMaximumSize(fixedSize);
-    }
-    
-    /**
-     * ✅ OPTIMIZED: Set Status ComboBox theo giá trị enabled - no layout changes
-     */
-    private void setStatusComboBox(Integer isEnabled) {
-        try {
-            if (isEnabled != null) {
-                String targetValue = isEnabled == 1 ? "Hoạt động" : "Không hoạt động";
-                // ✅ SAFE: Chỉ set nếu khác với current value
-                if (!targetValue.equals(cboStatus.getSelectedItem())) {
-                    cboStatus.setSelectedItem(targetValue);
-                }
-            } else {
-                if (cboStatus.getSelectedIndex() != 0) {
-                    cboStatus.setSelectedIndex(0); // Default: Hoạt động
-                }
-            }
-        } catch (Exception e) {
-            System.err.println("Error setting status combo: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * ✅ SETTER: Set Role ComboBox theo role_id
-     */
-    private void setRoleComboBox(String roleId) {
-        if (roleId != null) {
-            // Tìm item có chứa roleId
-            for (int i = 0; i < cboRole.getItemCount(); i++) {
-                String item = cboRole.getItemAt(i);
-                if (item.startsWith(roleId + " - ")) {
-                    cboRole.setSelectedIndex(i);
-                    return;
-                }
-            }
-        }
-        // Default fallback
-        if (cboRole.getItemCount() > 0) cboRole.setSelectedIndex(0);
-    }
-    
-    /**
-     * ✅ GETTER: Lấy giá trị Status từ ComboBox (1=Hoạt động, 0=Không hoạt động)
-     */
-    private Integer getStatusFromComboBox() {
-        String selected = (String) cboStatus.getSelectedItem();
-        return "Hoạt động".equals(selected) ? 1 : 0;
-    }
-    
-    /**
-     * ✅ GETTER: Lấy role_id từ ComboBox (VD: "R001 - Manager" -> "R001")
-     */
-    private String getRoleIdFromComboBox() {
-        String selected = (String) cboRole.getSelectedItem();
-        if (selected != null && selected.contains(" - ")) {
-            return selected.split(" - ")[0];
-        }
-        return "R002"; // Fallback: Staff
-    }
-    
-    // =============================================================================
-    // SILENT METHODS - PREVENT LAYOUT CHANGES
-    // =============================================================================
     
     /**
      * ✅ ULTRA SILENT: Set Status ComboBox without ANY layout changes
@@ -2641,168 +2783,5 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             cboRole.setIgnoreRepaint(false);
         }
     }
-    
-    /**
-     * ✅ SILENT: Load image without affecting layout - FIXED SIZE
-     */
-    private void loadEmployeeImageSilent(String imageName) {
-        try {
-            if (imageName != null && !imageName.trim().isEmpty()) {
-                String imagePath = "/icons_and_images/imageEmployee/" + imageName;
-                if (getClass().getResource(imagePath) != null) {
-                    // Only update if different
-                    if (!imageName.equals(lblImage.getToolTipText())) {
-                        setImageWithFixedSize(imagePath);
-                        lblImage.setToolTipText(imageName); // Store for comparison
-                    }
-                } else {
-                    setDefaultImageSilent();
-                }
-            } else {
-                setDefaultImageSilent();
-            }
-        } catch (Exception e) {
-            // Silent fail
-        }
-    }
-    
-    /**
-     * ✅ SILENT: Set default image without layout changes - FIXED SIZE
-     */
-    private void setDefaultImageSilent() {
-        try {
-            if (!"default".equals(lblImage.getToolTipText())) {
-                setImageWithFixedSize("/icons_and_images/User.png");
-                lblImage.setToolTipText("default"); // Mark as default
-            }
-        } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText("No Image");
-            lblImage.setToolTipText("error");
-            
-            // ✅ ENFORCE: Keep size even on error
-            if (originalImageSize != null) {
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-            }
-        }
-    }
-    
-    /**
-     * ✅ FIXED SIZE: Set image to label without changing label dimensions
-     */
-    private void setImageWithFixedSize(String imagePath) {
-        try {
-            if (originalImageSize == null) return;
-            
-            // Load and scale image to fit the fixed label size
-            java.net.URL imageURL = getClass().getResource(imagePath);
-            if (imageURL != null) {
-                javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
-                
-                // Scale image to fit the original label size
-                java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
-                    originalImageSize.width, 
-                    originalImageSize.height, 
-                    java.awt.Image.SCALE_SMOOTH
-                );
-                
-                javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
-                
-                // Set the scaled icon
-                lblImage.setIcon(scaledIcon);
-                lblImage.setText("");
-                
-                // ✅ ENFORCE: Keep the original size
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-                
-            } else {
-                // Fallback to text if image not found
-                lblImage.setIcon(null);
-                lblImage.setText("No Image");
-            }
-        } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText("Error");
-        }
-    }
-    
-    // =============================================================================
-    // LAYOUT FREEZE PROTECTION
-    // =============================================================================
-    
-    /**
-     * ✅ FREEZE: Prevent any layout changes
-     */
-    private void freezeLayout() {
-        if (layoutFrozen) return;
-        
-        try {
-            layoutFrozen = true;
-            
-            // ✅ DISABLE: Auto-resize capabilities
-            if (frozenTableSize != null) {
-                jScrollPane1.setPreferredSize(frozenTableSize);
-                jScrollPane1.setMinimumSize(frozenTableSize);
-                jScrollPane1.setMaximumSize(frozenTableSize);
-                tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-            }
-            
-            // ✅ LOCK: Window resize
-            setResizable(false);
-            
-        } catch (Exception e) {
-            System.err.println("Error freezing layout: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * ✅ ENFORCE: Force table to stay at frozen size
-     */
-    private void enforceTableSize() {
-        if (frozenTableSize != null && !layoutFrozen) {
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                try {
-                    if (!jScrollPane1.getSize().equals(frozenTableSize)) {
-                        jScrollPane1.setSize(frozenTableSize);
-                        jScrollPane1.setPreferredSize(frozenTableSize);
-                        System.out.println("🔒 Enforced table size: " + frozenTableSize);
-                    }
-                } catch (Exception e) {
-                    // Silent fail
-                }
-            });
-        }
-    }
-    
-    /**
-     * ✅ SETUP: Periodic size enforcement to prevent table expansion
-     */
-    private void setupSizeEnforcementTimer() {
-        try {
-            // Create timer that runs every 500ms to check and enforce table size
-            sizeEnforcementTimer = new javax.swing.Timer(500, e -> {
-                if (frozenTableSize != null) {
-                    java.awt.Dimension currentSize = jScrollPane1.getSize();
-                    if (!currentSize.equals(frozenTableSize)) {
-                        System.out.println("⚠️ Table size drift detected: " + currentSize + " -> " + frozenTableSize);
-                        enforceTableSize();
-                    }
-                }
-            });
-            
-            sizeEnforcementTimer.setRepeats(true);
-            sizeEnforcementTimer.start();
-            
-            System.out.println("✅ Size enforcement timer started - will prevent table expansion");
-            
-        } catch (Exception e) {
-            System.err.println("Error setting up size enforcement timer: " + e.getMessage());
-        }
-    }
-    
 
 }
