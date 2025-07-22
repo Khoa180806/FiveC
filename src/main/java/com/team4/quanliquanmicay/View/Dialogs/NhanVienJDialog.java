@@ -921,16 +921,16 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
      */
     private void setColumnWidths() {
         try {
-            tableInfo.getColumnModel().getColumn(0).setPreferredWidth(80);  // Mã NV
+            tableInfo.getColumnModel().getColumn(0).setPreferredWidth(120);  // Mã NV
             tableInfo.getColumnModel().getColumn(1).setPreferredWidth(100); // Tài khoản
             tableInfo.getColumnModel().getColumn(2).setPreferredWidth(80);  // Mật khẩu
             tableInfo.getColumnModel().getColumn(3).setPreferredWidth(150); // Họ tên
-            tableInfo.getColumnModel().getColumn(4).setPreferredWidth(60);  // Giới tính
+            tableInfo.getColumnModel().getColumn(4).setPreferredWidth(100);  // Giới tính
             tableInfo.getColumnModel().getColumn(5).setPreferredWidth(100); // SĐT
-            tableInfo.getColumnModel().getColumn(6).setPreferredWidth(150); // Email
+            tableInfo.getColumnModel().getColumn(6).setPreferredWidth(110); // Email
             tableInfo.getColumnModel().getColumn(7).setPreferredWidth(100); // Trạng thái
-            tableInfo.getColumnModel().getColumn(8).setPreferredWidth(80);  // Vai trò
-            tableInfo.getColumnModel().getColumn(9).setPreferredWidth(120); // Ngày tạo
+            tableInfo.getColumnModel().getColumn(8).setPreferredWidth(70);  // Vai trò
+            tableInfo.getColumnModel().getColumn(9).setPreferredWidth(130); // Ngày tạo
         } catch (Exception e) {
             System.err.println("Lỗi set column width: " + e.getMessage());
         }
