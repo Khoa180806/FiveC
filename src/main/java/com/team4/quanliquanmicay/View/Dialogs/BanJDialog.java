@@ -26,6 +26,7 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
      * Creates new form BanJDialog
      */
     public BanJDialog() {
+        this.setUndecorated(true);
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null); 
