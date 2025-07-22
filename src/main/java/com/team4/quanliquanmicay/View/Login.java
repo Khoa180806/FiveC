@@ -255,11 +255,6 @@ public class Login extends javax.swing.JFrame implements LoginController{
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void lblChangePasswordMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblChangePasswordMouseClicked
-        // TODO add your handling code here:
-        XDialog.alert("Chức năng này đang được phát triển!");
-    }//GEN-LAST:event_lblChangePasswordMouseClicked
-
     private void btnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLoginActionPerformed
         // TODO add your handling code here:
         this.login();
@@ -304,6 +299,11 @@ public class Login extends javax.swing.JFrame implements LoginController{
             lblShowPassword.setText("Hiển thị");
         }
     }//GEN-LAST:event_lblShowPasswordMouseClicked
+
+    private void lblChangePasswordMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblChangePasswordMouseClicked
+        // TODO add your handling code here:
+        XDialog.alert("Chức năng này đang được phát triển!");
+    }//GEN-LAST:event_lblChangePasswordMouseClicked
 
     /**
      * @param args the command line arguments
