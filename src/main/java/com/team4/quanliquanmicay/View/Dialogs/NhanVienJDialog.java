@@ -806,7 +806,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
                     emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "N/A", // Giới tính
                     emp.getPhone_number(), // SĐT
                     emp.getEmail(), // Email
-                    emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "N/A", // Trạng thái
+                    emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động", // Trạng thái
                     getRoleName(emp.getRole_id()), // Vai trò
                     formatDate(emp.getCreated_date()) // Ngày tạo
                 };
@@ -819,6 +819,50 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             XDialog.alert("Lỗi khi load dữ liệu: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Filter danh sách nhân viên theo Status và Role
+     */
+    private List<UserAccount> filterEmployees(List<UserAccount> employees, String selectedStatus, String selectedRole) {
+        List<UserAccount> filtered = new ArrayList<>();
+
+        for (UserAccount emp : employees) {
+            boolean matchStatus = true;
+            boolean matchRole = true;
+
+            // Filter theo Status
+            if (selectedStatus != null && !selectedStatus.equals("Tất cả")) {
+                if (selectedStatus.equals("Hoạt động")) {
+                    matchStatus = (emp.getIs_enabled() == 1);
+                } else if (selectedStatus.equals("Không hoạt động")) {
+                    matchStatus = (emp.getIs_enabled() == 0); 
+                }
+            }
+
+            // Filter theo Role - cần extract role_id từ display text
+            if (selectedRole != null && !selectedRole.equals("Tất cả")) {
+                String roleId = extractRoleId(selectedRole);
+                matchRole = roleId.equals(emp.getRole_id());
+            }
+
+            // Chỉ thêm vào danh sách nếu thỏa mãn cả 2 điều kiện
+            if (matchStatus && matchRole) {
+                filtered.add(emp);
+            }
+        }
+
+        return filtered;
+    }
+
+    /**
+     * Extract role_id từ display text (VD: "R001 - Manager" -> "R001")
+     */
+    private String extractRoleId(String displayText) {
+        if (displayText != null && displayText.contains(" - ")) {
+            return displayText.split(" - ")[0];
+        }
+        return displayText; // Fallback
     }
 
     /**
@@ -1343,10 +1387,10 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
     private boolean matchesFilters(UserAccount emp, String status, String role) {
         // Status filter
         if (status != null && !status.equals("Tất cả")) {
-            if (status.equals("Hoạt động") && (emp.getIs_enabled() == null || emp.getIs_enabled() != 1)) {
+            if (status.equals("Hoạt động") && (emp.getIs_enabled() != 1)) {
                 return false;
             }
-            if (status.equals("Không hoạt động") && (emp.getIs_enabled() == null || emp.getIs_enabled() != 0)) {
+            if (status.equals("Không hoạt động") && (emp.getIs_enabled() != 0)) {
                 return false;
             }
         }
@@ -1374,7 +1418,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "N/A",
             emp.getPhone_number(),
             emp.getEmail(),
-            emp.getIs_enabled() != null ? (emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động") : "N/A",
+            emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động",
             roleMap.getOrDefault(emp.getRole_id(), "N/A"),
             formatDateFast(emp.getCreated_date())
         };
@@ -1453,7 +1497,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         // Try multiple paths quickly
         String[] paths = {
             "/icons_and_images/imageEmployee/" + imageName,
-            "/icons_and_images/" + imageName
+                "/icons_and_images/" + imageName
         };
 
         for (String path : paths) {
@@ -1877,16 +1921,6 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             if (cleanUsername.toLowerCase().contains(forbidden)) 
                 throw new RuntimeException("Tên đăng nhập không được chứa từ khóa: " + forbidden);
         }
-    }
-
-    /**
-     * Extract role_id từ display text (VD: "R001 - Manager" -> "R001")
-     */
-    private String extractRoleId(String displayText) {
-        if (displayText != null && displayText.contains(" - ")) {
-            return displayText.split(" - ")[0];
-        }
-        return displayText; // Fallback
     }
 
     // =============================================================================
