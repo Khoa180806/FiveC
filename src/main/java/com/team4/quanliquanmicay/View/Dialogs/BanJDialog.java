@@ -8,6 +8,7 @@ import com.team4.quanliquanmicay.Controller.TableController;
 import com.team4.quanliquanmicay.DAO.TableForCustomerDAO;
 import com.team4.quanliquanmicay.Entity.TableForCustomer;
 import com.team4.quanliquanmicay.Impl.TableForCustomerDAOImpl;
+import com.team4.quanliquanmicay.util.XTheme;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -25,6 +26,7 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
      * Creates new form BanJDialog
      */
     public BanJDialog() {
+        XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null); 
         this.tableDAO = new TableForCustomerDAOImpl();
