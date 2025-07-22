@@ -1497,7 +1497,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         // Try multiple paths quickly
         String[] paths = {
             "/icons_and_images/imageEmployee/" + imageName,
-            "/icons_and_images/" + imageName
+                "/icons_and_images/" + imageName
         };
 
         for (String path : paths) {
