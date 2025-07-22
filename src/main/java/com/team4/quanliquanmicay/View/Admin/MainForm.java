@@ -16,7 +16,8 @@ public class MainForm extends javax.swing.JFrame {
      * Creates new form MainForm
      */
     public MainForm() {
-        XTheme.applyLightTheme();
+        this.setUndecorated(true); // Ẩn thanh tiêu đề
+        XTheme.applyFullTheme(); // Thay đổi từ applyLightTheme()
         initComponents();
         this.setLocationRelativeTo(null);
     }

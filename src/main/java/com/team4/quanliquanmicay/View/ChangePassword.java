@@ -15,6 +15,7 @@ public class ChangePassword extends javax.swing.JFrame {
      * Creates new form PassWord
      */
     public ChangePassword() {
+        this.setUndecorated(true); // Ẩn thanh tiêu đề
         XTheme.applyLightTheme();
         initComponents();
         this.setLocationRelativeTo(null);
