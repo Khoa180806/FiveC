@@ -14,9 +14,9 @@ public class UserDAOImpl implements UserDAO {
     String updateSql = "UPDATE USER_ACCOUNT SET username=?, pass=?, fullName=?, gender=?, email=?, phone_number=?, image=?, is_enabled=?, role_id=? WHERE user_id=?";
     
     String deleteSql = "DELETE FROM USER_ACCOUNT WHERE user_id=?";
-    String findAllSql = "SELECT user_id, username, pass, fullName, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT";
-    String findByIdSql = "SELECT user_id, username, pass, fullName, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT WHERE user_id=?";
-    String findByUsernameSql = "SELECT user_id, username, pass, fullName, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT WHERE username=?";
+    String findAllSql = "SELECT user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT";
+    String findByIdSql = "SELECT user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT WHERE user_id=?";
+    String findByUsernameSql = "SELECT user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT WHERE username=?";
     @Override
     public UserAccount create(UserAccount entity) {
         Object[] values = {
