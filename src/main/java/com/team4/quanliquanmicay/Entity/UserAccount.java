@@ -20,7 +20,7 @@ public class UserAccount {
     private String email;
     private String phone_number;
     private String image;
-    private Integer is_enabled;    
-    private Date created_date;     // ĐỔI THÀNH java.util.Date
+    private int is_enabled;
+    private Date created_date;
     private String role_id;
 }
