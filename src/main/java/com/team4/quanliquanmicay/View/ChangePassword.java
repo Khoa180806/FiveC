@@ -4,11 +4,17 @@
  */
 package com.team4.quanliquanmicay.View;
 
+import com.team4.quanliquanmicay.Controller.ChangePasswordController;
+import com.team4.quanliquanmicay.DAO.UserDAO;
+import com.team4.quanliquanmicay.Impl.UserDAOImpl;
+import com.team4.quanliquanmicay.util.XAuth;
+import com.team4.quanliquanmicay.util.XDialog;
+
 /**
  *
  * @author HP
  */
-public class ChangePassword extends javax.swing.JFrame {
+public class ChangePassword extends javax.swing.JFrame implements ChangePasswordController{
 
     /**
      * Creates new form PassWord
@@ -33,9 +39,9 @@ public class ChangePassword extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        jTextField3 = new javax.swing.JTextField();
-        jPasswordField1 = new javax.swing.JPasswordField();
-        jPasswordField2 = new javax.swing.JPasswordField();
+        txtPassword = new javax.swing.JTextField();
+        txtConfirm = new javax.swing.JPasswordField();
+        txtNewpass = new javax.swing.JPasswordField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
 
@@ -77,16 +83,16 @@ public class ChangePassword extends javax.swing.JFrame {
         jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Open lock.png"))); // NOI18N
         jLabel4.setText("Xác Nhận Mật Khẩu Mới :");
 
-        jTextField3.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        txtPassword.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
 
-        jPasswordField1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jPasswordField1.setText("jPasswordField1");
+        txtConfirm.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        txtConfirm.setText("jPasswordField1");
 
-        jPasswordField2.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        jPasswordField2.setText("jPasswordField1");
-        jPasswordField2.addActionListener(new java.awt.event.ActionListener() {
+        txtNewpass.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        txtNewpass.setText("jPasswordField1");
+        txtNewpass.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jPasswordField2ActionPerformed(evt);
+                txtNewpassActionPerformed(evt);
             }
         });
 
@@ -110,9 +116,9 @@ public class ChangePassword extends javax.swing.JFrame {
                     .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jPasswordField1)
-                    .addComponent(jTextField3)
-                    .addComponent(jPasswordField2, javax.swing.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE))
+                    .addComponent(txtConfirm)
+                    .addComponent(txtPassword)
+                    .addComponent(txtNewpass, javax.swing.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE))
                 .addContainerGap(253, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -127,15 +133,15 @@ public class ChangePassword extends javax.swing.JFrame {
                 .addGap(101, 101, 101)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(51, 51, 51)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(jPasswordField2, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtNewpass, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(51, 51, 51)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
-                    .addComponent(jPasswordField1, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 130, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -161,9 +167,9 @@ public class ChangePassword extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jPasswordField2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jPasswordField2ActionPerformed
+    private void txtNewpassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNewpassActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jPasswordField2ActionPerformed
+    }//GEN-LAST:event_txtNewpassActionPerformed
 
     /**
      * @param args the command line arguments
@@ -210,8 +216,36 @@ public class ChangePassword extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPasswordField jPasswordField1;
-    private javax.swing.JPasswordField jPasswordField2;
-    private javax.swing.JTextField jTextField3;
+    private javax.swing.JPasswordField txtConfirm;
+    private javax.swing.JPasswordField txtNewpass;
+    private javax.swing.JTextField txtPassword;
     // End of variables declaration//GEN-END:variables
+
+    
+    UserDAO dao = new UserDAOImpl();
+ 
+@Override
+public void open() {
+ this.setLocationRelativeTo(null);
+}
+@Override
+public void close() {
+ this.dispose();
+}
+@Override
+public void save() {
+
+ String password = txtPassword.getText();
+ String newpass = txtNewpass.getText();
+ String confirm = txtConfirm.getText();
+ if (!newpass.equals(confirm)) {
+ XDialog.alert("Xác nhận mật khẩu không đúng!");
+ } else if (!password.equals(XAuth.user.getPass())) {
+ XDialog.alert("Sai mật khẩu!");
+ } else {
+ XAuth.user.setPass(newpass);
+ dao.update(XAuth.user);
+ XDialog.alert("Đổi mật khẩu thành công!");
+ }
+}
 }
