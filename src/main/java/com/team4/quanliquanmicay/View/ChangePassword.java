@@ -9,7 +9,6 @@ import com.team4.quanliquanmicay.DAO.UserDAO;
 import com.team4.quanliquanmicay.Impl.UserDAOImpl;
 import com.team4.quanliquanmicay.util.XAuth;
 import com.team4.quanliquanmicay.util.XDialog;
-
 /**
  *
  * @author HP
@@ -20,6 +19,8 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
      * Creates new form PassWord
      */
     public ChangePassword() {
+        this.setUndecorated(true); // Ẩn thanh tiêu đề
+        XTheme.applyLightTheme();
         initComponents();
         this.setLocationRelativeTo(null);
     }
