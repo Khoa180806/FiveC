@@ -8,11 +8,11 @@ import java.util.List;
 
 public class CategoryDAOImpl implements CategoryDAO{
 
-    String createSql = "INSERT INTO CATEGORY(category_id, name_category, is_available) VALUES(?, ?, ?)";
-    String updateSql = "UPDATE CATEGORY SET name_category=?, is_available=? WHERE category_id=?";
-    String deleteSql = "DELETE FROM CATEGORY WHERE category_id=?";
-    String findAllSql = "SELECT category_id, name_category, is_available FROM CATEGORY";
-    String findByIdSql = "SELECT category_id, name_category, is_available FROM CATEGORY WHERE category_id=?";
+    String createSql = "INSERT INTO CATE(category_id, name_category, is_available) VALUES(?, ?, ?)";
+    String updateSql = "UPDATE CATE SET name_category=?, is_available=? WHERE category_id=?";
+    String deleteSql = "DELETE FROM CATE WHERE category_id=?";
+    String findAllSql = "SELECT category_id, name_category, is_available FROM CATE";
+    String findByIdSql = "SELECT category_id, name_category, is_available FROM CATE WHERE category_id=?";
 
     @Override
     public Category create(Category entity) {
