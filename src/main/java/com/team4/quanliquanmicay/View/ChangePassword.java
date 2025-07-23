@@ -9,6 +9,8 @@ import com.team4.quanliquanmicay.DAO.UserDAO;
 import com.team4.quanliquanmicay.Impl.UserDAOImpl;
 import com.team4.quanliquanmicay.util.XAuth;
 import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.Entity.UserAccount;
 /**
  *
  * @author HP
@@ -20,7 +22,7 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
      */
     public ChangePassword() {
         this.setUndecorated(true); // Ẩn thanh tiêu đề
-        XTheme.applyLightTheme();
+        XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
     }
@@ -253,18 +255,35 @@ public void close() {
 }
 @Override
 public void save() {
-
- String username = txtUsername.getText();
- String newpass = txtNewpass.getText();
- String confirm = txtConfirm.getText();
- if (!newpass.equals(confirm)) {
- XDialog.alert("Xác nhận mật khẩu không đúng!");
- } else if (!username.equals(XAuth.user.getUsername())) {
- XDialog.alert("Sai tên tài khoản!");
- } else {
- XAuth.user.setPass(newpass);
- dao.update(XAuth.user);
- XDialog.alert("Đổi mật khẩu thành công!");
- }
+    System.out.println("XAuth.user: " + XAuth.user);
+    String username = txtUsername.getText();
+    String newpass = txtNewpass.getText();
+    String confirm = txtConfirm.getText();
+    if (!newpass.equals(confirm)) {
+        XDialog.alert("Xác nhận mật khẩu không đúng!");
+        return;
+    }
+    if (XAuth.user == null) {
+        // Trường hợp quên mật khẩu
+        UserAccount user = dao.findByUsername(username.trim());
+        if (user == null) {
+            XDialog.alert("Tên tài khoản không tồn tại!");
+        } else {
+            user.setPass(newpass);
+            dao.update(user);
+            XDialog.alert("Đổi mật khẩu thành công!");
+            this.close();
+        }
+    } else {
+        // Trường hợp đã đăng nhập
+        if (!username.trim().equalsIgnoreCase(XAuth.user.getUsername().trim())) {
+            XDialog.alert("Sai tên tài khoản!");
+        } else {
+            XAuth.user.setPass(newpass);
+            dao.update(XAuth.user);
+            XDialog.alert("Đổi mật khẩu thành công!");
+            this.close();
+        }
+    }
 }
 }

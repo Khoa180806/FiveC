@@ -302,7 +302,9 @@ public class Login extends javax.swing.JFrame implements LoginController{
 
     private void lblChangePasswordMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblChangePasswordMouseClicked
         // TODO add your handling code here:
-        XDialog.alert("Chức năng này đang được phát triển!");
+        XAuth.user = null;
+        ChangePassword changePassword = new ChangePassword();
+        changePassword.setVisible(true);
     }//GEN-LAST:event_lblChangePasswordMouseClicked
 
     /**
