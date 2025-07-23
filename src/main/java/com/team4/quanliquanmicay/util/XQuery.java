@@ -61,6 +61,14 @@ public class XQuery {
      */
     private static <B> B readBean(ResultSet resultSet, Class<B> beanClass) throws SQLException {
         try {
+            // DEBUG: In ra danh sách tên cột trong ResultSet
+            java.sql.ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+            System.out.print("[DEBUG] Các cột trong ResultSet: ");
+            for (int i = 1; i <= columnCount; i++) {
+                System.out.print(metaData.getColumnName(i) + " | ");
+            }
+            System.out.println();
             B bean = beanClass.getDeclaredConstructor().newInstance();
             Method[] methods = beanClass.getMethods();
             
@@ -68,100 +76,83 @@ public class XQuery {
                 String name = method.getName();
                 if (name.startsWith("set") && method.getParameterCount() == 1) {
                     String fieldName = name.substring(3);
-                    
+                    // Chuẩn hóa fieldName về camelCase (ví dụ: Is_available -> is_available)
+                    fieldName = fieldName.substring(0,1).toLowerCase() + fieldName.substring(1);
+
                     boolean success = false;
                     Object value = null;
-                    
-                    // Cách 1: Thử theo index cột
+
+                    Class<?> paramType = method.getParameterTypes()[0];
+                    // Cách 1: Thử lấy theo đúng tên thuộc tính (alias SQL)
                     try {
-                        int columnIndex = getColumnIndex(fieldName);
-                        if (columnIndex > 0) {
-                            value = resultSet.getObject(columnIndex);
-                            
-                            // DEBUG: In ra giá trị thô từ database
-                            System.out.printf("DEBUG Raw Value for %s (index %d): %s (type: %s)\r\n", 
-                                fieldName, columnIndex, value, value != null ? value.getClass().getSimpleName() : "null");
-                            
-                            // XỬ LÝ ĐẶC BIỆT CHO CÁC TRƯỜNG
-                            if (value != null) {
-                                // Xử lý Created_date: Timestamp -> Date
-                                if (fieldName.equals("Created_date") && value instanceof java.sql.Timestamp) {
-                                    java.sql.Timestamp timestamp = (java.sql.Timestamp) value;
-                                    value = new java.util.Date(timestamp.getTime());
-                                    System.out.printf("DEBUG Converted %s: Timestamp -> java.util.Date\r\n", fieldName);
-                                }
-                                // Xử lý Gender, Is_enabled, Amount, Status: BigDecimal -> Integer
-                                else if ((fieldName.equals("Gender") || fieldName.equals("Is_enabled") || 
-                                         fieldName.equals("Amount") || fieldName.equals("Status") || 
-                                         fieldName.equals("Table_number")) && value instanceof java.math.BigDecimal) {
-                                    value = ((java.math.BigDecimal) value).intValue();
-                                    System.out.printf("DEBUG Converted %s: BigDecimal -> %s\r\n", fieldName, value);
-                                }
+                        value = resultSet.getObject(fieldName);
+                        if (value != null) {
+                            // Nếu kiểu setter là int và value là BigDecimal thì convert
+                            if (paramType == int.class && value instanceof java.math.BigDecimal) {
+                                value = ((java.math.BigDecimal) value).intValue();
                             }
-                            
                             method.invoke(bean, value);
-                            System.out.printf("SUCCESS (by index %d): Set %s = %s\r\n", columnIndex, fieldName, value);
+                            System.out.printf("SUCCESS (by fieldName): Set %s = %s\r\n", fieldName, value);
                             success = true;
                         }
                     } catch (Exception e) {
-                        System.out.printf("ERROR at index %d for %s: %s\r\n", getColumnIndex(fieldName), fieldName, e.getMessage());
-                        // Continue to try other methods
+                        // Ignore
                     }
-                    
-                    // Cách 2: Thử với tên cột UPPERCASE (Oracle mặc định)
+
+                    // Cách 2: Thử với tên cột UPPERCASE
                     if (!success) {
                         try {
                             String columnName = fieldName.toUpperCase();
                             value = resultSet.getObject(columnName);
-                            
-                            // Xử lý conversion tương tự
                             if (value != null) {
-                                if (fieldName.equals("Created_date") && value instanceof java.sql.Timestamp) {
-                                    java.sql.Timestamp timestamp = (java.sql.Timestamp) value;
-                                    value = new java.util.Date(timestamp.getTime());
-                                }
-                                else if ((fieldName.equals("Gender") || fieldName.equals("Is_enabled") || 
-                                         fieldName.equals("Amount") || fieldName.equals("Status") || 
-                                         fieldName.equals("Table_number")) && value instanceof java.math.BigDecimal) {
+                                if (paramType == int.class && value instanceof java.math.BigDecimal) {
                                     value = ((java.math.BigDecimal) value).intValue();
                                 }
+                                method.invoke(bean, value);
+                                System.out.printf("SUCCESS (by uppercase): Set %s = %s\r\n", fieldName, value);
+                                success = true;
                             }
-                            
-                            method.invoke(bean, value);
-                            System.out.printf("SUCCESS (by uppercase): Set %s = %s\r\n", fieldName, value);
-                            success = true;
                         } catch (Exception e) {
                             // Ignore
                         }
                     }
-                    
+
                     // Cách 3: Thử với tên cột lowercase
                     if (!success) {
                         try {
                             String columnName = fieldName.toLowerCase();
                             value = resultSet.getObject(columnName);
-                            
-                            // Xử lý conversion tương tự
                             if (value != null) {
-                                if (fieldName.equals("Created_date") && value instanceof java.sql.Timestamp) {
-                                    java.sql.Timestamp timestamp = (java.sql.Timestamp) value;
-                                    value = new java.util.Date(timestamp.getTime());
-                                }
-                                else if ((fieldName.equals("Gender") || fieldName.equals("Is_enabled") || 
-                                         fieldName.equals("Amount") || fieldName.equals("Status") || 
-                                         fieldName.equals("Table_number")) && value instanceof java.math.BigDecimal) {
+                                if (paramType == int.class && value instanceof java.math.BigDecimal) {
                                     value = ((java.math.BigDecimal) value).intValue();
                                 }
+                                method.invoke(bean, value);
+                                System.out.printf("SUCCESS (by lowercase): Set %s = %s\r\n", fieldName, value);
+                                success = true;
                             }
-                            
-                            method.invoke(bean, value);
-                            System.out.printf("SUCCESS (by lowercase): Set %s = %s\r\n", fieldName, value);
-                            success = true;
                         } catch (Exception e) {
                             // Ignore
                         }
                     }
-                    
+
+                    // Cách 4: Thử theo index cột (nếu có mapping)
+                    if (!success) {
+                        try {
+                            int columnIndex = getColumnIndex(fieldName);
+                            if (columnIndex > 0) {
+                                value = resultSet.getObject(columnIndex);
+                                if (paramType == int.class && value instanceof java.math.BigDecimal) {
+                                    value = ((java.math.BigDecimal) value).intValue();
+                                }
+                                method.invoke(bean, value);
+                                System.out.printf("SUCCESS (by index %d): Set %s = %s\r\n", columnIndex, fieldName, value);
+                                success = true;
+                            }
+                        } catch (Exception e) {
+                            // Ignore
+                        }
+                    }
+
                     if (!success) {
                         System.out.printf("+ Column '%s' not found!\r\n", fieldName);
                     }
@@ -195,6 +186,12 @@ public class XQuery {
             case "Table_number": return 1;
             case "Amount": return 2;
             case "Status": return 3;
+            
+            // CATE mapping
+            case "Category_id": return 1;
+            case "Category_name": return 2;
+            case "Is_available": return 3; // mapping cho Category
+            case "is_available": return 3; // mapping cho Category
             
             default: return -1;
         }

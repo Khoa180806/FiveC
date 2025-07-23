@@ -240,6 +240,11 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
                 return canEdit [columnIndex];
             }
         });
+        tblCategories.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblCategoriesMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(tblCategories);
         if (tblCategories.getColumnModel().getColumnCount() > 0) {
             tblCategories.getColumnModel().getColumn(0).setResizable(false);
@@ -325,6 +330,10 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
         System.exit(0);
     }//GEN-LAST:event_btnExitActionPerformed
 
+    private void tblCategoriesMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblCategoriesMouseClicked
+        edit();
+    }//GEN-LAST:event_tblCategoriesMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -392,15 +401,28 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
 
     @Override
     public void setForm(Category entity) {
-        txtCateId.setText(entity.getCategoryId());
-        txtCateName.setText(entity.getCategoryName());
-        radActive.setSelected(entity.isAvailable());
-        radInactive.setSelected(!entity.isAvailable());
+        txtCateId.setText(entity.getCategory_id());
+        txtCateName.setText(entity.getCategory_name());
+        if (entity.getIs_available() == 1) {
+            radActive.setSelected(true);
+            radInactive.setSelected(false);
+        } else {
+            radActive.setSelected(false);
+            radInactive.setSelected(true);
+        }
     }
 
     @Override
     public Category getForm() {
-        return new Category(txtCateId.getText(), txtCateName.getText(), radActive.isSelected());
+        Category category = new Category();
+        category.setCategory_id(txtCateId.getText());
+        category.setCategory_name(txtCateName.getText());
+        if (radActive.isSelected()) {
+            category.setIs_available(1);
+        } else {
+            category.setIs_available(0);
+        }
+        return category;
     }
 
     @Override
@@ -408,9 +430,9 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
         List<Category> categories = categoryDAO.findAll();
         tblCategories.setModel(new javax.swing.table.DefaultTableModel(
             categories.stream().map(category -> new Object[] {
-                category.getCategoryId(),
-                category.getCategoryName(),
-                category.isAvailable()
+                category.getCategory_id(),
+                category.getCategory_name(),
+                category.getIs_available() == 1 ? "Hoạt động" : "Ngừng hoạt động"
             }).toArray(Object[][]::new),
             new String[] { "Mã loại", "Tên loại", "Trạng thái" }
         ));
@@ -418,13 +440,28 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
 
     @Override
     public void edit() {
-        Category category = (Category) tblCategories.getModel().getValueAt(tblCategories.getSelectedRow(), 0);
-        setForm(category);
+        int selectedRow = tblCategories.getSelectedRow();
+        if (selectedRow >= 0) {
+            String categoryId = tblCategories.getValueAt(selectedRow, 0).toString();
+            String categoryName = tblCategories.getValueAt(selectedRow, 1).toString();
+            String status = tblCategories.getValueAt(selectedRow, 2).toString();
+            int isAvailable = status.equals("Hoạt động") ? 1 : 0;
+            Category category = new Category(categoryId, categoryName, isAvailable);
+            System.out.println("[SELECT] Chọn dòng: " + category);
+            setForm(category);
+            setEditable(true);
+            txtCateId.setEditable(false); // Disable mã loại khi chọn dòng
+            btnUpdate.setEnabled(true);
+            btnRemove.setEnabled(true);
+            btnReset.setEnabled(true);
+            btnExit.setEnabled(true);
+        }
     }
 
     @Override
     public void create() {
         Category category = getForm();
+        System.out.println("[CREATE] Thêm mới: " + category);
         categoryDAO.create(category);
         fillToTable();
     }
@@ -432,15 +469,21 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
     @Override
     public void update() {
         Category category = getForm();
+        System.out.println("[UPDATE] Cập nhật: " + category);
         categoryDAO.update(category);
         fillToTable();
     }
 
     @Override
     public void delete() {
-        Category category = (Category) tblCategories.getModel().getValueAt(tblCategories.getSelectedRow(), 0);
-        categoryDAO.deleteById(category.getCategoryId());
-        fillToTable();
+        int selectedRow = tblCategories.getSelectedRow();
+        if (selectedRow >= 0) {
+            String categoryId = tblCategories.getValueAt(selectedRow, 0).toString();
+            System.out.println("[DELETE] Xóa category_id: " + categoryId);
+            categoryDAO.deleteById(categoryId);
+            clear();
+            fillToTable();
+        }
     }
 
     @Override
@@ -448,6 +491,8 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
         txtCateId.setText("");
         txtCateName.setText("");
         radActive.setSelected(true);
+        txtCateId.setEditable(true); // Enable lại mã loại khi làm mới
+        tblCategories.clearSelection(); // Bỏ chọn hàng trong bảng
     }
 
     @Override

@@ -6,12 +6,12 @@ import lombok.*;
  *
  * @author FiveC
  */
-@NoArgsConstructor 
-@AllArgsConstructor 
-@Builder 
-@Data 
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Data
 public class Category {
-    private String categoryId;
-    private String categoryName;
-    private boolean isAvailable;
+    private String category_id;
+    private String category_name;
+    private int is_available;
 }
