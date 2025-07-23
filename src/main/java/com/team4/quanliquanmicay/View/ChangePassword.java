@@ -39,7 +39,7 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        txtPassword = new javax.swing.JTextField();
+        txtUsername = new javax.swing.JTextField();
         txtConfirm = new javax.swing.JPasswordField();
         txtNewpass = new javax.swing.JPasswordField();
         jButton1 = new javax.swing.JButton();
@@ -47,33 +47,35 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        jPanel1.setBackground(new java.awt.Color(204, 0, 0));
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 48)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("Đổi Mật Khẩu");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(352, 352, 352)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jLabel1)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(253, 253, 253))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(17, 17, 17)
+                .addGap(22, 22, 22)
                 .addComponent(jLabel1)
-                .addContainerGap(29, Short.MAX_VALUE))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Unknown person.png"))); // NOI18N
-        jLabel2.setText("Mật Khẩu Hiện Tại :");
+        jLabel2.setText("Tên Tài Khoản :");
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Lock.png"))); // NOI18N
@@ -83,13 +85,11 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
         jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Open lock.png"))); // NOI18N
         jLabel4.setText("Xác Nhận Mật Khẩu Mới :");
 
-        txtPassword.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        txtUsername.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
 
         txtConfirm.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        txtConfirm.setText("jPasswordField1");
 
         txtNewpass.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        txtNewpass.setText("jPasswordField1");
         txtNewpass.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtNewpassActionPerformed(evt);
@@ -119,7 +119,7 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(169, 169, 169)
+                .addGap(102, 102, 102)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel4)
                     .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.LEADING)
@@ -127,23 +127,23 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(txtConfirm)
-                    .addComponent(txtPassword)
-                    .addComponent(txtNewpass, javax.swing.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE))
-                .addContainerGap(253, Short.MAX_VALUE))
+                    .addComponent(txtUsername)
+                    .addComponent(txtNewpass, javax.swing.GroupLayout.PREFERRED_SIZE, 332, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(120, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jButton1)
                 .addGap(18, 18, 18)
                 .addComponent(jButton2)
-                .addGap(41, 41, 41))
+                .addGap(36, 36, 36))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(101, 101, 101)
+                .addGap(77, 77, 77)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(51, 51, 51)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
@@ -152,11 +152,11 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(txtConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 130, Short.MAX_VALUE)
+                .addGap(50, 50, 50)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(67, 67, 67))
+                .addContainerGap(41, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -164,7 +164,7 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -236,7 +236,7 @@ this.close();        // TODO add your handling code here:
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPasswordField txtConfirm;
     private javax.swing.JPasswordField txtNewpass;
-    private javax.swing.JTextField txtPassword;
+    private javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
 
     
@@ -253,13 +253,13 @@ public void close() {
 @Override
 public void save() {
 
- String password = txtPassword.getText();
+ String username = txtUsername.getText();
  String newpass = txtNewpass.getText();
  String confirm = txtConfirm.getText();
  if (!newpass.equals(confirm)) {
  XDialog.alert("Xác nhận mật khẩu không đúng!");
- } else if (!password.equals(XAuth.user.getPass())) {
- XDialog.alert("Sai mật khẩu!");
+ } else if (!username.equals(XAuth.user.getUsername())) {
+ XDialog.alert("Sai tên tài khoản!");
  } else {
  XAuth.user.setPass(newpass);
  dao.update(XAuth.user);
