@@ -13,6 +13,7 @@ public class ProductDAOImpl implements ProductDAO{
     String deleteSql = "DELETE FROM PRODUCT WHERE product_id=?";
     String findAllSql = "SELECT product_id, name_product, price, discount, unit, image, is_available, note, created_date, category_id FROM PRODUCT";
     String findByIdSql = "SELECT product_id, name_product, price, discount, unit, image, is_available, note, created_date, category_id FROM PRODUCT WHERE product_id=?";
+    String deleteByCategoryIdSql = "DELETE FROM PRODUCT WHERE CATEGORY_ID = ?";
 
     @Override
     public Product create(Product entity) {

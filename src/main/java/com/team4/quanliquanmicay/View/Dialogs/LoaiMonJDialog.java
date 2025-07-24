@@ -523,7 +523,12 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
             fillToTable();
             JOptionPane.showMessageDialog(this, "Xóa thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Xóa thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            // Kiểm tra lỗi ràng buộc khóa ngoại
+            if (e.getMessage() != null && e.getMessage().contains("FK_PRODUCT_CATEGORY")) {
+                JOptionPane.showMessageDialog(this, "Không thể xóa loại món này vì liên quan đến nhiều thông tin khác!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Xóa thất bại!\n" + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
