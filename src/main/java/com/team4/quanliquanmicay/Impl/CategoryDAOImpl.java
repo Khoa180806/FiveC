@@ -8,18 +8,18 @@ import java.util.List;
 
 public class CategoryDAOImpl implements CategoryDAO{
 
-    String createSql = "INSERT INTO CATEGORY(category_id, name_category, is_available) VALUES(?, ?, ?)";
-    String updateSql = "UPDATE CATEGORY SET name_category=?, is_available=? WHERE category_id=?";
-    String deleteSql = "DELETE FROM CATEGORY WHERE category_id=?";
-    String findAllSql = "SELECT category_id, name_category, is_available FROM CATEGORY";
-    String findByIdSql = "SELECT category_id, name_category, is_available FROM CATEGORY WHERE category_id=?";
+    String createSql = "INSERT INTO CATE(category_id, category_name, IS_AVAILABLE) VALUES(?, ?, ?)";
+    String updateSql = "UPDATE CATE SET category_name=?, IS_AVAILABLE=? WHERE category_id=?";
+    String deleteSql = "DELETE FROM CATE WHERE category_id=?";
+    String findAllSql = "SELECT category_id, category_name, IS_AVAILABLE AS \"is_available\" FROM CATE";
+    String findByIdSql = "SELECT category_id, category_name, IS_AVAILABLE AS \"is_available\" FROM CATE WHERE category_id=?";
 
     @Override
     public Category create(Category entity) {
         Object[] values = {
-            entity.getCategoryId(),
-            entity.getCategoryName(),
-            entity.isAvailable(),
+            entity.getCategory_id(),
+            entity.getCategory_name(),
+            entity.getIs_available() == 1 ? 1 : 0,
         };
         XJdbc.executeUpdate(createSql, values);
         return entity;
@@ -28,9 +28,9 @@ public class CategoryDAOImpl implements CategoryDAO{
     @Override
     public void update(Category entity) {
         Object[] values = {
-            entity.getCategoryName(),
-            entity.isAvailable(),
-            entity.getCategoryId(),
+            entity.getCategory_name(),
+            entity.getIs_available() == 1 ? 1 : 0,
+            entity.getCategory_id(),
         };
         XJdbc.executeUpdate(updateSql, values);
     }
