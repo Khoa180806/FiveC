@@ -5,6 +5,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Lớp tiện ích hỗ trợ làm việc với CSDL quan hệ
@@ -78,16 +81,18 @@ public class XJdbc {
     }
 
     /**
-     * Thao tác dữ liệu
-     *
-     * @param sql câu lệnh SQL (INSERT, UPDATE, DELETE)
-     * @param values các giá trị cung cấp cho các tham số trong SQL
-     * @return số lượng bản ghi đã thực hiện
-     * @throws RuntimeException không thực thi được câu lệnh SQL
+     * Interface xử lý ResultSet, dùng cho các hàm truy vấn an toàn resource
+     */
+    @FunctionalInterface
+    public interface ResultSetHandler<T> {
+        T handle(ResultSet rs) throws SQLException;
+    }
+
+    /**
+     * Thao tác dữ liệu (INSERT, UPDATE, DELETE) - Đảm bảo đóng resource
      */
     public static int executeUpdate(String sql, Object... values) {
-        try {
-            var stmt = XJdbc.getStmt(sql, values);
+        try (PreparedStatement stmt = getStmt(sql, values)) {
             return stmt.executeUpdate();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
@@ -95,50 +100,53 @@ public class XJdbc {
     }
 
     /**
-     * Truy vấn dữ liệu
-     *
-     * @param sql câu lệnh SQL (SELECT)
-     * @param values các giá trị cung cấp cho các tham số trong SQL
-     * @return tập kết quả truy vấn
-     * @throws RuntimeException không thực thi được câu lệnh SQL
+     * Truy vấn dữ liệu, xử lý qua handler, đảm bảo đóng resource
+     * @param sql câu lệnh SQL
+     * @param handler lambda xử lý ResultSet
+     * @param values tham số
+     * @return kết quả handler trả về
      */
-    public static ResultSet executeQuery(String sql, Object... values) {
-        try {
-            var stmt = XJdbc.getStmt(sql, values);
-            return stmt.executeQuery();
+    public static <T> T executeQuery(String sql, ResultSetHandler<T> handler, Object... values) {
+        try (PreparedStatement stmt = getStmt(sql, values);
+             ResultSet rs = stmt.executeQuery()) {
+            return handler.handle(rs);
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
     }
 
     /**
-     * Truy vấn một giá trị
-     *
-     * @param <T> kiểu dữ liệu kết quả
-     * @param sql câu lệnh SQL (SELECT)
-     * @param values các giá trị cung cấp cho các tham số trong SQL
-     * @return giá trị truy vấn hoặc null
-     * @throws RuntimeException không thực thi được câu lệnh SQL
+     * Truy vấn lấy giá trị đầu tiên (1 dòng, 1 cột)
      */
     public static <T> T getValue(String sql, Object... values) {
-        try {
-            var resultSet = XJdbc.executeQuery(sql, values);
-            if (resultSet.next()) {
-                return (T) resultSet.getObject(1);
-            }
+        return executeQuery(sql, rs -> {
+            if (rs.next()) return (T) rs.getObject(1);
             return null;
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
+        }, values);
+    }
+
+    /**
+     * Truy vấn trả về list object (dùng cho mapping entity)
+     * @param sql câu lệnh SQL
+     * @param mapper lambda map 1 row -> object
+     * @param values tham số
+     * @return list object
+     */
+    public static <T> List<T> queryList(String sql, Function<ResultSet, T> mapper, Object... values) {
+        return executeQuery(sql, rs -> {
+            List<T> list = new ArrayList<>();
+            try {
+                while (rs.next()) list.add(mapper.apply(rs));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            return list;
+        }, values);
     }
 
     /**
      * Tạo PreparedStatement từ câu lệnh SQL/PROC
-     *
-     * @param sql câu lệnh SQL/PROC
-     * @param values các giá trị cung cấp cho các tham số trong SQL/PROC
-     * @return đối tượng đã tạo
-     * @throws SQLException không tạo được PreparedStatement
+     * (Chỉ dùng nội bộ, luôn đóng ở các hàm bên trên)
      */
     private static PreparedStatement getStmt(String sql, Object... values) throws SQLException {
         var conn = XJdbc.openConnection();
@@ -173,18 +181,19 @@ public class XJdbc {
         }
     }
 
-    private static void demo1() {
-        // Lấy tất cả user có role là 'ADMIN'
-        String sql = "SELECT * FROM USER_ACCOUNT WHERE role_id = ?";
-        var rs = XJdbc.executeQuery(sql, "ADMIN");
-        try {
-            while (rs.next()) {
-                System.out.println("Username: " + rs.getString("username"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+    // XÓA HOẶC COMMENT demo1 vì nó dùng executeQuery trả về ResultSet (KHÔNG AN TOÀN)
+    // private static void demo1() {
+    //     // Lấy tất cả user có role là 'ADMIN'
+    //     String sql = "SELECT * FROM USER_ACCOUNT WHERE role_id = ?";
+    //     var rs = XJdbc.executeQuery(sql, "ADMIN");
+    //     try {
+    //         while (rs.next()) {
+    //             System.out.println("Username: " + rs.getString("username"));
+    //         }
+    //     } catch (SQLException e) {
+    //         e.printStackTrace();
+    //     }
+    // }
 
     private static void demo2() {
         // Lấy số lượng user đang kích hoạt

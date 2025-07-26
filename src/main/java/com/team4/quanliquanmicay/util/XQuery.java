@@ -44,16 +44,17 @@ public class XQuery {
      * @throws RuntimeException lỗi truy vấn
      */
     public static <B> List<B> getBeanList(Class<B> beanClass, String sql, Object... values) {
-        List<B> list = new ArrayList<>();
-        try {
-            ResultSet resultSet = XJdbc.executeQuery(sql, values);
-            while (resultSet.next()) {
-                list.add(XQuery.readBean(resultSet, beanClass));
+        return XJdbc.executeQuery(sql, rs -> {
+            List<B> list = new ArrayList<>();
+            try {
+                while (rs.next()) {
+                    list.add(XQuery.readBean(rs, beanClass));
+                }
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
             }
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-        return list;
+            return list;
+        }, values);
     }
 
     /**
@@ -83,13 +84,25 @@ public class XQuery {
                     Object value = null;
 
                     Class<?> paramType = method.getParameterTypes()[0];
+                    // DEBUG: In ra tên setter và fieldName
+                    System.out.println("[DEBUG] Setter: " + name + " | fieldName: " + fieldName);
                     // Cách 1: Thử lấy theo đúng tên thuộc tính (alias SQL)
                     try {
                         value = resultSet.getObject(fieldName);
                         if (value != null) {
-                            // Nếu kiểu setter là int và value là BigDecimal thì convert
-                            if (paramType == int.class && value instanceof java.math.BigDecimal) {
+                            // Nếu kiểu setter là int hoặc Integer và value là BigDecimal thì convert
+                            if ((paramType == int.class || paramType == Integer.class) && value instanceof java.math.BigDecimal) {
                                 value = ((java.math.BigDecimal) value).intValue();
+                            }
+                            if (paramType == double.class && value instanceof java.math.BigDecimal) {
+                                value = ((java.math.BigDecimal) value).doubleValue();
+                            }
+                            if (paramType == boolean.class || paramType == Boolean.class) {
+                                if (value instanceof Number) {
+                                    value = ((Number) value).intValue() == 1;
+                                } else if (value instanceof String) {
+                                    value = "1".equals(value) || "true".equalsIgnoreCase((String) value);
+                                }
                             }
                             method.invoke(bean, value);
                             System.out.printf("SUCCESS (by fieldName): Set %s = %s\r\n", fieldName, value);
@@ -105,11 +118,35 @@ public class XQuery {
                             String columnName = fieldName.toUpperCase();
                             value = resultSet.getObject(columnName);
                             if (value != null) {
-                                if (paramType == int.class && value instanceof java.math.BigDecimal) {
+                                if ((paramType == int.class || paramType == Integer.class) && value instanceof java.math.BigDecimal) {
                                     value = ((java.math.BigDecimal) value).intValue();
+                                }
+                                if (paramType == double.class && value instanceof java.math.BigDecimal) {
+                                    value = ((java.math.BigDecimal) value).doubleValue();
+                                }
+                                if (paramType == float.class && value instanceof java.math.BigDecimal) {
+                                    value = ((java.math.BigDecimal) value).floatValue();
                                 }
                                 method.invoke(bean, value);
                                 System.out.printf("SUCCESS (by uppercase): Set %s = %s\r\n", fieldName, value);
+                                success = true;
+                            }
+                        } catch (Exception e) {
+                            // Ignore
+                        }
+                    }
+                    // Cách 2.5: Thử với tên cột snake_case UPPERCASE (ví dụ IS_AVAILABLE)
+                    if (!success) {
+                        try {
+                            String columnName = fieldName.replaceAll("([A-Z])", "_$1").toUpperCase();
+                            if (columnName.startsWith("_")) columnName = columnName.substring(1);
+                            value = resultSet.getObject(columnName);
+                            if (value != null) {
+                                if ((paramType == int.class || paramType == Integer.class) && value instanceof java.math.BigDecimal) {
+                                    value = ((java.math.BigDecimal) value).intValue();
+                                }
+                                method.invoke(bean, value);
+                                System.out.printf("SUCCESS (by snake UPPERCASE): Set %s = %s\r\n", fieldName, value);
                                 success = true;
                             }
                         } catch (Exception e) {
@@ -125,6 +162,12 @@ public class XQuery {
                             if (value != null) {
                                 if (paramType == int.class && value instanceof java.math.BigDecimal) {
                                     value = ((java.math.BigDecimal) value).intValue();
+                                }
+                                if (paramType == double.class && value instanceof java.math.BigDecimal) {
+                                    value = ((java.math.BigDecimal) value).doubleValue();
+                                }
+                                if (paramType == float.class && value instanceof java.math.BigDecimal) {
+                                    value = ((java.math.BigDecimal) value).floatValue();
                                 }
                                 method.invoke(bean, value);
                                 System.out.printf("SUCCESS (by lowercase): Set %s = %s\r\n", fieldName, value);
@@ -143,6 +186,12 @@ public class XQuery {
                                 value = resultSet.getObject(columnIndex);
                                 if (paramType == int.class && value instanceof java.math.BigDecimal) {
                                     value = ((java.math.BigDecimal) value).intValue();
+                                }
+                                if (paramType == double.class && value instanceof java.math.BigDecimal) {
+                                    value = ((java.math.BigDecimal) value).doubleValue();
+                                }
+                                if (paramType == float.class && value instanceof java.math.BigDecimal) {
+                                    value = ((java.math.BigDecimal) value).floatValue();
                                 }
                                 method.invoke(bean, value);
                                 System.out.printf("SUCCESS (by index %d): Set %s = %s\r\n", columnIndex, fieldName, value);

@@ -18,8 +18,21 @@ public class Product {
     private double discount;
     private String unit;
     private String image;
-    private boolean isAvailable;
+    private Integer isAvailable;
     private String note;
     private Date createdDate;
     private String categoryId;
+
+    public Integer getIsAvailable() {
+        return isAvailable;
+    }
+    public void setIsAvailable(Integer isAvailable) {
+        this.isAvailable = isAvailable;
+    }
+    public boolean isAvailable() {
+        return isAvailable != null && isAvailable == 1;
+    }
+    public void setAvailable(boolean available) {
+        this.isAvailable = available ? 1 : 0;
+    }
 }

@@ -25,7 +25,7 @@ public class TableForCustomerDAOImpl implements TableForCustomerDAO {
             entity.getAmount(),
             entity.getStatus()
         };
-        XJdbc.executeQuery(createSql, values);
+        XJdbc.executeUpdate(createSql, values);
         return entity;
     }
 
@@ -36,7 +36,7 @@ public class TableForCustomerDAOImpl implements TableForCustomerDAO {
             entity.getStatus(),
             entity.getTable_number()
         };
-        XJdbc.executeQuery(updateSql, values);
+        XJdbc.executeUpdate(updateSql, values);
     }
 
     @Override
@@ -46,23 +46,7 @@ public class TableForCustomerDAOImpl implements TableForCustomerDAO {
 
     @Override
     public List<TableForCustomer> findAll() {
-        List<TableForCustomer> list = new ArrayList<>();
-        String sql = "SELECT table_number, amount, status FROM TABLE_FOR_CUSTOMER";
-        
-        try {
-            ResultSet rs = XJdbc.executeQuery(sql);
-            while (rs.next()) {
-                TableForCustomer table = new TableForCustomer();
-                table.setTable_number(rs.getInt("table_number"));
-                table.setAmount(rs.getInt("amount"));
-                table.setStatus(rs.getInt("status"));
-                list.add(table);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        return list;
+        return XQuery.getBeanList(TableForCustomer.class, findAllSql);
     }
 
 
