@@ -8,22 +8,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Lớp tiện ích hỗ trợ truy vấn và chuyển đổi sang đối tượng
+ * Lớp tiện ích hỗ trợ truy vấn và chuyển đổi sang đối tượng (Tối ưu cho Oracle)
  *
  * @author NghiemN
- * @version 1.0
+ * @version 1.1 (Oracle)
  */
 public class XQuery {
 
     /**
      * Truy vấn 1 đối tượng
-     *
-     * @param <B> kiểu của đối tượng cần chuyển đổi
-     * @param beanClass lớp của đối tượng kết quả
-     * @param sql câu lệnh truy vấn
-     * @param values các giá trị cung cấp cho các tham số của SQL
-     * @return kết quả truy vấn
-     * @throws RuntimeException lỗi truy vấn
      */
     public static <B> B getSingleBean(Class<B> beanClass, String sql, Object... values) {
         List<B> list = XQuery.getBeanList(beanClass, sql, values);
@@ -35,13 +28,6 @@ public class XQuery {
 
     /**
      * Truy vấn nhiều đối tượng
-     *
-     * @param <B> kiểu của đối tượng cần chuyển đổi
-     * @param beanClass lớp của đối tượng kết quả
-     * @param sql câu lệnh truy vấn
-     * @param values các giá trị cung cấp cho các tham số của SQL
-     * @return kết quả truy vấn
-     * @throws RuntimeException lỗi truy vấn
      */
     public static <B> List<B> getBeanList(Class<B> beanClass, String sql, Object... values) {
         return XJdbc.executeQuery(sql, rs -> {
@@ -58,37 +44,25 @@ public class XQuery {
     }
 
     /**
-     * Đọc một đối tượng từ ResultSet
+     * Đọc một đối tượng từ ResultSet (Tối ưu cho Oracle)
      */
     private static <B> B readBean(ResultSet resultSet, Class<B> beanClass) throws SQLException {
         try {
-            // DEBUG: In ra danh sách tên cột trong ResultSet
-            java.sql.ResultSetMetaData metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
-            System.out.print("[DEBUG] Các cột trong ResultSet: ");
-            for (int i = 1; i <= columnCount; i++) {
-                System.out.print(metaData.getColumnName(i) + " | ");
-            }
-            System.out.println();
             B bean = beanClass.getDeclaredConstructor().newInstance();
             Method[] methods = beanClass.getMethods();
-            
-            for(Method method: methods){
+            for (Method method : methods) {
                 String name = method.getName();
                 if (name.startsWith("set") && method.getParameterCount() == 1) {
                     String fieldName = name.substring(3);
-                    // Chuẩn hóa fieldName về camelCase (ví dụ: Is_available -> is_available)
-                    fieldName = fieldName.substring(0,1).toLowerCase() + fieldName.substring(1);
-
+                    fieldName = fieldName.substring(0, 1).toLowerCase() + fieldName.substring(1);
                     boolean success = false;
                     Object value = null;
-
                     Class<?> paramType = method.getParameterTypes()[0];
                     // DEBUG: In ra tên setter và fieldName
                     System.out.println("[DEBUG] Setter: " + name + " | fieldName: " + fieldName);
                     // Cách 1: Thử lấy theo đúng tên thuộc tính (alias SQL)
                     try {
-                        value = resultSet.getObject(fieldName);
+                        value = resultSet.getObject(fieldName.toUpperCase());
                         if (value != null) {
                             // Nếu kiểu setter là int hoặc Integer và value là BigDecimal thì convert
                             if ((paramType == int.class || paramType == Integer.class) && value instanceof java.math.BigDecimal) {
@@ -105,18 +79,16 @@ public class XQuery {
                                 }
                             }
                             method.invoke(bean, value);
-                            System.out.printf("SUCCESS (by fieldName): Set %s = %s\r\n", fieldName, value);
                             success = true;
                         }
                     } catch (Exception e) {
                         // Ignore
                     }
 
-                    // Cách 2: Thử với tên cột UPPERCASE
+                    // Cách 2: Thử lấy theo đúng tên thuộc tính (alias SQL)
                     if (!success) {
                         try {
-                            String columnName = fieldName.toUpperCase();
-                            value = resultSet.getObject(columnName);
+                            value = resultSet.getObject(fieldName);
                             if (value != null) {
                                 if ((paramType == int.class || paramType == Integer.class) && value instanceof java.math.BigDecimal) {
                                     value = ((java.math.BigDecimal) value).intValue();
@@ -128,7 +100,6 @@ public class XQuery {
                                     value = ((java.math.BigDecimal) value).floatValue();
                                 }
                                 method.invoke(bean, value);
-                                System.out.printf("SUCCESS (by uppercase): Set %s = %s\r\n", fieldName, value);
                                 success = true;
                             }
                         } catch (Exception e) {
@@ -157,8 +128,7 @@ public class XQuery {
                     // Cách 3: Thử với tên cột lowercase
                     if (!success) {
                         try {
-                            String columnName = fieldName.toLowerCase();
-                            value = resultSet.getObject(columnName);
+                            value = resultSet.getObject(fieldName.toLowerCase());
                             if (value != null) {
                                 if (paramType == int.class && value instanceof java.math.BigDecimal) {
                                     value = ((java.math.BigDecimal) value).intValue();
@@ -170,7 +140,6 @@ public class XQuery {
                                     value = ((java.math.BigDecimal) value).floatValue();
                                 }
                                 method.invoke(bean, value);
-                                System.out.printf("SUCCESS (by lowercase): Set %s = %s\r\n", fieldName, value);
                                 success = true;
                             }
                         } catch (Exception e) {
@@ -194,16 +163,11 @@ public class XQuery {
                                     value = ((java.math.BigDecimal) value).floatValue();
                                 }
                                 method.invoke(bean, value);
-                                System.out.printf("SUCCESS (by index %d): Set %s = %s\r\n", columnIndex, fieldName, value);
                                 success = true;
                             }
                         } catch (Exception e) {
                             // Ignore
                         }
-                    }
-
-                    if (!success) {
-                        System.out.printf("+ Column '%s' not found!\r\n", fieldName);
                     }
                 }
             }
@@ -212,7 +176,7 @@ public class XQuery {
             throw new SQLException("Error creating bean: " + e.getMessage(), e);
         }
     }
-    
+
     /**
      * Lấy index cột dựa vào tên field - ĐÃ THÊM TABLE_FOR_CUSTOMER
      */
@@ -230,69 +194,63 @@ public class XQuery {
             case "Is_enabled": return 9;
             case "Created_date": return 10;
             case "Role_id": return 11;
-            
-            // TABLE_FOR_CUSTOMER mapping - THÊM VÀO
+            // TABLE_FOR_CUSTOMER mapping
             case "Table_number": return 1;
             case "Amount": return 2;
             case "Status": return 3;
-            
             // CATE mapping
             case "Category_id": return 1;
             case "Category_name": return 2;
-            case "Is_available": return 3; // mapping cho Category
-            case "is_available": return 3; // mapping cho Category
-            
+            case "Is_available": return 3;
+            case "is_available": return 3;
             default: return -1;
         }
     }
-    
+
     /**
-     * Convert và set giá trị cho field
+     * Convert kiểu dữ liệu phù hợp với Oracle (BigDecimal -> Integer, Timestamp/Date -> java.util.Date)
      */
-    private static void setFieldValue(Object bean, Method method, Object value, String fieldName) {
-        try {
-            if (value == null) {
-                method.invoke(bean, (Object) null);
-                return;
+    private static Object convertOracleType(Class<?> paramType, Object value, String fieldName) {
+        if (value == null) return null;
+        // Xử lý BigDecimal -> Integer
+        if (paramType == int.class || paramType == Integer.class) {
+            if (value instanceof java.math.BigDecimal) {
+                return ((java.math.BigDecimal) value).intValue();
             }
-
-            Class<?> paramType = method.getParameterTypes()[0];
-            
-            // XỬ LÝ ĐẶC BIỆT CHO CREATED_DATE
-            if (fieldName.equals("Created_date") && value instanceof java.sql.Timestamp) {
-                // Convert Timestamp sang java.util.Date
-                java.sql.Timestamp timestamp = (java.sql.Timestamp) value;
-                java.util.Date date = new java.util.Date(timestamp.getTime());
-                method.invoke(bean, date);
-                System.out.println("SUCCESS: Set " + fieldName + " = " + date);
-                return;
+            if (value instanceof Number) {
+                return ((Number) value).intValue();
             }
-            
-            // Xử lý Gender, Is_enabled, Amount, Status, Table_number (BigDecimal -> Integer)
-            if ((fieldName.equals("Gender") || fieldName.equals("Is_enabled") || 
-                 fieldName.equals("Amount") || fieldName.equals("Status") || 
-                 fieldName.equals("Table_number")) && value instanceof java.math.BigDecimal) {
-                java.math.BigDecimal bd = (java.math.BigDecimal) value;
-                Integer intValue = bd.intValue();
-                System.out.println("DEBUG Converted " + fieldName + ": BigDecimal -> " + intValue);
-                method.invoke(bean, intValue);
-                System.out.println("SUCCESS (by index " + getColumnIndex(fieldName) + "): Set " + fieldName + " = " + intValue);
-                return;
-            }
-
-            // Các trường hợp khác
-            if (paramType.isAssignableFrom(value.getClass())) {
-                method.invoke(bean, value);
-                System.out.println("SUCCESS (by index " + getColumnIndex(fieldName) + "): Set " + fieldName + " = " + value);
-            } else {
-                System.out.println("ERROR: Type mismatch for " + fieldName + " - Expected: " + paramType + ", Got: " + value.getClass());
-            }
-            
-        } catch (Exception e) {
-            System.out.println("ERROR setting " + fieldName + ": " + e.getMessage());
         }
+        // Xử lý BigDecimal -> Long
+        if (paramType == long.class || paramType == Long.class) {
+            if (value instanceof java.math.BigDecimal) {
+                return ((java.math.BigDecimal) value).longValue();
+            }
+            if (value instanceof Number) {
+                return ((Number) value).longValue();
+            }
+        }
+        // Xử lý Timestamp/Date -> java.util.Date
+        if (paramType == java.util.Date.class) {
+            if (value instanceof java.sql.Timestamp) {
+                return new java.util.Date(((java.sql.Timestamp) value).getTime());
+            }
+            if (value instanceof java.sql.Date) {
+                return new java.util.Date(((java.sql.Date) value).getTime());
+            }
+        }
+        // Xử lý Boolean (Oracle thường trả về BigDecimal 0/1)
+        if (paramType == boolean.class || paramType == Boolean.class) {
+            if (value instanceof java.math.BigDecimal) {
+                return ((java.math.BigDecimal) value).intValue() != 0;
+            }
+            if (value instanceof Number) {
+                return ((Number) value).intValue() != 0;
+            }
+        }
+        return value;
     }
-    
+
     public static void main(String[] args) {
         demo1();
         demo2();
