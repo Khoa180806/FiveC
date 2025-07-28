@@ -84,11 +84,12 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
             }
         });
 
+        pnlTitle.setBackground(new java.awt.Color(153, 0, 0));
         pnlTitle.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(230, 230, 230), 2));
 
-        lblTitle.setBackground(new java.awt.Color(153, 0, 0));
+        lblTitle.setBackground(new java.awt.Color(102, 0, 0));
         lblTitle.setFont(new java.awt.Font("Times New Roman", 1, 36)); // NOI18N
-        lblTitle.setForeground(new java.awt.Color(153, 0, 0));
+        lblTitle.setForeground(new java.awt.Color(255, 255, 255));
         lblTitle.setText("QUẢN LÍ BÀN");
 
         javax.swing.GroupLayout pnlTitleLayout = new javax.swing.GroupLayout(pnlTitle);
@@ -127,7 +128,9 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
         cboTable_Status.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         cboTable_Status.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Trống", "Đang Chờ ", "Hoạt Động", " " }));
 
+        btnChangeTable.setBackground(new java.awt.Color(204, 204, 204));
         btnChangeTable.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnChangeTable.setForeground(new java.awt.Color(0, 102, 51));
         btnChangeTable.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Tick.png"))); // NOI18N
         btnChangeTable.setText("CHUYỂN BÀN");
         btnChangeTable.addActionListener(new java.awt.event.ActionListener() {
@@ -255,6 +258,7 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
         jPanel35.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(230, 230, 230), 2));
 
         btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnAdd.setForeground(new java.awt.Color(0, 102, 0));
         btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
         btnAdd.setText("THÊM");
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
@@ -263,6 +267,7 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
             }
         });
 
+        btnExit.setBackground(new java.awt.Color(153, 153, 153));
         btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-exit-32.png"))); // NOI18N
         btnExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -271,6 +276,7 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
         });
 
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnUpdate.setForeground(new java.awt.Color(153, 153, 153));
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
         btnUpdate.setText("CẬP NHẬT");
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
@@ -289,6 +295,7 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
         });
 
         btnClear.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnClear.setForeground(new java.awt.Color(0, 102, 51));
         btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
         btnClear.setText("LÀM MỚI");
         btnClear.addActionListener(new java.awt.event.ActionListener() {

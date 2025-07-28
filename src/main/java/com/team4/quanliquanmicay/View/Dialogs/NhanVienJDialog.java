@@ -200,8 +200,10 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("QUẢN LÍ NHÂN VIÊN FIVE C");
 
+        jPanel3.setBackground(new java.awt.Color(0, 51, 51));
         jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
 
+        jPanel5.setBackground(new java.awt.Color(204, 204, 204));
         jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
 
         jLabel3.setFont(new java.awt.Font("Segoe UI Light", 0, 18)); // NOI18N
@@ -395,11 +397,15 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
         );
 
         jLabel2.setFont(new java.awt.Font("Times New Roman", 1, 24)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("THÔNG TIN CÁ NHÂN");
 
+        jPanel6.setBackground(new java.awt.Color(153, 153, 153));
         jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 255, 204), 2));
 
+        btnClear.setBackground(new java.awt.Color(204, 204, 204));
         btnClear.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnClear.setForeground(new java.awt.Color(0, 102, 51));
         btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
         btnClear.setText("LÀM MỚI");
         btnClear.addActionListener(new java.awt.event.ActionListener() {
@@ -408,6 +414,7 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             }
         });
 
+        btnDelete.setBackground(new java.awt.Color(204, 204, 204));
         btnDelete.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         btnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-delete-48.png"))); // NOI18N
         btnDelete.setText("XÓA ");
@@ -417,7 +424,9 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             }
         });
 
+        btnUpdate.setBackground(new java.awt.Color(204, 204, 204));
         btnUpdate.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnUpdate.setForeground(new java.awt.Color(102, 102, 102));
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
         btnUpdate.setText("CẬP NHẬT");
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
@@ -426,7 +435,9 @@ public class NhanVienJDialog extends javax.swing.JFrame implements EmployeeContr
             }
         });
 
+        btnSave.setBackground(new java.awt.Color(204, 204, 204));
         btnSave.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnSave.setForeground(new java.awt.Color(102, 102, 102));
         btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Add to basket.png"))); // NOI18N
         btnSave.setText("LƯU");
         btnSave.addActionListener(new java.awt.event.ActionListener() {

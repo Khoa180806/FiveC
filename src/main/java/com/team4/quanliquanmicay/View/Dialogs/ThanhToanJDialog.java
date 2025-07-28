@@ -61,10 +61,13 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
         jButton4 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setBackground(new java.awt.Color(0, 51, 51));
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
+        jPanel1.setBackground(new java.awt.Color(102, 0, 0));
+        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(null, null));
 
         jLabel1.setFont(new java.awt.Font("Times New Roman", 1, 48)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("Thông Tin Thanh Toán Bàn & Khách");
 
         jPanel2.setBackground(new java.awt.Color(255, 0, 0));
@@ -88,7 +91,8 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
                 .addGap(25, 25, 25))
         );
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
+        jPanel3.setBackground(new java.awt.Color(204, 204, 204));
+        jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(null, null));
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-table-50.png"))); // NOI18N
@@ -183,7 +187,8 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
                 .addContainerGap(17, Short.MAX_VALUE))
         );
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
+        jPanel4.setBackground(new java.awt.Color(0, 51, 51));
+        jPanel4.setBorder(javax.swing.BorderFactory.createLineBorder(null, null));
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -219,9 +224,10 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
                 .addGap(42, 42, 42))
         );
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
+        jPanel5.setBackground(new java.awt.Color(0, 153, 153));
+        jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(null, null));
 
-        jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
+        jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(null, null));
 
         jLabel7.setFont(new java.awt.Font("Times New Roman", 0, 36)); // NOI18N
         jLabel7.setText("Thanh Toán");
@@ -259,15 +265,18 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
 
         jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tiền Mặt ", "Chuyển Khoản", " ", " " }));
 
-        jPanel7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
+        jPanel7.setBorder(javax.swing.BorderFactory.createLineBorder(null, null));
 
         jButton1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        jButton1.setForeground(new java.awt.Color(0, 102, 51));
         jButton1.setText("In Hóa Đơn");
 
         jButton2.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        jButton2.setForeground(new java.awt.Color(0, 204, 153));
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Tick.png"))); // NOI18N
         jButton2.setText("Xác Nhận Thanh Toán");
 
+        jButton3.setBackground(new java.awt.Color(204, 204, 204));
         jButton3.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
         jButton3.setText("Làm Mới");
@@ -322,7 +331,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
                         .addComponent(jLabel11)
                         .addGap(18, 18, 18)
                         .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(282, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -338,7 +347,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(47, 47, 47)
+                .addGap(41, 41, 41)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8)
                     .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -372,7 +381,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()

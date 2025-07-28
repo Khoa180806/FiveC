@@ -62,8 +62,9 @@ public class MonAnJDialog extends javax.swing.JFrame {
         jButton5 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setBackground(new java.awt.Color(0, 51, 51));
 
-        jPanel3.setBackground(new java.awt.Color(204, 0, 0));
+        jPanel3.setBackground(new java.awt.Color(153, 0, 0));
         jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
 
         jLabel1.setFont(new java.awt.Font("Segoe UI Black", 1, 36)); // NOI18N
@@ -87,6 +88,7 @@ public class MonAnJDialog extends javax.swing.JFrame {
                 .addContainerGap(12, Short.MAX_VALUE))
         );
 
+        jPanel1.setBackground(new java.awt.Color(204, 204, 204));
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 51, 0), 2));
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
@@ -117,19 +119,26 @@ public class MonAnJDialog extends javax.swing.JFrame {
 
         jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 255, 204), 2));
 
+        jButton2.setBackground(new java.awt.Color(204, 204, 204));
         jButton2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
         jButton2.setText("Lưu");
 
+        jButton3.setBackground(new java.awt.Color(153, 153, 153));
         jButton3.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        jButton3.setForeground(new java.awt.Color(0, 102, 0));
         jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
         jButton3.setText("Làm Mới");
 
+        jButton4.setBackground(new java.awt.Color(204, 204, 204));
         jButton4.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        jButton4.setForeground(new java.awt.Color(0, 102, 51));
         jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
         jButton4.setText("Cập nhật");
 
+        jButton6.setBackground(new java.awt.Color(204, 204, 204));
         jButton6.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        jButton6.setForeground(new java.awt.Color(102, 102, 102));
         jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
         jButton6.setText("Hủy");
 
@@ -283,6 +292,7 @@ public class MonAnJDialog extends javax.swing.JFrame {
                 .addContainerGap(25, Short.MAX_VALUE))
         );
 
+        jPanel2.setBackground(new java.awt.Color(0, 51, 51));
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 0, 0), 2));
 
         jTable1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -330,6 +340,7 @@ public class MonAnJDialog extends javax.swing.JFrame {
         );
 
         jButton5.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        jButton5.setForeground(new java.awt.Color(204, 204, 204));
         jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-exit-32.png"))); // NOI18N
         jButton5.setText("Exit");
 

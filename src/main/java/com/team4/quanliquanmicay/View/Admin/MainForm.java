@@ -152,7 +152,7 @@ public class MainForm extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setUndecorated(true);
 
-        jPanel1.setBackground(new java.awt.Color(204, 0, 0));
+        jPanel1.setBackground(new java.awt.Color(153, 0, 0));
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(230, 230, 230), 2));
 
         jLabel1.setFont(new java.awt.Font("Times New Roman", 1, 36)); // NOI18N
@@ -255,10 +255,12 @@ public class MainForm extends javax.swing.JFrame {
         jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(230, 230, 230), 2));
 
         jButton7.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jButton7.setForeground(new java.awt.Color(102, 102, 0));
         jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Address book.png"))); // NOI18N
         jButton7.setText("CHỌN BÀN");
 
         jButton9.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jButton9.setForeground(new java.awt.Color(0, 102, 51));
         jButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Price list.png"))); // NOI18N
         jButton9.setText("THANH TOÁN");
         jButton9.addActionListener(new java.awt.event.ActionListener() {
@@ -268,11 +270,14 @@ public class MainForm extends javax.swing.JFrame {
         });
 
         jButton10.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jButton10.setForeground(new java.awt.Color(102, 102, 102));
         jButton10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/list.png"))); // NOI18N
         jButton10.setText("XEM HÓA ĐƠN");
 
+        jPanel7.setBackground(new java.awt.Color(102, 0, 0));
+
         jLabel5.setFont(new java.awt.Font("Segoe UI Black", 1, 18)); // NOI18N
-        jLabel5.setForeground(new java.awt.Color(204, 0, 0));
+        jLabel5.setForeground(new java.awt.Color(255, 255, 255));
         jLabel5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-five-64.png"))); // NOI18N
         jLabel5.setText("FIVE C ");
 
@@ -291,10 +296,12 @@ public class MainForm extends javax.swing.JFrame {
         );
 
         jButton11.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jButton11.setForeground(new java.awt.Color(102, 0, 0));
         jButton11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Help.png"))); // NOI18N
         jButton11.setText("Help");
 
         jButton12.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jButton12.setForeground(new java.awt.Color(153, 0, 0));
         jButton12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
         jButton12.setText("EXIT");
 
