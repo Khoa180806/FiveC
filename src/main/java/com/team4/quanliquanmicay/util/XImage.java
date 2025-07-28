@@ -13,7 +13,18 @@ public class XImage {
      */
     public static void setImageToLabel(JLabel label, String imagePath) {
         try {
-            ImageIcon icon = new ImageIcon(XImage.class.getResource(imagePath));
+            java.net.URL imageURL = XImage.class.getResource(imagePath);
+            if (imageURL == null) {
+                // Nếu không tìm thấy ảnh, dùng ảnh mặc định
+                imageURL = XImage.class.getResource("/icons_and_images/Unknown person.png");
+                if (imageURL == null) {
+                    // Nếu không có ảnh mặc định, xóa icon hiện tại
+                    label.setIcon(null);
+                    return;
+                }
+            }
+            
+            ImageIcon icon = new ImageIcon(imageURL);
             Image image = icon.getImage();
 
             int width = label.getWidth();
@@ -26,6 +37,8 @@ public class XImage {
             label.setIcon(new ImageIcon(scaledImage));
         } catch (Exception e) {
             e.printStackTrace();
+            // Nếu có lỗi, xóa icon hiện tại
+            label.setIcon(null);
         }
     }
 }

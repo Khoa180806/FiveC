@@ -5,12 +5,40 @@
 package com.team4.quanliquanmicay.View.Dialogs;
 
 import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.Controller.ProductController;
+import com.team4.quanliquanmicay.Entity.Product;
+import com.team4.quanliquanmicay.DAO.CategoryDAO;
+import com.team4.quanliquanmicay.Entity.Category;
+import com.team4.quanliquanmicay.Impl.CategoryDAOImpl;
+import com.team4.quanliquanmicay.DAO.ProductDAO;
+import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
+import javax.swing.table.DefaultTableModel;
+import java.util.List;
+import static com.team4.quanliquanmicay.util.XValidation.isEmpty;
+import static com.team4.quanliquanmicay.util.XValidation.isNumber;
+import static com.team4.quanliquanmicay.util.XDialog.alert;
 
 /**
  *
  * @author HP
  */
-public class MonAnJDialog extends javax.swing.JFrame {
+public class MonAnJDialog extends javax.swing.JFrame implements ProductController{
+
+    // Thêm DAO cho category
+    private CategoryDAO categoryDAO = new CategoryDAOImpl();
+    private ProductDAO productDAO = new ProductDAOImpl();
+
+    // Thêm cache cho sản phẩm và danh mục
+    private java.util.List<Product> productCache = new java.util.ArrayList<>();
+    private java.util.List<Category> categoryCache = new java.util.ArrayList<>();
+    private boolean isProductCacheValid = false;
+    private boolean isCategoryCacheValid = false;
+    
+    // Biến lưu tên ảnh hiện tại
+    private String currentImageName = "";
+    
+    // Biến để kiểm soát kích thước ảnh
+    private java.awt.Dimension originalImageSize = null;
 
     /**
      * Creates new form MonAnJDialog
@@ -20,6 +48,26 @@ public class MonAnJDialog extends javax.swing.JFrame {
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
+        fillCategories(); // Gọi fillCategories khi khởi tạo dialog
+        fillStatus(); // Gọi duy nhất ở đây
+        cboCate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fillToTable();
+                fillUnitsByCategory();
+                if (cboUnit.getItemCount() > 0) cboUnit.setSelectedIndex(0);
+            }
+        });
+        fillUnitsByCategory();
+        fillToTable();
+        setupSearchFunctionality();
+        setupImageSelection(); // Thêm setup cho chọn ảnh
+        captureInitialImageSize(); // Capture kích thước ban đầu của ảnh
+        // Đảm bảo khi đổi trạng thái thì có thể cập nhật
+        cboStatus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdate.setEnabled(true);
+            }
+        });
     }
 
     /**
@@ -36,30 +84,47 @@ public class MonAnJDialog extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        cboCate = new javax.swing.JComboBox<>();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
-        jTextField3 = new javax.swing.JTextField();
+        txtProduct_Id = new javax.swing.JTextField();
+        txtNameProduct = new javax.swing.JTextField();
+        txtPrice = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jButton6 = new javax.swing.JButton();
+        btnSave = new javax.swing.JButton();
+        btnClear = new javax.swing.JButton();
+        btnUpdate = new javax.swing.JButton();
         jLabel7 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        txtAreNote = new javax.swing.JTextArea();
         jLabel8 = new javax.swing.JLabel();
-        jComboBox2 = new javax.swing.JComboBox<>();
+        cboStatus = new javax.swing.JComboBox<>();
         jPanel6 = new javax.swing.JPanel();
-        jLabel9 = new javax.swing.JLabel();
-        jTextField4 = new javax.swing.JTextField();
+        lblImage = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
+        txtSearch = new javax.swing.JTextField();
+        cboUnit = new javax.swing.JComboBox<>();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        txtDiscount = new javax.swing.JTextField();
+        // Chỉ cho nhập số nguyên 0-100
+        txtDiscount.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                char c = evt.getKeyChar();
+                String text = txtDiscount.getText();
+                if (!Character.isDigit(c) || (text + c).length() > 3) evt.consume();
+            }
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                try {
+                    int val = Integer.parseInt(txtDiscount.getText());
+                    if (val < 0 || val > 100) txtDiscount.setText("");
+                } catch (Exception ex) { txtDiscount.setText(""); }
+            }
+        });
         jPanel2 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        jButton5 = new javax.swing.JButton();
+        tableInfo = new javax.swing.JTable();
+        btnExit = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -95,8 +160,8 @@ public class MonAnJDialog extends javax.swing.JFrame {
         jLabel3.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel3.setText("TÊN MÓN :");
 
-        jComboBox1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Mỳ Cay ", "Đồ ăn vặt ", "Combo", "Nước giải khát", " " }));
+        cboCate.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        cboCate.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Mỳ Cay ", "Đồ ăn vặt ", "Combo", "Nước giải khát", " " }));
 
         jLabel4.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel4.setText("LOẠI MÓN :");
@@ -104,101 +169,129 @@ public class MonAnJDialog extends javax.swing.JFrame {
         jLabel5.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel5.setText("ĐƠN GIÁ :");
 
-        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtProduct_Id.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jTextField2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtNameProduct.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jTextField3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jTextField3.addActionListener(new java.awt.event.ActionListener() {
+        txtPrice.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtPrice.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField3ActionPerformed(evt);
+                txtPriceActionPerformed(evt);
             }
         });
 
         jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 255, 204), 2));
 
-        jButton2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
-        jButton2.setText("Lưu");
+        btnSave.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
+        btnSave.setText("Lưu");
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
 
-        jButton3.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
-        jButton3.setText("Làm Mới");
+        btnClear.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
+        btnClear.setText("Làm Mới");
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
+            }
+        });
 
-        jButton4.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
-        jButton4.setText("Cập nhật");
-
-        jButton6.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
-        jButton6.setText("Hủy");
+        btnUpdate.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
+        btnUpdate.setText("Cập nhật");
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton6)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton3)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(16, 16, 16)
+                .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 35, Short.MAX_VALUE)
+                .addComponent(btnUpdate)
+                .addGap(27, 27, 27)
+                .addComponent(btnClear)
+                .addGap(33, 33, 33))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton6, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(50, 50, 50))
         );
 
         jLabel7.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel7.setText("GHI CHÚ :");
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        txtAreNote.setColumns(20);
+        txtAreNote.setRows(5);
+        jScrollPane1.setViewportView(txtAreNote);
 
         jLabel8.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel8.setText("TRẠNG THÁI :");
 
-        jComboBox2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CHƯA CÓ", "CẦN CẬP NHẬT", " " }));
+        cboStatus.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        // XÓA model mặc định, chỉ fill bằng fillStatus()
+        // cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CHƯA CÓ", "CẦN CẬP NHẬT", " " }));
 
         jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 255, 204)));
 
-        jLabel9.setFont(new java.awt.Font("Segoe UI Light", 1, 14)); // NOI18N
-        jLabel9.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        lblImage.setFont(new java.awt.Font("Segoe UI Light", 1, 14)); // NOI18N
+        lblImage.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+
+        jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        jLabel6.setText("Tìm kiếm :");
+
+        txtSearch.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+            .addGroup(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                        .addComponent(lblImage, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                        .addGap(31, 31, 31))))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+            .addGroup(jPanel6Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(txtSearch)
+                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        jTextField4.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        cboUnit.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        jLabel6.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jLabel6.setText("Tìm kiếm :");
+        jLabel9.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        jLabel9.setText("Giảm Giá:");
+
+        jLabel12.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        jLabel12.setText("Đơn Vị");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -207,86 +300,96 @@ public class MonAnJDialog extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(16, 16, 16)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel5)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(16, 16, 16)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                                        .addComponent(jLabel5)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(txtPrice, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                .addComponent(jLabel2)
+                                                .addComponent(jLabel4)
+                                                .addComponent(jLabel3))
+                                            .addComponent(jLabel7))
+                                        .addGap(10, 10, 10)
+                                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                                .addComponent(txtNameProduct)
+                                                .addComponent(cboCate, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(txtProduct_Id, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
+                                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                                            .addComponent(txtDiscount)
+                                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addGap(6, 6, 6)
+                                                .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                             .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addContainerGap()
                                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jLabel8)
-                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jLabel2)
-                                            .addComponent(jLabel4)
-                                            .addComponent(jLabel3))
-                                        .addComponent(jLabel7)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(jTextField2)
-                                        .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                    .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel12))
+                                .addGap(16, 16, 16)
+                                .addComponent(cboUnit, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jLabel6)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(117, 117, 117))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(37, 37, 37))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txtProduct_Id, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel3)
-                            .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txtNameProduct, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(cboCate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel4))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtPrice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel5))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel7))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(jLabel7)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel8)))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(1, 1, 1)))
+                            .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel8))
+                        .addGap(9, 9, 9)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel9)
+                            .addComponent(txtDiscount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cboUnit, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel12))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jTextField4)
-                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 0, 0), 2));
 
-        jTable1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tableInfo.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        tableInfo.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -302,14 +405,19 @@ public class MonAnJDialog extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane3.setViewportView(jTable1);
-        if (jTable1.getColumnModel().getColumnCount() > 0) {
-            jTable1.getColumnModel().getColumn(0).setResizable(false);
-            jTable1.getColumnModel().getColumn(1).setResizable(false);
-            jTable1.getColumnModel().getColumn(2).setResizable(false);
-            jTable1.getColumnModel().getColumn(3).setResizable(false);
-            jTable1.getColumnModel().getColumn(4).setResizable(false);
-            jTable1.getColumnModel().getColumn(5).setResizable(false);
+        tableInfo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tableInfoMouseClicked(evt);
+            }
+        });
+        jScrollPane3.setViewportView(tableInfo);
+        if (tableInfo.getColumnModel().getColumnCount() > 0) {
+            tableInfo.getColumnModel().getColumn(0).setResizable(false);
+            tableInfo.getColumnModel().getColumn(1).setResizable(false);
+            tableInfo.getColumnModel().getColumn(2).setResizable(false);
+            tableInfo.getColumnModel().getColumn(3).setResizable(false);
+            tableInfo.getColumnModel().getColumn(4).setResizable(false);
+            tableInfo.getColumnModel().getColumn(5).setResizable(false);
         }
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -329,9 +437,14 @@ public class MonAnJDialog extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jButton5.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-exit-32.png"))); // NOI18N
-        jButton5.setText("Exit");
+        btnExit.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-exit-32.png"))); // NOI18N
+        btnExit.setText("Exit");
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -342,7 +455,7 @@ public class MonAnJDialog extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -356,16 +469,54 @@ public class MonAnJDialog extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton5))
+                        .addComponent(btnExit))
                     .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextField3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField3ActionPerformed
+    private void txtPriceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtPriceActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField3ActionPerformed
+    }//GEN-LAST:event_txtPriceActionPerformed
+
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+        // Xác nhận trước khi thoát
+        int confirm = javax.swing.JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn thoát không?", "Xác nhận thoát", javax.swing.JOptionPane.YES_NO_OPTION);
+        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+            this.dispose();
+        }
+    }//GEN-LAST:event_btnExitActionPerformed
+
+    private void tableInfoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableInfoMouseClicked
+        int row = tableInfo.getSelectedRow();
+        if (row >= 0) {
+            String productId = (String) tableInfo.getValueAt(row, 0);
+            Product product = getProductFromCache(productId);
+            setForm(product);
+        }
+    }//GEN-LAST:event_tableInfoMouseClicked
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        // TODO add your handling code here:
+        create();
+    }//GEN-LAST:event_btnSaveActionPerformed
+
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        // Thêm xác nhận nếu các trường đang có dữ liệu
+        if (!txtProduct_Id.getText().isEmpty() || !txtNameProduct.getText().isEmpty() || !txtPrice.getText().isEmpty() || !txtAreNote.getText().isEmpty() || !txtDiscount.getText().isEmpty()) {
+            int confirm = javax.swing.JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn làm mới? Dữ liệu sẽ bị xóa!", "Xác nhận làm mới", javax.swing.JOptionPane.YES_NO_OPTION);
+            if (confirm != javax.swing.JOptionPane.YES_OPTION) return;
+        }
+        clear();
+    }//GEN-LAST:event_btnClearActionPerformed
+
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        // Thêm xác nhận khi cập nhật
+        int confirm = javax.swing.JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn cập nhật sản phẩm này?", "Xác nhận cập nhật", javax.swing.JOptionPane.YES_NO_OPTION);
+        if (confirm != javax.swing.JOptionPane.YES_OPTION) return;
+        update();
+    }//GEN-LAST:event_btnUpdateActionPerformed
 
     /**
      * @param args the command line arguments
@@ -403,14 +554,15 @@ public class MonAnJDialog extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
+    private javax.swing.JButton btnClear;
+    private javax.swing.JButton btnExit;
+    private javax.swing.JButton btnSave;
+    private javax.swing.JButton btnUpdate;
+    private javax.swing.JComboBox<String> cboCate;
+    private javax.swing.JComboBox<String> cboStatus;
+    private javax.swing.JComboBox<String> cboUnit;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -426,11 +578,928 @@ public class MonAnJDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextArea jTextArea1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
+    private javax.swing.JLabel lblImage;
+    private javax.swing.JTable tableInfo;
+    private javax.swing.JTextArea txtAreNote;
+    private javax.swing.JTextField txtDiscount;
+    private javax.swing.JTextField txtNameProduct;
+    private javax.swing.JTextField txtPrice;
+    private javax.swing.JTextField txtProduct_Id;
+    private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void fillCategories() {
+        cboCate.removeAllItems();
+        if (!isCategoryCacheValid || categoryCache.isEmpty()) {
+            categoryCache = categoryDAO.findAll();
+            isCategoryCacheValid = true;
+        }
+        for (Category cate : categoryCache) {
+            if (cate.getIs_available() == 1) {
+                cboCate.addItem(cate.getCategory_name());
+            }
+        }
+    }
+
+    @Override
+    public void fillStatus() {
+        cboStatus.removeAllItems();
+        cboStatus.addItem("Còn bán");
+        cboStatus.addItem("Ngừng bán");
+    }
+
+    @Override
+    public void chooseImage() {
+    }
+
+    @Override
+    public void open() {
+    }
+
+    @Override
+    public void setForm(Product entity) {
+        if (entity == null) return;
+        fillStatus();
+        txtProduct_Id.setText(entity.getProductId());
+        txtProduct_Id.setEditable(false);
+        txtNameProduct.setText(entity.getProductName());
+        txtPrice.setText(String.valueOf(entity.getPrice()));
+        txtAreNote.setText(entity.getNote());
+        // Set category name lên cboCate từ cache
+        Category cate = getCategoryFromCache(entity.getCategoryId());
+        String oldCate = (String) cboCate.getSelectedItem();
+        if (cate != null && !cate.getCategory_name().equals(oldCate)) {
+            cboCate.setSelectedItem(cate.getCategory_name());
+            fillUnitsByCategory();
+        }
+        // Đảm bảo đơn vị hiện tại luôn có trong comboBox
+        String unit = entity.getUnit();
+        boolean found = false;
+        for (int i = 0; i < cboUnit.getItemCount(); i++) {
+            if (unit != null && unit.equals(cboUnit.getItemAt(i))) {
+                found = true;
+                break;
+            }
+        }
+        if (!found && unit != null && !unit.isEmpty()) {
+            cboUnit.addItem(unit);
+        }
+        cboUnit.setSelectedItem(unit);
+        cboStatus.setSelectedItem(entity.isAvailable() ? "Còn bán" : "Ngừng bán");
+        double discount = entity.getDiscount();
+        if (discount > 0) {
+            int percent = (int)Math.round(discount * 100);
+            txtDiscount.setText(String.valueOf(percent));
+        } else {
+            txtDiscount.setText("0");
+        }
+        // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
+        String imageName = "";
+        try { imageName = entity.getImage(); } catch (Exception ex) { imageName = ""; }
+        setCurrentImageName(imageName); // Lưu tên ảnh hiện tại
+        fillProductImage(imageName);
+    }
+
+    @Override
+    public Product getForm() {
+        Product p = new Product();
+        // Lấy giá trị trực tiếp từ form, không phụ thuộc cache
+        String productId = txtProduct_Id.getText().trim();
+        if (isEmpty(productId)) {
+            alert("Vui lòng nhập mã món!");
+            txtProduct_Id.requestFocus();
+            throw new RuntimeException("Mã món không được để trống!");
+        }
+        if (!productId.matches("^[a-zA-Z0-9_]+$")) {
+            alert("Mã món chỉ được chứa chữ, số, gạch dưới!");
+            txtProduct_Id.requestFocus();
+            throw new RuntimeException("Mã món không hợp lệ!");
+        }
+        if (productId.length() > 10) {
+            alert("Mã món tối đa 10 ký tự!");
+            txtProduct_Id.requestFocus();
+            throw new RuntimeException("Mã món tối đa 10 ký tự!");
+        }
+        p.setProductId(productId);
+        String productName = txtNameProduct.getText().trim();
+        if (isEmpty(productName)) {
+            alert("Vui lòng nhập tên món!");
+            txtNameProduct.requestFocus();
+            throw new RuntimeException("Tên món không được để trống!");
+        }
+        if (productName.length() > 50) {
+            alert("Tên món tối đa 50 ký tự!");
+            txtNameProduct.requestFocus();
+            throw new RuntimeException("Tên món tối đa 50 ký tự!");
+        }
+        // Chỉ cho phép chữ, số, khoảng trắng, dấu tiếng Việt, không ký tự đặc biệt lạ
+                if (!productName.matches("^[\\p{L}0-9 .,'-]+$")) {
+            alert("Tên món chỉ được chứa chữ, số, khoảng trắng và một số ký tự hợp lệ!");
+            txtNameProduct.requestFocus();
+            throw new RuntimeException("Tên món không hợp lệ!");
+        }
+        p.setProductName(productName);
+        String priceStr = txtPrice.getText().trim();
+        if (isEmpty(priceStr) || !isNumber(priceStr)) {
+            alert("Đơn giá phải là số lớn hơn 0!");
+            txtPrice.requestFocus();
+            throw new RuntimeException("Đơn giá không hợp lệ!");
+        }
+        double price = Double.parseDouble(priceStr);
+        if (price <= 0) {
+            alert("Đơn giá phải lớn hơn 0!");
+            txtPrice.requestFocus();
+            throw new RuntimeException("Đơn giá phải lớn hơn 0!");
+        }
+        p.setPrice(price);
+        String discountStr = txtDiscount.getText().trim();
+        double discount = 0;
+        if (!isEmpty(discountStr)) {
+            if (!isNumber(discountStr)) {
+                alert("Giảm giá phải là số!");
+                txtDiscount.requestFocus();
+                throw new RuntimeException("Giảm giá không hợp lệ!");
+            }
+            discount = Double.parseDouble(discountStr);
+            if (discount > 1) discount = discount / 100.0;
+        }
+        if (discount < 0 || discount > 1) {
+            alert("Giảm giá phải từ 0 đến 100!");
+            txtDiscount.requestFocus();
+            throw new RuntimeException("Giảm giá phải từ 0 đến 100!");
+        }
+        p.setDiscount(discount);
+        p.setNote(txtAreNote.getText().trim());
+        String cateName = (String) cboCate.getSelectedItem();
+        String cateId = getCategoryIdByName(cateName);
+        p.setCategoryId(cateId);
+        String status = (String) cboStatus.getSelectedItem();
+        p.setIsAvailable("Còn bán".equals(status) ? 1 : 0);
+        p.setCreatedDate(null);
+        String unit = (String) cboUnit.getSelectedItem();
+        if (unit == null || unit.trim().isEmpty()) {
+            alert("Vui lòng chọn đơn vị!");
+            cboUnit.requestFocus();
+            throw new RuntimeException("Đơn vị không được để trống!");
+        }
+        p.setUnit(unit);
+        
+        // Lưu tên ảnh hiện tại (nếu có)
+        String currentImageName = getCurrentImageName();
+        p.setImage(currentImageName);
+        
+        return p;
+    }
+
+    @Override
+    public void fillToTable() {
+        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
+        model.setRowCount(0); // clear table
+        
+        String selectedCateName = (String) cboCate.getSelectedItem();
+        
+        // Load cache if needed
+        if (!isProductCacheValid || productCache.isEmpty()) {
+            productCache = productDAO.findAll();
+            isProductCacheValid = true;
+        }
+        if (!isCategoryCacheValid || categoryCache.isEmpty()) {
+            categoryCache = categoryDAO.findAll();
+            isCategoryCacheValid = true;
+        }
+        
+        // Create category map for faster lookup
+        java.util.Map<String, String> categoryMap = new java.util.HashMap<>();
+        for (Category cate : categoryCache) {
+            categoryMap.put(cate.getCategory_id(), cate.getCategory_name());
+        }
+        
+        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
+        
+        for (Product p : productCache) {
+            // Lấy tên loại món từ map (faster than loop)
+            String cateName = categoryMap.get(p.getCategoryId());
+            
+            // Nếu chọn loại món, chỉ hiển thị sản phẩm thuộc loại đó
+            if (selectedCateName == null || selectedCateName.isEmpty() || selectedCateName.equals(cateName)) {
+                // Hiển thị giảm giá dạng phần trăm
+                String discountStr = "";
+                double discount = p.getDiscount();
+                if (discount > 0) {
+                    int percent = (int)Math.round(discount * 100);
+                    discountStr = percent + "%";
+                } else {
+                    discountStr = "0%";
+                }
+                
+                // Format giá tiền
+                String priceStr = vndFormat.format(p.getPrice());
+                
+                model.addRow(new Object[] {
+                    p.getProductId(),
+                    p.getProductName(),
+                    priceStr,
+                    discountStr,
+                    p.getUnit(),
+                    p.isAvailable() ? "Còn bán" : "Ngừng bán"
+                });
+            }
+        }
+        
+        // Set column widths
+        setColumnWidths();
+    }
+    
+    /**
+     * ✅ OPTIMIZED: Set column widths for better performance
+     */
+    private void setColumnWidths() {
+        tableInfo.getColumnModel().getColumn(0).setPreferredWidth(80);   // Mã món ăn
+        tableInfo.getColumnModel().getColumn(1).setPreferredWidth(220);  // Tên món ăn
+        tableInfo.getColumnModel().getColumn(2).setPreferredWidth(100);  // Giá
+        tableInfo.getColumnModel().getColumn(3).setPreferredWidth(60);   // Giảm giá
+        tableInfo.getColumnModel().getColumn(4).setPreferredWidth(60);   // Đơn vị
+        tableInfo.getColumnModel().getColumn(5).setPreferredWidth(80);   // Trạng thái
+    }
+
+    @Override
+    public void edit() {
+    }
+
+    @Override
+    public void create() {
+        try {
+            Product product = getForm();
+            invalidateProductCache();
+            if (!isProductCacheValid || productCache.isEmpty()) {
+                productCache = productDAO.findAll();
+                isProductCacheValid = true;
+            }
+            // Kiểm tra hợp lệ cơ bản
+            if (product.getProductId() == null || product.getProductId().trim().isEmpty()) {
+                com.team4.quanliquanmicay.util.XDialog.alert("Vui lòng nhập mã món!");
+                return;
+            }
+            if (product.getProductName() == null || product.getProductName().trim().isEmpty()) {
+                com.team4.quanliquanmicay.util.XDialog.alert("Vui lòng nhập tên món!");
+                return;
+            }
+            // Kiểm tra trùng mã (chuẩn hóa)
+            if (getProductFromCache(product.getProductId().trim()) != null) {
+                com.team4.quanliquanmicay.util.XDialog.alert("Mã món đã tồn tại!");
+                return;
+            }
+            // Kiểm tra trùng tên món trong cùng loại
+            for (Product p : productCache) {
+                if (p.getProductName().trim().equalsIgnoreCase(product.getProductName().trim()) && p.getCategoryId().equals(product.getCategoryId())) {
+                    com.team4.quanliquanmicay.util.XDialog.alert("Tên món đã tồn tại trong cùng loại!");
+                    return;
+                }
+            }
+            // Kiểm tra đơn vị
+            if (product.getUnit() == null || product.getUnit().trim().isEmpty()) {
+                com.team4.quanliquanmicay.util.XDialog.alert("Vui lòng chọn đơn vị!");
+                return;
+            }
+            // Kiểm tra discount
+            if (product.getDiscount() < 0 || product.getDiscount() > 1) {
+                com.team4.quanliquanmicay.util.XDialog.alert("Giảm giá phải từ 0 đến 100!");
+                return;
+            }
+            productDAO.create(product);
+            invalidateProductCache();
+            fillToTable();
+            clear();
+            com.team4.quanliquanmicay.util.XDialog.alert("Thêm món thành công!");
+        } catch (RuntimeException e) {
+            return;
+        } catch (Exception e) {
+            com.team4.quanliquanmicay.util.XDialog.alert("Lỗi khi thêm món: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void update() {
+        try {
+            Product product = getForm();
+            if (product.getProductId() == null || product.getProductId().trim().isEmpty()) {
+                alert("Vui lòng nhập mã món!");
+                return;
+            }
+            if (product.getProductName() == null || product.getProductName().trim().isEmpty()) {
+                alert("Vui lòng nhập tên món!");
+                return;
+            }
+            if (product.getUnit() == null || product.getUnit().trim().isEmpty()) {
+                alert("Vui lòng chọn đơn vị!");
+                return;
+            }
+            if (product.getDiscount() < 0 || product.getDiscount() > 1) {
+                alert("Giảm giá phải từ 0 đến 100!");
+                return;
+            }
+            if (product.getPrice() <= 0) {
+                alert("Vui lòng nhập giá lớn hơn 0!");
+                return;
+            }
+            // Kiểm tra tồn tại mã món
+            if (getProductFromCache(product.getProductId().trim()) == null) {
+                alert("Mã món không tồn tại!");
+                return;
+            }
+            // Kiểm tra trùng tên món trong cùng loại (trừ chính nó)
+            for (Product p : productCache) {
+                if (!p.getProductId().equals(product.getProductId()) && p.getProductName().trim().equalsIgnoreCase(product.getProductName().trim()) && p.getCategoryId().equals(product.getCategoryId())) {
+                    alert("Tên món đã tồn tại trong cùng loại!");
+                    return;
+                }
+            }
+            productDAO.update(product);
+            invalidateProductCache();
+            fillToTable();
+            clear();
+            alert("Cập nhật món thành công!");
+        } catch (RuntimeException e) {
+            return;
+        } catch (Exception e) {
+            alert("Lỗi khi cập nhật món: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void clear() {
+        txtProduct_Id.setText("");
+        txtProduct_Id.setEditable(true); // Cho phép nhập mã mới khi thêm
+        txtNameProduct.setText("");
+        txtPrice.setText("");
+        txtAreNote.setText("");
+        txtDiscount.setText("");
+        cboStatus.setSelectedIndex(0); // Trạng thái về mặc định
+        // Giữ cboCate như cũ, chỉ fill lại đơn vị
+        fillUnitsByCategory();
+        if (cboUnit.getItemCount() > 0) cboUnit.setSelectedIndex(0);
+        // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
+        setCurrentImageName(""); // Reset tên ảnh
+        fillProductImage(""); // Clear image
+    }
+
+    @Override
+    public void setEditable(boolean editable) {
+    }
+
+    @Override
+    public void checkAll() {
+    }
+
+    @Override
+    public void uncheckAll() {
+    }
+
+    @Override
+    public void deleteCheckedItems() {
+    }
+
+    @Override
+    public void delete() {
+        // Để trống vì chức năng xóa đã loại bỏ khỏi giao diện
+    }
+
+    private Product getProductFromCache(String productId) {
+        String trimmedId = productId.trim().toLowerCase();
+        for (Product p : productCache) {
+            if (p.getProductId().trim().toLowerCase().equals(trimmedId)) return p;
+        }
+        return null;
+    }
+
+    private Category getCategoryFromCache(String categoryId) {
+        for (Category c : categoryCache) {
+            if (c.getCategory_id().equals(categoryId)) return c;
+        }
+        return null;
+    }
+
+    private String getCategoryIdByName(String cateName) {
+        for (Category c : categoryCache) {
+            if (cateName.equals(c.getCategory_name())) return c.getCategory_id();
+        }
+        return "";
+    }
+
+    private void invalidateProductCache() {
+        isProductCacheValid = false;
+        productCache.clear();
+    }
+    private void invalidateCategoryCache() {
+        isCategoryCacheValid = false;
+        categoryCache.clear();
+    }
+
+    // Hàm fill đơn vị theo loại món
+    private void fillUnitsByCategory() {
+        cboUnit.removeAllItems();
+        String cateName = (String) cboCate.getSelectedItem();
+        if (cateName == null) {
+            cboUnit.setEnabled(false);
+            return;
+        }
+        String cateId = getCategoryIdByName(cateName);
+        java.util.List<String> units = productDAO.findUnitsByCategoryId(cateId);
+        if (units.isEmpty()) {
+            cboUnit.setEnabled(false);
+            cboUnit.addItem("<Không có đơn vị>");
+            javax.swing.JOptionPane.showMessageDialog(this, "Loại món này chưa có đơn vị nào! Vui lòng thêm sản phẩm mẫu trước.");
+        } else {
+            cboUnit.setEnabled(true);
+            for (String u : units) cboUnit.addItem(u);
+        }
+    }
+
+    private void setupSearchFunctionality() {
+        txtSearch.setText("Tìm theo tên món...");
+        txtSearch.setForeground(java.awt.Color.GRAY);
+        txtSearch.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (txtSearch.getText().equals("Tìm theo tên món...")) {
+                    txtSearch.setText("");
+                    txtSearch.setForeground(java.awt.Color.BLACK);
+                }
+            }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (txtSearch.getText().trim().isEmpty()) {
+                    txtSearch.setText("Tìm theo tên món...");
+                    txtSearch.setForeground(java.awt.Color.GRAY);
+                    fillToTable();
+                }
+            }
+        });
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { performSearch(); }
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { performSearch(); }
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { performSearch(); }
+        });
+    }
+
+    private void performSearch() {
+        String keyword = txtSearch.getText().trim();
+        if (keyword.equals("Tìm theo tên món...") || keyword.isEmpty()) {
+            fillToTable();
+            return;
+        }
+        
+        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
+        model.setRowCount(0);
+        
+        String selectedCateName = (String) cboCate.getSelectedItem();
+        
+        // Load cache if needed
+        if (!isProductCacheValid || productCache.isEmpty()) {
+            productCache = productDAO.findAll();
+            isProductCacheValid = true;
+        }
+        if (!isCategoryCacheValid || categoryCache.isEmpty()) {
+            categoryCache = categoryDAO.findAll();
+            isCategoryCacheValid = true;
+        }
+        
+        // Create category map for faster lookup
+        java.util.Map<String, String> categoryMap = new java.util.HashMap<>();
+        for (Category cate : categoryCache) {
+            categoryMap.put(cate.getCategory_id(), cate.getCategory_name());
+        }
+        
+        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
+        String lowerKeyword = keyword.toLowerCase();
+        
+        for (Product p : productCache) {
+            // Lấy tên loại món từ map (faster than loop)
+            String cateName = categoryMap.get(p.getCategoryId());
+            
+            // Lọc theo loại món và tên món
+            if ((selectedCateName == null || selectedCateName.isEmpty() || selectedCateName.equals(cateName))
+                && p.getProductName() != null && p.getProductName().toLowerCase().contains(lowerKeyword)) {
+                
+                String discountStr = "";
+                double discount = p.getDiscount();
+                if (discount > 0) {
+                    int percent = (int)Math.round(discount * 100);
+                    discountStr = percent + "%";
+                } else {
+                    discountStr = "0%";
+                }
+                
+                String priceStr = vndFormat.format(p.getPrice());
+                model.addRow(new Object[] {
+                    p.getProductId(),
+                    p.getProductName(),
+                    priceStr,
+                    discountStr,
+                    p.getUnit(),
+                    p.isAvailable() ? "Còn bán" : "Ngừng bán"
+                });
+            }
+        }
+        
+        setColumnWidths();
+    }
+
+    // ====== SETUP CHỌN ẢNH SẢN PHẨM ======
+    private void setupImageSelection() {
+        // Add mouse listener to lblImage for image selection
+        lblImage.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 1) {
+                    selectProductImage();
+                }
+            }
+            
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                // Change cursor to hand when hovering
+                lblImage.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+                // Add tooltip
+                lblImage.setToolTipText("Click để chọn ảnh sản phẩm");
+            }
+            
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                // Reset cursor
+                lblImage.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+            }
+        });
+        
+        // Set border to indicate clickable area
+        lblImage.setBorder(javax.swing.BorderFactory.createTitledBorder(
+            javax.swing.BorderFactory.createLineBorder(new java.awt.Color(100, 149, 237), 2),
+            "Click để chọn ảnh",
+            javax.swing.border.TitledBorder.CENTER,
+            javax.swing.border.TitledBorder.BOTTOM,
+            new java.awt.Font("Arial", java.awt.Font.ITALIC, 10),
+            new java.awt.Color(100, 149, 237)
+        ));
+    }
+    
+    /**
+     * ✅ IMAGE SELECTION: Open file chooser to select product image
+     */
+    private void selectProductImage() {
+        try {
+            // Create file chooser
+            javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
+            
+            // Set file filter for images
+            javax.swing.filechooser.FileNameExtensionFilter imageFilter = 
+                new javax.swing.filechooser.FileNameExtensionFilter(
+                    "Image Files (*.jpg, *.jpeg, *.png, *.gif)", 
+                    "jpg", "jpeg", "png", "gif"
+                );
+            fileChooser.setFileFilter(imageFilter);
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            
+            // Set dialog title
+            fileChooser.setDialogTitle("Chọn ảnh sản phẩm");
+            
+            // Set default directory (Desktop hoặc Pictures)
+            try {
+                java.io.File userHome = new java.io.File(System.getProperty("user.home"));
+                java.io.File picturesDir = new java.io.File(userHome, "Pictures");
+                if (picturesDir.exists()) {
+                    fileChooser.setCurrentDirectory(picturesDir);
+                } else {
+                    java.io.File desktopDir = new java.io.File(userHome, "Desktop");
+                    if (desktopDir.exists()) {
+                        fileChooser.setCurrentDirectory(desktopDir);
+                    }
+                }
+            } catch (Exception e) {
+                // Use default directory
+            }
+            
+            // Show dialog
+            int result = fileChooser.showOpenDialog(this);
+            
+            if (result == javax.swing.JFileChooser.APPROVE_OPTION) {
+                java.io.File selectedFile = fileChooser.getSelectedFile();
+                
+                // Validate file
+                if (validateImageFile(selectedFile)) {
+                    // Process and save image
+                    String savedImageName = processSelectedImage(selectedFile);
+                    
+                    if (savedImageName != null) {
+                        // Load and display the new image
+                        fillProductImage(savedImageName);
+                        
+                        // Show success message
+                        com.team4.quanliquanmicay.util.XDialog.alert(
+                            "✅ Đã chọn ảnh thành công!\n" +
+                            "File: " + savedImageName,
+                            "Thông báo"
+                        );
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            com.team4.quanliquanmicay.util.XDialog.alert(
+                "❌ Lỗi khi chọn ảnh: " + e.getMessage(),
+                "Lỗi"
+            );
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * ✅ VALIDATION: Validate selected image file
+     */
+    private boolean validateImageFile(java.io.File file) {
+        try {
+            // Check file exists
+            if (file == null || !file.exists()) {
+                com.team4.quanliquanmicay.util.XDialog.alert("File không tồn tại!", "Lỗi");
+                return false;
+            }
+            
+            // Check file size (max 5MB)
+            long fileSizeInMB = file.length() / (1024 * 1024);
+            if (fileSizeInMB > 5) {
+                com.team4.quanliquanmicay.util.XDialog.alert(
+                    "File ảnh quá lớn!\n" +
+                    "Kích thước hiện tại: " + fileSizeInMB + "MB\n" +
+                    "Kích thước tối đa: 5MB",
+                    "Lỗi"
+                );
+                return false;
+            }
+            
+            // Check file extension
+            String fileName = file.getName().toLowerCase();
+            if (!fileName.endsWith(".jpg") && !fileName.endsWith(".jpeg") && 
+                !fileName.endsWith(".png") && !fileName.endsWith(".gif")) {
+                com.team4.quanliquanmicay.util.XDialog.alert(
+                    "Định dạng file không được hỗ trợ!\n" +
+                    "Chỉ chấp nhận: .jpg, .jpeg, .png, .gif",
+                    "Lỗi"
+                );
+                return false;
+            }
+            
+            // Try to read as image
+            java.awt.image.BufferedImage image = javax.imageio.ImageIO.read(file);
+            if (image == null) {
+                com.team4.quanliquanmicay.util.XDialog.alert("File không phải là ảnh hợp lệ!", "Lỗi");
+                return false;
+            }
+            
+            return true;
+            
+        } catch (Exception e) {
+            com.team4.quanliquanmicay.util.XDialog.alert("Lỗi kiểm tra file: " + e.getMessage(), "Lỗi");
+            return false;
+        }
+    }
+    
+    /**
+     * ✅ PROCESSING: Process and save selected image
+     */
+    private String processSelectedImage(java.io.File sourceFile) {
+        try {
+            // Generate unique filename
+            String fileExtension = getFileExtension(sourceFile.getName());
+            String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+            String newFileName = "prod_" + timestamp + "." + fileExtension;
+            
+            // Create target directory in resources (for development)
+            // Note: In production, you might want to save to external directory
+            String resourcePath = "src/main/resources/icons_and_images/product/";
+            java.io.File targetDir = new java.io.File(resourcePath);
+            
+            if (!targetDir.exists()) {
+                boolean created = targetDir.mkdirs();
+                if (!created) {
+                    // Try alternative path
+                    targetDir = new java.io.File("resources/icons_and_images/product/");
+                    if (!targetDir.exists()) {
+                        targetDir.mkdirs();
+                    }
+                }
+            }
+            
+            // Target file
+            java.io.File targetFile = new java.io.File(targetDir, newFileName);
+            
+            // Read and resize image if needed
+            java.awt.image.BufferedImage originalImage = javax.imageio.ImageIO.read(sourceFile);
+            java.awt.image.BufferedImage processedImage = resizeImageIfNeeded(originalImage);
+            
+            // Save processed image
+            javax.imageio.ImageIO.write(processedImage, fileExtension, targetFile);
+            
+            // Lưu tên ảnh mới
+            setCurrentImageName(newFileName);
+            
+            return newFileName;
+            
+        } catch (Exception e) {
+            com.team4.quanliquanmicay.util.XDialog.alert("❌ Lỗi lưu ảnh: " + e.getMessage(), "Lỗi");
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * ✅ RESIZE: Resize image if too large (maintain aspect ratio)
+     */
+    private java.awt.image.BufferedImage resizeImageIfNeeded(java.awt.image.BufferedImage originalImage) {
+        int maxWidth = 300;
+        int maxHeight = 300;
+        
+        int originalWidth = originalImage.getWidth();
+        int originalHeight = originalImage.getHeight();
+        
+        // Check if resize needed
+        if (originalWidth <= maxWidth && originalHeight <= maxHeight) {
+            return originalImage; // No resize needed
+        }
+        
+        // Calculate new dimensions (maintain aspect ratio)
+        double widthRatio = (double) maxWidth / originalWidth;
+        double heightRatio = (double) maxHeight / originalHeight;
+        double ratio = Math.min(widthRatio, heightRatio);
+        
+        int newWidth = (int) (originalWidth * ratio);
+        int newHeight = (int) (originalHeight * ratio);
+        
+        // Create resized image
+        java.awt.image.BufferedImage resizedImage = new java.awt.image.BufferedImage(
+            newWidth, newHeight, java.awt.image.BufferedImage.TYPE_INT_RGB
+        );
+        
+        java.awt.Graphics2D g2d = resizedImage.createGraphics();
+        g2d.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION, 
+                            java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.drawImage(originalImage, 0, 0, newWidth, newHeight, null);
+        g2d.dispose();
+        
+        return resizedImage;
+    }
+    
+    /**
+     * ✅ OPTIMIZED: Get file extension
+     */
+    private String getFileExtension(String fileName) {
+        return (fileName != null && fileName.contains(".")) ? 
+            fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase() : "jpg";
+    }
+    
+    /**
+     * ✅ GET CURRENT IMAGE: Get current image name
+     */
+    private String getCurrentImageName() {
+        return currentImageName;
+    }
+    
+    /**
+     * ✅ SET CURRENT IMAGE: Set current image name
+     */
+    private void setCurrentImageName(String imageName) {
+        this.currentImageName = imageName;
+    }
+    
+    /**
+     * ✅ CAPTURE: Capture initial image label size
+     */
+    private void captureInitialImageSize() {
+        try {
+            // Wait for the component to be properly laid out
+            java.awt.EventQueue.invokeLater(() -> {
+                if (lblImage != null) {
+                    originalImageSize = lblImage.getSize();
+                    if (originalImageSize.width <= 0 || originalImageSize.height <= 0) {
+                        // Fallback size if not properly initialized
+                        originalImageSize = new java.awt.Dimension(204, 200);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            originalImageSize = new java.awt.Dimension(204, 200);
+        }
+    }
+    
+    /**
+     * ✅ SET IMAGE WITH FIXED SIZE: Set image with controlled size
+     */
+    private void setImageWithFixedSize(String imagePath) {
+        try {
+            // ✅ SAFETY: Ensure originalImageSize is available
+            if (originalImageSize == null) {
+                captureInitialImageSize();
+                if (originalImageSize == null) {
+                    // Ultimate fallback
+                    originalImageSize = new java.awt.Dimension(204, 200);
+                }
+            }
+            
+            // Load and scale image to fit the fixed label size
+            java.net.URL imageURL = getClass().getResource(imagePath);
+            if (imageURL != null) {
+                javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
+                
+                // ✅ VALIDATION: Check if image loaded successfully
+                if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
+                    // Scale image to fit the original label size
+                    java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
+                        originalImageSize.width, 
+                        originalImageSize.height, 
+                        java.awt.Image.SCALE_SMOOTH
+                    );
+                    
+                    javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
+                    
+                    // Set the scaled icon
+                    lblImage.setIcon(scaledIcon);
+                    lblImage.setText("");
+                } else {
+                    // Image không load được
+                    lblImage.setIcon(null);
+                    lblImage.setText("No Image");
+                }
+                
+                // ✅ ENFORCE: Keep the original size regardless of image content
+                lblImage.setSize(originalImageSize);
+                lblImage.setPreferredSize(originalImageSize);
+                lblImage.setMinimumSize(originalImageSize);
+                lblImage.setMaximumSize(originalImageSize);
+                
+            } else {
+                // Fallback to text if image not found
+                lblImage.setIcon(null);
+                lblImage.setText("No Image");
+                
+                            // ✅ STILL ENFORCE: Keep size even when no image
+            if (originalImageSize != null) {
+                lblImage.setSize(originalImageSize);
+                lblImage.setPreferredSize(originalImageSize);
+                lblImage.setMinimumSize(originalImageSize);
+                lblImage.setMaximumSize(originalImageSize);
+            }
+            }
+        } catch (Exception e) {
+            lblImage.setIcon(null);
+            lblImage.setText("Error");
+            
+            // ✅ ENFORCE: Keep size even on error
+            if (originalImageSize != null) {
+                lblImage.setSize(originalImageSize);
+                lblImage.setPreferredSize(originalImageSize);
+                lblImage.setMinimumSize(originalImageSize);
+                lblImage.setMaximumSize(originalImageSize);
+            }
+        }
+    }
+    
+    // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
+    private void fillProductImage(String imageName) {
+        try {
+            if (imageName != null && !imageName.trim().isEmpty()) {
+                // Thử tìm ảnh trong các thư mục khác nhau
+                String[] paths = {
+                    "/icons_and_images/" + imageName,
+                    "/icons_and_images/product/" + imageName,
+                    "/icons_and_images/product/mi/" + imageName,
+                    "/icons_and_images/product/drink/" + imageName,
+                    "/icons_and_images/product/more/" + imageName
+                };
+                
+                boolean found = false;
+                for (String path : paths) {
+                    if (getClass().getResource(path) != null) {
+                        setImageWithFixedSize(path);
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) {
+                    // Nếu không tìm thấy, dùng ảnh mặc định
+                    setImageWithFixedSize("/icons_and_images/Best.png");
+                }
+            } else {
+                // Không có tên ảnh - dùng ảnh mặc định
+                setImageWithFixedSize("/icons_and_images/Best.png");
+            }
+        } catch (Exception e) {
+            // Nếu lỗi, dùng ảnh unknown
+            setImageWithFixedSize("/icons_and_images/Unknown person.png");
+        }
+    }
 }
