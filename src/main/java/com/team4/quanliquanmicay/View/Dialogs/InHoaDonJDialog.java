@@ -55,7 +55,7 @@ public class InHoaDonJDialog extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new java.awt.BorderLayout());
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(null, null));
+        jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(null, 1));
 
         jTextArea1.setEditable(false);
         jTextArea1.setColumns(20);
