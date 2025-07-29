@@ -10,6 +10,7 @@ import com.team4.quanliquanmicay.Impl.CategoryDAOImpl;
 import com.team4.quanliquanmicay.DAO.CategoryDAO;
 import com.team4.quanliquanmicay.util.XTheme;
 import java.util.List;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -475,28 +476,73 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
     @Override
     public void create() {
         Category category = getForm();
-        System.out.println("[CREATE] Thêm mới: " + category);
-        categoryDAO.create(category);
-        fillToTable();
+        // Kiểm tra ràng buộc dữ liệu
+        if (category.getCategory_id().trim().isEmpty() || category.getCategory_name().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Mã loại và Tên loại không được để trống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        // Kiểm tra trùng mã loại
+        if (categoryDAO.findAll().stream().anyMatch(c -> c.getCategory_id().equals(category.getCategory_id()))) {
+            JOptionPane.showMessageDialog(this, "Mã loại đã tồn tại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        try {
+            categoryDAO.create(category);
+            fillToTable();
+            JOptionPane.showMessageDialog(this, "Thêm mới thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            clear();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Thêm mới thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     @Override
     public void update() {
+        int selectedRow = tblCategories.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn dòng cần cập nhật!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         Category category = getForm();
-        System.out.println("[UPDATE] Cập nhật: " + category);
-        categoryDAO.update(category);
-        fillToTable();
+        // Kiểm tra ràng buộc dữ liệu
+        if (category.getCategory_id().trim().isEmpty() || category.getCategory_name().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Mã loại và Tên loại không được để trống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        try {
+            categoryDAO.update(category);
+            fillToTable();
+            JOptionPane.showMessageDialog(this, "Cập nhật thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            clear();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Cập nhật thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     @Override
     public void delete() {
         int selectedRow = tblCategories.getSelectedRow();
-        if (selectedRow >= 0) {
-            String categoryId = tblCategories.getValueAt(selectedRow, 0).toString();
-            System.out.println("[DELETE] Xóa category_id: " + categoryId);
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn dòng cần xóa!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        String categoryId = tblCategories.getValueAt(selectedRow, 0).toString();
+        int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn xóa loại món này?", "Xác nhận xóa", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
+        try {
             categoryDAO.deleteById(categoryId);
             clear();
             fillToTable();
+            JOptionPane.showMessageDialog(this, "Xóa thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception e) {
+            // Kiểm tra lỗi ràng buộc khóa ngoại
+            if (e.getMessage() != null && e.getMessage().contains("FK_PRODUCT_CATEGORY")) {
+                JOptionPane.showMessageDialog(this, "Không thể xóa loại món này vì liên quan đến nhiều thông tin khác!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Xóa thất bại!\n" + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 

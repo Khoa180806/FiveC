@@ -22,7 +22,7 @@ public class XValidation {
     }
 
     public static boolean isNumber(String value) {
-        return value.matches("^\\d+$");
+        return value.matches("^-?\\d+(\\.\\d+)?$");
     }
 
     public static boolean isDate(String value) {

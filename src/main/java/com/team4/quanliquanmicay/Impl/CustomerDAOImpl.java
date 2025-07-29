@@ -24,22 +24,20 @@ public class CustomerDAOImpl implements CustomerDAO {
             entity.getLevel_ranking(),
             entity.getCreated_date()
         };
-        XJdbc.executeQuery(createSql, values);
+        XJdbc.executeUpdate(createSql, values);
         return entity;
     }
 
     @Override   
     public void update(Customer entity) {
         Object[] values ={
-            
             entity.getCustomer_name(),
             entity.getPoint_level(),
             entity.getLevel_ranking(),
             entity.getCreated_date(),
             entity.getPhone_number()
         };
-        XJdbc.executeQuery(createSql, values);
-        
+        XJdbc.executeUpdate(updateSql, values);
     }
 
     @Override
