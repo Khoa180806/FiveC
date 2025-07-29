@@ -60,13 +60,14 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
         tblCategories = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setBackground(new java.awt.Color(0, 51, 51));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowOpened(java.awt.event.WindowEvent evt) {
                 formWindowOpened(evt);
             }
         });
 
-        jPanel1.setBackground(new java.awt.Color(204, 0, 0));
+        jPanel1.setBackground(new java.awt.Color(102, 0, 0));
         jPanel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
 
         jLabel1.setFont(new java.awt.Font("Times New Roman", 1, 36)); // NOI18N
@@ -90,8 +91,10 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
                 .addContainerGap())
         );
 
+        jPanel2.setBackground(new java.awt.Color(0, 51, 51));
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
 
+        jPanel3.setBackground(new java.awt.Color(204, 204, 204));
         jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
@@ -109,7 +112,9 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
 
         txtCateName.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
+        btnAdd.setBackground(new java.awt.Color(204, 204, 204));
         btnAdd.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        btnAdd.setForeground(new java.awt.Color(51, 153, 0));
         btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Add to basket.png"))); // NOI18N
         btnAdd.setText("Thêm");
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
@@ -118,7 +123,9 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
             }
         });
 
+        btnUpdate.setBackground(new java.awt.Color(204, 204, 204));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        btnUpdate.setForeground(new java.awt.Color(0, 102, 51));
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
         btnUpdate.setText("Cập nhật");
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
@@ -127,7 +134,9 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
             }
         });
 
+        btnRemove.setBackground(new java.awt.Color(204, 204, 204));
         btnRemove.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        btnRemove.setForeground(new java.awt.Color(51, 51, 51));
         btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
         btnRemove.setText("Xóa");
         btnRemove.addActionListener(new java.awt.event.ActionListener() {
@@ -136,7 +145,9 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
             }
         });
 
+        btnReset.setBackground(new java.awt.Color(204, 204, 204));
         btnReset.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        btnReset.setForeground(new java.awt.Color(102, 102, 102));
         btnReset.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Add to basket.png"))); // NOI18N
         btnReset.setText("Làm mới");
         btnReset.addActionListener(new java.awt.event.ActionListener() {
@@ -152,6 +163,7 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
         radActive.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         radActive.setText("Hoạt động");
 
+        radInactive.setBackground(new java.awt.Color(204, 0, 0));
         btnEnabled.add(radInactive);
         radInactive.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         radInactive.setText("Ngừng hoạt động");
@@ -215,7 +227,9 @@ public class LoaiMonJDialog extends javax.swing.JFrame implements CategoryContro
                 .addGap(16, 16, 16))
         );
 
+        btnExit.setBackground(new java.awt.Color(204, 204, 204));
         btnExit.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        btnExit.setForeground(new java.awt.Color(102, 102, 102));
         btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-exit-32.png"))); // NOI18N
         btnExit.setText("EXIT");
         btnExit.addActionListener(new java.awt.event.ActionListener() {
