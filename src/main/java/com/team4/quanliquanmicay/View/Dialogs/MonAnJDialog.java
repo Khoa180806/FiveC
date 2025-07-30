@@ -16,7 +16,7 @@ import javax.swing.table.DefaultTableModel;
 import java.util.List;
 import static com.team4.quanliquanmicay.util.XValidation.isEmpty;
 import static com.team4.quanliquanmicay.util.XValidation.isNumber;
-import static com.team4.quanliquanmicay.util.XDialog.alert;
+import com.team4.quanliquanmicay.util.XDialog;
 
 /**
  *
@@ -107,20 +107,6 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
         jLabel9 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
         txtDiscount = new javax.swing.JTextField();
-        // Chỉ cho nhập số nguyên 0-100
-        txtDiscount.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                char c = evt.getKeyChar();
-                String text = txtDiscount.getText();
-                if (!Character.isDigit(c) || (text + c).length() > 3) evt.consume();
-            }
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                try {
-                    int val = Integer.parseInt(txtDiscount.getText());
-                    if (val < 0 || val > 100) txtDiscount.setText("");
-                } catch (Exception ex) { txtDiscount.setText(""); }
-            }
-        });
         jPanel2 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         tableInfo = new javax.swing.JTable();
@@ -184,28 +170,37 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
 
         jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 255, 204), 2));
 
-        jButton2.setBackground(new java.awt.Color(204, 204, 204));
-        jButton2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
-        jButton2.setText("Lưu");
+        btnSave.setBackground(new java.awt.Color(204, 204, 204));
+        btnSave.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
+        btnSave.setText("Lưu");
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
 
-        jButton3.setBackground(new java.awt.Color(153, 153, 153));
-        jButton3.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jButton3.setForeground(new java.awt.Color(0, 102, 0));
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
-        jButton3.setText("Làm Mới");
+        btnClear.setBackground(new java.awt.Color(153, 153, 153));
+        btnClear.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnClear.setForeground(new java.awt.Color(0, 102, 0));
+        btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
+        btnClear.setText("Làm Mới");
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
+            }
+        });
 
-        jButton4.setBackground(new java.awt.Color(204, 204, 204));
-        jButton4.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jButton4.setForeground(new java.awt.Color(0, 102, 51));
-        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
-        jButton4.setText("Cập nhật");
-
-        jButton6.setBackground(new java.awt.Color(204, 204, 204));
-        jButton6.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jButton6.setForeground(new java.awt.Color(102, 102, 102));
-        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
-        jButton6.setText("Hủy");
+        btnUpdate.setBackground(new java.awt.Color(204, 204, 204));
+        btnUpdate.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnUpdate.setForeground(new java.awt.Color(0, 102, 51));
+        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
+        btnUpdate.setText("Cập nhật");
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -242,8 +237,7 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
         jLabel8.setText("TRẠNG THÁI :");
 
         cboStatus.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        // XÓA model mặc định, chỉ fill bằng fillStatus()
-        // cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CHƯA CÓ", "CẦN CẬP NHẬT", " " }));
+        cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CHƯA CÓ", "CẦN CẬP NHẬT", " " }));
 
         jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 255, 204)));
 
@@ -269,7 +263,7 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
                         .addComponent(lblImage, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
-                        .addGap(31, 31, 31))))
+                        .addGap(37, 37, 37))))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -436,10 +430,15 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jButton5.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jButton5.setForeground(new java.awt.Color(204, 204, 204));
-        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-exit-32.png"))); // NOI18N
-        jButton5.setText("Exit");
+        btnExit.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        btnExit.setForeground(new java.awt.Color(204, 204, 204));
+        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-exit-32.png"))); // NOI18N
+        btnExit.setText("Exit");
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -477,8 +476,7 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
         // Xác nhận trước khi thoát
-        int confirm = javax.swing.JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn thoát không?", "Xác nhận thoát", javax.swing.JOptionPane.YES_NO_OPTION);
-        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+        if (XDialog.confirm("Bạn có chắc chắn muốn thoát không?", "Xác nhận thoát")) {
             this.dispose();
         }
     }//GEN-LAST:event_btnExitActionPerformed
@@ -500,16 +498,14 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
         // Thêm xác nhận nếu các trường đang có dữ liệu
         if (!txtProduct_Id.getText().isEmpty() || !txtNameProduct.getText().isEmpty() || !txtPrice.getText().isEmpty() || !txtAreNote.getText().isEmpty() || !txtDiscount.getText().isEmpty()) {
-            int confirm = javax.swing.JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn làm mới? Dữ liệu sẽ bị xóa!", "Xác nhận làm mới", javax.swing.JOptionPane.YES_NO_OPTION);
-            if (confirm != javax.swing.JOptionPane.YES_OPTION) return;
+            if (!XDialog.confirm("Bạn có chắc chắn muốn làm mới? Dữ liệu sẽ bị xóa!", "Xác nhận làm mới")) return;
         }
         clear();
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
         // Thêm xác nhận khi cập nhật
-        int confirm = javax.swing.JOptionPane.showConfirmDialog(this, "Bạn có chắc chắn muốn cập nhật sản phẩm này?", "Xác nhận cập nhật", javax.swing.JOptionPane.YES_NO_OPTION);
-        if (confirm != javax.swing.JOptionPane.YES_OPTION) return;
+        if (!XDialog.confirm("Bạn có chắc chắn muốn cập nhật sản phẩm này?", "Xác nhận cập nhật")) return;
         update();
     }//GEN-LAST:event_btnUpdateActionPerformed
 
@@ -662,48 +658,48 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
         // Lấy giá trị trực tiếp từ form, không phụ thuộc cache
         String productId = txtProduct_Id.getText().trim();
         if (isEmpty(productId)) {
-            alert("Vui lòng nhập mã món!");
+            XDialog.alert("Vui lòng nhập mã món!");
             txtProduct_Id.requestFocus();
             throw new RuntimeException("Mã món không được để trống!");
         }
         if (!productId.matches("^[a-zA-Z0-9_]+$")) {
-            alert("Mã món chỉ được chứa chữ, số, gạch dưới!");
+            XDialog.alert("Mã món chỉ được chứa chữ, số, gạch dưới!");
             txtProduct_Id.requestFocus();
             throw new RuntimeException("Mã món không hợp lệ!");
         }
         if (productId.length() > 10) {
-            alert("Mã món tối đa 10 ký tự!");
+            XDialog.alert("Mã món tối đa 10 ký tự!");
             txtProduct_Id.requestFocus();
             throw new RuntimeException("Mã món tối đa 10 ký tự!");
         }
         p.setProductId(productId);
         String productName = txtNameProduct.getText().trim();
         if (isEmpty(productName)) {
-            alert("Vui lòng nhập tên món!");
+            XDialog.alert("Vui lòng nhập tên món!");
             txtNameProduct.requestFocus();
             throw new RuntimeException("Tên món không được để trống!");
         }
         if (productName.length() > 50) {
-            alert("Tên món tối đa 50 ký tự!");
+            XDialog.alert("Tên món tối đa 50 ký tự!");
             txtNameProduct.requestFocus();
             throw new RuntimeException("Tên món tối đa 50 ký tự!");
         }
         // Chỉ cho phép chữ, số, khoảng trắng, dấu tiếng Việt, không ký tự đặc biệt lạ
                 if (!productName.matches("^[\\p{L}0-9 .,'-]+$")) {
-            alert("Tên món chỉ được chứa chữ, số, khoảng trắng và một số ký tự hợp lệ!");
+            XDialog.alert("Tên món chỉ được chứa chữ, số, khoảng trắng và một số ký tự hợp lệ!");
             txtNameProduct.requestFocus();
             throw new RuntimeException("Tên món không hợp lệ!");
         }
         p.setProductName(productName);
         String priceStr = txtPrice.getText().trim();
         if (isEmpty(priceStr) || !isNumber(priceStr)) {
-            alert("Đơn giá phải là số lớn hơn 0!");
+            XDialog.alert("Đơn giá phải là số lớn hơn 0!");
             txtPrice.requestFocus();
             throw new RuntimeException("Đơn giá không hợp lệ!");
         }
         double price = Double.parseDouble(priceStr);
         if (price <= 0) {
-            alert("Đơn giá phải lớn hơn 0!");
+            XDialog.alert("Đơn giá phải lớn hơn 0!");
             txtPrice.requestFocus();
             throw new RuntimeException("Đơn giá phải lớn hơn 0!");
         }
@@ -712,7 +708,7 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
         double discount = 0;
         if (!isEmpty(discountStr)) {
             if (!isNumber(discountStr)) {
-                alert("Giảm giá phải là số!");
+                XDialog.alert("Giảm giá phải là số!");
                 txtDiscount.requestFocus();
                 throw new RuntimeException("Giảm giá không hợp lệ!");
             }
@@ -720,7 +716,7 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
             if (discount > 1) discount = discount / 100.0;
         }
         if (discount < 0 || discount > 1) {
-            alert("Giảm giá phải từ 0 đến 100!");
+            XDialog.alert("Giảm giá phải từ 0 đến 100!");
             txtDiscount.requestFocus();
             throw new RuntimeException("Giảm giá phải từ 0 đến 100!");
         }
@@ -734,7 +730,7 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
         p.setCreatedDate(null);
         String unit = (String) cboUnit.getSelectedItem();
         if (unit == null || unit.trim().isEmpty()) {
-            alert("Vui lòng chọn đơn vị!");
+            XDialog.alert("Vui lòng chọn đơn vị!");
             cboUnit.requestFocus();
             throw new RuntimeException("Đơn vị không được để trống!");
         }
@@ -833,44 +829,44 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
             }
             // Kiểm tra hợp lệ cơ bản
             if (product.getProductId() == null || product.getProductId().trim().isEmpty()) {
-                com.team4.quanliquanmicay.util.XDialog.alert("Vui lòng nhập mã món!");
+                XDialog.alert("Vui lòng nhập mã món!");
                 return;
             }
             if (product.getProductName() == null || product.getProductName().trim().isEmpty()) {
-                com.team4.quanliquanmicay.util.XDialog.alert("Vui lòng nhập tên món!");
+                XDialog.alert("Vui lòng nhập tên món!");
                 return;
             }
             // Kiểm tra trùng mã (chuẩn hóa)
             if (getProductFromCache(product.getProductId().trim()) != null) {
-                com.team4.quanliquanmicay.util.XDialog.alert("Mã món đã tồn tại!");
+                XDialog.alert("Mã món đã tồn tại!");
                 return;
             }
             // Kiểm tra trùng tên món trong cùng loại
             for (Product p : productCache) {
                 if (p.getProductName().trim().equalsIgnoreCase(product.getProductName().trim()) && p.getCategoryId().equals(product.getCategoryId())) {
-                    com.team4.quanliquanmicay.util.XDialog.alert("Tên món đã tồn tại trong cùng loại!");
+                    XDialog.alert("Tên món đã tồn tại trong cùng loại!");
                     return;
                 }
             }
             // Kiểm tra đơn vị
             if (product.getUnit() == null || product.getUnit().trim().isEmpty()) {
-                com.team4.quanliquanmicay.util.XDialog.alert("Vui lòng chọn đơn vị!");
+                XDialog.alert("Vui lòng chọn đơn vị!");
                 return;
             }
             // Kiểm tra discount
             if (product.getDiscount() < 0 || product.getDiscount() > 1) {
-                com.team4.quanliquanmicay.util.XDialog.alert("Giảm giá phải từ 0 đến 100!");
+                XDialog.alert("Giảm giá phải từ 0 đến 100!");
                 return;
             }
             productDAO.create(product);
             invalidateProductCache();
             fillToTable();
             clear();
-            com.team4.quanliquanmicay.util.XDialog.alert("Thêm món thành công!");
+            XDialog.alert("Thêm món thành công!");
         } catch (RuntimeException e) {
             return;
         } catch (Exception e) {
-            com.team4.quanliquanmicay.util.XDialog.alert("Lỗi khi thêm món: " + e.getMessage());
+            XDialog.alert("Lỗi khi thêm món: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -880,34 +876,34 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
         try {
             Product product = getForm();
             if (product.getProductId() == null || product.getProductId().trim().isEmpty()) {
-                alert("Vui lòng nhập mã món!");
+                XDialog.alert("Vui lòng nhập mã món!");
                 return;
             }
             if (product.getProductName() == null || product.getProductName().trim().isEmpty()) {
-                alert("Vui lòng nhập tên món!");
+                XDialog.alert("Vui lòng nhập tên món!");
                 return;
             }
             if (product.getUnit() == null || product.getUnit().trim().isEmpty()) {
-                alert("Vui lòng chọn đơn vị!");
+                XDialog.alert("Vui lòng chọn đơn vị!");
                 return;
             }
             if (product.getDiscount() < 0 || product.getDiscount() > 1) {
-                alert("Giảm giá phải từ 0 đến 100!");
+                XDialog.alert("Giảm giá phải từ 0 đến 100!");
                 return;
             }
             if (product.getPrice() <= 0) {
-                alert("Vui lòng nhập giá lớn hơn 0!");
+                XDialog.alert("Vui lòng nhập giá lớn hơn 0!");
                 return;
             }
             // Kiểm tra tồn tại mã món
             if (getProductFromCache(product.getProductId().trim()) == null) {
-                alert("Mã món không tồn tại!");
+                XDialog.alert("Mã món không tồn tại!");
                 return;
             }
             // Kiểm tra trùng tên món trong cùng loại (trừ chính nó)
             for (Product p : productCache) {
                 if (!p.getProductId().equals(product.getProductId()) && p.getProductName().trim().equalsIgnoreCase(product.getProductName().trim()) && p.getCategoryId().equals(product.getCategoryId())) {
-                    alert("Tên món đã tồn tại trong cùng loại!");
+                    XDialog.alert("Tên món đã tồn tại trong cùng loại!");
                     return;
                 }
             }
@@ -915,11 +911,11 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
             invalidateProductCache();
             fillToTable();
             clear();
-            alert("Cập nhật món thành công!");
+            XDialog.alert("Cập nhật món thành công!");
         } catch (RuntimeException e) {
             return;
         } catch (Exception e) {
-            alert("Lỗi khi cập nhật món: " + e.getMessage());
+            XDialog.alert("Lỗi khi cập nhật món: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -1006,7 +1002,7 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
         if (units.isEmpty()) {
             cboUnit.setEnabled(false);
             cboUnit.addItem("<Không có đơn vị>");
-            javax.swing.JOptionPane.showMessageDialog(this, "Loại món này chưa có đơn vị nào! Vui lòng thêm sản phẩm mẫu trước.");
+            XDialog.alert("Loại món này chưa có đơn vị nào! Vui lòng thêm sản phẩm mẫu trước.");
         } else {
             cboUnit.setEnabled(true);
             for (String u : units) cboUnit.addItem(u);
@@ -1195,7 +1191,7 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
                         fillProductImage(savedImageName);
                         
                         // Show success message
-                        com.team4.quanliquanmicay.util.XDialog.alert(
+                        XDialog.alert(
                             "✅ Đã chọn ảnh thành công!\n" +
                             "File: " + savedImageName,
                             "Thông báo"
@@ -1205,7 +1201,7 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
             }
             
         } catch (Exception e) {
-            com.team4.quanliquanmicay.util.XDialog.alert(
+            XDialog.alert(
                 "❌ Lỗi khi chọn ảnh: " + e.getMessage(),
                 "Lỗi"
             );
@@ -1220,14 +1216,14 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
         try {
             // Check file exists
             if (file == null || !file.exists()) {
-                com.team4.quanliquanmicay.util.XDialog.alert("File không tồn tại!", "Lỗi");
+                XDialog.alert("File không tồn tại!", "Lỗi");
                 return false;
             }
             
             // Check file size (max 5MB)
             long fileSizeInMB = file.length() / (1024 * 1024);
             if (fileSizeInMB > 5) {
-                com.team4.quanliquanmicay.util.XDialog.alert(
+                XDialog.alert(
                     "File ảnh quá lớn!\n" +
                     "Kích thước hiện tại: " + fileSizeInMB + "MB\n" +
                     "Kích thước tối đa: 5MB",
@@ -1240,7 +1236,7 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
             String fileName = file.getName().toLowerCase();
             if (!fileName.endsWith(".jpg") && !fileName.endsWith(".jpeg") && 
                 !fileName.endsWith(".png") && !fileName.endsWith(".gif")) {
-                com.team4.quanliquanmicay.util.XDialog.alert(
+                XDialog.alert(
                     "Định dạng file không được hỗ trợ!\n" +
                     "Chỉ chấp nhận: .jpg, .jpeg, .png, .gif",
                     "Lỗi"
@@ -1251,14 +1247,14 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
             // Try to read as image
             java.awt.image.BufferedImage image = javax.imageio.ImageIO.read(file);
             if (image == null) {
-                com.team4.quanliquanmicay.util.XDialog.alert("File không phải là ảnh hợp lệ!", "Lỗi");
+                XDialog.alert("File không phải là ảnh hợp lệ!", "Lỗi");
                 return false;
             }
             
             return true;
             
         } catch (Exception e) {
-            com.team4.quanliquanmicay.util.XDialog.alert("Lỗi kiểm tra file: " + e.getMessage(), "Lỗi");
+            XDialog.alert("Lỗi kiểm tra file: " + e.getMessage(), "Lỗi");
             return false;
         }
     }
@@ -1305,7 +1301,7 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
             return newFileName;
             
         } catch (Exception e) {
-            com.team4.quanliquanmicay.util.XDialog.alert("❌ Lỗi lưu ảnh: " + e.getMessage(), "Lỗi");
+            XDialog.alert("❌ Lỗi lưu ảnh: " + e.getMessage(), "Lỗi");
             e.printStackTrace();
             return null;
         }
