@@ -471,19 +471,15 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         try {
             // Set thông tin bàn vào txtTable_Name
             txtTable_Name.setText("Bàn " + tableNumber);
-            
             // Tìm hóa đơn hiện tại của bàn này (nếu có)
             Bill currentBillForTable = findCurrentBillByTable(tableNumber);
             if (currentBillForTable != null) {
                 // Nếu có hóa đơn đang phục vụ, load thông tin
                 loadBill(String.valueOf(currentBillForTable.getBill_id()));
             } else {
-                // Nếu chưa có hóa đơn, clear form và set thông tin bàn
-                clearForm();
-                txtTable_Name.setText("Bàn " + tableNumber);
-                txtStatus.setText("Chưa có hóa đơn");
+                // Nếu chưa có hóa đơn, tự động tạo hóa đơn mới cho bàn này
+                createNewBillForTable(tableNumber, XAuth.user.getUser_id());
             }
-            
         } catch (Exception e) {
             System.err.println("Lỗi khi set thông tin bàn: " + e.getMessage());
             e.printStackTrace();
@@ -516,17 +512,24 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     public void createNewBillForTable(int tableNumber, String userId) {
         try {
             Bill newBill = new Bill();
+            // KHÔNG set bill_id - để database tự tạo bằng IDENTITY
+            // String newBillId = generateBillId();
+            // newBill.setBill_id(newBillId);
             newBill.setUser_id(userId);
             newBill.setTable_number(tableNumber);
             newBill.setStatus(true);
             newBill.setCheckin(new Date());
             newBill.setTotal_amount(0);
+            // Set payment_history_id = null vì chưa có payment history
+            newBill.setPayment_history_id(null);
+            // Không set phone_number vì chưa có thông tin khách hàng
+            newBill.setPhone_number(null);
             
             // Lưu hóa đơn mới - sử dụng create thay vì insert
             billDAO.create(newBill);
             
-            // Load hóa đơn vừa tạo
-            loadBill(String.valueOf(newBill.getBill_id()));
+            // Load hóa đơn vừa tạo - cần lấy bill_id từ database
+            loadBillFromDatabase(tableNumber, userId);
             
             // Cập nhật trạng thái bàn
             updateTableStatus(tableNumber, 2); // 2 = Đang phục vụ
@@ -534,6 +537,29 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         } catch (Exception e) {
             XDialog.alert("Lỗi khi tạo hóa đơn mới: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Load hóa đơn từ database sau khi tạo
+     */
+    private void loadBillFromDatabase(int tableNumber, String userId) {
+        try {
+            // Tìm hóa đơn mới nhất của bàn này
+            String sql = "SELECT * FROM BILL WHERE table_number = ? AND user_id = ? ORDER BY bill_id DESC";
+            Bill latestBill = XQuery.getSingleBean(Bill.class, sql, tableNumber, userId);
+            if (latestBill != null) {
+                loadBill(String.valueOf(latestBill.getBill_id()));
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi load hóa đơn từ database: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Tạo bill_id mới
+     */
+    private String generateBillId() {
+        return "BILL" + System.currentTimeMillis();
     }
 
     /**

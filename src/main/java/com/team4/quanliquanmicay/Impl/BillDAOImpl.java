@@ -5,6 +5,7 @@ import com.team4.quanliquanmicay.Entity.Bill;
 import com.team4.quanliquanmicay.util.XJdbc;
 import com.team4.quanliquanmicay.util.XQuery;
 import java.util.List;
+import java.sql.Timestamp;
 
 public class BillDAOImpl implements BillDAO{
 
@@ -23,8 +24,8 @@ public class BillDAOImpl implements BillDAO{
            entity.getPayment_history_id(),
            entity.getTable_number(),
            entity.getTotal_amount(),
-           entity.getCheckin(),
-           entity.getCheckout(),
+           entity.getCheckin() != null ? new Timestamp(entity.getCheckin().getTime()) : null,
+           entity.getCheckout() != null ? new Timestamp(entity.getCheckout().getTime()) : null,
            entity.getStatus(),
         };
         XJdbc.executeUpdate(createSql, values);
@@ -34,15 +35,15 @@ public class BillDAOImpl implements BillDAO{
     @Override
     public void update(Bill entity) {
         Object[] values = {
-            entity.getBill_id(),
             entity.getUser_id(),
             entity.getPhone_number(),
             entity.getPayment_history_id(),
             entity.getTable_number(),
             entity.getTotal_amount(),
-            entity.getCheckin(),
-            entity.getCheckout(),
+            entity.getCheckin() != null ? new Timestamp(entity.getCheckin().getTime()) : null,
+            entity.getCheckout() != null ? new Timestamp(entity.getCheckout().getTime()) : null,
             entity.getStatus(),
+            entity.getBill_id(),
         };
         XJdbc.executeUpdate(updateSql, values);
     }
