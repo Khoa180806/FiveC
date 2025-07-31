@@ -1,16 +1,16 @@
 -- ========================================
--- DATABASE QUẢN L�? QU�?N MÌ CAY - SCRIPT CREATE DATABASE HOÀN CHỈNH
+-- DATABASE QUẢN LÝ QUÁN MÌ CAY - SCRIPT CREATE DATABASE HOÀN CHỈNH
 -- CHỈ CẦN BẤM EXECUTE MỘT LẦN
 -- Author: FiveC
--- Version: 2.0
+-- Version: 1.0
 -- Date: 03/07/2025
--- Description: Hệ thống quản lý quán mì cay với 10 bảng chính - Oracle 11g
+-- Description: Hệ thống quản lý quán mì cay với 10 bảng chính
 -- ========================================
 
 SET SERVEROUTPUT ON;
 
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('=== BẮT �?ẦU TẠO DATABASE QUẢN L�? QU�?N MÌ CAY ===');
+    DBMS_OUTPUT.PUT_LINE('=== BẮT ĐẦU TẠO DATABASE QUẢN LÝ QUÁN MÌ CAY ===');
 END;
 /
 
@@ -23,54 +23,10 @@ BEGIN
 END;
 /
 
--- Xóa các TRIGGER cũ
-BEGIN
-    EXECUTE IMMEDIATE 'DROP TRIGGER TRG_PAYMENT_HISTORY_ID';
-EXCEPTION
-    WHEN OTHERS THEN NULL;
-END;
-/
-
-BEGIN
-    EXECUTE IMMEDIATE 'DROP TRIGGER TRG_BILL_ID';
-EXCEPTION
-    WHEN OTHERS THEN NULL;
-END;
-/
-
-BEGIN
-    EXECUTE IMMEDIATE 'DROP TRIGGER TRG_BILL_DETAIL_ID';
-EXCEPTION
-    WHEN OTHERS THEN NULL;
-END;
-/
-
--- Xóa các SEQUENCE cũ
-BEGIN
-    EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_PAYMENT_HISTORY_ID';
-EXCEPTION
-    WHEN OTHERS THEN NULL;
-END;
-/
-
-BEGIN
-    EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_BILL_ID';
-EXCEPTION
-    WHEN OTHERS THEN NULL;
-END;
-/
-
-BEGIN
-    EXECUTE IMMEDIATE 'DROP SEQUENCE SEQ_BILL_DETAIL_ID';
-EXCEPTION
-    WHEN OTHERS THEN NULL;
-END;
-/
-
 -- Xóa các bảng theo thứ tự (foreign key)
 BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE BILL_DETAIL CASCADE CONSTRAINTS';
-    DBMS_OUTPUT.PUT_LINE('- �?ã xóa BILL_DETAIL');
+    DBMS_OUTPUT.PUT_LINE('- Đã xóa BILL_DETAIL');
 EXCEPTION
     WHEN OTHERS THEN NULL;
 END;
@@ -78,7 +34,7 @@ END;
 
 BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE BILL CASCADE CONSTRAINTS';
-    DBMS_OUTPUT.PUT_LINE('- �?ã xóa BILL');
+    DBMS_OUTPUT.PUT_LINE('- Đã xóa BILL');
 EXCEPTION
     WHEN OTHERS THEN NULL;
 END;
@@ -86,7 +42,7 @@ END;
 
 BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE PAYMENT_HISTORY CASCADE CONSTRAINTS';
-    DBMS_OUTPUT.PUT_LINE('- �?ã xóa PAYMENT_HISTORY');
+    DBMS_OUTPUT.PUT_LINE('- Đã xóa PAYMENT_HISTORY');
 EXCEPTION
     WHEN OTHERS THEN NULL;
 END;
@@ -94,7 +50,7 @@ END;
 
 BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE PRODUCT CASCADE CONSTRAINTS';
-    DBMS_OUTPUT.PUT_LINE('- �?ã xóa PRODUCT');
+    DBMS_OUTPUT.PUT_LINE('- Đã xóa PRODUCT');
 EXCEPTION
     WHEN OTHERS THEN NULL;
 END;
@@ -107,45 +63,18 @@ BEGIN
     EXECUTE IMMEDIATE 'DROP TABLE PAYMENT_METHOD CASCADE CONSTRAINTS';
     EXECUTE IMMEDIATE 'DROP TABLE CATE CASCADE CONSTRAINTS';
     EXECUTE IMMEDIATE 'DROP TABLE USER_ROLE CASCADE CONSTRAINTS';
-    DBMS_OUTPUT.PUT_LINE('- �?ã xóa các bảng còn lại');
+    DBMS_OUTPUT.PUT_LINE('- Đã xóa các bảng còn lại');
 EXCEPTION
     WHEN OTHERS THEN NULL;
 END;
 /
 
 -- ========================================
--- PHẦN 2: TẠO C�?C SEQUENCE CHO AUTO INCREMENT
+-- PHẦN 2: TẠO CÁC BẢNG MỚI
 -- ========================================
 
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('Bước 2: Tạo các sequence...');
-END;
-/
-
-CREATE SEQUENCE SEQ_PAYMENT_HISTORY_ID
-    START WITH 1
-    INCREMENT BY 1
-    NOCACHE
-    NOCYCLE;
-
-CREATE SEQUENCE SEQ_BILL_ID
-    START WITH 10000
-    INCREMENT BY 1
-    NOCACHE
-    NOCYCLE;
-
-CREATE SEQUENCE SEQ_BILL_DETAIL_ID
-    START WITH 1000
-    INCREMENT BY 1
-    NOCACHE
-    NOCYCLE;
-
--- ========================================
--- PHẦN 3: TẠO C�?C BẢNG MỚI
--- ========================================
-
-BEGIN
-    DBMS_OUTPUT.PUT_LINE('Bước 3: Tạo các bảng mới...');
+    DBMS_OUTPUT.PUT_LINE('Bước 2: Tạo các bảng mới...');
 END;
 /
 
@@ -161,7 +90,6 @@ CREATE TABLE USER_ACCOUNT (
     ,username NVARCHAR2(20) NOT NULL UNIQUE
     ,pass NVARCHAR2(50) NOT NULL
     ,fullName NVARCHAR2(50) NOT NULL
-    ,gender NUMBER(1) DEFAULT 1
     ,email NVARCHAR2(100) UNIQUE
     ,phone_number NVARCHAR2(11) UNIQUE
     ,image NVARCHAR2(255)
@@ -169,8 +97,6 @@ CREATE TABLE USER_ACCOUNT (
     ,created_date DATE DEFAULT SYSDATE
     ,role_id NVARCHAR2(5) NOT NULL
     ,CONSTRAINT FK_User_Role FOREIGN KEY (role_id) REFERENCES USER_ROLE(role_id)
-    ,CONSTRAINT CHK_User_Gender CHECK (gender IN (0, 1))
-    ,CONSTRAINT CHK_User_Enabled CHECK (is_enabled IN (0, 1))
 );
 
 -- 3. BẢNG CUSTOMER
@@ -187,7 +113,6 @@ CREATE TABLE CATE (
     category_id NVARCHAR2(5) PRIMARY KEY
     ,category_name NVARCHAR2(50) NOT NULL UNIQUE
     ,is_available NUMBER(1) DEFAULT 1
-    ,CONSTRAINT CHK_Cate_Available CHECK (is_available IN (0, 1))
 );
 
 -- 5. BẢNG PRODUCT
@@ -205,7 +130,6 @@ CREATE TABLE PRODUCT (
     ,CONSTRAINT FK_Product_Category FOREIGN KEY (category_id) REFERENCES CATE(category_id)
     ,CONSTRAINT CHK_Product_Price CHECK (price > 0)
     ,CONSTRAINT CHK_Product_Discount CHECK (discount >= 0 AND discount <= 1)
-    ,CONSTRAINT CHK_Product_Available CHECK (is_available IN (0, 1))
 );
 
 -- 6. BẢNG TABLE_FOR_CUSTOMER
@@ -214,7 +138,6 @@ CREATE TABLE TABLE_FOR_CUSTOMER (
     ,amount NUMBER(2) NOT NULL
     ,status NUMBER(1) DEFAULT 1
     ,CONSTRAINT CHK_Table_Amount CHECK (amount > 0)
-    ,CONSTRAINT CHK_Table_Status CHECK (status IN (0, 1,2))
 );
 
 -- 7. BẢNG PAYMENT_METHOD
@@ -222,24 +145,22 @@ CREATE TABLE PAYMENT_METHOD (
     payment_method_id NUMBER(1) PRIMARY KEY
     ,method_name NVARCHAR2(50) NOT NULL UNIQUE
     ,is_enable NUMBER(1) DEFAULT 1
-    ,CONSTRAINT CHK_PayMethod_Enable CHECK (is_enable IN (0, 1))
 );
 
 -- 8. BẢNG PAYMENT_HISTORY
 CREATE TABLE PAYMENT_HISTORY (
-    payment_history_id NUMBER PRIMARY KEY,
-    payment_method_id NUMBER(1) NOT NULL,
-    payment_date DATE DEFAULT SYSDATE,
-    total_amount NUMBER(9,0),
-    status NVARCHAR2(30) DEFAULT N'Thành công',
-    note NVARCHAR2(255),
-    CONSTRAINT FK_PayHist_Method FOREIGN KEY (payment_method_id) REFERENCES PAYMENT_METHOD(payment_method_id)
+    payment_history_id NUMBER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) PRIMARY KEY
+    ,payment_method_id NUMBER(1) NOT NULL
+    ,payment_date DATE DEFAULT SYSDATE
+    ,total_amount NUMBER(9,0)
+    ,status NVARCHAR2(30) DEFAULT N'Thành công'
+    ,note NVARCHAR2(255)
+    ,CONSTRAINT FK_PaymentHistory_PaymentMethod FOREIGN KEY (payment_method_id) REFERENCES PAYMENT_METHOD(payment_method_id)
 );
-
 
 -- 9. BẢNG BILL
 CREATE TABLE BILL (
-    bill_id NUMBER PRIMARY KEY
+    bill_id NUMBER GENERATED ALWAYS AS IDENTITY (START WITH 10000 INCREMENT BY 1) PRIMARY KEY
     ,user_id NVARCHAR2(20) NOT NULL
     ,phone_number NVARCHAR2(11)
     ,payment_history_id NUMBER
@@ -247,7 +168,7 @@ CREATE TABLE BILL (
     ,total_amount NUMBER(9,0) DEFAULT 0
     ,checkin DATE DEFAULT SYSDATE
     ,checkout DATE
-    ,status NVARCHAR2(50) DEFAULT N'�?ang phục vụ'
+    ,status NVARCHAR2(50) DEFAULT N'Đang phục vụ'
     ,CONSTRAINT FK_Bill_User FOREIGN KEY (user_id) REFERENCES USER_ACCOUNT(user_id)
     ,CONSTRAINT FK_Bill_Customer FOREIGN KEY (phone_number) REFERENCES CUSTOMER(phone_number)
     ,CONSTRAINT FK_Bill_PaymentHistory FOREIGN KEY (payment_history_id) REFERENCES PAYMENT_HISTORY(payment_history_id)
@@ -257,7 +178,7 @@ CREATE TABLE BILL (
 
 -- 10. BẢNG BILL_DETAIL
 CREATE TABLE BILL_DETAIL (
-    bill_detail_id NUMBER PRIMARY KEY
+    bill_detail_id NUMBER GENERATED ALWAYS AS IDENTITY (START WITH 1000 INCREMENT BY 1) PRIMARY KEY
     ,bill_id NUMBER NOT NULL
     ,product_id NVARCHAR2(10) NOT NULL
     ,amount NUMBER(2) NOT NULL
@@ -267,52 +188,48 @@ CREATE TABLE BILL_DETAIL (
     ,CONSTRAINT FK_BillDetail_Product FOREIGN KEY (product_id) REFERENCES PRODUCT(product_id)
     ,CONSTRAINT CHK_BillDetail_Amount CHECK (amount > 0)
     ,CONSTRAINT CHK_BillDetail_Price CHECK (price > 0)
-    ,CONSTRAINT CHK_BillDetail_Discount CHECK (discount >= 0 AND discount <= 1)
 );
 
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('✅ Đã tạo thành công tất cả 10 bảng!');
+END;
+/
+
 -- ========================================
--- PHẦN 4: TẠO C�?C TRIGGER CHO AUTO INCREMENT
+-- PHẦN 3: TẠO INDEX TỐI ƯU
 -- ========================================
 
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('Bước 4: Tạo các trigger...');
+    DBMS_OUTPUT.PUT_LINE('Bước 3: Tạo các index tối ưu...');
 END;
 /
 
--- Trigger cho PAYMENT_HISTORY
-CREATE OR REPLACE TRIGGER TRG_PAYMENT_HISTORY_ID
-    BEFORE INSERT ON PAYMENT_HISTORY
-    FOR EACH ROW
+CREATE INDEX IDX_USER_USERNAME ON USER_ACCOUNT(username);
+CREATE INDEX IDX_USER_ROLE ON USER_ACCOUNT(role_id);
+CREATE INDEX IDX_CUSTOMER_PHONE ON CUSTOMER(phone_number);
+CREATE INDEX IDX_PRODUCT_CATEGORY ON PRODUCT(category_id);
+CREATE INDEX IDX_BILL_CUSTOMER ON BILL(phone_number);
+CREATE INDEX IDX_BILL_USER ON BILL(user_id);
+CREATE INDEX IDX_BILL_DATE ON BILL(checkin);
+CREATE INDEX IDX_BILLDETAIL_BILL ON BILL_DETAIL(bill_id);
+CREATE INDEX IDX_BILLDETAIL_PRODUCT ON BILL_DETAIL(product_id);
+
 BEGIN
-    IF :NEW.payment_history_id IS NULL THEN
-        SELECT SEQ_PAYMENT_HISTORY_ID.NEXTVAL INTO :NEW.payment_history_id FROM DUAL;
-    END IF;
+    DBMS_OUTPUT.PUT_LINE('✅ Đã tạo thành công 9 index!');
 END;
 /
 
--- Trigger cho BILL
-CREATE OR REPLACE TRIGGER TRG_BILL_ID
-    BEFORE INSERT ON BILL
-    FOR EACH ROW
-BEGIN
-    IF :NEW.bill_id IS NULL THEN
-        SELECT SEQ_BILL_ID.NEXTVAL INTO :NEW.bill_id FROM DUAL;
-    END IF;
-END;
-/
+COMMIT;
 
--- Trigger cho BILL_DETAIL
-CREATE OR REPLACE TRIGGER TRG_BILL_DETAIL_ID
-    BEFORE INSERT ON BILL_DETAIL
-    FOR EACH ROW
-BEGIN
-    IF :NEW.bill_detail_id IS NULL THEN
-        SELECT SEQ_BILL_DETAIL_ID.NEXTVAL INTO :NEW.bill_detail_id FROM DUAL;
-    END IF;
-END;
-/
+-- ========================================
+-- HOÀN THÀNH
+-- ========================================
 
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('✅ �?ã tạo thành công tất cả 10 bảng và 3 trigger!');
+    DBMS_OUTPUT.PUT_LINE(' HOÀN THÀNH TẠO DATABASE QUẢN LÝ QUÁN MÌ CAY!');
+    DBMS_OUTPUT.PUT_LINE('✅ 10 bảng đã được tạo thành công');
+    DBMS_OUTPUT.PUT_LINE('✅ 9 index đã được tạo thành công');
+    DBMS_OUTPUT.PUT_LINE('✅ Database sẵn sàng sử dụng!');
+    DBMS_OUTPUT.PUT_LINE('🎉 Ready for production!');
 END;
 /

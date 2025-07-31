@@ -23,6 +23,11 @@ import javax.swing.table.DefaultTableModel;
 import java.util.List;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.awt.Color;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.LineBorder;
+import java.util.ArrayList;
+import java.sql.ResultSet;
 
 /**
  *
@@ -457,6 +462,78 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     @Override
     public String formatCurrency(double amount) {
         return String.format("%,.0f VNĐ", amount);
+    }
+
+    /**
+     * Set thông tin bàn vào form
+     */
+    public void setTableInfo(int tableNumber) {
+        try {
+            // Set thông tin bàn vào txtTable_Name
+            txtTable_Name.setText("Bàn " + tableNumber);
+            
+            // Tìm hóa đơn hiện tại của bàn này (nếu có)
+            Bill currentBillForTable = findCurrentBillByTable(tableNumber);
+            if (currentBillForTable != null) {
+                // Nếu có hóa đơn đang phục vụ, load thông tin
+                loadBill(String.valueOf(currentBillForTable.getBill_id()));
+            } else {
+                // Nếu chưa có hóa đơn, clear form và set thông tin bàn
+                clearForm();
+                txtTable_Name.setText("Bàn " + tableNumber);
+                txtStatus.setText("Chưa có hóa đơn");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi khi set thông tin bàn: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Tìm hóa đơn hiện tại của bàn
+     */
+    private Bill findCurrentBillByTable(int tableNumber) {
+        try {
+            // Sử dụng findAll() và filter thay vì findBySQL
+            List<Bill> allBills = billDAO.findAll();
+            for (Bill bill : allBills) {
+                if (bill.getTable_number() == tableNumber && 
+                    "Đang phục vụ".equals(bill.getStatus())) {
+                    return bill;
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tìm hóa đơn của bàn: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Tạo hóa đơn mới cho bàn
+     */
+    public void createNewBillForTable(int tableNumber, String userId) {
+        try {
+            Bill newBill = new Bill();
+            newBill.setUser_id(userId);
+            newBill.setTable_number(tableNumber);
+            newBill.setStatus(true);
+            newBill.setCheckin(new Date());
+            newBill.setTotal_amount(0);
+            
+            // Lưu hóa đơn mới - sử dụng create thay vì insert
+            billDAO.create(newBill);
+            
+            // Load hóa đơn vừa tạo
+            loadBill(String.valueOf(newBill.getBill_id()));
+            
+            // Cập nhật trạng thái bàn
+            updateTableStatus(tableNumber, 2); // 2 = Đang phục vụ
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi tạo hóa đơn mới: " + e.getMessage());
+        }
     }
 
     /**
