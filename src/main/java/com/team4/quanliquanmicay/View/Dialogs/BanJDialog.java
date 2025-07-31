@@ -9,6 +9,7 @@ import com.team4.quanliquanmicay.DAO.TableForCustomerDAO;
 import com.team4.quanliquanmicay.Entity.TableForCustomer;
 import com.team4.quanliquanmicay.Impl.TableForCustomerDAOImpl;
 import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.util.XDialog;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -817,7 +818,7 @@ System.exit(0);
 
         // Kiểm tra trống thông tin
         if (tableNumberStr.isEmpty() || amountStr.isEmpty() || statusText == null || statusText.trim().isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng nhập đầy đủ thông tin bàn!");
+            XDialog.alert("Vui lòng nhập đầy đủ thông tin bàn!");
             return;
         }
 
@@ -826,13 +827,13 @@ System.exit(0);
             tableNumber = Integer.parseInt(tableNumberStr);
             amount = Integer.parseInt(amountStr);
         } catch (NumberFormatException e) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Số bàn và số chỗ ngồi phải là số nguyên!");
+            XDialog.alert("Số bàn và số chỗ ngồi phải là số nguyên!");
             return;
         }
 
         // Kiểm tra trùng số bàn
         if (tableDAO.findById(tableNumber) != null) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Số bàn này đã tồn tại! Vui lòng nhập số bàn khác.");
+            XDialog.alert("Số bàn này đã tồn tại! Vui lòng nhập số bàn khác.");
             return;
         }
 
@@ -844,11 +845,11 @@ System.exit(0);
 
         try {
             tableDAO.create(table);
-            javax.swing.JOptionPane.showMessageDialog(this, "Thêm bàn thành công!");
+            XDialog.alert("Thêm bàn thành công!");
             loadTable(); // Reload lại để hiển thị bàn mới
             clear();
         } catch (Exception ex) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Có lỗi xảy ra khi thêm bàn: " + ex.getMessage());
+            XDialog.alert("Có lỗi xảy ra khi thêm bàn: " + ex.getMessage());
         }
     }
 
@@ -861,7 +862,7 @@ System.exit(0);
         // Lấy thông tin cũ từ DB
         TableForCustomer oldTable = tableDAO.findById(newTable.getTable_number());
         if (oldTable == null) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Không tìm thấy bàn này trong hệ thống!");
+            XDialog.alert("Không tìm thấy bàn này trong hệ thống!");
             return;
         }
 
@@ -877,31 +878,14 @@ System.exit(0);
         message.append("Số chỗ ngồi: ").append(newTable.getAmount()).append("\n");
         message.append("Trạng thái: ").append(convertIntToStatus(newTable.getStatus())).append("\n");
 
-        int confirm = javax.swing.JOptionPane.showConfirmDialog(
-            this,
-            message.toString(),
-            "Xác nhận cập nhật",
-            javax.swing.JOptionPane.YES_NO_OPTION
-        );
-
-        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+        if (XDialog.confirm(message.toString(), "Xác nhận cập nhật")) {
             try {
                 tableDAO.update(newTable);
-                javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "Cập nhật bàn thành công!",
-                    "Thành công",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE
-                );
+                XDialog.alert("Cập nhật bàn thành công!");
                 loadTable();
                 clear();
             } catch (Exception ex) {
-                javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "Cập nhật bàn thất bại!\n" + ex.getMessage(),
-                    "Lỗi",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-                );
+                XDialog.alert("Cập nhật bàn thất bại!\n" + ex.getMessage());
             }
         }
         // Nếu chọn "Không" thì không làm gì cả
@@ -914,12 +898,7 @@ System.exit(0);
 
         // 1. Kiểm tra đã nhập số bàn chưa
         if (tableNumberStr.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "Vui lòng nhập số bàn cần xóa!",
-                "Thiếu thông tin",
-                javax.swing.JOptionPane.WARNING_MESSAGE
-            );
+            XDialog.alert("Vui lòng nhập số bàn cần xóa!");
             return;
         }
 
@@ -927,24 +906,14 @@ System.exit(0);
         try {
             tableNumber = Integer.parseInt(tableNumberStr);
         } catch (NumberFormatException e) {
-            javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "Số bàn phải là số nguyên!",
-                "Lỗi định dạng",
-                javax.swing.JOptionPane.ERROR_MESSAGE
-            );
+            XDialog.alert("Số bàn phải là số nguyên!");
             return;
         }
 
         // 2. Kiểm tra bàn có tồn tại không
         TableForCustomer table = tableDAO.findById(tableNumber);
         if (table == null) {
-            javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "Không tìm thấy bàn số " + tableNumber + " trong hệ thống!",
-                "Không tìm thấy",
-                javax.swing.JOptionPane.ERROR_MESSAGE
-            );
+            XDialog.alert("Không tìm thấy bàn số " + tableNumber + " trong hệ thống!");
             return;
         }
 
@@ -955,31 +924,14 @@ System.exit(0);
         message.append("Số chỗ ngồi: ").append(table.getAmount()).append("\n");
         message.append("Trạng thái: ").append(convertIntToStatus(table.getStatus())).append("\n");
 
-        int confirm = javax.swing.JOptionPane.showConfirmDialog(
-            this,
-            message.toString(),
-            "Xác nhận xóa bàn",
-            javax.swing.JOptionPane.YES_NO_OPTION
-        );
-
-        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+        if (XDialog.confirm(message.toString(), "Xác nhận xóa bàn")) {
             try {
                 tableDAO.deleteById(tableNumber);
-                javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "Xóa bàn thành công!",
-                    "Thành công",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE
-                );
+                XDialog.alert("Xóa bàn thành công!");
                 loadTable();
                 clear();
             } catch (Exception ex) {
-                javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "Xóa bàn thất bại!\n" + ex.getMessage(),
-                    "Lỗi",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-                );
+                XDialog.alert("Xóa bàn thất bại!\n" + ex.getMessage());
             }
         }
         // Nếu chọn "Không" thì không làm gì cả
@@ -992,19 +944,9 @@ System.exit(0);
             txtTable_Number.setText("");
             txtAmount.setText("");
             cboTable_Status.setSelectedIndex(0);
-            javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "Làm mới thành công!",
-                "Thông báo",
-                javax.swing.JOptionPane.INFORMATION_MESSAGE
-            );
+            XDialog.alert("Làm mới thành công!");
         } catch (Exception ex) {
-            javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "Làm mới thất bại!\n" + ex.getMessage(),
-                "Lỗi",
-                javax.swing.JOptionPane.ERROR_MESSAGE
-            );
+            XDialog.alert("Làm mới thất bại!\n" + ex.getMessage());
         }
     }
 
@@ -1031,20 +973,20 @@ System.exit(0);
     private void changeTable() {
         String currentTableStr = txtTable_Number.getText().trim();
         if (currentTableStr.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Vui lòng chọn bàn cần chuyển!");
+            XDialog.alert("Vui lòng chọn bàn cần chuyển!");
             return;
         }
         int currentTableNumber;
         try {
             currentTableNumber = Integer.parseInt(currentTableStr);
         } catch (NumberFormatException e) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Số bàn không hợp lệ!");
+            XDialog.alert("Số bàn không hợp lệ!");
             return;
         }
 
         TableForCustomer currentTable = tableDAO.findById(currentTableNumber);
         if (currentTable == null) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Không tìm thấy bàn này trong hệ thống!");
+            XDialog.alert("Không tìm thấy bàn này trong hệ thống!");
             return;
         }
 
@@ -1058,12 +1000,7 @@ System.exit(0);
         }
 
         if (emptyTables.isEmpty()) {
-            javax.swing.JOptionPane.showMessageDialog(
-                this,
-                "Không có bàn trống nào để chuyển!\nVui lòng thử lại sau.",
-                "Thông báo",
-                javax.swing.JOptionPane.INFORMATION_MESSAGE
-            );
+            XDialog.alert("Không có bàn trống nào để chuyển!\nVui lòng thử lại sau.");
             return;
         }
 
@@ -1096,19 +1033,12 @@ System.exit(0);
             }
         }
         if (newTable == null) {
-            javax.swing.JOptionPane.showMessageDialog(this, "Không tìm thấy bàn mới để chuyển!");
+            XDialog.alert("Không tìm thấy bàn mới để chuyển!");
             return;
         }
 
         // Xác nhận trước khi chuyển trạng thái
-        int confirm = javax.swing.JOptionPane.showConfirmDialog(
-            this,
-            String.format("Bạn có chắc chắn muốn chuyển sang bàn số %d không?", newTable.getTable_number()),
-            "Xác nhận chuyển bàn",
-            javax.swing.JOptionPane.YES_NO_OPTION
-        );
-
-        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+        if (XDialog.confirm(String.format("Bạn có chắc chắn muốn chuyển sang bàn số %d không?", newTable.getTable_number()), "Xác nhận chuyển bàn")) {
             try {
                 newTable.setStatus(1); // Đang phục vụ
                 currentTable.setStatus(0); // Trống
@@ -1116,52 +1046,26 @@ System.exit(0);
                 tableDAO.update(newTable);
                 tableDAO.update(currentTable);
 
-                javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    String.format("Chuyển thành công sang bàn số %d!", newTable.getTable_number()),
-                    "Thành công",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE
-                );
+                XDialog.alert(String.format("Chuyển thành công sang bàn số %d!", newTable.getTable_number()));
                 loadTable();
                 setForm(newTable);
             } catch (Exception ex) {
-                javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "Chuyển trạng thái bàn thất bại!\n" + ex.getMessage(),
-                    "Lỗi",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-                );
+                XDialog.alert("Chuyển trạng thái bàn thất bại!\n" + ex.getMessage());
             }
         }
         // Nếu chọn "Không" thì không làm gì cả
     }
 
     private void updateTableStatus(TableForCustomer table, int newStatus) {
-        int confirm = javax.swing.JOptionPane.showConfirmDialog(
-            this,
-            "Bạn có chắc chắn muốn chuyển trạng thái bàn này không?",
-            "Xác nhận chuyển trạng thái",
-            javax.swing.JOptionPane.YES_NO_OPTION
-        );
-        if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+        if (XDialog.confirm("Bạn có chắc chắn muốn chuyển trạng thái bàn này không?", "Xác nhận chuyển trạng thái")) {
             try {
                 table.setStatus(newStatus);
                 tableDAO.update(table);
-                javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "Chuyển trạng thái bàn thành công!",
-                    "Thành công",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE
-                );
+                XDialog.alert("Chuyển trạng thái bàn thành công!");
                 loadTable();
                 setForm(table);
             } catch (Exception ex) {
-                javax.swing.JOptionPane.showMessageDialog(
-                    this,
-                    "Chuyển trạng thái bàn thất bại!\n" + ex.getMessage(),
-                    "Lỗi",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-                );
+                XDialog.alert("Chuyển trạng thái bàn thất bại!\n" + ex.getMessage());
             }
         }
         // Nếu chọn "Không" thì không làm gì cả
