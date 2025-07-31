@@ -7,6 +7,8 @@ package com.team4.quanliquanmicay.View.Dialogs;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XJdbc;
+import com.team4.quanliquanmicay.util.XValidation;
+import com.team4.quanliquanmicay.util.XStr;
 import com.team4.quanliquanmicay.Entity.Product;
 import com.team4.quanliquanmicay.Entity.Bill;
 import com.team4.quanliquanmicay.Entity.BillDetails;
@@ -628,25 +630,71 @@ public class OrderJDialog extends javax.swing.JFrame {
             return;
         }
         
+        if (!currentBill.isValid()) {
+            XDialog.alert("Hóa đơn không hợp lệ!");
+            return;
+        }
+        
         try {
             // Thêm từng món vào bill details
             for (CartItem item : cartItems) {
+                // Validation cho Product
+                if (item.getProduct() == null) {
+                    XDialog.alert("Thông tin sản phẩm không hợp lệ!");
+                    return;
+                }
+                
+                // Validation cho quantity
+                if (item.getQuantity() <= 0) {
+                    XDialog.alert("Số lượng phải lớn hơn 0!");
+                    return;
+                }
+                
+                // Validation cho price và discount
+                if (item.getProduct().getPrice() <= 0) {
+                    XDialog.alert("Giá sản phẩm không hợp lệ!");
+                    return;
+                }
+                
+                if (item.getProduct().getDiscount() < 0 || item.getProduct().getDiscount() > 1) {
+                    XDialog.alert("Giảm giá không hợp lệ!");
+                    return;
+                }
+                
+                // Validation cho bill_id
+                if (currentBill.getBill_id() == null || currentBill.getBill_id() <= 0) {
+                    XDialog.alert("ID hóa đơn không hợp lệ!");
+                    return;
+                }
+                
+                // Validation cho product_id
+                if (XValidation.isEmpty(item.getProduct().getProductId())) {
+                    XDialog.alert("ID sản phẩm không hợp lệ!");
+                    return;
+                }
+                
                 BillDetails billDetail = new BillDetails();
-                billDetail.setBill_details_id(generateBillDetailsId());
+                // Không set bill_detail_id vì nó là IDENTITY column
                 billDetail.setBill_id(currentBill.getBill_id());
                 billDetail.setProduct_id(item.getProduct().getProductId());
                 billDetail.setAmount(item.getQuantity());
                 billDetail.setPrice(item.getProduct().getPrice());
                 billDetail.setDiscount(item.getProduct().getDiscount());
                 
-                billDetailsDAO.create(billDetail);
+                // Validation trước khi tạo
+                if (billDetail.isValid()) {
+                    billDetailsDAO.create(billDetail);
+                } else {
+                    XDialog.alert("Dữ liệu bill detail không hợp lệ!");
+                    return;
+                }
             }
             
             XDialog.alert("Đặt món thành công!");
             
             // Refresh parent dialog
             if (parentDialog != null) {
-                parentDialog.loadBillDetails(Integer.parseInt(currentBill.getBill_id()));
+                parentDialog.loadBillDetails(currentBill.getBill_id());
             }
             
             // Clear cart and close dialog
@@ -659,12 +707,7 @@ public class OrderJDialog extends javax.swing.JFrame {
         }
     }
     
-    /**
-     * Tạo ID cho bill details
-     */
-    private String generateBillDetailsId() {
-        return "BD" + System.currentTimeMillis();
-    }
+
     
     /**
      * Format tiền tệ
