@@ -120,7 +120,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
             return;
         }
         
-        DatMonJDialog datMonDialog = new DatMonJDialog(this, currentBill);
+        OrderJDialog datMonDialog = new OrderJDialog(this, currentBill);
         datMonDialog.setVisible(true);
     }
     
