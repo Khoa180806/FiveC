@@ -627,7 +627,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
             Bill bill = XJdbc.executeQuery(sql, rs -> {
                 if (rs.next()) {
                     Bill b = new Bill();
-                    b.setBill_id(rs.getString("bill_id"));
+                    b.setBill_id(rs.getInt("bill_id"));
                     b.setUser_id(rs.getString("user_id"));
                     b.setPhone_number(rs.getString("phone_number"));
                     b.setPayment_history_id(rs.getInt("payment_history_id"));
@@ -670,7 +670,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
     /**
      * Load chi tiết hóa đơn
      */
-    private void loadBillDetails(String billId) {
+    private void loadBillDetails(int billId) {
         try {
             billDetails = billDetailsDAO.findByBillId(billId);
             fillTableWithBillDetails(billDetails);

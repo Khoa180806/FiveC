@@ -12,7 +12,7 @@ public class TestDatMon {
     public static void main(String[] args) {
         // Tạo bill test
         Bill testBill = new Bill();
-        testBill.setBill_id("BILL001");
+        testBill.setBill_id(10001); // Set bill_id test
         testBill.setUser_id("USER001");
         testBill.setTable_number(1);
         testBill.setStatus(true);

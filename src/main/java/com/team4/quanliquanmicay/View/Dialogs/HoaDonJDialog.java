@@ -155,7 +155,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                     Product product = productDAO.findById(detail.getProduct_id());
                     if (product != null && product.getProductName().equals(productName) 
                         && detail.getAmount() == amount) {
-                        billDetailsDAO.deleteById(detail.getBill_details_id());
+                        billDetailsDAO.deleteById(String.valueOf(detail.getBill_detail_id()));
                         break;
                     }
                 }
@@ -254,7 +254,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     @Override
     public void loadBillDetails(Integer billId) {
         try {
-            currentBillDetails = billDetailsDAO.findByBillId(String.valueOf(billId));
+            currentBillDetails = billDetailsDAO.findByBillId(billId);
             fillTableWithBillDetails(currentBillDetails);
         } catch (Exception e) {
             XDialog.alert("Lỗi khi tải chi tiết hóa đơn: " + e.getMessage());

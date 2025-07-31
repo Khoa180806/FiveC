@@ -59,7 +59,7 @@ public class BillDetailsDAOImpl implements BillDetailsDAO{
     }
     
     @Override
-    public List<BillDetails> findByBillId(String billId) {
+    public List<BillDetails> findByBillId(Integer billId) {
         return XQuery.getBeanList(BillDetails.class, findByBillIdSql, billId);
     }
 }
