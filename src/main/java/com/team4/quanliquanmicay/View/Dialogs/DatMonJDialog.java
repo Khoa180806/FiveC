@@ -5,6 +5,10 @@
 package com.team4.quanliquanmicay.View.Dialogs;
 
 import com.team4.quanliquanmicay.util.XTheme;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XJdbc;
 import com.team4.quanliquanmicay.Entity.Product;
@@ -15,25 +19,6 @@ import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
 import com.team4.quanliquanmicay.DAO.BillDetailsDAO;
 import com.team4.quanliquanmicay.Impl.BillDetailsDAOImpl;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
-import java.util.List;
-import com.team4.quanliquanmicay.util.XDialog;
-import com.team4.quanliquanmicay.util.XJdbc;
-import com.team4.quanliquanmicay.Entity.Product;
-import com.team4.quanliquanmicay.Entity.Bill;
-import com.team4.quanliquanmicay.Entity.BillDetails;
-import com.team4.quanliquanmicay.DAO.ProductDAO;
-import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
-import com.team4.quanliquanmicay.DAO.BillDetailsDAO;
-import com.team4.quanliquanmicay.Impl.BillDetailsDAOImpl;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.*;
 import java.util.List;
 
 /**
@@ -560,15 +545,13 @@ public class DatMonJDialog extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Tên món", "Số lượng", "Đơn giá", "Thành tiền"
+                "Tên món", "Số lượng"
             }
         ));
         jScrollPane3.setViewportView(jTable1);
         if (jTable1.getColumnModel().getColumnCount() > 0) {
             jTable1.getColumnModel().getColumn(0).setResizable(false);
             jTable1.getColumnModel().getColumn(1).setResizable(false);
-            jTable1.getColumnModel().getColumn(2).setResizable(false);
-            jTable1.getColumnModel().getColumn(3).setResizable(false);
         }
 
         jButton6.setBackground(new java.awt.Color(204, 204, 204));
@@ -651,8 +634,10 @@ public class DatMonJDialog extends javax.swing.JFrame {
 
         jButton3.setText("jButton2");
 
+        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/anhnen1.PNG"))); // NOI18N
         jButton5.setText("jButton2");
 
+        jButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/product/drink/3e76d40a-3ecc-438a-b0c9-9124baba47b9.jpg"))); // NOI18N
         jButton9.setText("jButton2");
 
         jButton10.setText("jButton2");
