@@ -10,17 +10,16 @@ import java.util.List;
 
 public class BillDetailsDAOImpl implements BillDetailsDAO{
 
-    String createSql = "INSERT INTO BILL_DETAIL(bill_details_id, bill_id, product_id, amount, price, discount) VALUES(?, ?, ?, ?, ?, ?)";
-    String updateSql = "UPDATE BILL_DETAIL SET bill_id=?, product_id=?, amount=?, price=?, discount=? WHERE bill_details_id=?";
-    String deleteSql = "DELETE FROM BILL_DETAIL WHERE bill_details_id=?";
-    String findAllSql = "SELECT bill_details_id, bill_id, product_id, amount, price, discount FROM BILL_DETAIL";
-    String findByIdSql = "SELECT bill_details_id, bill_id, product_id, amount, price, discount FROM BILL_DETAIL WHERE bill_details_id=?";
-    String findByBillIdSql = "SELECT bill_details_id, bill_id, product_id, amount, price, discount FROM BILL_DETAIL WHERE bill_id=?";
+    String createSql = "INSERT INTO BILL_DETAIL(bill_id, product_id, amount, price, discount) VALUES(?, ?, ?, ?, ?)";
+    String updateSql = "UPDATE BILL_DETAIL SET bill_id=?, product_id=?, amount=?, price=?, discount=? WHERE bill_detail_id=?";
+    String deleteSql = "DELETE FROM BILL_DETAIL WHERE bill_detail_id=?";
+    String findAllSql = "SELECT bill_detail_id, bill_id, product_id, amount, price, discount FROM BILL_DETAIL";
+    String findByIdSql = "SELECT bill_detail_id, bill_id, product_id, amount, price, discount FROM BILL_DETAIL WHERE bill_detail_id=?";
+    String findByBillIdSql = "SELECT bill_detail_id, bill_id, product_id, amount, price, discount FROM BILL_DETAIL WHERE bill_id=?";
 
     @Override
     public BillDetails create(BillDetails entity) {
         Object[] values = {
-            entity.getBill_details_id(),
             entity.getBill_id(),
             entity.getProduct_id(),
             entity.getAmount(),
@@ -34,7 +33,7 @@ public class BillDetailsDAOImpl implements BillDetailsDAO{
     @Override
     public void update(BillDetails entity) {
         Object[] values = {
-            entity.getBill_details_id(),
+            entity.getBill_detail_id(),
             entity.getBill_id(),
             entity.getProduct_id(),
             entity.getAmount(),
@@ -55,8 +54,8 @@ public class BillDetailsDAOImpl implements BillDetailsDAO{
     }
 
     @Override
-    public BillDetails findById(String bill_details_id) {
-        return XQuery.getSingleBean(BillDetails.class, findByIdSql, bill_details_id);
+    public BillDetails findById(String bill_detail_id) {
+        return XQuery.getSingleBean(BillDetails.class, findByIdSql, bill_detail_id);
     }
     
     @Override
