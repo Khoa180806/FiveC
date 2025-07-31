@@ -28,6 +28,8 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.LineBorder;
 import java.util.ArrayList;
 import java.sql.ResultSet;
+import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  *
@@ -48,7 +50,9 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     private DefaultTableModel tableModel;
     
     // Date formatter
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy", new Locale("vi", "VN"));
+    private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", new Locale("vi", "VN"));
+    private SimpleDateFormat dateOnlyFormat = new SimpleDateFormat("dd/MM/yyyy", new Locale("vi", "VN"));
 
     /**
      * Creates new form HoaDonJDialog
@@ -58,6 +62,12 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        // Set timezone cho Việt Nam
+        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+        timeFormat.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+        dateOnlyFormat.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+        
         setupTable();
         setupEventHandlers();
         clearForm();
@@ -239,10 +249,22 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         txtName_Employee.setText(getEmployeeName(bill.getUser_id()));
         txtTable_Name.setText("Bàn " + bill.getTable_number());
         txtStatus.setText(bill.getStatus() ? "Đang phục vụ" : "Đã hủy");
-        txtBegin.setText(dateFormat.format(bill.getCheckin()));
         
+        // Hiển thị thời gian tạo với định dạng đúng
+        if (bill.getCheckin() != null) {
+            String formattedTime = dateFormat.format(bill.getCheckin());
+            System.out.println("Debug - Original date: " + bill.getCheckin());
+            System.out.println("Debug - Formatted time: " + formattedTime);
+            txtBegin.setText(formattedTime);
+        } else {
+            txtBegin.setText("Chưa có thông tin");
+        }
+        
+        // Hiển thị thời gian thanh toán
         if (bill.getCheckout() != null) {
-            txtEnd.setText(dateFormat.format(bill.getCheckout()));
+            String formattedTime = dateFormat.format(bill.getCheckout());
+            System.out.println("Debug - Checkout time: " + formattedTime);
+            txtEnd.setText(formattedTime);
         } else {
             txtEnd.setText("Chưa thanh toán");
         }
@@ -331,9 +353,20 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     @Override
     public void edit() {
         // Chỉnh sửa hóa đơn hiện tại
-        if (currentBill != null) {
-            // TODO: Implement edit functionality
-            XDialog.alert("Chức năng chỉnh sửa hóa đơn sẽ được implement sau!");
+        if (currentBill == null) {
+            XDialog.alert("Vui lòng chọn hóa đơn để chỉnh sửa!");
+            return;
+        }
+        
+        try {
+            // Cho phép chỉnh sửa các trường
+            setEditable(true);
+            
+            // Hiển thị dialog chỉnh sửa
+            XDialog.alert("Chế độ chỉnh sửa đã được bật. Bạn có thể thay đổi thông tin hóa đơn.");
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi chỉnh sửa hóa đơn: " + e.getMessage());
         }
     }
     
@@ -372,57 +405,240 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     
     @Override
     public void setEditable(boolean editable) {
-        // TODO: Implement setEditable functionality
+        // Cho phép/sử chặn chỉnh sửa các trường
+        txtBill_Id.setEditable(editable);
+        txtName_Employee.setEditable(editable);
+        txtTable_Name.setEditable(editable);
+        txtStatus.setEditable(editable);
+        txtBegin.setEditable(editable);
+        txtEnd.setEditable(editable);
+        
+        // Nếu đang chỉnh sửa, thêm nút Lưu
+        if (editable) {
+            // TODO: Thêm nút Lưu vào UI
+            XDialog.alert("Chế độ chỉnh sửa đã được bật. Nhấn Ctrl+S để lưu thay đổi.");
+        } else {
+            XDialog.alert("Chế độ chỉnh sửa đã được tắt.");
+        }
     }
     
     @Override
     public void checkAll() {
-        // TODO: Implement checkAll functionality
+        // Chọn tất cả các dòng trong bảng
+        for (int i = 0; i < tbBill.getRowCount(); i++) {
+            tbBill.setRowSelectionInterval(i, i);
+        }
+        XDialog.alert("Đã chọn tất cả các món trong hóa đơn!");
     }
     
     @Override
     public void uncheckAll() {
-        // TODO: Implement uncheckAll functionality
+        // Bỏ chọn tất cả các dòng trong bảng
+        tbBill.clearSelection();
+        XDialog.alert("Đã bỏ chọn tất cả các món!");
     }
     
     @Override
     public void deleteCheckedItems() {
-        // TODO: Implement deleteCheckedItems functionality
+        // Xóa các món đã chọn
+        int[] selectedRows = tbBill.getSelectedRows();
+        if (selectedRows.length == 0) {
+            XDialog.alert("Vui lòng chọn món cần xóa!");
+            return;
+        }
+        
+        if (XDialog.confirm("Bạn có chắc muốn xóa " + selectedRows.length + " món đã chọn?")) {
+            try {
+                int deletedCount = 0;
+                
+                // Xóa từ dưới lên để tránh lỗi index
+                for (int i = selectedRows.length - 1; i >= 0; i--) {
+                    int rowIndex = selectedRows[i];
+                    if (rowIndex >= 0 && rowIndex < currentBillDetails.size()) {
+                        BillDetails detail = currentBillDetails.get(rowIndex);
+                        billDetailsDAO.deleteById(String.valueOf(detail.getBill_detail_id()));
+                        deletedCount++;
+                    }
+                }
+                
+                // Refresh table
+                loadBillDetails(currentBill.getBill_id());
+                XDialog.alert("Đã xóa thành công " + deletedCount + " món!");
+                
+            } catch (Exception e) {
+                XDialog.alert("Lỗi khi xóa món: " + e.getMessage());
+            }
+        }
     }
     
     @Override
     public void payBill() {
         if (currentBill == null) {
-            XDialog.alert("Vui lòng chọn hóa đơn để thanh toán!");
+            XDialog.alert("Vui lòng chọn hóa đơn để xem thông tin thanh toán!");
             return;
         }
         
-        // TODO: Implement payment functionality
-        XDialog.alert("Chức năng thanh toán sẽ được implement sau!");
+        if (currentBillDetails == null || currentBillDetails.isEmpty()) {
+            XDialog.alert("Hóa đơn chưa có món nào!");
+            return;
+        }
+        
+        try {
+            // Chỉ hiển thị thông tin thanh toán, không thực hiện thanh toán
+            double totalAmount = calculateTotalAmount();
+            
+            StringBuilder sb = new StringBuilder();
+            sb.append("=== THÔNG TIN THANH TOÁN ===\n\n");
+            sb.append("Mã hóa đơn: ").append(currentBill.getBill_id()).append("\n");
+            sb.append("Bàn số: ").append(currentBill.getTable_number()).append("\n");
+            sb.append("Nhân viên: ").append(getEmployeeName(currentBill.getUser_id())).append("\n");
+            sb.append("Số món: ").append(currentBillDetails.size()).append("\n");
+            sb.append("Tổng tiền: ").append(formatCurrency(totalAmount)).append("\n\n");
+            sb.append("Vui lòng chuyển đến trang thanh toán để hoàn tất!");
+            
+            XDialog.alert(sb.toString());
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi xem thông tin thanh toán: " + e.getMessage());
+        }
     }
     
     @Override
     public void loadBillsByStatus(String status) {
-        // TODO: Implement loadBillsByStatus functionality
-        XDialog.alert("Chức năng load hóa đơn theo trạng thái sẽ được implement sau!");
+        try {
+            List<Bill> bills;
+            if ("Đang phục vụ".equals(status)) {
+                bills = billDAO.findAll().stream()
+                    .filter(bill -> bill.getStatus())
+                    .collect(java.util.stream.Collectors.toList());
+            } else if ("Đã thanh toán".equals(status)) {
+                bills = billDAO.findAll().stream()
+                    .filter(bill -> !bill.getStatus())
+                    .collect(java.util.stream.Collectors.toList());
+            } else {
+                bills = billDAO.findAll();
+            }
+            
+            if (bills.isEmpty()) {
+                XDialog.alert("Không có hóa đơn nào với trạng thái: " + status);
+                return;
+            }
+            
+            // Hiển thị danh sách hóa đơn
+            StringBuilder sb = new StringBuilder();
+            sb.append("Danh sách hóa đơn ").append(status).append(":\n\n");
+            
+            for (Bill bill : bills) {
+                sb.append("Mã HD: ").append(bill.getBill_id())
+                  .append(" | Bàn: ").append(bill.getTable_number())
+                  .append(" | Tổng: ").append(formatCurrency(bill.getTotal_amount()))
+                  .append("\n");
+            }
+            
+            XDialog.alert(sb.toString());
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi load hóa đơn theo trạng thái: " + e.getMessage());
+        }
     }
     
     @Override
     public void loadBillsByTable(Integer tableNumber) {
-        // TODO: Implement loadBillsByTable functionality
-        XDialog.alert("Chức năng load hóa đơn theo bàn sẽ được implement sau!");
+        try {
+            List<Bill> bills = billDAO.findAll().stream()
+                .filter(bill -> bill.getTable_number() == tableNumber)
+                .collect(java.util.stream.Collectors.toList());
+            
+            if (bills.isEmpty()) {
+                XDialog.alert("Không có hóa đơn nào cho bàn " + tableNumber);
+                return;
+            }
+            
+            // Hiển thị danh sách hóa đơn của bàn
+            StringBuilder sb = new StringBuilder();
+            sb.append("Danh sách hóa đơn bàn ").append(tableNumber).append(":\n\n");
+            
+            for (Bill bill : bills) {
+                String status = bill.getStatus() ? "Đang phục vụ" : "Đã thanh toán";
+                sb.append("Mã HD: ").append(bill.getBill_id())
+                  .append(" | Trạng thái: ").append(status)
+                  .append(" | Tổng: ").append(formatCurrency(bill.getTotal_amount()))
+                  .append("\n");
+            }
+            
+            XDialog.alert(sb.toString());
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi load hóa đơn theo bàn: " + e.getMessage());
+        }
     }
     
     @Override
     public void loadBillsByEmployee(String userId) {
-        // TODO: Implement loadBillsByEmployee functionality
-        XDialog.alert("Chức năng load hóa đơn theo nhân viên sẽ được implement sau!");
+        try {
+            List<Bill> bills = billDAO.findAll().stream()
+                .filter(bill -> bill.getUser_id().equals(userId))
+                .collect(java.util.stream.Collectors.toList());
+            
+            if (bills.isEmpty()) {
+                XDialog.alert("Không có hóa đơn nào của nhân viên này!");
+                return;
+            }
+            
+            // Hiển thị danh sách hóa đơn của nhân viên
+            StringBuilder sb = new StringBuilder();
+            sb.append("Danh sách hóa đơn của nhân viên:\n\n");
+            
+            for (Bill bill : bills) {
+                String status = bill.getStatus() ? "Đang phục vụ" : "Đã thanh toán";
+                sb.append("Mã HD: ").append(bill.getBill_id())
+                  .append(" | Bàn: ").append(bill.getTable_number())
+                  .append(" | Trạng thái: ").append(status)
+                  .append(" | Tổng: ").append(formatCurrency(bill.getTotal_amount()))
+                  .append("\n");
+            }
+            
+            XDialog.alert(sb.toString());
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi load hóa đơn theo nhân viên: " + e.getMessage());
+        }
     }
     
     @Override
     public void loadBillsByDateRange(Date fromDate, Date toDate) {
-        // TODO: Implement loadBillsByDateRange functionality
-        XDialog.alert("Chức năng load hóa đơn theo khoảng thời gian sẽ được implement sau!");
+        try {
+            List<Bill> bills = billDAO.findAll().stream()
+                .filter(bill -> {
+                    if (bill.getCheckin() == null) return false;
+                    return bill.getCheckin().after(fromDate) && bill.getCheckin().before(toDate);
+                })
+                .collect(java.util.stream.Collectors.toList());
+            
+            if (bills.isEmpty()) {
+                XDialog.alert("Không có hóa đơn nào trong khoảng thời gian này!");
+                return;
+            }
+            
+            // Hiển thị danh sách hóa đơn theo thời gian
+            StringBuilder sb = new StringBuilder();
+            sb.append("Danh sách hóa đơn từ ").append(dateFormat.format(fromDate))
+              .append(" đến ").append(dateFormat.format(toDate)).append(":\n\n");
+            
+            for (Bill bill : bills) {
+                String status = bill.getStatus() ? "Đang phục vụ" : "Đã thanh toán";
+                sb.append("Mã HD: ").append(bill.getBill_id())
+                  .append(" | Bàn: ").append(bill.getTable_number())
+                  .append(" | Trạng thái: ").append(status)
+                  .append(" | Tổng: ").append(formatCurrency(bill.getTotal_amount()))
+                  .append("\n");
+            }
+            
+            XDialog.alert(sb.toString());
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi load hóa đơn theo khoảng thời gian: " + e.getMessage());
+        }
     }
     
     @Override
