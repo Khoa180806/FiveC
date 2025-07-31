@@ -161,7 +161,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                 }
                 
                 // Refresh table
-                loadBillDetails(Integer.parseInt(currentBill.getBill_id()));
+                loadBillDetails(currentBill.getBill_id());
                 XDialog.alert("Đã xóa món thành công!");
                 
             } catch (Exception e) {
@@ -224,7 +224,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
             currentBill = billDAO.findById(billId);
             if (currentBill != null) {
                 setBillInfo(currentBill);
-                loadBillDetails(Integer.parseInt(billId));
+                loadBillDetails(currentBill.getBill_id());
             }
         } catch (Exception e) {
             XDialog.alert("Lỗi khi tải hóa đơn: " + e.getMessage());
@@ -324,7 +324,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     @Override
     public void fillToTable() {
         if (currentBill != null) {
-            loadBillDetails(Integer.parseInt(currentBill.getBill_id()));
+            loadBillDetails(currentBill.getBill_id());
         }
     }
     
@@ -553,13 +553,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         } catch (Exception e) {
             System.err.println("Lỗi khi load hóa đơn từ database: " + e.getMessage());
         }
-    }
-    
-    /**
-     * Tạo bill_id mới
-     */
-    private String generateBillId() {
-        return "BILL" + System.currentTimeMillis();
     }
 
     /**

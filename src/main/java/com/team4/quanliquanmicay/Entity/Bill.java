@@ -11,7 +11,7 @@ import lombok.*;
 @Builder 
 @Data 
 public class Bill {
-    private String bill_id;
+    private Integer bill_id;
     private String user_id;
     private String phone_number;
     private Integer payment_history_id;

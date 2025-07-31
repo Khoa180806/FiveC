@@ -10,12 +10,12 @@ import java.util.List;
 
 public class BillDetailsDAOImpl implements BillDetailsDAO{
 
-    String createSql = "INSERT INTO BILL_DETAILS(bill_details_id, bill_id, product_id, amount, price, discount) VALUES(?, ?, ?, ?, ?, ?)";
-    String updateSql = "UPDATE BILL_DETAILS SET bill_id=?, product_id=?, amount=?, price=?, discount=? WHERE bill_details_id=?";
-    String deleteSql = "DELETE FROM BILL_DETAILS WHERE bill_details_id=?";
-    String findAllSql = "SELECT bill_details_id, bill_id, product_id, amount, price, discount FROM BILL_DETAILS";
-    String findByIdSql = "SELECT bill_details_id, bill_id, product_id, amount, price, discount FROM BILL_DETAILS WHERE bill_details_id=?";
-    String findByBillIdSql = "SELECT bill_details_id, bill_id, product_id, amount, price, discount FROM BILL_DETAILS WHERE bill_id=?";
+    String createSql = "INSERT INTO BILL_DETAIL(bill_details_id, bill_id, product_id, amount, price, discount) VALUES(?, ?, ?, ?, ?, ?)";
+    String updateSql = "UPDATE BILL_DETAIL SET bill_id=?, product_id=?, amount=?, price=?, discount=? WHERE bill_details_id=?";
+    String deleteSql = "DELETE FROM BILL_DETAIL WHERE bill_details_id=?";
+    String findAllSql = "SELECT bill_details_id, bill_id, product_id, amount, price, discount FROM BILL_DETAIL";
+    String findByIdSql = "SELECT bill_details_id, bill_id, product_id, amount, price, discount FROM BILL_DETAIL WHERE bill_details_id=?";
+    String findByBillIdSql = "SELECT bill_details_id, bill_id, product_id, amount, price, discount FROM BILL_DETAIL WHERE bill_id=?";
 
     @Override
     public BillDetails create(BillDetails entity) {
