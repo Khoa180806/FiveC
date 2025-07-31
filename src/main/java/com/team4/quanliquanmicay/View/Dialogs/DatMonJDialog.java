@@ -5,6 +5,36 @@
 package com.team4.quanliquanmicay.View.Dialogs;
 
 import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XJdbc;
+import com.team4.quanliquanmicay.Entity.Product;
+import com.team4.quanliquanmicay.Entity.Bill;
+import com.team4.quanliquanmicay.Entity.BillDetails;
+import com.team4.quanliquanmicay.DAO.ProductDAO;
+import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
+import com.team4.quanliquanmicay.DAO.BillDetailsDAO;
+import com.team4.quanliquanmicay.Impl.BillDetailsDAOImpl;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import java.util.List;
+import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XJdbc;
+import com.team4.quanliquanmicay.Entity.Product;
+import com.team4.quanliquanmicay.Entity.Bill;
+import com.team4.quanliquanmicay.Entity.BillDetails;
+import com.team4.quanliquanmicay.DAO.ProductDAO;
+import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
+import com.team4.quanliquanmicay.DAO.BillDetailsDAO;
+import com.team4.quanliquanmicay.Impl.BillDetailsDAOImpl;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import java.util.List;
 
 /**
  *
@@ -12,14 +42,439 @@ import com.team4.quanliquanmicay.util.XTheme;
  */
 public class DatMonJDialog extends javax.swing.JFrame {
 
+    // DAO objects
+    private ProductDAO productDAO = new ProductDAOImpl();
+    private BillDetailsDAO billDetailsDAO = new BillDetailsDAOImpl();
+    
+    // Current bill
+    private Bill currentBill;
+    private HoaDonJDialog parentDialog;
+    
+    // Cart items
+    private List<CartItem> cartItems = new ArrayList<>();
+    
+    // Table models
+    private DefaultTableModel cartTableModel;
+    private DefaultTableModel productTableModel;
+    
+    // Product lists
+    private List<Product> miCayProducts = new ArrayList<>();
+    private List<Product> drinkProducts = new ArrayList<>();
+    
+    // Search functionality
+    private String currentSearch = "";
+    private String currentCategory = "mi"; // "mi" or "drink"
+
     /**
      * Creates new form DatMonJDialog
      */
-    public DatMonJDialog() {
+    public DatMonJDialog(HoaDonJDialog parent, Bill bill) {
+        this.parentDialog = parent;
+        this.currentBill = bill;
+        
         this.setUndecorated(true);
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        setupTables();
+        setupEventHandlers();
+        loadProducts();
+        updateCartDisplay();
+    }
+    
+    /**
+     * Constructor đơn giản cho testing
+     */
+    public DatMonJDialog() {
+        this(null, null);
+    }
+    
+    /**
+     * Thiết lập bảng
+     */
+    private void setupTables() {
+        // Cart table
+        cartTableModel = new DefaultTableModel(
+            new Object[][] {},
+            new String[] {"Tên món", "Số lượng", "Đơn giá", "Thành tiền"}
+        ) {
+            boolean[] canEdit = new boolean[] {false, false, false, false};
+            @Override
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit[columnIndex];
+            }
+        };
+        jTable1.setModel(cartTableModel);
+        
+        // Product table
+        productTableModel = new DefaultTableModel(
+            new Object[][] {},
+            new String[] {"Mã SP", "Tên món", "Đơn giá", "Trạng thái"}
+        ) {
+            boolean[] canEdit = new boolean[] {false, false, false, false};
+            @Override
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit[columnIndex];
+            }
+        };
+    }
+    
+    /**
+     * Thiết lập event handlers
+     */
+    private void setupEventHandlers() {
+        // Nút Exit
+        jButton7.addActionListener(e -> dispose());
+        
+        // Nút Xóa món
+        jButton6.addActionListener(e -> removeSelectedItem());
+        
+        // Nút Đặt món
+        jButton8.addActionListener(e -> placeOrder());
+        
+        // Search functionality
+        jTextField1.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                currentSearch = jTextField1.getText().toLowerCase();
+                filterProducts();
+            }
+        });
+        
+        // Tab change
+        jTabbedPane1.addChangeListener(e -> {
+            if (jTabbedPane1.getSelectedIndex() == 0) {
+                currentCategory = "mi";
+            } else {
+                currentCategory = "drink";
+            }
+            filterProducts();
+        });
+        
+        // Product buttons
+        setupProductButtons();
+    }
+    
+    /**
+     * Thiết lập các nút sản phẩm
+     */
+    private void setupProductButtons() {
+        // Mi cay buttons
+        jButton3.addActionListener(e -> addToCart(getProductFromButton(jButton3)));
+        jButton5.addActionListener(e -> addToCart(getProductFromButton(jButton5)));
+        jButton9.addActionListener(e -> addToCart(getProductFromButton(jButton9)));
+        jButton10.addActionListener(e -> addToCart(getProductFromButton(jButton10)));
+        jButton11.addActionListener(e -> addToCart(getProductFromButton(jButton11)));
+        jButton12.addActionListener(e -> addToCart(getProductFromButton(jButton12)));
+        jButton13.addActionListener(e -> addToCart(getProductFromButton(jButton13)));
+        jButton14.addActionListener(e -> addToCart(getProductFromButton(jButton14)));
+    }
+    
+    /**
+     * Lấy sản phẩm từ button
+     */
+    private Product getProductFromButton(JButton button) {
+        String productName = button.getText();
+        if (currentCategory.equals("mi")) {
+            return findProductByName(miCayProducts, productName);
+        } else {
+            return findProductByName(drinkProducts, productName);
+        }
+    }
+    
+    /**
+     * Tìm sản phẩm theo tên
+     */
+    private Product findProductByName(List<Product> products, String name) {
+        for (Product product : products) {
+            if (product.getProductName().equals(name)) {
+                return product;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Load sản phẩm từ database
+     */
+    private void loadProducts() {
+        try {
+            // Load mi cay products
+            String miSql = "SELECT * FROM PRODUCT WHERE category_id = 'MI' AND is_available = 1";
+            miCayProducts = loadProductsFromSQL(miSql);
+            
+            // Load drink products
+            String drinkSql = "SELECT * FROM PRODUCT WHERE category_id = 'DRINK' AND is_available = 1";
+            drinkProducts = loadProductsFromSQL(drinkSql);
+            
+            // Update product buttons
+            updateProductButtons();
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi tải sản phẩm: " + e.getMessage());
+            // Khởi tạo list rỗng nếu có lỗi
+            miCayProducts = new ArrayList<>();
+            drinkProducts = new ArrayList<>();
+        }
+    }
+    
+    /**
+     * Load sản phẩm từ SQL
+     */
+    private List<Product> loadProductsFromSQL(String sql) {
+        return XJdbc.executeQuery(sql, rs -> {
+            List<Product> products = new ArrayList<>();
+            try {
+                while (rs.next()) {
+                    Product product = new Product();
+                    product.setProductId(rs.getString("product_id"));
+                    product.setProductName(rs.getString("product_name"));
+                    product.setPrice(rs.getDouble("price"));
+                    product.setDiscount(rs.getDouble("discount"));
+                    product.setUnit(rs.getString("unit"));
+                    product.setImage(rs.getString("image"));
+                    product.setIsAvailable(rs.getInt("is_available"));
+                    product.setNote(rs.getString("note"));
+                    product.setCategoryId(rs.getString("category_id"));
+                    products.add(product);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return products;
+        });
+    }
+    
+    /**
+     * Cập nhật các nút sản phẩm
+     */
+    private void updateProductButtons() {
+        // Update mi cay buttons
+        updateProductButton(jButton3, jLabel5, miCayProducts, 0);
+        updateProductButton(jButton5, jLabel6, miCayProducts, 1);
+        updateProductButton(jButton9, jLabel7, miCayProducts, 2);
+        updateProductButton(jButton10, jLabel8, miCayProducts, 3);
+        updateProductButton(jButton11, jLabel9, miCayProducts, 4);
+        updateProductButton(jButton12, jLabel10, miCayProducts, 5);
+        updateProductButton(jButton13, jLabel11, miCayProducts, 6);
+        updateProductButton(jButton14, jLabel12, miCayProducts, 7);
+    }
+    
+    /**
+     * Cập nhật nút sản phẩm
+     */
+    private void updateProductButton(JButton button, JLabel label, List<Product> products, int index) {
+        if (index < products.size()) {
+            Product product = products.get(index);
+            button.setText(product.getProductName());
+            label.setText(product.getProductName());
+            button.setEnabled(product.isAvailable());
+            
+            // Set image if available
+            if (product.getImage() != null && !product.getImage().isEmpty()) {
+                try {
+                    ImageIcon icon = new ImageIcon(getClass().getResource("/icons_and_images/product/" + product.getImage()));
+                    Image img = icon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+                    button.setIcon(new ImageIcon(img));
+                } catch (Exception e) {
+                    // Use default image
+                    button.setIcon(new ImageIcon(getClass().getResource("/icons_and_images/icons8-plate-50.png")));
+                }
+            }
+        } else {
+            button.setText("");
+            label.setText("");
+            button.setEnabled(false);
+            button.setIcon(null);
+        }
+    }
+    
+    /**
+     * Lọc sản phẩm theo tìm kiếm
+     */
+    private void filterProducts() {
+        List<Product> filteredProducts;
+        if (currentCategory.equals("mi")) {
+            filteredProducts = filterProductsByName(miCayProducts);
+        } else {
+            filteredProducts = filterProductsByName(drinkProducts);
+        }
+        
+        // Update buttons with filtered products
+        updateProductButtonsWithFilter(filteredProducts);
+    }
+    
+    /**
+     * Lọc sản phẩm theo tên
+     */
+    private List<Product> filterProductsByName(List<Product> products) {
+        if (currentSearch.isEmpty()) {
+            return products;
+        }
+        
+        List<Product> filtered = new ArrayList<>();
+        for (Product product : products) {
+            if (product.getProductName().toLowerCase().contains(currentSearch)) {
+                filtered.add(product);
+            }
+        }
+        return filtered;
+    }
+    
+    /**
+     * Cập nhật nút với sản phẩm đã lọc
+     */
+    private void updateProductButtonsWithFilter(List<Product> products) {
+        updateProductButton(jButton3, jLabel5, products, 0);
+        updateProductButton(jButton5, jLabel6, products, 1);
+        updateProductButton(jButton9, jLabel7, products, 2);
+        updateProductButton(jButton10, jLabel8, products, 3);
+        updateProductButton(jButton11, jLabel9, products, 4);
+        updateProductButton(jButton12, jLabel10, products, 5);
+        updateProductButton(jButton13, jLabel11, products, 6);
+        updateProductButton(jButton14, jLabel12, products, 7);
+    }
+    
+    /**
+     * Thêm sản phẩm vào giỏ hàng
+     */
+    private void addToCart(Product product) {
+        if (product == null) {
+            XDialog.alert("Sản phẩm không tồn tại!");
+            return;
+        }
+        
+        if (!product.isAvailable()) {
+            XDialog.alert("Sản phẩm hiện không có sẵn!");
+            return;
+        }
+        
+        // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+        for (CartItem item : cartItems) {
+            if (item.getProduct().getProductId().equals(product.getProductId())) {
+                item.setQuantity(item.getQuantity() + 1);
+                updateCartDisplay();
+                return;
+            }
+        }
+        
+        // Thêm sản phẩm mới vào giỏ hàng
+        cartItems.add(new CartItem(product, 1));
+        updateCartDisplay();
+    }
+    
+    /**
+     * Xóa món đã chọn khỏi giỏ hàng
+     */
+    private void removeSelectedItem() {
+        int selectedRow = jTable1.getSelectedRow();
+        if (selectedRow == -1) {
+            XDialog.alert("Vui lòng chọn món cần xóa!");
+            return;
+        }
+        
+        cartItems.remove(selectedRow);
+        updateCartDisplay();
+    }
+    
+    /**
+     * Cập nhật hiển thị giỏ hàng
+     */
+    private void updateCartDisplay() {
+        cartTableModel.setRowCount(0);
+        int totalQuantity = 0;
+        
+        for (CartItem item : cartItems) {
+            double totalPrice = item.getProduct().getPrice() * item.getQuantity() * (1 - item.getProduct().getDiscount());
+            
+            Object[] row = {
+                item.getProduct().getProductName(),
+                item.getQuantity(),
+                formatCurrency(item.getProduct().getPrice()),
+                formatCurrency(totalPrice)
+            };
+            cartTableModel.addRow(row);
+            totalQuantity += item.getQuantity();
+        }
+        
+        jLabel3.setText(String.valueOf(totalQuantity));
+    }
+    
+    /**
+     * Đặt món
+     */
+    private void placeOrder() {
+        if (cartItems.isEmpty()) {
+            XDialog.alert("Giỏ hàng trống! Vui lòng chọn món ăn.");
+            return;
+        }
+        
+        if (currentBill == null) {
+            XDialog.alert("Không tìm thấy hóa đơn!");
+            return;
+        }
+        
+        try {
+            // Thêm từng món vào bill details
+            for (CartItem item : cartItems) {
+                BillDetails billDetail = new BillDetails();
+                billDetail.setBill_details_id(generateBillDetailsId());
+                billDetail.setBill_id(currentBill.getBill_id());
+                billDetail.setProduct_id(item.getProduct().getProductId());
+                billDetail.setAmount(item.getQuantity());
+                billDetail.setPrice(item.getProduct().getPrice());
+                billDetail.setDiscount(item.getProduct().getDiscount());
+                
+                billDetailsDAO.create(billDetail);
+            }
+            
+            XDialog.alert("Đặt món thành công!");
+            
+            // Refresh parent dialog
+            if (parentDialog != null) {
+                parentDialog.loadBillDetails(Integer.parseInt(currentBill.getBill_id()));
+            }
+            
+            // Clear cart and close dialog
+            cartItems.clear();
+            updateCartDisplay();
+            dispose();
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi đặt món: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Tạo ID cho bill details
+     */
+    private String generateBillDetailsId() {
+        return "BD" + System.currentTimeMillis();
+    }
+    
+    /**
+     * Format tiền tệ
+     */
+    private String formatCurrency(double amount) {
+        return String.format("%,.0f VNĐ", amount);
+    }
+    
+    /**
+     * Inner class cho giỏ hàng
+     */
+    private static class CartItem {
+        private Product product;
+        private int quantity;
+        
+        public CartItem(Product product, int quantity) {
+            this.product = product;
+            this.quantity = quantity;
+        }
+        
+        public Product getProduct() { return product; }
+        public int getQuantity() { return quantity; }
+        public void setQuantity(int quantity) { this.quantity = quantity; }
     }
 
     /**
@@ -105,13 +560,15 @@ public class DatMonJDialog extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Tên món", "Số lượng"
+                "Tên món", "Số lượng", "Đơn giá", "Thành tiền"
             }
         ));
         jScrollPane3.setViewportView(jTable1);
         if (jTable1.getColumnModel().getColumnCount() > 0) {
             jTable1.getColumnModel().getColumn(0).setResizable(false);
             jTable1.getColumnModel().getColumn(1).setResizable(false);
+            jTable1.getColumnModel().getColumn(2).setResizable(false);
+            jTable1.getColumnModel().getColumn(3).setResizable(false);
         }
 
         jButton6.setBackground(new java.awt.Color(204, 204, 204));
@@ -385,7 +842,7 @@ public class DatMonJDialog extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new DatMonJDialog().setVisible(true);
+                new DatMonJDialog(null, null).setVisible(true);
             }
         });
     }

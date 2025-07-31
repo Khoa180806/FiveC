@@ -15,6 +15,7 @@ public class BillDetailsDAOImpl implements BillDetailsDAO{
     String deleteSql = "DELETE FROM BILL_DETAILS WHERE bill_details_id=?";
     String findAllSql = "SELECT bill_details_id, bill_id, product_id, amount, price, discount FROM BILL_DETAILS";
     String findByIdSql = "SELECT bill_details_id, bill_id, product_id, amount, price, discount FROM BILL_DETAILS WHERE bill_details_id=?";
+    String findByBillIdSql = "SELECT bill_details_id, bill_id, product_id, amount, price, discount FROM BILL_DETAILS WHERE bill_id=?";
 
     @Override
     public BillDetails create(BillDetails entity) {
@@ -56,5 +57,10 @@ public class BillDetailsDAOImpl implements BillDetailsDAO{
     @Override
     public BillDetails findById(String bill_details_id) {
         return XQuery.getSingleBean(BillDetails.class, findByIdSql, bill_details_id);
+    }
+    
+    @Override
+    public List<BillDetails> findByBillId(String billId) {
+        return XQuery.getBeanList(BillDetails.class, findByBillIdSql, billId);
     }
 }
