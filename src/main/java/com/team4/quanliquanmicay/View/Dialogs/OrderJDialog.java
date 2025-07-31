@@ -32,7 +32,7 @@ import javax.swing.SwingConstants;
  *
  * @author HP
  */
-public class DatMonJDialog extends javax.swing.JFrame {
+public class OrderJDialog extends javax.swing.JFrame {
 
     // DAO objects
     private ProductDAO productDAO = new ProductDAOImpl();
@@ -62,7 +62,7 @@ public class DatMonJDialog extends javax.swing.JFrame {
     /**
      * Creates new form DatMonJDialog
      */
-    public DatMonJDialog(HoaDonJDialog parent, Bill bill) {
+    public OrderJDialog(HoaDonJDialog parent, Bill bill) {
         this.parentDialog = parent;
         this.currentBill = bill;
         
@@ -88,7 +88,7 @@ public class DatMonJDialog extends javax.swing.JFrame {
     /**
      * Constructor đơn giản cho testing
      */
-    public DatMonJDialog() {
+    public OrderJDialog() {
         this(null, null);
     }
     
@@ -1217,20 +1217,21 @@ public class DatMonJDialog extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(DatMonJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(OrderJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(DatMonJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(OrderJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(DatMonJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(OrderJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(DatMonJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(OrderJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new DatMonJDialog(null, null).setVisible(true);
+                new OrderJDialog(null, null).setVisible(true);
             }
         });
     }
