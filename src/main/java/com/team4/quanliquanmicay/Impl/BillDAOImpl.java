@@ -18,7 +18,7 @@ public class BillDAOImpl implements BillDAO {
 
     @Override
     public Bill create(Bill entity) {
-        if (entity == null) return null;
+        if (entity == null || !entity.isValid()) return null;
         
         Object[] values = {
             entity.getUser_id(),
@@ -37,7 +37,7 @@ public class BillDAOImpl implements BillDAO {
 
     @Override
     public void update(Bill entity) {
-        if (entity == null || entity.getBill_id() == null) return;
+        if (entity == null || entity.getBill_id() == null || !entity.isValid()) return;
         
         Object[] values = {
             entity.getUser_id(),

@@ -22,9 +22,9 @@ import com.team4.quanliquanmicay.Controller.BillController;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
 import java.util.Date;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-import java.util.TimeZone;
+import com.team4.quanliquanmicay.util.XDate;
+import com.team4.quanliquanmicay.util.XValidation;
+import com.team4.quanliquanmicay.util.XStr;
 
 /**
  * Dialog quản lý hóa đơn - chỉ để xem và quản lý bill
@@ -44,21 +44,9 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     // Table model
     private DefaultTableModel tableModel;
     
-    // Date formatters - static final để tối ưu
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy", new Locale("vi", "VN"));
-    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss", new Locale("vi", "VN"));
-    private static final SimpleDateFormat DATE_ONLY_FORMAT = new SimpleDateFormat("dd/MM/yyyy", new Locale("vi", "VN"));
-    
     // Table status constants
     private static final int TABLE_EMPTY = 1;
     private static final int TABLE_SERVING = 2;
-
-    static {
-        // Set timezone cho Việt Nam
-        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
-        TIME_FORMAT.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
-        DATE_ONLY_FORMAT.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
-    }
 
     /**
      * Creates new form HoaDonJDialog
@@ -149,21 +137,51 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         
         if (XDialog.confirm("Bạn có chắc muốn xóa món này?")) {
             try {
-                String productName = (String) tbBill.getValueAt(selectedRow, 1);
-                int amount = Integer.parseInt(tbBill.getValueAt(selectedRow, 3).toString());
+                // Lấy dữ liệu từ table một cách an toàn
+                Object productNameObj = tbBill.getValueAt(selectedRow, 1);
+                Object amountObj = tbBill.getValueAt(selectedRow, 3);
+                
+                if (productNameObj == null || amountObj == null) {
+                    XDialog.alert("Dữ liệu không hợp lệ!");
+                    return;
+                }
+                
+                String productName = XStr.valueOf(productNameObj);
+                if (XValidation.isEmpty(productName)) {
+                    XDialog.alert("Tên món không hợp lệ!");
+                    return;
+                }
+                
+                int amount;
+                try {
+                    amount = Integer.parseInt(XStr.valueOf(amountObj));
+                    if (amount <= 0) {
+                        XDialog.alert("Số lượng phải lớn hơn 0!");
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    XDialog.alert("Số lượng không hợp lệ!");
+                    return;
+                }
                 
                 // Tìm và xóa bill detail
+                boolean found = false;
                 for (BillDetails detail : currentBillDetails) {
                     Product product = productDAO.findById(detail.getProduct_id());
                     if (product != null && product.getProductName().equals(productName) 
                         && detail.getAmount() == amount) {
                         billDetailsDAO.deleteById(String.valueOf(detail.getBill_detail_id()));
+                        found = true;
                         break;
                     }
                 }
                 
-                loadBillDetails(currentBill.getBill_id());
-                XDialog.alert("Đã xóa món thành công!");
+                if (found) {
+                    loadBillDetails(currentBill.getBill_id());
+                    XDialog.alert("Đã xóa món thành công!");
+                } else {
+                    XDialog.alert("Không tìm thấy món để xóa!");
+                }
                 
             } catch (Exception e) {
                 XDialog.alert("Lỗi khi xóa món: " + e.getMessage());
@@ -238,14 +256,14 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         
         // Hiển thị thời gian tạo
         if (bill.getCheckin() != null) {
-            txtBegin.setText(DATE_FORMAT.format(bill.getCheckin()));
+            txtBegin.setText(XDate.format(bill.getCheckin(), "HH:mm:ss dd/MM/yyyy"));
         } else {
             txtBegin.setText("Chưa có thông tin");
         }
         
         // Hiển thị thời gian thanh toán
         if (bill.getCheckout() != null) {
-            txtEnd.setText(DATE_FORMAT.format(bill.getCheckout()));
+            txtEnd.setText(XDate.format(bill.getCheckout(), "HH:mm:ss dd/MM/yyyy"));
         } else {
             txtEnd.setText("Chưa thanh toán");
         }
@@ -422,13 +440,19 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                     int rowIndex = selectedRows[i];
                     if (rowIndex >= 0 && rowIndex < currentBillDetails.size()) {
                         BillDetails detail = currentBillDetails.get(rowIndex);
-                        billDetailsDAO.deleteById(String.valueOf(detail.getBill_detail_id()));
-                        deletedCount++;
+                        if (detail != null && detail.getBill_detail_id() != null) {
+                            billDetailsDAO.deleteById(String.valueOf(detail.getBill_detail_id()));
+                            deletedCount++;
+                        }
                     }
                 }
                 
-                loadBillDetails(currentBill.getBill_id());
-                XDialog.alert("Đã xóa thành công " + deletedCount + " món!");
+                if (deletedCount > 0) {
+                    loadBillDetails(currentBill.getBill_id());
+                    XDialog.alert("Đã xóa thành công " + deletedCount + " món!");
+                } else {
+                    XDialog.alert("Không có món nào được xóa!");
+                }
                 
             } catch (Exception e) {
                 XDialog.alert("Lỗi khi xóa món: " + e.getMessage());
@@ -582,8 +606,8 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
             }
             
             StringBuilder sb = new StringBuilder();
-            sb.append("Danh sách hóa đơn từ ").append(DATE_FORMAT.format(fromDate))
-              .append(" đến ").append(DATE_FORMAT.format(toDate)).append(":\n\n");
+            sb.append("Danh sách hóa đơn từ ").append(XDate.format(fromDate, "HH:mm:ss dd/MM/yyyy"))
+              .append(" đến ").append(XDate.format(toDate, "HH:mm:ss dd/MM/yyyy")).append(":\n\n");
             
             for (Bill bill : bills) {
                 String status = bill.getStatus() ? "Đang phục vụ" : "Đã thanh toán";
@@ -634,6 +658,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     
     @Override
     public String formatCurrency(double amount) {
+        if (amount < 0) return "0 VNĐ";
         return String.format("%,.0f VNĐ", amount);
     }
 
@@ -828,6 +853,11 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         btnUnOrder.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnUnOrder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
         btnUnOrder.setText("XÓA MÓN");
+        btnUnOrder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUnOrderActionPerformed(evt);
+            }
+        });
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
@@ -949,6 +979,10 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnUnOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUnOrderActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnUnOrderActionPerformed
 
     /**
      * @param args the command line arguments
