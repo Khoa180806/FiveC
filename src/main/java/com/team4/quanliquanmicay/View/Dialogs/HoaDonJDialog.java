@@ -23,36 +23,42 @@ import javax.swing.table.DefaultTableModel;
 import java.util.List;
 import java.util.Date;
 import java.text.SimpleDateFormat;
-import java.awt.Color;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.LineBorder;
-import java.util.ArrayList;
-import java.sql.ResultSet;
 import java.util.Locale;
 import java.util.TimeZone;
 
 /**
- *
+ * Dialog quản lý hóa đơn - chỉ để xem và quản lý bill
  * @author HP
  */
 public class HoaDonJDialog extends javax.swing.JFrame implements BillController {
 
     // DAO objects
-    private BillDAO billDAO = new BillDAOImpl();
-    private BillDetailsDAO billDetailsDAO = new BillDetailsDAOImpl();
-    private ProductDAO productDAO = new ProductDAOImpl();
+    private final BillDAO billDAO = new BillDAOImpl();
+    private final BillDetailsDAO billDetailsDAO = new BillDetailsDAOImpl();
+    private final ProductDAO productDAO = new ProductDAOImpl();
     
-    // Current bill
+    // Current bill data
     private Bill currentBill;
     private List<BillDetails> currentBillDetails;
     
     // Table model
     private DefaultTableModel tableModel;
     
-    // Date formatter
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy", new Locale("vi", "VN"));
-    private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", new Locale("vi", "VN"));
-    private SimpleDateFormat dateOnlyFormat = new SimpleDateFormat("dd/MM/yyyy", new Locale("vi", "VN"));
+    // Date formatters - static final để tối ưu
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy", new Locale("vi", "VN"));
+    private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss", new Locale("vi", "VN"));
+    private static final SimpleDateFormat DATE_ONLY_FORMAT = new SimpleDateFormat("dd/MM/yyyy", new Locale("vi", "VN"));
+    
+    // Table status constants
+    private static final int TABLE_EMPTY = 1;
+    private static final int TABLE_SERVING = 2;
+
+    static {
+        // Set timezone cho Việt Nam
+        DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+        TIME_FORMAT.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+        DATE_ONLY_FORMAT.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+    }
 
     /**
      * Creates new form HoaDonJDialog
@@ -62,11 +68,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
-        
-        // Set timezone cho Việt Nam
-        dateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
-        timeFormat.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
-        dateOnlyFormat.setTimeZone(TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
         
         setupTable();
         setupEventHandlers();
@@ -83,13 +84,11 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                 "Mã hóa đơn", "Tên Món", "Đơn Giá", "Số Lượng", "Thành Tiền", "Ghi chú"
             }
         ) {
-            boolean[] canEdit = new boolean[] {
-                false, false, false, false, false, false
-            };
+            private static final boolean[] CAN_EDIT = {false, false, false, false, false, false};
 
             @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit[columnIndex];
+                return CAN_EDIT[columnIndex];
             }
         };
         tbBill.setModel(tableModel);
@@ -107,16 +106,9 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
      * Thiết lập event handlers
      */
     private void setupEventHandlers() {
-        // Nút Đặt Món
         btnOrder.addActionListener(e -> openDatMonDialog());
-        
-        // Nút Xóa Món
         btnUnOrder.addActionListener(e -> deleteSelectedItem());
-        
-        // Nút Hủy Hóa Đơn
         btnUnBill.addActionListener(e -> cancelBill());
-        
-        // Nút Exit
         btnExit.addActionListener(e -> dispose());
         
         // Double click để xem chi tiết
@@ -170,7 +162,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                     }
                 }
                 
-                // Refresh table
                 loadBillDetails(currentBill.getBill_id());
                 XDialog.alert("Đã xóa món thành công!");
                 
@@ -192,13 +183,11 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         
         if (XDialog.confirm("Bạn có chắc muốn hủy hóa đơn này?")) {
             try {
-                // Cập nhật trạng thái hóa đơn
-                currentBill.setStatus(false); // false = Đã hủy
+                currentBill.setStatus(false);
                 currentBill.setCheckout(new Date());
                 billDAO.update(currentBill);
                 
-                // Cập nhật trạng thái bàn
-                updateTableStatus(currentBill.getTable_number(), 1); // 1 = Trống
+                updateTableStatus(currentBill.getTable_number(), TABLE_EMPTY);
                 
                 XDialog.alert("Đã hủy hóa đơn thành công!");
                 clearForm();
@@ -219,9 +208,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
             return;
         }
         
-        // TODO: Implement InHoaDonJDialog constructor
-        // InHoaDonJDialog detailDialog = new InHoaDonJDialog(this, currentBill);
-        // detailDialog.setVisible(true);
         XDialog.alert("Chức năng xem chi tiết sẽ được implement sau!");
     }
     
@@ -250,21 +236,16 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         txtTable_Name.setText("Bàn " + bill.getTable_number());
         txtStatus.setText(bill.getStatus() ? "Đang phục vụ" : "Đã hủy");
         
-        // Hiển thị thời gian tạo với định dạng đúng
+        // Hiển thị thời gian tạo
         if (bill.getCheckin() != null) {
-            String formattedTime = dateFormat.format(bill.getCheckin());
-            System.out.println("Debug - Original date: " + bill.getCheckin());
-            System.out.println("Debug - Formatted time: " + formattedTime);
-            txtBegin.setText(formattedTime);
+            txtBegin.setText(DATE_FORMAT.format(bill.getCheckin()));
         } else {
             txtBegin.setText("Chưa có thông tin");
         }
         
         // Hiển thị thời gian thanh toán
         if (bill.getCheckout() != null) {
-            String formattedTime = dateFormat.format(bill.getCheckout());
-            System.out.println("Debug - Checkout time: " + formattedTime);
-            txtEnd.setText(formattedTime);
+            txtEnd.setText(DATE_FORMAT.format(bill.getCheckout()));
         } else {
             txtEnd.setText("Chưa thanh toán");
         }
@@ -288,6 +269,8 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
      */
     private void fillTableWithBillDetails(List<BillDetails> details) {
         tableModel.setRowCount(0);
+        
+        if (details == null) return;
         
         for (BillDetails detail : details) {
             Product product = productDAO.findById(detail.getProduct_id());
@@ -322,8 +305,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         currentBillDetails = null;
     }
     
-
-    
     // ========== IMPLEMENT BILLCONTROLLER METHODS ==========
     
     @Override
@@ -352,19 +333,14 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     
     @Override
     public void edit() {
-        // Chỉnh sửa hóa đơn hiện tại
         if (currentBill == null) {
             XDialog.alert("Vui lòng chọn hóa đơn để chỉnh sửa!");
             return;
         }
         
         try {
-            // Cho phép chỉnh sửa các trường
             setEditable(true);
-            
-            // Hiển thị dialog chỉnh sửa
-            XDialog.alert("Chế độ chỉnh sửa đã được bật. Bạn có thể thay đổi thông tin hóa đơn.");
-            
+            XDialog.alert("Chế độ chỉnh sửa đã được bật.");
         } catch (Exception e) {
             XDialog.alert("Lỗi khi chỉnh sửa hóa đơn: " + e.getMessage());
         }
@@ -372,14 +348,11 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     
     @Override
     public void create() {
-        // Tạo hóa đơn mới
-        // TODO: Implement create functionality
         XDialog.alert("Chức năng tạo hóa đơn mới sẽ được implement sau!");
     }
     
     @Override
     public void update() {
-        // Cập nhật hóa đơn
         if (currentBill != null) {
             try {
                 billDAO.update(currentBill);
@@ -392,7 +365,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     
     @Override
     public void delete() {
-        // Xóa hóa đơn
         if (currentBill != null) {
             cancelBill();
         }
@@ -405,7 +377,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     
     @Override
     public void setEditable(boolean editable) {
-        // Cho phép/sử chặn chỉnh sửa các trường
         txtBill_Id.setEditable(editable);
         txtName_Employee.setEditable(editable);
         txtTable_Name.setEditable(editable);
@@ -413,10 +384,8 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         txtBegin.setEditable(editable);
         txtEnd.setEditable(editable);
         
-        // Nếu đang chỉnh sửa, thêm nút Lưu
         if (editable) {
-            // TODO: Thêm nút Lưu vào UI
-            XDialog.alert("Chế độ chỉnh sửa đã được bật. Nhấn Ctrl+S để lưu thay đổi.");
+            XDialog.alert("Chế độ chỉnh sửa đã được bật.");
         } else {
             XDialog.alert("Chế độ chỉnh sửa đã được tắt.");
         }
@@ -424,7 +393,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     
     @Override
     public void checkAll() {
-        // Chọn tất cả các dòng trong bảng
         for (int i = 0; i < tbBill.getRowCount(); i++) {
             tbBill.setRowSelectionInterval(i, i);
         }
@@ -433,14 +401,12 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     
     @Override
     public void uncheckAll() {
-        // Bỏ chọn tất cả các dòng trong bảng
         tbBill.clearSelection();
         XDialog.alert("Đã bỏ chọn tất cả các món!");
     }
     
     @Override
     public void deleteCheckedItems() {
-        // Xóa các món đã chọn
         int[] selectedRows = tbBill.getSelectedRows();
         if (selectedRows.length == 0) {
             XDialog.alert("Vui lòng chọn món cần xóa!");
@@ -461,7 +427,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                     }
                 }
                 
-                // Refresh table
                 loadBillDetails(currentBill.getBill_id());
                 XDialog.alert("Đã xóa thành công " + deletedCount + " món!");
                 
@@ -484,7 +449,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         }
         
         try {
-            // Chỉ hiển thị thông tin thanh toán, không thực hiện thanh toán
             double totalAmount = calculateTotalAmount();
             
             StringBuilder sb = new StringBuilder();
@@ -524,7 +488,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                 return;
             }
             
-            // Hiển thị danh sách hóa đơn
             StringBuilder sb = new StringBuilder();
             sb.append("Danh sách hóa đơn ").append(status).append(":\n\n");
             
@@ -554,7 +517,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                 return;
             }
             
-            // Hiển thị danh sách hóa đơn của bàn
             StringBuilder sb = new StringBuilder();
             sb.append("Danh sách hóa đơn bàn ").append(tableNumber).append(":\n\n");
             
@@ -585,7 +547,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                 return;
             }
             
-            // Hiển thị danh sách hóa đơn của nhân viên
             StringBuilder sb = new StringBuilder();
             sb.append("Danh sách hóa đơn của nhân viên:\n\n");
             
@@ -620,10 +581,9 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                 return;
             }
             
-            // Hiển thị danh sách hóa đơn theo thời gian
             StringBuilder sb = new StringBuilder();
-            sb.append("Danh sách hóa đơn từ ").append(dateFormat.format(fromDate))
-              .append(" đến ").append(dateFormat.format(toDate)).append(":\n\n");
+            sb.append("Danh sách hóa đơn từ ").append(DATE_FORMAT.format(fromDate))
+              .append(" đến ").append(DATE_FORMAT.format(toDate)).append(":\n\n");
             
             for (Bill bill : bills) {
                 String status = bill.getStatus() ? "Đang phục vụ" : "Đã thanh toán";
@@ -647,12 +607,9 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
             return 0.0;
         }
         
-        double total = 0.0;
-        for (BillDetails detail : currentBillDetails) {
-            double itemTotal = detail.getPrice() * detail.getAmount() * (1 - detail.getDiscount());
-            total += itemTotal;
-        }
-        return total;
+        return currentBillDetails.stream()
+            .mapToDouble(detail -> detail.getPrice() * detail.getAmount() * (1 - detail.getDiscount()))
+            .sum();
     }
     
     @Override
@@ -685,20 +642,15 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
      */
     public void setTableInfo(int tableNumber) {
         try {
-            // Set thông tin bàn vào txtTable_Name
             txtTable_Name.setText("Bàn " + tableNumber);
-            // Tìm hóa đơn hiện tại của bàn này (nếu có)
             Bill currentBillForTable = findCurrentBillByTable(tableNumber);
             if (currentBillForTable != null) {
-                // Nếu có hóa đơn đang phục vụ, load thông tin
                 loadBill(String.valueOf(currentBillForTable.getBill_id()));
             } else {
-                // Nếu chưa có hóa đơn, tự động tạo hóa đơn mới cho bàn này
                 createNewBillForTable(tableNumber, XAuth.user.getUser_id());
             }
         } catch (Exception e) {
             System.err.println("Lỗi khi set thông tin bàn: " + e.getMessage());
-            e.printStackTrace();
         }
     }
     
@@ -707,15 +659,11 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
      */
     private Bill findCurrentBillByTable(int tableNumber) {
         try {
-            // Sử dụng findAll() và filter thay vì findBySQL
             List<Bill> allBills = billDAO.findAll();
-            for (Bill bill : allBills) {
-                if (bill.getTable_number() == tableNumber && 
-                    "Đang phục vụ".equals(bill.getStatus())) {
-                    return bill;
-                }
-            }
-            return null;
+            return allBills.stream()
+                .filter(bill -> bill.getTable_number() == tableNumber && bill.getStatus())
+                .findFirst()
+                .orElse(null);
         } catch (Exception e) {
             System.err.println("Lỗi khi tìm hóa đơn của bàn: " + e.getMessage());
             return null;
@@ -728,27 +676,17 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     public void createNewBillForTable(int tableNumber, String userId) {
         try {
             Bill newBill = new Bill();
-            // KHÔNG set bill_id - để database tự tạo bằng IDENTITY
-            // String newBillId = generateBillId();
-            // newBill.setBill_id(newBillId);
             newBill.setUser_id(userId);
             newBill.setTable_number(tableNumber);
             newBill.setStatus(true);
             newBill.setCheckin(new Date());
             newBill.setTotal_amount(0);
-            // Set payment_history_id = null vì chưa có payment history
             newBill.setPayment_history_id(null);
-            // Không set phone_number vì chưa có thông tin khách hàng
             newBill.setPhone_number(null);
             
-            // Lưu hóa đơn mới - sử dụng create thay vì insert
             billDAO.create(newBill);
-            
-            // Load hóa đơn vừa tạo - cần lấy bill_id từ database
             loadBillFromDatabase(tableNumber, userId);
-            
-            // Cập nhật trạng thái bàn
-            updateTableStatus(tableNumber, 2); // 2 = Đang phục vụ
+            updateTableStatus(tableNumber, TABLE_SERVING);
             
         } catch (Exception e) {
             XDialog.alert("Lỗi khi tạo hóa đơn mới: " + e.getMessage());
@@ -760,7 +698,6 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
      */
     private void loadBillFromDatabase(int tableNumber, String userId) {
         try {
-            // Tìm hóa đơn mới nhất của bàn này
             String sql = "SELECT * FROM BILL WHERE table_number = ? AND user_id = ? ORDER BY bill_id DESC";
             Bill latestBill = XQuery.getSingleBean(Bill.class, sql, tableNumber, userId);
             if (latestBill != null) {
@@ -771,11 +708,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         }
     }
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
+    // Generated code - không sửa đổi
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {

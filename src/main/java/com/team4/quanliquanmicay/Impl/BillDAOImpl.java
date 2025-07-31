@@ -7,58 +7,72 @@ import com.team4.quanliquanmicay.util.XQuery;
 import java.util.List;
 import java.sql.Timestamp;
 
-public class BillDAOImpl implements BillDAO{
+public class BillDAOImpl implements BillDAO {
 
-    String createSql = "INSERT INTO BILL(user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
-    String updateSql = "UPDATE BILL SET user_id=?, phone_number=?, payment_history_id=?, table_number=?, total_amount=?, checkin=?, checkout=?, status=? WHERE bill_id=?";
-    String deleteSql = "DELETE FROM BILL WHERE bill_id=?";
-    String findAllSql = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL";
-    String findByIdSql = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL WHERE bill_id=?";
+    // SQL queries - static final để tối ưu performance
+    private static final String CREATE_SQL = "INSERT INTO BILL(user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String UPDATE_SQL = "UPDATE BILL SET user_id=?, phone_number=?, payment_history_id=?, table_number=?, total_amount=?, checkin=?, checkout=?, status=? WHERE bill_id=?";
+    private static final String DELETE_SQL = "DELETE FROM BILL WHERE bill_id=?";
+    private static final String FIND_ALL_SQL = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL";
+    private static final String FIND_BY_ID_SQL = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL WHERE bill_id=?";
 
     @Override
     public Bill create(Bill entity) {
-        Object[] values = {
-           entity.getUser_id(),
-           entity.getPhone_number(),
-           entity.getPayment_history_id(),
-           entity.getTable_number(),
-           entity.getTotal_amount(),
-           entity.getCheckin() != null ? new Timestamp(entity.getCheckin().getTime()) : null,
-           entity.getCheckout() != null ? new Timestamp(entity.getCheckout().getTime()) : null,
-           entity.getStatus(),
-        };
-        XJdbc.executeUpdate(createSql, values);
-        return entity;
-    }
-
-    @Override
-    public void update(Bill entity) {
+        if (entity == null) return null;
+        
         Object[] values = {
             entity.getUser_id(),
             entity.getPhone_number(),
             entity.getPayment_history_id(),
             entity.getTable_number(),
             entity.getTotal_amount(),
-            entity.getCheckin() != null ? new Timestamp(entity.getCheckin().getTime()) : null,
-            entity.getCheckout() != null ? new Timestamp(entity.getCheckout().getTime()) : null,
-            entity.getStatus(),
-            entity.getBill_id(),
+            convertToTimestamp(entity.getCheckin()),
+            convertToTimestamp(entity.getCheckout()),
+            entity.getStatus()
         };
-        XJdbc.executeUpdate(updateSql, values);
+        
+        XJdbc.executeUpdate(CREATE_SQL, values);
+        return entity;
     }
 
     @Override
-    public void deleteById(String productId) {
-        XJdbc.executeUpdate(deleteSql, productId);
+    public void update(Bill entity) {
+        if (entity == null || entity.getBill_id() == null) return;
+        
+        Object[] values = {
+            entity.getUser_id(),
+            entity.getPhone_number(),
+            entity.getPayment_history_id(),
+            entity.getTable_number(),
+            entity.getTotal_amount(),
+            convertToTimestamp(entity.getCheckin()),
+            convertToTimestamp(entity.getCheckout()),
+            entity.getStatus(),
+            entity.getBill_id()
+        };
+        
+        XJdbc.executeUpdate(UPDATE_SQL, values);
+    }
+
+    @Override
+    public void deleteById(String billId) {
+        if (billId == null || billId.trim().isEmpty()) return;
+        XJdbc.executeUpdate(DELETE_SQL, billId);
     }
 
     @Override
     public List<Bill> findAll() {
-        return XQuery.getBeanList(Bill.class, findAllSql);
+        return XQuery.getBeanList(Bill.class, FIND_ALL_SQL);
     }
 
     @Override
-    public Bill findById(String bill_id) {
-        return XQuery.getSingleBean(Bill.class, findByIdSql, bill_id);
+    public Bill findById(String billId) {
+        if (billId == null || billId.trim().isEmpty()) return null;
+        return XQuery.getSingleBean(Bill.class, FIND_BY_ID_SQL, billId);
+    }
+    
+    // Helper method để convert Date to Timestamp
+    private Timestamp convertToTimestamp(java.util.Date date) {
+        return date != null ? new Timestamp(date.getTime()) : null;
     }
 }
