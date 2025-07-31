@@ -18,7 +18,7 @@ public class XValidation {
     }
 
     public static boolean isUsername(String value) {
-        return value.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+        return value.matches("^[a-zA-Z0-9_]{3,20}$");
     }
 
     public static boolean isNumber(String value) {

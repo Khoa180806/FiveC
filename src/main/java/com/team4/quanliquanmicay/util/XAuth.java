@@ -1,7 +1,7 @@
 package com.team4.quanliquanmicay.util;
 
 import com.team4.quanliquanmicay.Entity.UserAccount;
-import java.sql.Date; // Thay đổi import
+import java.util.Date; // Thay đổi import
 
 /**
  *

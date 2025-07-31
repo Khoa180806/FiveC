@@ -290,8 +290,31 @@ public class ChooseTable extends javax.swing.JFrame {
         selectedButton = btnTable;
         selectedTableNumber = tableNumber;
 
-        // Nếu muốn fill thông tin bàn lên form thì bổ sung ở đây
-        // Ví dụ: lblInfo.setText("Bàn số: " + tableNumber);
+        // Mở HoaDonJDialog và truyền thông tin bàn
+        openHoaDonDialog(tableNumber);
+    }
+    
+    /**
+     * Mở HoaDonJDialog với thông tin bàn đã chọn
+     */
+    private void openHoaDonDialog(int tableNumber) {
+        try {
+            // Tạo HoaDonJDialog mới
+            HoaDonJDialog hoaDonDialog = new HoaDonJDialog();
+            
+            // Set thông tin bàn vào dialog
+            hoaDonDialog.setTableInfo(tableNumber);
+            
+            // Ẩn ChooseTable
+            this.setVisible(false);
+            
+            // Hiển thị HoaDonJDialog
+            hoaDonDialog.setVisible(true);
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi khi mở HoaDonJDialog: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // Hàm màu cho trạng thái
