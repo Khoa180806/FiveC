@@ -434,7 +434,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/icons_and_images/delete.png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="H&#x1ee6;Y H&#xd3;A &#x110;&#x1a0;N"/>
+            <Property name="text" type="java.lang.String" value="Thanh To&#xe1;n"/>
           </Properties>
         </Component>
       </SubComponents>

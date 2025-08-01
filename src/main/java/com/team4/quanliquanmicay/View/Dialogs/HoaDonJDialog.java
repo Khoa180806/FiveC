@@ -898,7 +898,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
 
         btnPayment.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnPayment.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
-        btnPayment.setText("HỦY HÓA ĐƠN");
+        btnPayment.setText("Thanh Toán");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);

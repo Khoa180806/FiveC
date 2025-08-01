@@ -20,6 +20,8 @@ import com.team4.quanliquanmicay.DAO.PaymentHistoryDAO;
 import com.team4.quanliquanmicay.Impl.PaymentHistoryDAOImpl;
 import com.team4.quanliquanmicay.DAO.TableForCustomerDAO;
 import com.team4.quanliquanmicay.Impl.TableForCustomerDAOImpl;
+import com.team4.quanliquanmicay.DAO.BillDAO;
+import com.team4.quanliquanmicay.Impl.BillDAOImpl;
 import com.team4.quanliquanmicay.Controller.PaymentController;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.*;
@@ -33,16 +35,14 @@ import java.sql.ResultSet;
  *
  * @author HP
  */
-public class ThanhToanJDialog extends javax.swing.JFrame {
+public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentController {
     
-    // Controller
-    private PaymentController paymentController;
-    
-    // DAO Objects (giữ lại để tương thích)
+    // DAO Objects
     private BillDetailsDAO billDetailsDAO;
     private CustomerDAO customerDAO;
     private PaymentHistoryDAO paymentHistoryDAO;
     private TableForCustomerDAO tableDAO;
+    private BillDAO billDAO;
     
     // Data Objects
     private Bill currentBill;
@@ -67,14 +67,12 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
         initComponents();
         this.setLocationRelativeTo(null);
         
-        // Khởi tạo Controller
-        paymentController = new PaymentController();
-        
-        // Khởi tạo DAO (giữ lại để tương thích)
+        // Khởi tạo DAO
         billDetailsDAO = new BillDetailsDAOImpl();
         customerDAO = new CustomerDAOImpl();
         paymentHistoryDAO = new PaymentHistoryDAOImpl();
         tableDAO = new TableForCustomerDAOImpl();
+        billDAO = new BillDAOImpl();
         
         // Setup table model
         setupTableModel();
@@ -472,7 +470,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
      */
     private void loadTables() {
         try {
-            List<TableForCustomer> tables = paymentController.getAllTables();
+            List<TableForCustomer> tables = this.getAllTables();
             
             // Xóa tất cả bàn cũ trong panel
             pnPayment.removeAll();
@@ -775,7 +773,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
     public void loadBillForTable(int tableNumber) {
         try {
             // Sử dụng controller để lấy bill
-            Bill bill = paymentController.getBillByTableNumber(tableNumber);
+            Bill bill = this.getBillByTableNumber(tableNumber);
             
             if (bill != null) {
                 // Có hóa đơn đang hoạt động
@@ -808,7 +806,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
      */
     private void loadBillDetails(int billId) {
         try {
-            billDetails = paymentController.getBillDetails(billId);
+            billDetails = this.getBillDetails(billId);
             fillTableWithBillDetails(billDetails);
             calculateTotalAmount();
         } catch (Exception e) {
@@ -821,7 +819,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
      */
     private void loadCustomerInfo(String phoneNumber) {
         try {
-            currentCustomer = paymentController.getCustomerByPhone(phoneNumber);
+            currentCustomer = this.getCustomerByPhone(phoneNumber);
             if (currentCustomer != null) {
                 txtPhoneNumber.setText(currentCustomer.getPhone_number());
                 customerPoints = currentCustomer.getPoint_level();
@@ -858,30 +856,13 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
         }
     }
     
-    /**
-     * Lấy tên sản phẩm theo product_id
-     */
-    private String getProductName(String productId) {
-        try {
-            String sql = "SELECT product_name FROM PRODUCT WHERE product_id = ?";
-            String productName = XJdbc.executeQuery(sql, rs -> {
-                if (rs.next()) {
-                    return rs.getString("product_name");
-                }
-                return null;
-            }, productId);
-            return productName != null ? productName : "Unknown";
-        } catch (Exception e) {
-            // Ignore error
-        }
-        return "Unknown";
-    }
+
     
     /**
      * Tính tổng tiền
      */
     private void calculateTotalAmount() {
-        totalAmount = paymentController.calculateTotalAmount(billDetails);
+        totalAmount = this.calculateTotalAmount(billDetails);
         lblTotalAmout.setText(String.format("%.0f", totalAmount));
     }
     
@@ -931,13 +912,13 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
         }
         
         // Xác nhận thanh toán
-        int confirm = XDialog.confirm("Xác nhận thanh toán?\nTổng tiền: " + String.format("%.0f", totalAmount) + " VNĐ");
-        if (confirm != javax.swing.JOptionPane.YES_OPTION) {
+        boolean confirm = XDialog.confirm("Xác nhận thanh toán?\nTổng tiền: " + String.format("%.0f", totalAmount) + " VNĐ");
+        if (!confirm) {
             return;
         }
         
         // Sử dụng controller để xử lý thanh toán
-        boolean success = paymentController.processPayment(currentBill, currentCustomer, totalAmount, selectedTableNumber);
+        boolean success = this.processPayment(currentBill, currentCustomer, totalAmount, selectedTableNumber);
         
         if (success) {
             XDialog.alert("Thanh toán thành công!\nTổng tiền: " + String.format("%.0f", totalAmount) + " VNĐ");
@@ -964,22 +945,15 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
         
         if (customerName != null && !customerName.trim().isEmpty()) {
             // Sử dụng controller để tạo hội viên
-            boolean success = paymentController.createMember(phoneNumber, customerName);
+            boolean success = this.createMember(phoneNumber, customerName);
             
             if (success) {
-                currentCustomer = paymentController.getCustomerByPhone(phoneNumber);
+                currentCustomer = this.getCustomerByPhone(phoneNumber);
                 customerPoints = 0;
                 lblPoint.setText("0");
                 XDialog.alert("Tạo hội viên thành công!");
             }
         }
-    }
-    
-    /**
-     * Tạo ID cho payment history
-     */
-    private String generatePaymentId() {
-        return "PAY" + System.currentTimeMillis();
     }
     
     /**
@@ -1015,7 +989,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
             return;
         }
         
-        Customer customer = paymentController.searchCustomer(phoneNumber);
+        Customer customer = this.searchCustomer(phoneNumber);
         if (customer != null) {
             currentCustomer = customer;
             customerPoints = customer.getPoint_level();
@@ -1052,5 +1026,258 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
             
             XDialog.alert(info);
         }
+    }
+    
+    // ========== IMPLEMENT PAYMENT CONTROLLER METHODS ==========
+    
+    @Override
+    public void open() {
+        this.setVisible(true);
+    }
+    
+    @Override
+    public void setForm(Bill entity) {
+        // Implementation cho setForm
+    }
+    
+    @Override
+    public Bill getForm() {
+        return currentBill;
+    }
+    
+    @Override
+    public void fillToTable() {
+        // Implementation cho fillToTable
+    }
+    
+    @Override
+    public void edit() {
+        // Implementation cho edit
+    }
+    
+    @Override
+    public void create() {
+        // Implementation cho create
+    }
+    
+    @Override
+    public void update() {
+        // Implementation cho update
+    }
+    
+    @Override
+    public void delete() {
+        // Implementation cho delete
+    }
+    
+    @Override
+    public void clear() {
+        clearDisplay();
+    }
+    
+    @Override
+    public void setEditable(boolean editable) {
+        // Implementation cho setEditable
+    }
+    
+    @Override
+    public void checkAll() {
+        // Implementation cho checkAll
+    }
+    
+    @Override
+    public void uncheckAll() {
+        // Implementation cho uncheckAll
+    }
+    
+    @Override
+    public void deleteCheckedItems() {
+        // Implementation cho deleteCheckedItems
+    }
+    
+    @Override
+    public List<TableForCustomer> getAllTables() {
+        try {
+            return tableDAO.findAll();
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi load danh sách bàn: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    @Override
+    public Bill getBillByTableNumber(int tableNumber) {
+        try {
+            return billDAO.findByTableNumber(tableNumber);
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi load hóa đơn: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    @Override
+    public List<BillDetails> getBillDetails(int billId) {
+        try {
+            return billDetailsDAO.findByBillId(billId);
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi load chi tiết hóa đơn: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    @Override
+    public Customer getCustomerByPhone(String phoneNumber) {
+        try {
+            return customerDAO.findById(phoneNumber);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    @Override
+    public double calculateTotalAmount(List<BillDetails> billDetails) {
+        double total = 0.0;
+        if (billDetails != null) {
+            for (BillDetails detail : billDetails) {
+                total += (detail.getPrice() - detail.getDiscount()) * detail.getAmount();
+            }
+        }
+        return total;
+    }
+    
+    @Override
+    public boolean processPayment(Bill bill, Customer customer, double totalAmount, int tableNumber) {
+        try {
+            // Validate input
+            if (bill == null) {
+                XDialog.alert("Không có hóa đơn để thanh toán!");
+                return false;
+            }
+            
+            if (totalAmount <= 0) {
+                XDialog.alert("Hóa đơn không có món nào để thanh toán!");
+                return false;
+            }
+            
+            // Tạo payment history
+            PaymentHistory payment = new PaymentHistory();
+            payment.setPayment_history_id(generatePaymentId());
+            payment.setPayment_method_id(1); // Tiền mặt
+            payment.setPayment_date(new Date());
+            payment.setTotal_amount(totalAmount);
+            payment.setStatus(true);
+            payment.setNote("Thanh toán hóa đơn bàn " + tableNumber);
+            
+            paymentHistoryDAO.create(payment);
+            
+            // Cập nhật bill
+            bill.setPayment_history_id(Integer.parseInt(payment.getPayment_history_id()));
+            bill.setStatus(false); // Đã thanh toán
+            bill.setCheckout(new Date());
+            bill.setTotal_amount(totalAmount);
+            billDAO.update(bill);
+            
+            // Cập nhật điểm khách hàng
+            if (customer != null) {
+                int currentPoints = customer.getPoint_level();
+                int newPoints = currentPoints + (int)(totalAmount / 1000); // 1 điểm cho mỗi 1000đ
+                customer.setPoint_level(newPoints);
+                customerDAO.update(customer);
+            }
+            
+            // Cập nhật trạng thái bàn
+            TableForCustomer table = tableDAO.findById(tableNumber);
+            if (table != null) {
+                table.setStatus(0); // Trống
+                tableDAO.update(table);
+            }
+            
+            return true;
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi thanh toán: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean createMember(String phoneNumber, String customerName) {
+        try {
+            // Validate input
+            if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+                XDialog.alert("Vui lòng nhập số điện thoại!");
+                return false;
+            }
+            
+            if (!phoneNumber.matches("\\d{10,11}")) {
+                XDialog.alert("Số điện thoại không hợp lệ! Vui lòng nhập 10-11 chữ số.");
+                return false;
+            }
+            
+            if (customerName == null || customerName.trim().isEmpty()) {
+                XDialog.alert("Vui lòng nhập tên khách hàng!");
+                return false;
+            }
+            
+            // Kiểm tra khách hàng đã tồn tại
+            Customer existingCustomer = customerDAO.findById(phoneNumber);
+            if (existingCustomer != null) {
+                XDialog.alert("Khách hàng này đã tồn tại trong hệ thống!");
+                return false;
+            }
+            
+            // Tạo khách hàng mới
+            Customer newCustomer = new Customer();
+            newCustomer.setPhone_number(phoneNumber);
+            newCustomer.setCustomer_name(customerName);
+            newCustomer.setPoint_level(0);
+            newCustomer.setLevel_ranking("Bronze");
+            newCustomer.setCreated_date(new Date());
+            
+            customerDAO.create(newCustomer);
+            
+            return true;
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi tạo hội viên: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    @Override
+    public Customer searchCustomer(String phoneNumber) {
+        try {
+            if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+                return null;
+            }
+            
+            return customerDAO.findById(phoneNumber);
+            
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    @Override
+    public String getProductName(String productId) {
+        try {
+            String sql = "SELECT product_name FROM PRODUCT WHERE product_id = ?";
+            String productName = XJdbc.executeQuery(sql, rs -> {
+                if (rs.next()) {
+                    return rs.getString("product_name");
+                }
+                return null;
+            }, productId);
+            return productName != null ? productName : "Unknown";
+        } catch (Exception e) {
+            return "Unknown";
+        }
+    }
+    
+    /**
+     * Tạo ID cho payment history
+     */
+    private String generatePaymentId() {
+        return "PAY" + System.currentTimeMillis();
     }
 }
