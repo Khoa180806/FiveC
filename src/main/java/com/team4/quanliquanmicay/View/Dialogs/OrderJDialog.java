@@ -632,7 +632,7 @@ public class OrderJDialog extends javax.swing.JFrame {
             // Thêm từng món vào bill details
             for (CartItem item : cartItems) {
                 BillDetails billDetail = new BillDetails();
-                billDetail.setBill_details_id(generateBillDetailsId());
+//                billDetail.setBill_details_id(generateBillDetailsId());
                 billDetail.setBill_id(currentBill.getBill_id());
                 billDetail.setProduct_id(item.getProduct().getProductId());
                 billDetail.setAmount(item.getQuantity());
@@ -646,7 +646,7 @@ public class OrderJDialog extends javax.swing.JFrame {
             
             // Refresh parent dialog
             if (parentDialog != null) {
-                parentDialog.loadBillDetails(Integer.parseInt(currentBill.getBill_id()));
+//                parentDialog.loadBillDetails(Integer.parseInt(currentBill.getBill_id()));
             }
             
             // Clear cart and close dialog
