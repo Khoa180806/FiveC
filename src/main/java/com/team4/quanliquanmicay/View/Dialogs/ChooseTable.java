@@ -300,6 +300,7 @@ public class ChooseTable extends javax.swing.JFrame {
     private void openHoaDonDialog(int tableNumber) {
         try {
             // Tạo HoaDonJDialog mới
+//            HoaDonJDialog hoaDonDialog = new HoaDonJDialog();
             HoaDonJDialog hoaDonDialog = new HoaDonJDialog();
             
             // Set thông tin bàn vào dialog
