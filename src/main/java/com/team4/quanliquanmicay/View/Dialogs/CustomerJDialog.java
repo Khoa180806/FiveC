@@ -5,6 +5,8 @@
 package com.team4.quanliquanmicay.View.Dialogs;
 
 import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.Controller.CustomerController;
+import com.team4.quanliquanmicay.Entity.Customer;
 
 /**
  *
@@ -12,6 +14,8 @@ import com.team4.quanliquanmicay.util.XTheme;
  */
 public class CustomerJDialog extends javax.swing.JFrame {
 
+    private CustomerController customerController;
+    
     /**
      * Creates new form CustomerJDialog
      */
@@ -20,6 +24,19 @@ public class CustomerJDialog extends javax.swing.JFrame {
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        // Initialize customer controller
+        customerController = new CustomerController();
+        
+        // Add action listener for add button
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        
+        // Setup text field placeholders
+        setupTextFieldPlaceholders();
     }
 
     /**
@@ -98,6 +115,11 @@ public class CustomerJDialog extends javax.swing.JFrame {
         jButton2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
         jButton2.setText("EXIT");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -127,7 +149,6 @@ public class CustomerJDialog extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -139,8 +160,7 @@ public class CustomerJDialog extends javax.swing.JFrame {
                             .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 5, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(9, 9, 9)))
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
                 .addComponent(jButton2)
                 .addContainerGap())
@@ -159,6 +179,107 @@ public class CustomerJDialog extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        this.dispose(); // Close dialog instead of System.exit(0)
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // Get phone number and customer name from text fields
+        String phoneNumber = jTextField1.getText().trim();
+        String customerName = jTextField2.getText().trim();
+        
+        // Validate input
+        if (!customerController.isValidPhoneNumber(phoneNumber)) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Số điện thoại không hợp lệ! Vui lòng nhập số điện thoại 10-11 số bắt đầu bằng 0.", 
+                "Lỗi", 
+                javax.swing.JOptionPane.ERROR_MESSAGE);
+            jTextField1.requestFocus();
+            return;
+        }
+        
+        if (!customerController.isValidCustomerName(customerName)) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Tên khách hàng không hợp lệ! Vui lòng nhập tên có ít nhất 2 ký tự.", 
+                "Lỗi", 
+                javax.swing.JOptionPane.ERROR_MESSAGE);
+            jTextField2.requestFocus();
+            return;
+        }
+        
+        // Check if customer exists to determine create or update
+        if (customerController.customerExists(phoneNumber)) {
+            // Update existing customer
+            customerController.updateCustomer(phoneNumber, customerName);
+        } else {
+            // Create new customer
+            customerController.createCustomer(phoneNumber, customerName);
+        }
+        
+        // Clear form after successful operation
+        clearForm();
+    }//GEN-LAST:event_jButton1ActionPerformed
+    
+    /**
+     * Clear all form fields
+     */
+    private void clearForm() {
+        jTextField1.setText("");
+        jTextField2.setText("");
+        jTextField1.requestFocus();
+    }
+    
+    /**
+     * Load customer data by phone number
+     */
+    public void loadCustomerByPhone(String phoneNumber) {
+        Customer customer = customerController.findCustomerByPhone(phoneNumber);
+        if (customer != null) {
+            jTextField1.setText(customer.getPhone_number());
+            jTextField2.setText(customer.getCustomer_name());
+            jButton1.setText("CẬP NHẬT");
+        } else {
+            clearForm();
+            jButton1.setText("THÊM MỚI");
+        }
+    }
+    
+    /**
+     * Set text field labels for better UX
+     */
+    private void setupTextFieldPlaceholders() {
+        jTextField1.setToolTipText("Nhập số điện thoại khách hàng (VD: 0123456789)");
+        jTextField2.setToolTipText("Nhập tên khách hàng");
+    }
+    
+    /**
+     * Show customer statistics
+     */
+    public void showCustomerStatistics() {
+        int totalCustomers = customerController.getCustomerCount();
+        javax.swing.JOptionPane.showMessageDialog(this, 
+            "Thống kê khách hàng:\n" +
+            "Tổng số khách hàng: " + totalCustomers, 
+            "Thống kê", 
+            javax.swing.JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    /**
+     * Search customer by phone number
+     */
+    public void searchCustomer() {
+        String phoneNumber = jTextField1.getText().trim();
+        if (phoneNumber.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Vui lòng nhập số điện thoại để tìm kiếm!", 
+                "Thông báo", 
+                javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        loadCustomerByPhone(phoneNumber);
+    }
 
     /**
      * @param args the command line arguments
