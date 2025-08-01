@@ -5,13 +5,22 @@
 package com.team4.quanliquanmicay.View.Dialogs;
 
 import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.Entity.Customer;
+import com.team4.quanliquanmicay.DAO.CustomerDAO;
+import com.team4.quanliquanmicay.Impl.CustomerDAOImpl;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 /**
  *
  * @author Asus
  */
 public class CustomerJDialog extends javax.swing.JFrame {
-
+    
+    private CustomerDAO customerDAO;
+    private Customer createdCustomer;
+    
     /**
      * Creates new form CustomerJDialog
      */
@@ -20,6 +29,94 @@ public class CustomerJDialog extends javax.swing.JFrame {
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        // Khởi tạo DAO
+        customerDAO = new CustomerDAOImpl();
+        
+        // Setup event handlers
+        setupEventHandlers();
+    }
+    
+    /**
+     * Creates new form CustomerJDialog with phone number
+     */
+    public CustomerJDialog(String phoneNumber) {
+        this.setUndecorated(true);
+        XTheme.applyFullTheme();
+        initComponents();
+        this.setLocationRelativeTo(null);
+        
+        // Khởi tạo DAO
+        customerDAO = new CustomerDAOImpl();
+        
+        // Set số điện thoại nếu có
+        if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
+            jTextField1.setText(phoneNumber.trim());
+        }
+        
+        // Setup event handlers
+        setupEventHandlers();
+    }
+    
+    private void setupEventHandlers() {
+        // jButton1 là nút Create
+        jButton1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                createCustomer();
+            }
+        });
+        
+        // jButton2 là nút Exit
+        jButton2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+            }
+        });
+    }
+    
+    private void createCustomer() {
+        String phoneNumber = jTextField1.getText().trim();
+        String customerName = jTextField2.getText().trim();
+        
+        if (phoneNumber.isEmpty()) {
+            XDialog.alert("Vui lòng nhập số điện thoại!");
+            return;
+        }
+        
+        if (customerName.isEmpty()) {
+            XDialog.alert("Vui lòng nhập tên khách hàng!");
+            return;
+        }
+        
+        try {
+            // Kiểm tra xem số điện thoại đã tồn tại chưa
+            Customer existingCustomer = customerDAO.findById(phoneNumber);
+            if (existingCustomer != null) {
+                XDialog.alert("Số điện thoại này đã được sử dụng!");
+                return;
+            }
+            
+            // Tạo khách hàng mới
+            Customer customer = new Customer();
+            customer.setPhone_number(phoneNumber);
+            customer.setCustomer_name(customerName);
+            customer.setPoint_level(0);
+            
+            customerDAO.create(customer);
+            createdCustomer = customer;
+            
+            XDialog.alert("Tạo khách hàng thành công!");
+            dispose();
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi tạo khách hàng: " + e.getMessage());
+        }
+    }
+    
+    public Customer getCustomer() {
+        return createdCustomer;
     }
 
     /**

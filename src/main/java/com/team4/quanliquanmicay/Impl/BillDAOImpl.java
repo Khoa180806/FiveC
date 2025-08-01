@@ -6,6 +6,7 @@ import com.team4.quanliquanmicay.util.XJdbc;
 import com.team4.quanliquanmicay.util.XQuery;
 import java.util.List;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 
 public class BillDAOImpl implements BillDAO {
 
@@ -15,6 +16,8 @@ public class BillDAOImpl implements BillDAO {
     private static final String DELETE_SQL = "DELETE FROM BILL WHERE bill_id=?";
     private static final String FIND_ALL_SQL = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL";
     private static final String FIND_BY_ID_SQL = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL WHERE bill_id=?";
+    private static final String FIND_BY_TABLE_NUMBER_SQL = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL WHERE table_number = ? AND status = N'Đang phục vụ'";
+    private static final String FIND_ALL_BY_TABLE_NUMBER_SQL = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL WHERE table_number = ?";
 
     @Override
     public Bill create(Bill entity) {
@@ -69,6 +72,60 @@ public class BillDAOImpl implements BillDAO {
     public Bill findById(String billId) {
         if (billId == null || billId.trim().isEmpty()) return null;
         return XQuery.getSingleBean(Bill.class, FIND_BY_ID_SQL, billId);
+    }
+    
+    @Override
+    public Bill findByTableNumber(int tableNumber) {
+        try {
+            return XJdbc.executeQuery(FIND_BY_TABLE_NUMBER_SQL, rs -> {
+                if (rs.next()) {
+                    Bill b = new Bill();
+                    b.setBill_id(rs.getInt("bill_id"));
+                    b.setUser_id(rs.getString("user_id"));
+                    b.setPhone_number(rs.getString("phone_number"));
+                    b.setPayment_history_id(rs.getInt("payment_history_id"));
+                    b.setTable_number(rs.getInt("table_number"));
+                    b.setTotal_amount(rs.getDouble("total_amount"));
+                    b.setCheckin(rs.getDate("checkin"));
+                    b.setCheckout(rs.getDate("checkout"));
+                    // Status là NVARCHAR2, không phải Boolean
+                    String status = rs.getString("status");
+                    b.setStatus("Đang phục vụ".equals(status));
+                    return b;
+                }
+                return null;
+            }, tableNumber);
+        } catch (Exception e) {
+            System.err.println("Error in findByTableNumber for table " + tableNumber + ": " + e.getMessage());
+            return null;
+        }
+    }
+    
+    // Method để debug - tìm tất cả bill của một bàn
+    public List<Bill> findAllByTableNumber(int tableNumber) {
+        try {
+            return XJdbc.executeQuery(FIND_ALL_BY_TABLE_NUMBER_SQL, rs -> {
+                List<Bill> bills = new ArrayList<>();
+                while (rs.next()) {
+                    Bill b = new Bill();
+                    b.setBill_id(rs.getInt("bill_id"));
+                    b.setUser_id(rs.getString("user_id"));
+                    b.setPhone_number(rs.getString("phone_number"));
+                    b.setPayment_history_id(rs.getInt("payment_history_id"));
+                    b.setTable_number(rs.getInt("table_number"));
+                    b.setTotal_amount(rs.getDouble("total_amount"));
+                    b.setCheckin(rs.getDate("checkin"));
+                    b.setCheckout(rs.getDate("checkout"));
+                    String status = rs.getString("status");
+                    b.setStatus("Đang phục vụ".equals(status));
+                    bills.add(b);
+                }
+                return bills;
+            }, tableNumber);
+        } catch (Exception e) {
+            System.err.println("Error in findAllByTableNumber for table " + tableNumber + ": " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
     
     // Helper method để convert Date to Timestamp

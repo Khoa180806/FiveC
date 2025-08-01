@@ -12,7 +12,7 @@ import lombok.*;
 @Builder 
 @Data 
 public class PaymentMethod { 
-    private Boolean payment_method_id;
+    private int payment_method_id;
     private String method_name;
-    private Boolean is_enable;
+    private int is_enable;
 }
