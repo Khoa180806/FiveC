@@ -29,6 +29,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+import java.util.ArrayList;
 import java.sql.ResultSet;
 
 /**
@@ -37,26 +38,29 @@ import java.sql.ResultSet;
  */
 public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentController {
     
-    // DAO Objects
-    private BillDetailsDAO billDetailsDAO;
-    private CustomerDAO customerDAO;
-    private PaymentHistoryDAO paymentHistoryDAO;
-    private TableForCustomerDAO tableDAO;
-    private BillDAO billDAO;
+    // DAO objects
+    private final BillDetailsDAO billDetailsDAO;
+    private final CustomerDAO customerDAO;
+    private final PaymentHistoryDAO paymentHistoryDAO;
+    private final TableForCustomerDAO tableDAO;
+    private final BillDAO billDAO;
     
-    // Data Objects
+    // Current data
     private Bill currentBill;
     private Customer currentCustomer;
     private List<BillDetails> billDetails;
     private double totalAmount = 0.0;
     private int customerPoints = 0;
     
-    // Table Model
+    // Table model
     private DefaultTableModel tableModel;
     
     // Table selection
     private JButton selectedButton = null;
     private int selectedTableNumber = -1;
+    
+    // Cache để lưu bill của từng bàn
+    private java.util.Map<Integer, Bill> tableBillCache = new java.util.HashMap<>();
 
     /**
      * Creates new form ThanhToanJDialog
@@ -477,6 +481,17 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             }
         });
         
+        // Thêm focus lost listener để tự động tìm kiếm
+        txtPhoneNumber.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                String phoneNumber = txtPhoneNumber.getText().trim();
+                if (!phoneNumber.isEmpty()) {
+                    searchCustomerByPhone();
+                }
+            }
+        });
+        
         // Thêm event cho bảng
         tbBillDetail.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -569,7 +584,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
                     default: btnTable.setBackground(new Color(55, 71, 79));
                 }
             }
-            btnTable.setActionCommand(String.valueOf(table.getTable_number()));
+            btnTable.setActionCommand(String.valueOf(tableNumber));
             btnTable.addActionListener((ActionEvent e) -> {
                 int num = Integer.parseInt(e.getActionCommand());
                 selectTable(num, btnTable);
@@ -677,6 +692,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         currentBill = bill;
         selectedTableNumber = bill.getTable_number();
         
+        // Lưu bill vào cache
+        tableBillCache.put(bill.getTable_number(), bill);
+        
         // Load chi tiết hóa đơn
         loadBillDetails(currentBill.getBill_id());
         
@@ -693,6 +711,22 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         
         // Tô màu bàn được chọn
         highlightSelectedTableDirectly();
+    }
+    
+    /**
+     * Cập nhật cache khi có bill mới
+     */
+    public void updateBillCache(int tableNumber, Bill bill) {
+        if (bill != null) {
+            tableBillCache.put(tableNumber, bill);
+        }
+    }
+    
+    /**
+     * Xóa bill khỏi cache khi thanh toán xong
+     */
+    public void removeBillFromCache(int tableNumber) {
+        tableBillCache.remove(tableNumber);
     }
     
     /**
@@ -795,6 +829,13 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
      */
     public void loadBillForTable(int tableNumber) {
         try {
+            // Debug: Kiểm tra tất cả bill của bàn này
+            List<Bill> allBills = ((BillDAOImpl) billDAO).findAllByTableNumber(tableNumber);
+            System.out.println("Debug: Tìm thấy " + allBills.size() + " bill cho bàn " + tableNumber);
+            for (Bill bill : allBills) {
+                System.out.println("  Bill ID: " + bill.getBill_id() + ", Status: " + bill.getStatus());
+            }
+            
             // Sử dụng controller để lấy bill
             Bill bill = this.getBillByTableNumber(tableNumber);
             
@@ -814,9 +855,8 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
                 updateDisplay();
                 
             } else {
-                // Không có hóa đơn
+                // Không có hóa đơn - chỉ clear display, không hiện thông báo
                 clearDisplay();
-                XDialog.alert("Bàn " + tableNumber + " chưa có hóa đơn!");
             }
             
         } catch (Exception e) {
@@ -957,25 +997,18 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
      */
     private void createMember() {
         String phoneNumber = txtPhoneNumber.getText().trim();
-        if (phoneNumber.isEmpty()) {
-            XDialog.alert("Vui lòng nhập số điện thoại khách hàng!");
-            return;
-        }
         
-        String customerName = javax.swing.JOptionPane.showInputDialog(this, 
-            "Nhập tên khách hàng:", "Tạo hội viên mới", 
-            javax.swing.JOptionPane.QUESTION_MESSAGE);
+        // Mở CustomerJDialog với số điện thoại hiện tại
+        CustomerJDialog customerDialog = new CustomerJDialog(phoneNumber);
+        customerDialog.setVisible(true);
         
-        if (customerName != null && !customerName.trim().isEmpty()) {
-            // Sử dụng controller để tạo hội viên
-            boolean success = this.createMember(phoneNumber, customerName);
-            
-            if (success) {
-                currentCustomer = this.getCustomerByPhone(phoneNumber);
-                customerPoints = 0;
-                lblPoint.setText("0");
-                XDialog.alert("Tạo hội viên thành công!");
-            }
+        // Sau khi đóng dialog, kiểm tra xem có tạo thành công không
+        if (customerDialog.getCustomer() != null) {
+            currentCustomer = customerDialog.getCustomer();
+            customerPoints = currentCustomer.getPoint_level();
+            lblPoint.setText(String.valueOf(customerPoints));
+            txtPhoneNumber.setText(currentCustomer.getPhone_number());
+            XDialog.alert("Tạo hội viên thành công!");
         }
     }
     
@@ -1017,9 +1050,13 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             currentCustomer = customer;
             customerPoints = customer.getPoint_level();
             lblPoint.setText(String.valueOf(customerPoints));
-            XDialog.alert("Tìm thấy khách hàng: " + customer.getCustomer_name());
+            XDialog.alert("Tìm thấy khách hàng: " + customer.getCustomer_name() + 
+                         "\nSố điểm hiện tại: " + customerPoints);
         } else {
-            XDialog.alert("Không tìm thấy khách hàng với số điện thoại này!");
+            currentCustomer = null;
+            customerPoints = 0;
+            lblPoint.setText("0");
+            XDialog.alert("Không tìm thấy khách hàng với số điện thoại này!\nBạn có thể tạo hội viên mới.");
         }
     }
     
@@ -1131,7 +1168,40 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
     @Override
     public Bill getBillByTableNumber(int tableNumber) {
         try {
-            return billDAO.findByTableNumber(tableNumber);
+            // Kiểm tra cache trước
+            if (tableBillCache.containsKey(tableNumber)) {
+                Bill cachedBill = tableBillCache.get(tableNumber);
+                // Nếu bill trong cache vẫn đang hoạt động, trả về
+                if (cachedBill != null && cachedBill.getStatus()) {
+                    return cachedBill;
+                }
+            }
+            
+            // Tìm bill đang hoạt động của bàn này
+            List<Bill> allBills = billDAO.findAll();
+            Bill activeBill = allBills.stream()
+                .filter(bill -> bill.getTable_number() == tableNumber && bill.getStatus())
+                .findFirst()
+                .orElse(null);
+            
+            if (activeBill != null) {
+                // Lưu vào cache
+                tableBillCache.put(tableNumber, activeBill);
+                return activeBill;
+            }
+            
+            // Nếu không có bill đang hoạt động, tìm bill cuối cùng
+            Bill lastBill = allBills.stream()
+                .filter(bill -> bill.getTable_number() == tableNumber)
+                .max((b1, b2) -> Integer.compare(b1.getBill_id(), b2.getBill_id()))
+                .orElse(null);
+            
+            if (lastBill != null) {
+                tableBillCache.put(tableNumber, lastBill);
+            }
+            
+            return lastBill;
+            
         } catch (Exception e) {
             XDialog.alert("Lỗi khi load hóa đơn: " + e.getMessage());
             return null;
@@ -1214,6 +1284,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
                 table.setStatus(0); // Trống
                 tableDAO.update(table);
             }
+            
+            // Xóa bill khỏi cache khi thanh toán xong
+            removeBillFromCache(tableNumber);
             
             return true;
             
