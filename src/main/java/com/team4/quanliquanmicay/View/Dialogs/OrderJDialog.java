@@ -1036,6 +1036,8 @@ public class OrderJDialog extends javax.swing.JFrame {
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("Tìm kiếm :");
 
+        jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
+
         jScrollPane4.setPreferredSize(new java.awt.Dimension(660, 393));
 
         jPanel2.setBackground(new java.awt.Color(204, 204, 204));
@@ -1048,7 +1050,7 @@ public class OrderJDialog extends javax.swing.JFrame {
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGap(0, 435, Short.MAX_VALUE)
         );
 
         jScrollPane4.setViewportView(jPanel2);
