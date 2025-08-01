@@ -7,6 +7,8 @@ package com.team4.quanliquanmicay.View.Dialogs;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XJdbc;
+import com.team4.quanliquanmicay.util.XValidation;
+import com.team4.quanliquanmicay.util.XStr;
 import com.team4.quanliquanmicay.Entity.Product;
 import com.team4.quanliquanmicay.Entity.Bill;
 import com.team4.quanliquanmicay.Entity.BillDetails;
@@ -628,25 +630,79 @@ public class OrderJDialog extends javax.swing.JFrame {
             return;
         }
         
+        if (!currentBill.isValid()) {
+            XDialog.alert("Hóa đơn không hợp lệ!");
+            return;
+        }
+        
         try {
             // Thêm từng món vào bill details
             for (CartItem item : cartItems) {
+                // Validation cho Product
+                if (item.getProduct() == null) {
+                    XDialog.alert("Thông tin sản phẩm không hợp lệ!");
+                    return;
+                }
+                
+                // Validation cho quantity
+                if (item.getQuantity() <= 0) {
+                    XDialog.alert("Số lượng phải lớn hơn 0!");
+                    return;
+                }
+                
+                // Validation cho price và discount
+                if (item.getProduct().getPrice() <= 0) {
+                    XDialog.alert("Giá sản phẩm không hợp lệ!");
+                    return;
+                }
+                
+                if (item.getProduct().getDiscount() < 0 || item.getProduct().getDiscount() > 1) {
+                    XDialog.alert("Giảm giá không hợp lệ!");
+                    return;
+                }
+                
+                // Validation cho bill_id
+                if (currentBill.getBill_id() == null || currentBill.getBill_id() <= 0) {
+                    XDialog.alert("ID hóa đơn không hợp lệ!");
+                    return;
+                }
+                
+                // Validation cho product_id
+                if (XValidation.isEmpty(item.getProduct().getProductId())) {
+                    XDialog.alert("ID sản phẩm không hợp lệ!");
+                    return;
+                }
+                
                 BillDetails billDetail = new BillDetails();
+<<<<<<< HEAD
 //                billDetail.setBill_details_id(generateBillDetailsId());
+=======
+                // Không set bill_detail_id vì nó là IDENTITY column
+>>>>>>> 064358893b0964edaf617e19d2c97b608e98b037
                 billDetail.setBill_id(currentBill.getBill_id());
                 billDetail.setProduct_id(item.getProduct().getProductId());
                 billDetail.setAmount(item.getQuantity());
                 billDetail.setPrice(item.getProduct().getPrice());
                 billDetail.setDiscount(item.getProduct().getDiscount());
                 
-                billDetailsDAO.create(billDetail);
+                // Validation trước khi tạo
+                if (billDetail.isValid()) {
+                    billDetailsDAO.create(billDetail);
+                } else {
+                    XDialog.alert("Dữ liệu bill detail không hợp lệ!");
+                    return;
+                }
             }
             
             XDialog.alert("Đặt món thành công!");
             
             // Refresh parent dialog
             if (parentDialog != null) {
+<<<<<<< HEAD
 //                parentDialog.loadBillDetails(Integer.parseInt(currentBill.getBill_id()));
+=======
+                parentDialog.loadBillDetails(currentBill.getBill_id());
+>>>>>>> 064358893b0964edaf617e19d2c97b608e98b037
             }
             
             // Clear cart and close dialog
@@ -659,12 +715,7 @@ public class OrderJDialog extends javax.swing.JFrame {
         }
     }
     
-    /**
-     * Tạo ID cho bill details
-     */
-    private String generateBillDetailsId() {
-        return "BD" + System.currentTimeMillis();
-    }
+
     
     /**
      * Format tiền tệ
@@ -993,6 +1044,8 @@ public class OrderJDialog extends javax.swing.JFrame {
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("Tìm kiếm :");
 
+        jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
+
         jScrollPane4.setPreferredSize(new java.awt.Dimension(660, 393));
 
         jPanel2.setBackground(new java.awt.Color(204, 204, 204));
@@ -1005,7 +1058,7 @@ public class OrderJDialog extends javax.swing.JFrame {
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGap(0, 435, Short.MAX_VALUE)
         );
 
         jScrollPane4.setViewportView(jPanel2);
@@ -1071,6 +1124,7 @@ public class OrderJDialog extends javax.swing.JFrame {
         btnRemove.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnRemove.setForeground(new java.awt.Color(255, 0, 0));
         btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
+        btnRemove.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 153, 153), 2));
 
         btnExit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnExit.setForeground(new java.awt.Color(102, 102, 102));
@@ -1078,8 +1132,9 @@ public class OrderJDialog extends javax.swing.JFrame {
 
         btnAdd.setBackground(new java.awt.Color(204, 255, 204));
         btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnAdd.setForeground(new java.awt.Color(0, 102, 51));
+        btnAdd.setForeground(new java.awt.Color(255, 255, 255));
         btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Add to basket.png"))); // NOI18N
+        btnAdd.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 255, 153), 2));
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
