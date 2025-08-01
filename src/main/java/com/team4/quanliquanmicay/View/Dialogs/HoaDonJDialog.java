@@ -124,7 +124,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         paymentDialog.setVisible(true);
         
         // Truyền thông tin bill hiện tại cho dialog thanh toán
-        paymentDialog.loadBillForTable(currentBill.getTable_number());
+        paymentDialog.loadBillDirectly(currentBill);
         
         // Đóng dialog hiện tại
         this.dispose();

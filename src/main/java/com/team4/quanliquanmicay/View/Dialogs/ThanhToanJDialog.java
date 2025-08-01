@@ -434,6 +434,29 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             }
         };
         tbBillDetail.setModel(tableModel);
+        
+        // Set fixed column widths
+        tbBillDetail.getColumnModel().getColumn(0).setPreferredWidth(80);  // Mã SP - smaller
+        tbBillDetail.getColumnModel().getColumn(1).setPreferredWidth(200); // Tên SP - larger
+        tbBillDetail.getColumnModel().getColumn(2).setPreferredWidth(80);  // Số lượng - smaller
+        tbBillDetail.getColumnModel().getColumn(3).setPreferredWidth(100); // Đơn giá - smaller
+        tbBillDetail.getColumnModel().getColumn(4).setPreferredWidth(80);  // Giảm giá - smaller
+        tbBillDetail.getColumnModel().getColumn(5).setPreferredWidth(100); // Thành tiền - smaller
+    }
+    
+    /**
+     * Format tiền tệ
+     */
+    private String formatCurrency(double amount) {
+        return String.format("%,.0f VNĐ", amount);
+    }
+    
+    /**
+     * Format giảm giá thành phần trăm
+     */
+    private String formatDiscount(double discount) {
+        if (discount <= 0) return "0%";
+        return String.format("%.0f%%", discount * 100);
     }
     
     /**
@@ -540,9 +563,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
                 selectedButton = btnTable;
             } else {
                 switch (buttonStatus) {
-                    case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break;
-                    case 1: btnTable.setBackground(Color.decode("#27ae60")); break;
-                    case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break;
+                    case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
+                    case 1: btnTable.setBackground(Color.decode("#27ae60")); break; // Xanh lá
+                    case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
                     default: btnTable.setBackground(new Color(55, 71, 79));
                 }
             }
@@ -564,9 +587,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
                 public void mouseExited(java.awt.event.MouseEvent evt) {
                     if (btnTable != selectedButton && btnTable.isEnabled()) {
                         switch (buttonStatus) {
-                            case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break;
-                            case 1: btnTable.setBackground(Color.decode("#27ae60")); break;
-                            case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break;
+                            case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
+                            case 1: btnTable.setBackground(Color.decode("#27ae60")); break; // Xanh lá
+                            case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
                             default: btnTable.setBackground(new Color(55, 71, 79));
                         }
                         btnTable.repaint();
@@ -589,9 +612,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
                             }
                         } else {
                             switch (buttonStatus) {
-                                case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break;
-                                case 1: btnTable.setBackground(Color.decode("#27ae60")); break;
-                                case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break;
+                                case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
+                                case 1: btnTable.setBackground(Color.decode("#27ae60")); break; // Xanh lá
+                                case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
                                 default: btnTable.setBackground(new Color(55, 71, 79));
                             }
                         }
@@ -614,9 +637,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             TableForCustomer oldTable = tableDAO.findById(selectedTableNumber);
             if (oldTable != null) {
                 switch (oldTable.getStatus()) {
-                    case 0: selectedButton.setBackground(Color.decode("#bdbdbd")); break;
-                    case 1: selectedButton.setBackground(Color.decode("#27ae60")); break;
-                    case 2: selectedButton.setBackground(Color.decode("#f5f5f5")); break;
+                    case 0: selectedButton.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
+                    case 1: selectedButton.setBackground(Color.decode("#27ae60")); break; // Xanh lá
+                    case 2: selectedButton.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
                     default: selectedButton.setBackground(new Color(55, 71, 79));
                 }
             }
@@ -847,9 +870,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
                     detail.getProduct_id(),
                     getProductName(detail.getProduct_id()),
                     detail.getAmount(),
-                    detail.getPrice(),
-                    detail.getDiscount(),
-                    (detail.getPrice() - detail.getDiscount()) * detail.getAmount()
+                    formatCurrency(detail.getPrice()),
+                    formatDiscount(detail.getDiscount()),
+                    formatCurrency((detail.getPrice() - detail.getDiscount()) * detail.getAmount())
                 };
                 tableModel.addRow(row);
             }
@@ -863,7 +886,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
      */
     private void calculateTotalAmount() {
         totalAmount = this.calculateTotalAmount(billDetails);
-        lblTotalAmout.setText(String.format("%.0f", totalAmount));
+        lblTotalAmout.setText(formatCurrency(totalAmount));
     }
     
     /**
@@ -871,7 +894,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
      */
     private void updateDisplay() {
         if (currentBill != null) {
-            lblTotalAmout.setText(String.format("%.0f", totalAmount));
+            lblTotalAmout.setText(formatCurrency(totalAmount));
             
             // Cập nhật thông tin khách hàng nếu có
             if (currentCustomer != null) {
@@ -912,7 +935,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         }
         
         // Xác nhận thanh toán
-        boolean confirm = XDialog.confirm("Xác nhận thanh toán?\nTổng tiền: " + String.format("%.0f", totalAmount) + " VNĐ");
+        boolean confirm = XDialog.confirm("Xác nhận thanh toán?\nTổng tiền: " + formatCurrency(totalAmount));
         if (!confirm) {
             return;
         }
@@ -921,7 +944,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         boolean success = this.processPayment(currentBill, currentCustomer, totalAmount, selectedTableNumber);
         
         if (success) {
-            XDialog.alert("Thanh toán thành công!\nTổng tiền: " + String.format("%.0f", totalAmount) + " VNĐ");
+            XDialog.alert("Thanh toán thành công!\nTổng tiền: " + formatCurrency(totalAmount));
             
             // Reload bàn
             loadTables();
@@ -961,9 +984,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
      */
     private Color getSelectedColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#616161");
-            case 1: return Color.decode("#186a3b");
-            case 2: return Color.decode("#757575");
+            case 0: return Color.decode("#616161"); // Xám đậm hơn
+            case 1: return Color.decode("#186a3b"); // Xanh đậm hơn
+            case 2: return Color.decode("#757575"); // Xám đậm khi chọn
             default: return Color.GRAY;
         }
     }
@@ -973,9 +996,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
      */
     private Color getHoverColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#616161");
-            case 1: return Color.decode("#196f3d");
-            case 2: return Color.decode("#bdbdbd");
+            case 0: return Color.decode("#616161"); // Xám đậm
+            case 1: return Color.decode("#196f3d"); // Xanh đậm
+            case 2: return Color.decode("#bdbdbd"); // Xám đậm hơn xám trắng
             default: return Color.GRAY;
         }
     }
@@ -1009,19 +1032,19 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             String productId = (String) tbBillDetail.getValueAt(row, 0);
             String productName = (String) tbBillDetail.getValueAt(row, 1);
             int amount = (Integer) tbBillDetail.getValueAt(row, 2);
-            double price = (Double) tbBillDetail.getValueAt(row, 3);
-            double discount = (Double) tbBillDetail.getValueAt(row, 4);
-            double total = (Double) tbBillDetail.getValueAt(row, 5);
+            String priceStr = (String) tbBillDetail.getValueAt(row, 3);
+            String discountStr = (String) tbBillDetail.getValueAt(row, 4);
+            String totalStr = (String) tbBillDetail.getValueAt(row, 5);
             
             String info = String.format(
                 "Thông tin món:\n" +
                 "Mã SP: %s\n" +
                 "Tên SP: %s\n" +
                 "Số lượng: %d\n" +
-                "Đơn giá: %.0f VNĐ\n" +
-                "Giảm giá: %.0f VNĐ\n" +
-                "Thành tiền: %.0f VNĐ",
-                productId, productName, amount, price, discount, total
+                "Đơn giá: %s\n" +
+                "Giảm giá: %s\n" +
+                "Thành tiền: %s",
+                productId, productName, amount, priceStr, discountStr, totalStr
             );
             
             XDialog.alert(info);
