@@ -618,9 +618,134 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
     }
     
     /**
+     * Load bill trực tiếp từ HoaDonJDialog
+     */
+    public void loadBillDirectly(Bill bill) {
+        if (bill == null) {
+            XDialog.alert("Không có thông tin hóa đơn!");
+            return;
+        }
+        
+        currentBill = bill;
+        selectedTableNumber = bill.getTable_number();
+        
+        // Load chi tiết hóa đơn
+        loadBillDetails(currentBill.getBill_id());
+        
+        // Load thông tin khách hàng
+        if (currentBill.getPhone_number() != null && !currentBill.getPhone_number().isEmpty()) {
+            loadCustomerInfo(currentBill.getPhone_number());
+        }
+        
+        // Cập nhật giao diện
+        updateDisplay();
+        
+        // Đảm bảo load bàn trước khi tô màu
+        loadTables();
+        
+        // Tô màu bàn được chọn
+        highlightSelectedTableDirectly();
+    }
+    
+    /**
+     * Tô màu bàn được chọn (không load lại bàn)
+     */
+    private void highlightSelectedTableDirectly() {
+        // Tìm và tô màu bàn được chọn
+        for (int i = 0; i < pnPayment.getComponentCount(); i++) {
+            if (pnPayment.getComponent(i) instanceof JButton) {
+                JButton btn = (JButton) pnPayment.getComponent(i);
+                if (btn.getActionCommand() != null && 
+                    btn.getActionCommand().equals(String.valueOf(selectedTableNumber))) {
+                    btn.setBorder(new javax.swing.border.CompoundBorder(
+                        new javax.swing.border.LineBorder(Color.decode("#00fe92"), 4, true),
+                        new javax.swing.border.LineBorder(Color.LIGHT_GRAY, 2)
+                    ));
+                    btn.setBackground(getSelectedColorByStatus(1)); // Giả sử status = 1 (đang phục vụ)
+                    selectedButton = btn;
+                    break;
+                }
+            }
+        }
+        
+        // Kiểm tra tab 2
+        for (int i = 0; i < jPanel5.getComponentCount(); i++) {
+            if (jPanel5.getComponent(i) instanceof JButton) {
+                JButton btn = (JButton) jPanel5.getComponent(i);
+                if (btn.getActionCommand() != null && 
+                    btn.getActionCommand().equals(String.valueOf(selectedTableNumber))) {
+                    btn.setBorder(new javax.swing.border.CompoundBorder(
+                        new javax.swing.border.LineBorder(Color.decode("#00fe92"), 4, true),
+                        new javax.swing.border.LineBorder(Color.LIGHT_GRAY, 2)
+                    ));
+                    btn.setBackground(getSelectedColorByStatus(1));
+                    selectedButton = btn;
+                    break;
+                }
+            }
+        }
+        
+        // Chuyển đến tab chứa bàn được chọn
+        if (selectedTableNumber <= 12) {
+            jTabbedPane1.setSelectedIndex(0); // Tab 1 (Bàn 1-12)
+        } else {
+            jTabbedPane1.setSelectedIndex(1); // Tab 2 (Bàn 13-24)
+        }
+    }
+    
+    /**
+     * Tô màu bàn được chọn
+     */
+    private void highlightSelectedTable() {
+        // Đảm bảo load bàn trước khi tô màu
+        loadTables();
+        
+        // Tìm và tô màu bàn được chọn
+        for (int i = 0; i < pnPayment.getComponentCount(); i++) {
+            if (pnPayment.getComponent(i) instanceof JButton) {
+                JButton btn = (JButton) pnPayment.getComponent(i);
+                if (btn.getActionCommand() != null && 
+                    btn.getActionCommand().equals(String.valueOf(selectedTableNumber))) {
+                    btn.setBorder(new javax.swing.border.CompoundBorder(
+                        new javax.swing.border.LineBorder(Color.decode("#00fe92"), 4, true),
+                        new javax.swing.border.LineBorder(Color.LIGHT_GRAY, 2)
+                    ));
+                    btn.setBackground(getSelectedColorByStatus(1)); // Giả sử status = 1 (đang phục vụ)
+                    selectedButton = btn;
+                    break;
+                }
+            }
+        }
+        
+        // Kiểm tra tab 2
+        for (int i = 0; i < jPanel5.getComponentCount(); i++) {
+            if (jPanel5.getComponent(i) instanceof JButton) {
+                JButton btn = (JButton) jPanel5.getComponent(i);
+                if (btn.getActionCommand() != null && 
+                    btn.getActionCommand().equals(String.valueOf(selectedTableNumber))) {
+                    btn.setBorder(new javax.swing.border.CompoundBorder(
+                        new javax.swing.border.LineBorder(Color.decode("#00fe92"), 4, true),
+                        new javax.swing.border.LineBorder(Color.LIGHT_GRAY, 2)
+                    ));
+                    btn.setBackground(getSelectedColorByStatus(1));
+                    selectedButton = btn;
+                    break;
+                }
+            }
+        }
+        
+        // Chuyển đến tab chứa bàn được chọn
+        if (selectedTableNumber <= 12) {
+            jTabbedPane1.setSelectedIndex(0); // Tab 1 (Bàn 1-12)
+        } else {
+            jTabbedPane1.setSelectedIndex(1); // Tab 2 (Bàn 13-24)
+        }
+    }
+    
+    /**
      * Load thông tin hóa đơn cho bàn được chọn
      */
-    private void loadBillForTable(int tableNumber) {
+    public void loadBillForTable(int tableNumber) {
         try {
             // Tìm bill theo table_number
             String sql = "SELECT * FROM BILL WHERE table_number = ? AND status = 1";
