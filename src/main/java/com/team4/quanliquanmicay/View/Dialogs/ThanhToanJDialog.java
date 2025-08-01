@@ -471,22 +471,11 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         btnExit.addActionListener(e -> dispose());
         btnCreateMember.addActionListener(e -> createMember());
         
-        // Thêm event cho txtPhoneNumber
+        // Thêm event cho txtPhoneNumber - chỉ tìm kiếm khi Enter
         txtPhoneNumber.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
-                    searchCustomerByPhone();
-                }
-            }
-        });
-        
-        // Thêm focus lost listener để tự động tìm kiếm
-        txtPhoneNumber.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) {
-                String phoneNumber = txtPhoneNumber.getText().trim();
-                if (!phoneNumber.isEmpty()) {
                     searchCustomerByPhone();
                 }
             }
@@ -698,10 +687,11 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         // Load chi tiết hóa đơn
         loadBillDetails(currentBill.getBill_id());
         
-        // Load thông tin khách hàng
-        if (currentBill.getPhone_number() != null && !currentBill.getPhone_number().isEmpty()) {
-            loadCustomerInfo(currentBill.getPhone_number());
-        }
+        // Không load thông tin khách hàng tự động - để user tự nhập tìm kiếm
+        // Reset thông tin khách hàng
+        currentCustomer = null;
+        customerPoints = 0;
+        lblPoint.setText("0");
         
         // Cập nhật giao diện
         updateDisplay();
@@ -846,10 +836,11 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
                 // Load chi tiết hóa đơn
                 loadBillDetails(currentBill.getBill_id());
                 
-                // Load thông tin khách hàng
-                if (currentBill.getPhone_number() != null && !currentBill.getPhone_number().isEmpty()) {
-                    loadCustomerInfo(currentBill.getPhone_number());
-                }
+                // Không load thông tin khách hàng tự động - để user tự nhập tìm kiếm
+                // Reset thông tin khách hàng
+                currentCustomer = null;
+                customerPoints = 0;
+                lblPoint.setText("0");
                 
                 // Cập nhật giao diện
                 updateDisplay();
@@ -884,16 +875,16 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         try {
             currentCustomer = this.getCustomerByPhone(phoneNumber);
             if (currentCustomer != null) {
-                txtPhoneNumber.setText(currentCustomer.getPhone_number());
+                // Không fill số điện thoại, chỉ cập nhật điểm
                 customerPoints = currentCustomer.getPoint_level();
                 lblPoint.setText(String.valueOf(customerPoints));
             } else {
-                txtPhoneNumber.setText(phoneNumber);
+                // Không fill số điện thoại, reset điểm
                 customerPoints = 0;
                 lblPoint.setText("0");
             }
         } catch (Exception e) {
-            txtPhoneNumber.setText(phoneNumber);
+            // Không fill số điện thoại, reset điểm
             customerPoints = 0;
             lblPoint.setText("0");
         }
@@ -936,9 +927,8 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         if (currentBill != null) {
             lblTotalAmout.setText(formatCurrency(totalAmount));
             
-            // Cập nhật thông tin khách hàng nếu có
+            // Cập nhật thông tin khách hàng nếu có (chỉ điểm, không fill số điện thoại)
             if (currentCustomer != null) {
-                txtPhoneNumber.setText(currentCustomer.getPhone_number());
                 lblPoint.setText(String.valueOf(currentCustomer.getPoint_level()));
             }
         }
@@ -955,7 +945,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         customerPoints = 0;
         
         tableModel.setRowCount(0);
-        txtPhoneNumber.setText("");
+        // Không clear txtPhoneNumber - để user tự nhập
         lblPoint.setText("0");
         lblTotalAmout.setText("0");
     }
@@ -974,6 +964,21 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             return;
         }
         
+        // Lấy số điện thoại từ txtPhoneNumber
+        String phoneNumber = txtPhoneNumber.getText().trim();
+        Customer customerToUse = currentCustomer;
+        
+        // Nếu có nhập số điện thoại nhưng chưa tìm customer, thử tìm lại
+        if (!phoneNumber.isEmpty() && currentCustomer == null) {
+            Customer foundCustomer = this.searchCustomer(phoneNumber);
+            if (foundCustomer != null) {
+                customerToUse = foundCustomer;
+                currentCustomer = foundCustomer;
+                customerPoints = foundCustomer.getPoint_level();
+                lblPoint.setText(String.valueOf(customerPoints));
+            }
+        }
+        
         // Xác nhận thanh toán
         boolean confirm = XDialog.confirm("Xác nhận thanh toán?\nTổng tiền: " + formatCurrency(totalAmount));
         if (!confirm) {
@@ -981,14 +986,25 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         }
         
         // Sử dụng controller để xử lý thanh toán
-        boolean success = this.processPayment(currentBill, currentCustomer, totalAmount, selectedTableNumber);
+        boolean success = this.processPayment(currentBill, customerToUse, totalAmount, selectedTableNumber);
         
         if (success) {
             XDialog.alert("Thanh toán thành công!\nTổng tiền: " + formatCurrency(totalAmount));
             
             // Reload bàn
             loadTables();
-            clearDisplay();
+            
+            // Clear display nhưng giữ lại txtPhoneNumber
+            currentBill = null;
+            currentCustomer = null;
+            billDetails = null;
+            totalAmount = 0.0;
+            customerPoints = 0;
+            
+            tableModel.setRowCount(0);
+            // Không clear txtPhoneNumber - để user tự nhập
+            lblPoint.setText("0");
+            lblTotalAmout.setText("0");
         }
     }
     
@@ -1007,7 +1023,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             currentCustomer = customerDialog.getCustomer();
             customerPoints = currentCustomer.getPoint_level();
             lblPoint.setText(String.valueOf(customerPoints));
-            txtPhoneNumber.setText(currentCustomer.getPhone_number());
+            // Không fill số điện thoại, để user tự nhập
             XDialog.alert("Tạo hội viên thành công!");
         }
     }
@@ -1263,11 +1279,17 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             
             paymentHistoryDAO.create(payment);
             
-            // Cập nhật bill
+            // Cập nhật bill với số điện thoại khách hàng
             bill.setPayment_history_id(Integer.parseInt(payment.getPayment_history_id()));
             bill.setStatus(false); // Đã thanh toán
             bill.setCheckout(new Date());
             bill.setTotal_amount(totalAmount);
+            
+            // Cập nhật số điện thoại khách hàng vào bill nếu có
+            if (customer != null) {
+                bill.setPhone_number(customer.getPhone_number());
+            }
+            
             billDAO.update(bill);
             
             // Cập nhật điểm khách hàng

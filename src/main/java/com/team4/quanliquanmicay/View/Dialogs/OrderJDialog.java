@@ -674,11 +674,9 @@ public class OrderJDialog extends javax.swing.JFrame {
                 }
                 
                 BillDetails billDetail = new BillDetails();
-<<<<<<< HEAD
-//                billDetail.setBill_details_id(generateBillDetailsId());
-=======
+
                 // Không set bill_detail_id vì nó là IDENTITY column
->>>>>>> 064358893b0964edaf617e19d2c97b608e98b037
+
                 billDetail.setBill_id(currentBill.getBill_id());
                 billDetail.setProduct_id(item.getProduct().getProductId());
                 billDetail.setAmount(item.getQuantity());
@@ -698,11 +696,9 @@ public class OrderJDialog extends javax.swing.JFrame {
             
             // Refresh parent dialog
             if (parentDialog != null) {
-<<<<<<< HEAD
-//                parentDialog.loadBillDetails(Integer.parseInt(currentBill.getBill_id()));
-=======
+
                 parentDialog.loadBillDetails(currentBill.getBill_id());
->>>>>>> 064358893b0964edaf617e19d2c97b608e98b037
+
             }
             
             // Clear cart and close dialog
