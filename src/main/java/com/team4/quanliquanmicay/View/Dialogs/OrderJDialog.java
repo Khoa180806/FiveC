@@ -675,7 +675,10 @@ public class OrderJDialog extends javax.swing.JFrame {
                 
                 BillDetails billDetail = new BillDetails();
 
+<<<<<<< HEAD
                 // Không set bill_detail_id vì nó là IDENTITY column
+=======
+>>>>>>> 603143c78266887780ed136917ff8975151139e6
 
                 billDetail.setBill_id(currentBill.getBill_id());
                 billDetail.setProduct_id(item.getProduct().getProductId());
