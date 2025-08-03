@@ -1270,11 +1270,11 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             
             // Tạo payment history
             PaymentHistory payment = new PaymentHistory();
-            // payment.setPayment_history_id(generatePaymentId()); // BỎ DÒNG NÀY, DB sẽ tự sinh ID
+            payment.setPayment_history_id(Integer.parseInt(generatePaymentId()));
             payment.setPayment_method_id(1); // Tiền mặt
             payment.setPayment_date(new Date());
             payment.setTotal_amount(totalAmount);
-            payment.setStatus("Thành công"); // Sửa lại kiểu String
+            payment.setStatus("true");
             payment.setNote("Thanh toán hóa đơn bàn " + tableNumber);
 
             paymentHistoryDAO.create(payment);
