@@ -20,39 +20,47 @@ import com.team4.quanliquanmicay.DAO.PaymentHistoryDAO;
 import com.team4.quanliquanmicay.Impl.PaymentHistoryDAOImpl;
 import com.team4.quanliquanmicay.DAO.TableForCustomerDAO;
 import com.team4.quanliquanmicay.Impl.TableForCustomerDAOImpl;
+import com.team4.quanliquanmicay.DAO.BillDAO;
+import com.team4.quanliquanmicay.Impl.BillDAOImpl;
+import com.team4.quanliquanmicay.Controller.PaymentController;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.util.List;
+import java.util.ArrayList;
 import java.sql.ResultSet;
 
 /**
  *
  * @author HP
  */
-public class ThanhToanJDialog extends javax.swing.JFrame {
+public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentController {
     
-    // DAO Objects
-    private BillDetailsDAO billDetailsDAO;
-    private CustomerDAO customerDAO;
-    private PaymentHistoryDAO paymentHistoryDAO;
-    private TableForCustomerDAO tableDAO;
+    // DAO objects
+    private final BillDetailsDAO billDetailsDAO;
+    private final CustomerDAO customerDAO;
+    private final PaymentHistoryDAO paymentHistoryDAO;
+    private final TableForCustomerDAO tableDAO;
+    private final BillDAO billDAO;
     
-    // Data Objects
+    // Current data
     private Bill currentBill;
     private Customer currentCustomer;
     private List<BillDetails> billDetails;
     private double totalAmount = 0.0;
     private int customerPoints = 0;
     
-    // Table Model
+    // Table model
     private DefaultTableModel tableModel;
     
     // Table selection
     private JButton selectedButton = null;
     private int selectedTableNumber = -1;
+    
+    // Cache để lưu bill của từng bàn
+    private java.util.Map<Integer, Bill> tableBillCache = new java.util.HashMap<>();
 
     /**
      * Creates new form ThanhToanJDialog
@@ -68,6 +76,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
         customerDAO = new CustomerDAOImpl();
         paymentHistoryDAO = new PaymentHistoryDAOImpl();
         tableDAO = new TableForCustomerDAOImpl();
+        billDAO = new BillDAOImpl();
         
         // Setup table model
         setupTableModel();
@@ -429,6 +438,29 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
             }
         };
         tbBillDetail.setModel(tableModel);
+        
+        // Set fixed column widths
+        tbBillDetail.getColumnModel().getColumn(0).setPreferredWidth(80);  // Mã SP - smaller
+        tbBillDetail.getColumnModel().getColumn(1).setPreferredWidth(200); // Tên SP - larger
+        tbBillDetail.getColumnModel().getColumn(2).setPreferredWidth(80);  // Số lượng - smaller
+        tbBillDetail.getColumnModel().getColumn(3).setPreferredWidth(100); // Đơn giá - smaller
+        tbBillDetail.getColumnModel().getColumn(4).setPreferredWidth(80);  // Giảm giá - smaller
+        tbBillDetail.getColumnModel().getColumn(5).setPreferredWidth(100); // Thành tiền - smaller
+    }
+    
+    /**
+     * Format tiền tệ
+     */
+    private String formatCurrency(double amount) {
+        return String.format("%,.0f VNĐ", amount);
+    }
+    
+    /**
+     * Format giảm giá thành phần trăm
+     */
+    private String formatDiscount(double discount) {
+        if (discount <= 0) return "0%";
+        return String.format("%.0f%%", discount * 100);
     }
     
     /**
@@ -438,6 +470,26 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
         btnPay.addActionListener(e -> processPayment());
         btnExit.addActionListener(e -> dispose());
         btnCreateMember.addActionListener(e -> createMember());
+        
+        // Thêm event cho txtPhoneNumber - chỉ tìm kiếm khi Enter
+        txtPhoneNumber.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    searchCustomerByPhone();
+                }
+            }
+        });
+        
+        // Thêm event cho bảng
+        tbBillDetail.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (evt.getClickCount() == 2) {
+                    showBillDetailInfo();
+                }
+            }
+        });
     }
     
     /**
@@ -445,7 +497,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
      */
     private void loadTables() {
         try {
-            List<TableForCustomer> tables = tableDAO.findAll();
+            List<TableForCustomer> tables = this.getAllTables();
             
             // Xóa tất cả bàn cũ trong panel
             pnPayment.removeAll();
@@ -515,13 +567,13 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
                 selectedButton = btnTable;
             } else {
                 switch (buttonStatus) {
-                    case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break;
-                    case 1: btnTable.setBackground(Color.decode("#27ae60")); break;
-                    case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break;
+                    case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
+                    case 1: btnTable.setBackground(Color.decode("#27ae60")); break; // Xanh lá
+                    case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
                     default: btnTable.setBackground(new Color(55, 71, 79));
                 }
             }
-            btnTable.setActionCommand(String.valueOf(table.getTable_number()));
+            btnTable.setActionCommand(String.valueOf(tableNumber));
             btnTable.addActionListener((ActionEvent e) -> {
                 int num = Integer.parseInt(e.getActionCommand());
                 selectTable(num, btnTable);
@@ -539,9 +591,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
                 public void mouseExited(java.awt.event.MouseEvent evt) {
                     if (btnTable != selectedButton && btnTable.isEnabled()) {
                         switch (buttonStatus) {
-                            case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break;
-                            case 1: btnTable.setBackground(Color.decode("#27ae60")); break;
-                            case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break;
+                            case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
+                            case 1: btnTable.setBackground(Color.decode("#27ae60")); break; // Xanh lá
+                            case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
                             default: btnTable.setBackground(new Color(55, 71, 79));
                         }
                         btnTable.repaint();
@@ -564,9 +616,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
                             }
                         } else {
                             switch (buttonStatus) {
-                                case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break;
-                                case 1: btnTable.setBackground(Color.decode("#27ae60")); break;
-                                case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break;
+                                case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
+                                case 1: btnTable.setBackground(Color.decode("#27ae60")); break; // Xanh lá
+                                case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
                                 default: btnTable.setBackground(new Color(55, 71, 79));
                             }
                         }
@@ -589,9 +641,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
             TableForCustomer oldTable = tableDAO.findById(selectedTableNumber);
             if (oldTable != null) {
                 switch (oldTable.getStatus()) {
-                    case 0: selectedButton.setBackground(Color.decode("#bdbdbd")); break;
-                    case 1: selectedButton.setBackground(Color.decode("#27ae60")); break;
-                    case 2: selectedButton.setBackground(Color.decode("#f5f5f5")); break;
+                    case 0: selectedButton.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
+                    case 1: selectedButton.setBackground(Color.decode("#27ae60")); break; // Xanh lá
+                    case 2: selectedButton.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
                     default: selectedButton.setBackground(new Color(55, 71, 79));
                 }
             }
@@ -618,28 +670,164 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
     }
     
     /**
+     * Load bill trực tiếp từ HoaDonJDialog
+     */
+    public void loadBillDirectly(Bill bill) {
+        if (bill == null) {
+            XDialog.alert("Không có thông tin hóa đơn!");
+            return;
+        }
+        
+        currentBill = bill;
+        selectedTableNumber = bill.getTable_number();
+        
+        // Lưu bill vào cache
+        tableBillCache.put(bill.getTable_number(), bill);
+        
+        // Load chi tiết hóa đơn
+        loadBillDetails(currentBill.getBill_id());
+        
+        // Không load thông tin khách hàng tự động - để user tự nhập tìm kiếm
+        // Reset thông tin khách hàng
+        currentCustomer = null;
+        customerPoints = 0;
+        lblPoint.setText("0");
+        
+        // Cập nhật giao diện
+        updateDisplay();
+        
+        // Đảm bảo load bàn trước khi tô màu
+        loadTables();
+        
+        // Tô màu bàn được chọn
+        highlightSelectedTableDirectly();
+    }
+    
+    /**
+     * Cập nhật cache khi có bill mới
+     */
+    public void updateBillCache(int tableNumber, Bill bill) {
+        if (bill != null) {
+            tableBillCache.put(tableNumber, bill);
+        }
+    }
+    
+    /**
+     * Xóa bill khỏi cache khi thanh toán xong
+     */
+    public void removeBillFromCache(int tableNumber) {
+        tableBillCache.remove(tableNumber);
+    }
+    
+    /**
+     * Tô màu bàn được chọn (không load lại bàn)
+     */
+    private void highlightSelectedTableDirectly() {
+        // Tìm và tô màu bàn được chọn
+        for (int i = 0; i < pnPayment.getComponentCount(); i++) {
+            if (pnPayment.getComponent(i) instanceof JButton) {
+                JButton btn = (JButton) pnPayment.getComponent(i);
+                if (btn.getActionCommand() != null && 
+                    btn.getActionCommand().equals(String.valueOf(selectedTableNumber))) {
+                    btn.setBorder(new javax.swing.border.CompoundBorder(
+                        new javax.swing.border.LineBorder(Color.decode("#00fe92"), 4, true),
+                        new javax.swing.border.LineBorder(Color.LIGHT_GRAY, 2)
+                    ));
+                    btn.setBackground(getSelectedColorByStatus(1)); // Giả sử status = 1 (đang phục vụ)
+                    selectedButton = btn;
+                    break;
+                }
+            }
+        }
+        
+        // Kiểm tra tab 2
+        for (int i = 0; i < jPanel5.getComponentCount(); i++) {
+            if (jPanel5.getComponent(i) instanceof JButton) {
+                JButton btn = (JButton) jPanel5.getComponent(i);
+                if (btn.getActionCommand() != null && 
+                    btn.getActionCommand().equals(String.valueOf(selectedTableNumber))) {
+                    btn.setBorder(new javax.swing.border.CompoundBorder(
+                        new javax.swing.border.LineBorder(Color.decode("#00fe92"), 4, true),
+                        new javax.swing.border.LineBorder(Color.LIGHT_GRAY, 2)
+                    ));
+                    btn.setBackground(getSelectedColorByStatus(1));
+                    selectedButton = btn;
+                    break;
+                }
+            }
+        }
+        
+        // Chuyển đến tab chứa bàn được chọn
+        if (selectedTableNumber <= 12) {
+            jTabbedPane1.setSelectedIndex(0); // Tab 1 (Bàn 1-12)
+        } else {
+            jTabbedPane1.setSelectedIndex(1); // Tab 2 (Bàn 13-24)
+        }
+    }
+    
+    /**
+     * Tô màu bàn được chọn
+     */
+    private void highlightSelectedTable() {
+        // Đảm bảo load bàn trước khi tô màu
+        loadTables();
+        
+        // Tìm và tô màu bàn được chọn
+        for (int i = 0; i < pnPayment.getComponentCount(); i++) {
+            if (pnPayment.getComponent(i) instanceof JButton) {
+                JButton btn = (JButton) pnPayment.getComponent(i);
+                if (btn.getActionCommand() != null && 
+                    btn.getActionCommand().equals(String.valueOf(selectedTableNumber))) {
+                    btn.setBorder(new javax.swing.border.CompoundBorder(
+                        new javax.swing.border.LineBorder(Color.decode("#00fe92"), 4, true),
+                        new javax.swing.border.LineBorder(Color.LIGHT_GRAY, 2)
+                    ));
+                    btn.setBackground(getSelectedColorByStatus(1)); // Giả sử status = 1 (đang phục vụ)
+                    selectedButton = btn;
+                    break;
+                }
+            }
+        }
+        
+        // Kiểm tra tab 2
+        for (int i = 0; i < jPanel5.getComponentCount(); i++) {
+            if (jPanel5.getComponent(i) instanceof JButton) {
+                JButton btn = (JButton) jPanel5.getComponent(i);
+                if (btn.getActionCommand() != null && 
+                    btn.getActionCommand().equals(String.valueOf(selectedTableNumber))) {
+                    btn.setBorder(new javax.swing.border.CompoundBorder(
+                        new javax.swing.border.LineBorder(Color.decode("#00fe92"), 4, true),
+                        new javax.swing.border.LineBorder(Color.LIGHT_GRAY, 2)
+                    ));
+                    btn.setBackground(getSelectedColorByStatus(1));
+                    selectedButton = btn;
+                    break;
+                }
+            }
+        }
+        
+        // Chuyển đến tab chứa bàn được chọn
+        if (selectedTableNumber <= 12) {
+            jTabbedPane1.setSelectedIndex(0); // Tab 1 (Bàn 1-12)
+        } else {
+            jTabbedPane1.setSelectedIndex(1); // Tab 2 (Bàn 13-24)
+        }
+    }
+    
+    /**
      * Load thông tin hóa đơn cho bàn được chọn
      */
-    private void loadBillForTable(int tableNumber) {
+    public void loadBillForTable(int tableNumber) {
         try {
-            // Tìm bill theo table_number
-            String sql = "SELECT * FROM BILL WHERE table_number = ? AND status = 1";
-            Bill bill = XJdbc.executeQuery(sql, rs -> {
-                if (rs.next()) {
-                    Bill b = new Bill();
-                    b.setBill_id(rs.getInt("bill_id"));
-                    b.setUser_id(rs.getString("user_id"));
-                    b.setPhone_number(rs.getString("phone_number"));
-                    b.setPayment_history_id(rs.getInt("payment_history_id"));
-                    b.setTable_number(rs.getInt("table_number"));
-                    b.setTotal_amount(rs.getDouble("total_amount"));
-                    b.setCheckin(rs.getDate("checkin"));
-                    b.setCheckout(rs.getDate("checkout"));
-                    b.setStatus(rs.getBoolean("status"));
-                    return b;
-                }
-                return null;
-            }, tableNumber);
+            // Debug: Kiểm tra tất cả bill của bàn này
+            List<Bill> allBills = ((BillDAOImpl) billDAO).findAllByTableNumber(tableNumber);
+            System.out.println("Debug: Tìm thấy " + allBills.size() + " bill cho bàn " + tableNumber);
+            for (Bill bill : allBills) {
+                System.out.println("  Bill ID: " + bill.getBill_id() + ", Status: " + bill.getStatus());
+            }
+            
+            // Sử dụng controller để lấy bill
+            Bill bill = this.getBillByTableNumber(tableNumber);
             
             if (bill != null) {
                 // Có hóa đơn đang hoạt động
@@ -648,18 +836,18 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
                 // Load chi tiết hóa đơn
                 loadBillDetails(currentBill.getBill_id());
                 
-                // Load thông tin khách hàng
-                if (currentBill.getPhone_number() != null && !currentBill.getPhone_number().isEmpty()) {
-                    loadCustomerInfo(currentBill.getPhone_number());
-                }
+                // Không load thông tin khách hàng tự động - để user tự nhập tìm kiếm
+                // Reset thông tin khách hàng
+                currentCustomer = null;
+                customerPoints = 0;
+                lblPoint.setText("0");
                 
                 // Cập nhật giao diện
                 updateDisplay();
                 
             } else {
-                // Không có hóa đơn
+                // Không có hóa đơn - chỉ clear display, không hiện thông báo
                 clearDisplay();
-                XDialog.alert("Bàn " + tableNumber + " chưa có hóa đơn!");
             }
             
         } catch (Exception e) {
@@ -672,7 +860,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
      */
     private void loadBillDetails(int billId) {
         try {
-            billDetails = billDetailsDAO.findByBillId(billId);
+            billDetails = this.getBillDetails(billId);
             fillTableWithBillDetails(billDetails);
             calculateTotalAmount();
         } catch (Exception e) {
@@ -685,18 +873,18 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
      */
     private void loadCustomerInfo(String phoneNumber) {
         try {
-            currentCustomer = customerDAO.findById(phoneNumber);
+            currentCustomer = this.getCustomerByPhone(phoneNumber);
             if (currentCustomer != null) {
-                txtPhoneNumber.setText(currentCustomer.getPhone_number());
+                // Không fill số điện thoại, chỉ cập nhật điểm
                 customerPoints = currentCustomer.getPoint_level();
                 lblPoint.setText(String.valueOf(customerPoints));
             } else {
-                txtPhoneNumber.setText(phoneNumber);
+                // Không fill số điện thoại, reset điểm
                 customerPoints = 0;
                 lblPoint.setText("0");
             }
         } catch (Exception e) {
-            txtPhoneNumber.setText(phoneNumber);
+            // Không fill số điện thoại, reset điểm
             customerPoints = 0;
             lblPoint.setText("0");
         }
@@ -713,45 +901,23 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
                     detail.getProduct_id(),
                     getProductName(detail.getProduct_id()),
                     detail.getAmount(),
-                    detail.getPrice(),
-                    detail.getDiscount(),
-                    (detail.getPrice() - detail.getDiscount()) * detail.getAmount()
+                    formatCurrency(detail.getPrice()),
+                    formatDiscount(detail.getDiscount()),
+                    formatCurrency((detail.getPrice() - detail.getDiscount()) * detail.getAmount())
                 };
                 tableModel.addRow(row);
             }
         }
     }
     
-    /**
-     * Lấy tên sản phẩm theo product_id
-     */
-    private String getProductName(String productId) {
-        try {
-            String sql = "SELECT product_name FROM PRODUCT WHERE product_id = ?";
-            String productName = XJdbc.executeQuery(sql, rs -> {
-                if (rs.next()) {
-                    return rs.getString("product_name");
-                }
-                return null;
-            }, productId);
-            return productName != null ? productName : "Unknown";
-        } catch (Exception e) {
-            // Ignore error
-        }
-        return "Unknown";
-    }
+
     
     /**
      * Tính tổng tiền
      */
     private void calculateTotalAmount() {
-        totalAmount = 0.0;
-        if (billDetails != null) {
-            for (BillDetails detail : billDetails) {
-                totalAmount += (detail.getPrice() - detail.getDiscount()) * detail.getAmount();
-            }
-        }
-        lblTotalAmout.setText(String.format("%.0f", totalAmount));
+        totalAmount = this.calculateTotalAmount(billDetails);
+        lblTotalAmout.setText(formatCurrency(totalAmount));
     }
     
     /**
@@ -759,7 +925,12 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
      */
     private void updateDisplay() {
         if (currentBill != null) {
-            lblTotalAmout.setText(String.format("%.0f", totalAmount));
+            lblTotalAmout.setText(formatCurrency(totalAmount));
+            
+            // Cập nhật thông tin khách hàng nếu có (chỉ điểm, không fill số điện thoại)
+            if (currentCustomer != null) {
+                lblPoint.setText(String.valueOf(currentCustomer.getPoint_level()));
+            }
         }
     }
     
@@ -774,7 +945,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
         customerPoints = 0;
         
         tableModel.setRowCount(0);
-        txtPhoneNumber.setText("");
+        // Không clear txtPhoneNumber - để user tự nhập
         lblPoint.setText("0");
         lblTotalAmout.setText("0");
     }
@@ -793,46 +964,47 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
             return;
         }
         
-        try {
-            // Tạo payment history
-            PaymentHistory payment = new PaymentHistory();
-            payment.setPayment_history_id(generatePaymentId());
-            payment.setPayment_method_id(true); // Tiền mặt
-            payment.setPayment_date(new Date());
-            payment.setTotal_amount(totalAmount);
-            payment.setStatus(true);
-            payment.setNote("Thanh toán hóa đơn bàn " + selectedTableNumber);
-            
-            paymentHistoryDAO.create(payment);
-            
-            // Cập nhật bill
-            currentBill.setPayment_history_id(Integer.parseInt(payment.getPayment_history_id()));
-            currentBill.setStatus(false); // Đã thanh toán
-            currentBill.setCheckout(new Date());
-            currentBill.setTotal_amount(totalAmount);
-            
-            // Cập nhật điểm khách hàng
-            if (currentCustomer != null) {
-                int newPoints = customerPoints + (int)(totalAmount / 1000); // 1 điểm cho mỗi 1000đ
-                currentCustomer.setPoint_level(newPoints);
-                customerDAO.update(currentCustomer);
+        // Lấy số điện thoại từ txtPhoneNumber
+        String phoneNumber = txtPhoneNumber.getText().trim();
+        Customer customerToUse = currentCustomer;
+        
+        // Nếu có nhập số điện thoại nhưng chưa tìm customer, thử tìm lại
+        if (!phoneNumber.isEmpty() && currentCustomer == null) {
+            Customer foundCustomer = this.searchCustomer(phoneNumber);
+            if (foundCustomer != null) {
+                customerToUse = foundCustomer;
+                currentCustomer = foundCustomer;
+                customerPoints = foundCustomer.getPoint_level();
+                lblPoint.setText(String.valueOf(customerPoints));
             }
-            
-            // Cập nhật trạng thái bàn
-            TableForCustomer table = tableDAO.findById(selectedTableNumber);
-            if (table != null) {
-                table.setStatus(0); // Trống
-                tableDAO.update(table);
-            }
-            
-            XDialog.alert("Thanh toán thành công!\nTổng tiền: " + String.format("%.0f", totalAmount) + " VNĐ");
+        }
+        
+        // Xác nhận thanh toán
+        boolean confirm = XDialog.confirm("Xác nhận thanh toán?\nTổng tiền: " + formatCurrency(totalAmount));
+        if (!confirm) {
+            return;
+        }
+        
+        // Sử dụng controller để xử lý thanh toán
+        boolean success = this.processPayment(currentBill, customerToUse, totalAmount, selectedTableNumber);
+        
+        if (success) {
+            XDialog.alert("Thanh toán thành công!\nTổng tiền: " + formatCurrency(totalAmount));
             
             // Reload bàn
             loadTables();
-            clearDisplay();
             
-        } catch (Exception e) {
-            XDialog.alert("Lỗi khi thanh toán: " + e.getMessage());
+            // Clear display nhưng giữ lại txtPhoneNumber
+            currentBill = null;
+            currentCustomer = null;
+            billDetails = null;
+            totalAmount = 0.0;
+            customerPoints = 0;
+            
+            tableModel.setRowCount(0);
+            // Không clear txtPhoneNumber - để user tự nhập
+            lblPoint.setText("0");
+            lblTotalAmout.setText("0");
         }
     }
     
@@ -841,48 +1013,19 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
      */
     private void createMember() {
         String phoneNumber = txtPhoneNumber.getText().trim();
-        if (phoneNumber.isEmpty()) {
-            XDialog.alert("Vui lòng nhập số điện thoại khách hàng!");
-            return;
-        }
         
-        try {
-            Customer existingCustomer = customerDAO.findById(phoneNumber);
-            if (existingCustomer != null) {
-                XDialog.alert("Khách hàng này đã tồn tại trong hệ thống!");
-                return;
-            }
-            
-            String customerName = javax.swing.JOptionPane.showInputDialog(this, 
-                "Nhập tên khách hàng:", "Tạo hội viên mới", 
-                javax.swing.JOptionPane.QUESTION_MESSAGE);
-            
-            if (customerName != null && !customerName.trim().isEmpty()) {
-                Customer newCustomer = new Customer();
-                newCustomer.setPhone_number(phoneNumber);
-                newCustomer.setCustomer_name(customerName);
-                newCustomer.setPoint_level(0);
-                newCustomer.setLevel_ranking("Bronze");
-                newCustomer.setCreated_date(new Date());
-                
-                customerDAO.create(newCustomer);
-                currentCustomer = newCustomer;
-                customerPoints = 0;
-                lblPoint.setText("0");
-                
-                XDialog.alert("Tạo hội viên thành công!");
-            }
-            
-        } catch (Exception e) {
-            XDialog.alert("Lỗi khi tạo hội viên: " + e.getMessage());
+        // Mở CustomerJDialog với số điện thoại hiện tại
+        CustomerJDialog customerDialog = new CustomerJDialog(phoneNumber);
+        customerDialog.setVisible(true);
+        
+        // Sau khi đóng dialog, kiểm tra xem có tạo thành công không
+        if (customerDialog.getCustomer() != null) {
+            currentCustomer = customerDialog.getCustomer();
+            customerPoints = currentCustomer.getPoint_level();
+            lblPoint.setText(String.valueOf(customerPoints));
+            // Không fill số điện thoại, để user tự nhập
+            XDialog.alert("Tạo hội viên thành công!");
         }
-    }
-    
-    /**
-     * Tạo ID cho payment history
-     */
-    private String generatePaymentId() {
-        return "PAY" + System.currentTimeMillis();
     }
     
     /**
@@ -890,9 +1033,9 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
      */
     private Color getSelectedColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#616161");
-            case 1: return Color.decode("#186a3b");
-            case 2: return Color.decode("#757575");
+            case 0: return Color.decode("#616161"); // Xám đậm hơn
+            case 1: return Color.decode("#186a3b"); // Xanh đậm hơn
+            case 2: return Color.decode("#757575"); // Xám đậm khi chọn
             default: return Color.GRAY;
         }
     }
@@ -902,10 +1045,357 @@ public class ThanhToanJDialog extends javax.swing.JFrame {
      */
     private Color getHoverColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#616161");
-            case 1: return Color.decode("#196f3d");
-            case 2: return Color.decode("#bdbdbd");
+            case 0: return Color.decode("#616161"); // Xám đậm
+            case 1: return Color.decode("#196f3d"); // Xanh đậm
+            case 2: return Color.decode("#bdbdbd"); // Xám đậm hơn xám trắng
             default: return Color.GRAY;
         }
+    }
+
+    /**
+     * Tìm kiếm khách hàng theo số điện thoại
+     */
+    private void searchCustomerByPhone() {
+        String phoneNumber = txtPhoneNumber.getText().trim();
+        if (phoneNumber.isEmpty()) {
+            return;
+        }
+        
+        Customer customer = this.searchCustomer(phoneNumber);
+        if (customer != null) {
+            currentCustomer = customer;
+            customerPoints = customer.getPoint_level();
+            lblPoint.setText(String.valueOf(customerPoints));
+            XDialog.alert("Tìm thấy khách hàng: " + customer.getCustomer_name() + 
+                         "\nSố điểm hiện tại: " + customerPoints);
+        } else {
+            currentCustomer = null;
+            customerPoints = 0;
+            lblPoint.setText("0");
+            XDialog.alert("Không tìm thấy khách hàng với số điện thoại này!\nBạn có thể tạo hội viên mới.");
+        }
+    }
+    
+    /**
+     * Hiển thị thông tin chi tiết hóa đơn
+     */
+    private void showBillDetailInfo() {
+        int row = tbBillDetail.getSelectedRow();
+        if (row >= 0) {
+            String productId = (String) tbBillDetail.getValueAt(row, 0);
+            String productName = (String) tbBillDetail.getValueAt(row, 1);
+            int amount = (Integer) tbBillDetail.getValueAt(row, 2);
+            String priceStr = (String) tbBillDetail.getValueAt(row, 3);
+            String discountStr = (String) tbBillDetail.getValueAt(row, 4);
+            String totalStr = (String) tbBillDetail.getValueAt(row, 5);
+            
+            String info = String.format(
+                "Thông tin món:\n" +
+                "Mã SP: %s\n" +
+                "Tên SP: %s\n" +
+                "Số lượng: %d\n" +
+                "Đơn giá: %s\n" +
+                "Giảm giá: %s\n" +
+                "Thành tiền: %s",
+                productId, productName, amount, priceStr, discountStr, totalStr
+            );
+            
+            XDialog.alert(info);
+        }
+    }
+    
+    // ========== IMPLEMENT PAYMENT CONTROLLER METHODS ==========
+    
+    @Override
+    public void open() {
+        this.setVisible(true);
+    }
+    
+    @Override
+    public void setForm(Bill entity) {
+        // Implementation cho setForm
+    }
+    
+    @Override
+    public Bill getForm() {
+        return currentBill;
+    }
+    
+    @Override
+    public void fillToTable() {
+        // Implementation cho fillToTable
+    }
+    
+    @Override
+    public void edit() {
+        // Implementation cho edit
+    }
+    
+    @Override
+    public void create() {
+        // Implementation cho create
+    }
+    
+    @Override
+    public void update() {
+        // Implementation cho update
+    }
+    
+    @Override
+    public void delete() {
+        // Implementation cho delete
+    }
+    
+    @Override
+    public void clear() {
+        clearDisplay();
+    }
+    
+    @Override
+    public void setEditable(boolean editable) {
+        // Implementation cho setEditable
+    }
+    
+    @Override
+    public void checkAll() {
+        // Implementation cho checkAll
+    }
+    
+    @Override
+    public void uncheckAll() {
+        // Implementation cho uncheckAll
+    }
+    
+    @Override
+    public void deleteCheckedItems() {
+        // Implementation cho deleteCheckedItems
+    }
+    
+    @Override
+    public List<TableForCustomer> getAllTables() {
+        try {
+            return tableDAO.findAll();
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi load danh sách bàn: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    @Override
+    public Bill getBillByTableNumber(int tableNumber) {
+        try {
+            // Kiểm tra cache trước
+            if (tableBillCache.containsKey(tableNumber)) {
+                Bill cachedBill = tableBillCache.get(tableNumber);
+                // Nếu bill trong cache vẫn đang hoạt động, trả về
+                if (cachedBill != null && cachedBill.getStatus()) {
+                    return cachedBill;
+                }
+            }
+            
+            // Tìm bill đang hoạt động của bàn này
+            List<Bill> allBills = billDAO.findAll();
+            Bill activeBill = allBills.stream()
+                .filter(bill -> bill.getTable_number() == tableNumber && bill.getStatus())
+                .findFirst()
+                .orElse(null);
+            
+            if (activeBill != null) {
+                // Lưu vào cache
+                tableBillCache.put(tableNumber, activeBill);
+                return activeBill;
+            }
+            
+            // Nếu không có bill đang hoạt động, tìm bill cuối cùng
+            Bill lastBill = allBills.stream()
+                .filter(bill -> bill.getTable_number() == tableNumber)
+                .max((b1, b2) -> Integer.compare(b1.getBill_id(), b2.getBill_id()))
+                .orElse(null);
+            
+            if (lastBill != null) {
+                tableBillCache.put(tableNumber, lastBill);
+            }
+            
+            return lastBill;
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi load hóa đơn: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    @Override
+    public List<BillDetails> getBillDetails(int billId) {
+        try {
+            return billDetailsDAO.findByBillId(billId);
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi load chi tiết hóa đơn: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+    
+    @Override
+    public Customer getCustomerByPhone(String phoneNumber) {
+        try {
+            return customerDAO.findById(phoneNumber);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    @Override
+    public double calculateTotalAmount(List<BillDetails> billDetails) {
+        double total = 0.0;
+        if (billDetails != null) {
+            for (BillDetails detail : billDetails) {
+                total += (detail.getPrice() - detail.getDiscount()) * detail.getAmount();
+            }
+        }
+        return total;
+    }
+    
+    @Override
+    public boolean processPayment(Bill bill, Customer customer, double totalAmount, int tableNumber) {
+        try {
+            // Validate input
+            if (bill == null) {
+                XDialog.alert("Không có hóa đơn để thanh toán!");
+                return false;
+            }
+            
+            if (totalAmount <= 0) {
+                XDialog.alert("Hóa đơn không có món nào để thanh toán!");
+                return false;
+            }
+            
+            // Tạo payment history
+            PaymentHistory payment = new PaymentHistory();
+            payment.setPayment_history_id(generatePaymentId());
+            payment.setPayment_method_id(1); // Tiền mặt
+            payment.setPayment_date(new Date());
+            payment.setTotal_amount(totalAmount);
+            payment.setStatus(true);
+            payment.setNote("Thanh toán hóa đơn bàn " + tableNumber);
+            
+            paymentHistoryDAO.create(payment);
+            
+            // Cập nhật bill với số điện thoại khách hàng
+            bill.setPayment_history_id(Integer.parseInt(payment.getPayment_history_id()));
+            bill.setStatus(false); // Đã thanh toán
+            bill.setCheckout(new Date());
+            bill.setTotal_amount(totalAmount);
+            
+            // Cập nhật số điện thoại khách hàng vào bill nếu có
+            if (customer != null) {
+                bill.setPhone_number(customer.getPhone_number());
+            }
+            
+            billDAO.update(bill);
+            
+            // Cập nhật điểm khách hàng
+            if (customer != null) {
+                int currentPoints = customer.getPoint_level();
+                int newPoints = currentPoints + (int)(totalAmount / 1000); // 1 điểm cho mỗi 1000đ
+                customer.setPoint_level(newPoints);
+                customerDAO.update(customer);
+            }
+            
+            // Cập nhật trạng thái bàn
+            TableForCustomer table = tableDAO.findById(tableNumber);
+            if (table != null) {
+                table.setStatus(0); // Trống
+                tableDAO.update(table);
+            }
+            
+            // Xóa bill khỏi cache khi thanh toán xong
+            removeBillFromCache(tableNumber);
+            
+            return true;
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi thanh toán: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    @Override
+    public boolean createMember(String phoneNumber, String customerName) {
+        try {
+            // Validate input
+            if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+                XDialog.alert("Vui lòng nhập số điện thoại!");
+                return false;
+            }
+            
+            if (!phoneNumber.matches("\\d{10,11}")) {
+                XDialog.alert("Số điện thoại không hợp lệ! Vui lòng nhập 10-11 chữ số.");
+                return false;
+            }
+            
+            if (customerName == null || customerName.trim().isEmpty()) {
+                XDialog.alert("Vui lòng nhập tên khách hàng!");
+                return false;
+            }
+            
+            // Kiểm tra khách hàng đã tồn tại
+            Customer existingCustomer = customerDAO.findById(phoneNumber);
+            if (existingCustomer != null) {
+                XDialog.alert("Khách hàng này đã tồn tại trong hệ thống!");
+                return false;
+            }
+            
+            // Tạo khách hàng mới
+            Customer newCustomer = new Customer();
+            newCustomer.setPhone_number(phoneNumber);
+            newCustomer.setCustomer_name(customerName);
+            newCustomer.setPoint_level(0);
+            newCustomer.setLevel_ranking("Bronze");
+            newCustomer.setCreated_date(new Date());
+            
+            customerDAO.create(newCustomer);
+            
+            return true;
+            
+        } catch (Exception e) {
+            XDialog.alert("Lỗi khi tạo hội viên: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    @Override
+    public Customer searchCustomer(String phoneNumber) {
+        try {
+            if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+                return null;
+            }
+            
+            return customerDAO.findById(phoneNumber);
+            
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    @Override
+    public String getProductName(String productId) {
+        try {
+            String sql = "SELECT product_name FROM PRODUCT WHERE product_id = ?";
+            String productName = XJdbc.executeQuery(sql, rs -> {
+                if (rs.next()) {
+                    return rs.getString("product_name");
+                }
+                return null;
+            }, productId);
+            return productName != null ? productName : "Unknown";
+        } catch (Exception e) {
+            return "Unknown";
+        }
+    }
+    
+    /**
+     * Tạo ID cho payment history
+     */
+    private String generatePaymentId() {
+        return "PAY" + System.currentTimeMillis();
     }
 }
