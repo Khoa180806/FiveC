@@ -66,7 +66,7 @@ public class AdminJDialog extends javax.swing.JFrame {
         JPopupMenu popupQuanLyHoaDon = new JPopupMenu();
         JMenuItem itemHoaDon = new JMenuItem("Hóa đơn");
         JMenuItem itemPhuongThucThanhToan = new JMenuItem("Phương thức thanh toán");
-        JMenuItem itemLichSuThanhToan = new JMenuItem("Lịch sử thanh toán");
+        JMenuItem itemLichSuThanhToan = new JMenuItem("Lịch sử");
 
         popupQuanLyHoaDon.add(itemHoaDon);
         popupQuanLyHoaDon.add(itemPhuongThucThanhToan);
@@ -105,7 +105,6 @@ public class AdminJDialog extends javax.swing.JFrame {
         jPanel6 = new javax.swing.JPanel();
         jButton7 = new javax.swing.JButton();
         jButton9 = new javax.swing.JButton();
-        jButton10 = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
         jButton11 = new javax.swing.JButton();
@@ -156,7 +155,7 @@ public class AdminJDialog extends javax.swing.JFrame {
 
         btnCategoryManagement.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnCategoryManagement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Closed folder.png"))); // NOI18N
-        btnCategoryManagement.setText("Quản Lí Danh Mục");
+        btnCategoryManagement.setText("Quản Lí Thực Phẩm");
         btnCategoryManagement.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btnCategoryManagementMouseEntered(evt);
@@ -165,7 +164,7 @@ public class AdminJDialog extends javax.swing.JFrame {
 
         btnBillManagement.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnBillManagement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Closed folder.png"))); // NOI18N
-        btnBillManagement.setText("Quản Lí Thanh Toán");
+        btnBillManagement.setText("Quản Lí Hóa Đơn");
         btnBillManagement.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btnBillManagementMouseEntered(evt);
@@ -211,7 +210,7 @@ public class AdminJDialog extends javax.swing.JFrame {
                 .addComponent(btnUserManagement)
                 .addGap(18, 18, 18)
                 .addComponent(btnCustomerManagement)
-                .addContainerGap(8, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -243,11 +242,6 @@ public class AdminJDialog extends javax.swing.JFrame {
                 jButton9ActionPerformed(evt);
             }
         });
-
-        jButton10.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton10.setForeground(new java.awt.Color(102, 102, 102));
-        jButton10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/list.png"))); // NOI18N
-        jButton10.setText("LỊCH SỬ");
 
         jPanel7.setBackground(new java.awt.Color(102, 0, 0));
 
@@ -304,8 +298,7 @@ public class AdminJDialog extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(jButton9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton10, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(93, 93, 93))
         );
         jPanel6Layout.setVerticalGroup(
@@ -317,8 +310,6 @@ public class AdminJDialog extends javax.swing.JFrame {
                 .addComponent(jButton7, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jButton9, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jButton10, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -560,7 +551,6 @@ public class AdminJDialog extends javax.swing.JFrame {
     private javax.swing.JButton btnCustomerManagement;
     private javax.swing.JButton btnTableManagement;
     private javax.swing.JButton btnUserManagement;
-    private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton11;
     private javax.swing.JButton jButton12;
     private javax.swing.JButton jButton13;

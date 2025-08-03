@@ -5,6 +5,14 @@
 package com.team4.quanliquanmicay.View.Dialogs;
 
 import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.Controller.CustomerManagementController;
+import com.team4.quanliquanmicay.Entity.Customer;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 /**
  *
@@ -12,6 +20,9 @@ import com.team4.quanliquanmicay.util.XTheme;
  */
 public class CustomerManagementJDialog extends javax.swing.JFrame {
 
+    private CustomerManagementController customerController;
+    private DefaultTableModel tableModel;
+    
     /**
      * Creates new form CustomerManagementJDialog
      */
@@ -20,6 +31,111 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        // Initialize controller and table model
+        customerController = new CustomerManagementController();
+        initializeTable();
+        setupEventListeners();
+        loadAllCustomers();
+    }
+    
+    /**
+     * Initialize the table with proper column headers
+     */
+    private void initializeTable() {
+        String[] columnNames = {"Số điện thoại", "Tên", "Điểm", "Hạng"};
+        tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make table read-only
+            }
+        };
+        jTable1.setModel(tableModel);
+    }
+    
+    /**
+     * Setup event listeners for search and sort functionality
+     */
+    private void setupEventListeners() {
+        // Search functionality - search as user types
+        jTextField1.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                refreshTableData();
+            }
+        });
+        
+        // Sort functionality - sort when combo box selection changes
+        jComboBox1.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    refreshTableData();
+                }
+            }
+        });
+        
+        // Exit button functionality
+        jButton1.addActionListener(e -> dispose());
+    }
+    
+    /**
+     * Load all customers into the table
+     */
+    private void loadAllCustomers() {
+        List<Customer> customers = customerController.getAllCustomers();
+        if (customers != null) {
+            updateTableData(customers);
+        }
+    }
+    
+
+    
+    /**
+     * Update table data with customer list
+     */
+    private void updateTableData(List<Customer> customers) {
+        tableModel.setRowCount(0); // Clear existing data
+        
+        for (Customer customer : customers) {
+            Object[] row = {
+                customer.getPhone_number(),
+                customer.getCustomer_name(),
+                customer.getPoint_level(),
+                customer.getLevel_ranking()
+            };
+            tableModel.addRow(row);
+        }
+    }
+    
+    /**
+     * Refresh the table data based on current search and sort
+     */
+    private void refreshTableData() {
+        String searchText = jTextField1.getText().trim();
+        String selectedSort = (String) jComboBox1.getSelectedItem();
+        
+        List<Customer> results = null;
+        
+        // Get base data
+        if (searchText.isEmpty()) {
+            results = customerController.getAllCustomers();
+        } else {
+            results = customerController.searchCustomersByPhone(searchText);
+        }
+        
+        // Apply sorting
+        if (results != null && selectedSort != null) {
+            if ("Tăng dần".equals(selectedSort)) {
+                results.sort((c1, c2) -> Integer.compare(c1.getPoint_level(), c2.getPoint_level()));
+            } else if ("Giảm dần".equals(selectedSort)) {
+                results.sort((c1, c2) -> Integer.compare(c2.getPoint_level(), c1.getPoint_level()));
+            }
+        }
+        
+        if (results != null) {
+            updateTableData(results);
+        }
     }
 
     /**
@@ -77,7 +193,7 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
         jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jComboBox1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Tăng dần", "Giảm dần" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Giảm dần", "Tăng dần" }));
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
