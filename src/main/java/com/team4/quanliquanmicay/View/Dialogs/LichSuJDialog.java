@@ -353,8 +353,8 @@ public class LichSuJDialog extends javax.swing.JFrame implements PaymentHistoryC
             
             fillTableWithData(filteredBills, filteredHistory);
             
-            // Hiển thị thông báo số lượng kết quả
-            XDialog.success("Tìm thấy " + filteredBills.size() + " hóa đơn và " + filteredHistory.size() + " giao dịch thanh toán trong khoảng thời gian đã chọn!", "Kết quả tìm kiếm");
+            // Bỏ thông báo này đi
+            // XDialog.success("Tìm thấy " + filteredBills.size() + " hóa đơn và " + filteredHistory.size() + " giao dịch thanh toán trong khoảng thời gian đã chọn!", "Kết quả tìm kiếm");
             
         } catch (Exception e) {
             XDialog.error("Lỗi khi lọc dữ liệu: " + e.getMessage(), "Lỗi hệ thống");
@@ -369,7 +369,8 @@ public class LichSuJDialog extends javax.swing.JFrame implements PaymentHistoryC
             List<Bill> bills = billDAO.findAll();
             List<PaymentHistory> paymentHistoryList = paymentHistoryDAO.findAll();
             fillTableWithData(bills, paymentHistoryList);
-            XDialog.success("Đã load " + bills.size() + " hóa đơn và " + paymentHistoryList.size() + " giao dịch thanh toán!", "Thành công");
+            // Bỏ thông báo này đi
+            // XDialog.success("Đã load " + bills.size() + " hóa đơn và " + paymentHistoryList.size() + " giao dịch thanh toán!", "Thành công");
         } catch (Exception e) {
             XDialog.error("Lỗi khi load dữ liệu: " + e.getMessage(), "Lỗi hệ thống");
         }
