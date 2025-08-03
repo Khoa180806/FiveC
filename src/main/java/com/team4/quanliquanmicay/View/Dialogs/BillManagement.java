@@ -5,12 +5,35 @@
 package com.team4.quanliquanmicay.View.Dialogs;
 
 import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.DAO.BillDAO;
+import com.team4.quanliquanmicay.DAO.BillDetailsDAO;
+import com.team4.quanliquanmicay.DAO.ProductDAO;
+import com.team4.quanliquanmicay.Entity.Bill;
+import com.team4.quanliquanmicay.Entity.BillDetails;
+import com.team4.quanliquanmicay.Entity.Product;
+import com.team4.quanliquanmicay.Impl.BillDAOImpl;
+import com.team4.quanliquanmicay.Impl.BillDetailsDAOImpl;
+import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
+import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Date;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import com.toedter.calendar.JDateChooser;
 
 /**
  *
  * @author Asus
  */
 public class BillManagement extends javax.swing.JFrame {
+
+    private BillDAO billDAO;
+    private BillDetailsDAO billDetailsDAO;
+    private ProductDAO productDAO;
+    private SimpleDateFormat dateFormat;
+    private Bill currentBill;
 
     /**
      * Creates new form BillManagement
@@ -20,6 +43,637 @@ public class BillManagement extends javax.swing.JFrame {
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        // Khởi tạo các DAO
+        billDAO = new BillDAOImpl();
+        billDetailsDAO = new BillDetailsDAOImpl();
+        productDAO = new ProductDAOImpl();
+        dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        
+        // Khởi tạo date picker
+        initDatePickers();
+        
+        // Load dữ liệu ban đầu
+        loadBillData();
+        addEventListeners();
+    }
+
+    /**
+     * Khởi tạo date picker
+     */
+    private void initDatePickers() {
+        // Khởi tạo ngày mặc định là hôm nay
+        setDefaultDateRange();
+    }
+    
+    /**
+     * Thiết lập khoảng ngày mặc định là hôm nay
+     */
+    private void setDefaultDateRange() {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            java.util.Date today = new java.util.Date();
+            
+            // Điền ngày hôm nay cho cả txtBegin và txtEnd
+            txtBegin.setText(sdf.format(today));
+            txtEnd.setText(sdf.format(today));
+            
+            // Chọn "Hôm nay" trong combobox
+            cboTime.setSelectedItem("Hôm nay");
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, 
+                "Lỗi khi thiết lập ngày mặc định: " + e.getMessage(), 
+                "Lỗi", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Load dữ liệu hóa đơn vào table
+     */
+    private void loadBillData() {
+        try {
+            List<Bill> bills = billDAO.findAll();
+            DefaultTableModel model = (DefaultTableModel) tblBill.getModel();
+            model.setRowCount(0);
+            
+            for (Bill bill : bills) {
+                // Chuyển đổi Boolean status sang String để hiển thị
+                String statusText = "Đang phục vụ";
+                if (bill.getStatus() != null) {
+                    if (bill.getStatus()) {
+                        statusText = "Đã thanh toán";
+                    } else {
+                        statusText = "Đang phục vụ";
+                    }
+                }
+                
+                Object[] row = {
+                    bill.getBill_id(),
+                    bill.getUser_id(),
+                    bill.getTable_number(),
+                    String.format("%,.0f VNĐ", bill.getTotal_amount()),
+                    bill.getCheckin() != null ? dateFormat.format(bill.getCheckin()) : "",
+                    bill.getCheckout() != null ? dateFormat.format(bill.getCheckout()) : "",
+                    statusText
+                };
+                model.addRow(row);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải dữ liệu hóa đơn: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Load chi tiết hóa đơn theo bill_id
+     */
+    private void loadBillDetails(Integer billId) {
+        try {
+            List<BillDetails> billDetails = billDetailsDAO.findByBillId(billId);
+            DefaultTableModel model = (DefaultTableModel) tblBillDetail.getModel();
+            model.setRowCount(0);
+            
+            for (BillDetails detail : billDetails) {
+                Product product = productDAO.findById(detail.getProduct_id());
+                String productName = product != null ? product.getProductName() : "Không xác định";
+                
+                Object[] row = {
+                    productName,
+                    detail.getAmount(),
+                    String.format("%,.0f VNĐ", detail.getPrice()),
+                    String.format("%.0f%%", detail.getDiscount() * 100),
+                    String.format("%,.0f VNĐ", detail.getTotalPrice())
+                };
+                model.addRow(row);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi tải chi tiết hóa đơn: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Hiển thị thông tin hóa đơn lên form
+     */
+    private void displayBillInfo(Bill bill) {
+        if (bill == null) {
+            clearForm();
+            return;
+        }
+        
+        currentBill = bill;
+        txtBillId.setText(String.valueOf(bill.getBill_id()));
+        txtUser.setText(bill.getUser_id());
+        txtTable.setText(String.valueOf(bill.getTable_number()));
+        txtAmount.setText(String.format("%,.0f VNĐ", bill.getTotal_amount()));
+        txtCheckin.setText(bill.getCheckin() != null ? dateFormat.format(bill.getCheckin()) : "");
+        txtCheckout.setText(bill.getCheckout() != null ? dateFormat.format(bill.getCheckout()) : "");
+        
+        // Set status trong combobox - chuyển đổi Boolean sang String
+        Boolean status = bill.getStatus();
+        if (status != null) {
+            if (status) {
+                cboStatus.setSelectedIndex(1); // "Đã thanh toán"
+            } else {
+                cboStatus.setSelectedIndex(0); // "Đang phục vụ"
+            }
+        } else {
+            cboStatus.setSelectedIndex(0); // Mặc định "Đang phục vụ"
+        }
+        
+        // Load chi tiết hóa đơn
+        loadBillDetails(bill.getBill_id());
+    }
+
+    /**
+     * Xóa form
+     */
+    private void clearForm() {
+        currentBill = null;
+        txtBillId.setText("");
+        txtUser.setText("");
+        txtTable.setText("");
+        txtAmount.setText("");
+        txtCheckin.setText("");
+        txtCheckout.setText("");
+        cboStatus.setSelectedIndex(0);
+        
+        // Xóa chi tiết hóa đơn
+        DefaultTableModel model = (DefaultTableModel) tblBillDetail.getModel();
+        model.setRowCount(0);
+    }
+
+    /**
+     * Thêm các event listeners
+     */
+    private void addEventListeners() {
+        // Sự kiện click vào table hóa đơn
+        tblBill.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedRow = tblBill.getSelectedRow();
+                if (selectedRow >= 0) {
+                    Integer billId = (Integer) tblBill.getValueAt(selectedRow, 0);
+                    Bill bill = billDAO.findById(String.valueOf(billId));
+                    displayBillInfo(bill);
+                }
+            }
+        });
+
+        // Sự kiện nút Update
+        btnUpdate.addActionListener(e -> updateBill());
+
+        // Sự kiện nút Remove
+        btnRemove.addActionListener(e -> removeBill());
+
+        // Sự kiện nút Exit
+        btnExit.addActionListener(e -> dispose());
+
+        // Sự kiện nút Filter
+        btnFilter.addActionListener(e -> filterBills());
+        
+        // Sự kiện nút Begin (chọn ngày bắt đầu)
+        btnBegin.addActionListener(e -> showDatePickerDialog("Chọn ngày bắt đầu", txtBegin));
+        
+        // Sự kiện nút End (chọn ngày kết thúc)
+        btnEnd.addActionListener(e -> showDatePickerDialog("Chọn ngày kết thúc", txtEnd));
+        
+        // Sự kiện combobox thời gian
+        cboTime.addActionListener(e -> updateDateRangeFromComboBox());
+    }
+
+    /**
+     * Cập nhật hóa đơn
+     */
+    private void updateBill() {
+        if (currentBill == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn cần cập nhật!");
+            return;
+        }
+
+        try {
+            // Cập nhật trạng thái - chuyển đổi String sang Boolean
+            String selectedStatus = (String) cboStatus.getSelectedItem();
+            Boolean status = false; // Mặc định "Đang phục vụ"
+            
+            if (selectedStatus.equals("Đã thanh toán")) {
+                status = true;
+            } else if (selectedStatus.equals("Hủy")) {
+                status = null; // Hoặc có thể set một giá trị khác tùy logic
+            }
+            
+            currentBill.setStatus(status);
+            
+            // Nếu trạng thái là "Đã thanh toán" thì set checkout time
+            if (selectedStatus.equals("Đã thanh toán") && currentBill.getCheckout() == null) {
+                currentBill.setCheckout(new java.util.Date());
+                txtCheckout.setText(dateFormat.format(currentBill.getCheckout()));
+            }
+
+            billDAO.update(currentBill);
+            JOptionPane.showMessageDialog(this, "Cập nhật hóa đơn thành công!");
+            loadBillData();
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi cập nhật hóa đơn: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Xóa hóa đơn
+     */
+    private void removeBill() {
+        if (currentBill == null) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn cần xóa!");
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "Bạn có chắc chắn muốn xóa hóa đơn này?", 
+            "Xác nhận xóa", 
+            JOptionPane.YES_NO_OPTION);
+            
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                // Xóa chi tiết hóa đơn trước
+                List<BillDetails> billDetails = billDetailsDAO.findByBillId(currentBill.getBill_id());
+                for (BillDetails detail : billDetails) {
+                    billDetailsDAO.deleteById(String.valueOf(detail.getBill_detail_id()));
+                }
+                
+                // Xóa hóa đơn
+                billDAO.deleteById(String.valueOf(currentBill.getBill_id()));
+                JOptionPane.showMessageDialog(this, "Xóa hóa đơn thành công!");
+                
+                clearForm();
+                loadBillData();
+                
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Lỗi khi xóa hóa đơn: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Hiển thị dialog chọn ngày sử dụng JCalendar
+     */
+    private void showDatePickerDialog(String title, javax.swing.JTextField textField) {
+        // Tạo dialog chọn ngày sử dụng JCalendar
+        javax.swing.JDialog dialog = new javax.swing.JDialog(this, title, true);
+        dialog.setLayout(new java.awt.BorderLayout());
+        
+        // Tạo JDateChooser với kích thước nhỏ hơn
+        JDateChooser dateChooser = new JDateChooser();
+        dateChooser.setDateFormatString("dd/MM/yyyy");
+        
+        // Thiết lập kích thước cho text field trong JDateChooser
+        dateChooser.setPreferredSize(new java.awt.Dimension(150, 25));
+        dateChooser.setSize(new java.awt.Dimension(150, 25));
+        
+        // Panel chính chứa date chooser với padding
+        javax.swing.JPanel mainPanel = new javax.swing.JPanel();
+        mainPanel.setLayout(new java.awt.BorderLayout());
+        mainPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        mainPanel.add(dateChooser, java.awt.BorderLayout.CENTER);
+        
+        // Panel nút
+        javax.swing.JPanel buttonPanel = new javax.swing.JPanel();
+        buttonPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        javax.swing.JButton okButton = new javax.swing.JButton("OK");
+        javax.swing.JButton cancelButton = new javax.swing.JButton("Hủy");
+        
+        // Thiết lập kích thước cho các nút
+        okButton.setPreferredSize(new java.awt.Dimension(60, 25));
+        cancelButton.setPreferredSize(new java.awt.Dimension(60, 25));
+        
+        okButton.addActionListener(e -> {
+            if (dateChooser.getDate() != null) {
+                // Format ngày thành dd/MM/yyyy
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                String formattedDate = sdf.format(dateChooser.getDate());
+                
+                // Kiểm tra validation ngày
+                if (validateDateRange(textField, dateChooser.getDate())) {
+                    textField.setText(formattedDate);
+                }
+            }
+            dialog.dispose();
+        });
+        
+        cancelButton.addActionListener(e -> dialog.dispose());
+        
+        buttonPanel.add(okButton);
+        buttonPanel.add(cancelButton);
+        
+        dialog.add(mainPanel, java.awt.BorderLayout.CENTER);
+        dialog.add(buttonPanel, java.awt.BorderLayout.SOUTH);
+        
+        // Hiển thị dialog với kích thước nhỏ hơn
+        dialog.setSize(250, 150);
+        dialog.setLocationRelativeTo(this);
+        dialog.setResizable(false);
+        dialog.setVisible(true);
+    }
+    
+    /**
+     * Kiểm tra validation ngày bắt đầu và kết thúc
+     */
+    private boolean validateDateRange(javax.swing.JTextField textField, java.util.Date selectedDate) {
+        try {
+            // Nếu đang chọn ngày bắt đầu
+            if (textField == txtBegin) {
+                // Kiểm tra ngày kết thúc đã được chọn chưa
+                if (!txtEnd.getText().isEmpty()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    java.util.Date endDate = sdf.parse(txtEnd.getText());
+                    
+                    if (selectedDate.after(endDate)) {
+                        JOptionPane.showMessageDialog(this, 
+                            "Ngày bắt đầu không được lớn hơn ngày kết thúc!", 
+                            "Lỗi Validation", 
+                            JOptionPane.ERROR_MESSAGE);
+                        return false;
+                    }
+                }
+            }
+            // Nếu đang chọn ngày kết thúc
+            else if (textField == txtEnd) {
+                // Kiểm tra ngày bắt đầu đã được chọn chưa
+                if (!txtBegin.getText().isEmpty()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    java.util.Date beginDate = sdf.parse(txtBegin.getText());
+                    
+                    if (selectedDate.before(beginDate)) {
+                        JOptionPane.showMessageDialog(this, 
+                            "Ngày kết thúc phải lớn hơn ngày bắt đầu!", 
+                            "Lỗi Validation", 
+                            JOptionPane.ERROR_MESSAGE);
+                        return false;
+                    }
+                }
+            }
+            
+            return true;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, 
+                "Lỗi khi kiểm tra ngày: " + e.getMessage(), 
+                "Lỗi", 
+                JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+    }
+    
+    /**
+     * Cập nhật ngày bắt đầu và kết thúc theo combobox thời gian
+     */
+    private void updateDateRangeFromComboBox() {
+        try {
+            String selectedTime = (String) cboTime.getSelectedItem();
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            java.util.Date now = new java.util.Date();
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.setTime(now);
+            
+            java.util.Date beginDate = null;
+            java.util.Date endDate = null;
+            
+            switch (selectedTime) {
+                case "Hôm nay":
+                    // Ngày bắt đầu: 00:00:00 hôm nay
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    cal.set(java.util.Calendar.MINUTE, 0);
+                    cal.set(java.util.Calendar.SECOND, 0);
+                    beginDate = cal.getTime();
+                    
+                    // Ngày kết thúc: 23:59:59 hôm nay
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+                    cal.set(java.util.Calendar.MINUTE, 59);
+                    cal.set(java.util.Calendar.SECOND, 59);
+                    endDate = cal.getTime();
+                    break;
+                    
+                case "Tuần này":
+                    // Ngày bắt đầu: đầu tuần (Chủ nhật)
+                    cal.set(java.util.Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    cal.set(java.util.Calendar.MINUTE, 0);
+                    cal.set(java.util.Calendar.SECOND, 0);
+                    beginDate = cal.getTime();
+                    
+                    // Ngày kết thúc: cuối tuần (Thứ 7)
+                    cal.add(java.util.Calendar.DATE, 6);
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+                    cal.set(java.util.Calendar.MINUTE, 59);
+                    cal.set(java.util.Calendar.SECOND, 59);
+                    endDate = cal.getTime();
+                    break;
+                    
+                case "Tháng này":
+                    // Ngày bắt đầu: ngày 1 của tháng
+                    cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    cal.set(java.util.Calendar.MINUTE, 0);
+                    cal.set(java.util.Calendar.SECOND, 0);
+                    beginDate = cal.getTime();
+                    
+                    // Ngày kết thúc: ngày cuối của tháng
+                    cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+                    cal.set(java.util.Calendar.MINUTE, 59);
+                    cal.set(java.util.Calendar.SECOND, 59);
+                    endDate = cal.getTime();
+                    break;
+                    
+                case "Quý này":
+                    // Ngày bắt đầu: tháng đầu của quý
+                    int currentMonth = cal.get(java.util.Calendar.MONTH);
+                    int quarterStartMonth = (currentMonth / 3) * 3;
+                    cal.set(java.util.Calendar.MONTH, quarterStartMonth);
+                    cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    cal.set(java.util.Calendar.MINUTE, 0);
+                    cal.set(java.util.Calendar.SECOND, 0);
+                    beginDate = cal.getTime();
+                    
+                    // Ngày kết thúc: tháng cuối của quý
+                    cal.add(java.util.Calendar.MONTH, 2);
+                    cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+                    cal.set(java.util.Calendar.MINUTE, 59);
+                    cal.set(java.util.Calendar.SECOND, 59);
+                    endDate = cal.getTime();
+                    break;
+                    
+                case "Năm này":
+                    // Ngày bắt đầu: ngày 1 tháng 1
+                    cal.set(java.util.Calendar.DAY_OF_YEAR, 1);
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                    cal.set(java.util.Calendar.MINUTE, 0);
+                    cal.set(java.util.Calendar.SECOND, 0);
+                    beginDate = cal.getTime();
+                    
+                    // Ngày kết thúc: ngày 31 tháng 12
+                    cal.set(java.util.Calendar.DAY_OF_YEAR, cal.getActualMaximum(java.util.Calendar.DAY_OF_YEAR));
+                    cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+                    cal.set(java.util.Calendar.MINUTE, 59);
+                    cal.set(java.util.Calendar.SECOND, 59);
+                    endDate = cal.getTime();
+                    break;
+                    
+                default:
+                    // Không làm gì nếu không có lựa chọn hợp lệ
+                    return;
+            }
+            
+            // Cập nhật text fields
+            if (beginDate != null && endDate != null) {
+                txtBegin.setText(sdf.format(beginDate));
+                txtEnd.setText(sdf.format(endDate));
+            }
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, 
+                "Lỗi khi cập nhật khoảng thời gian: " + e.getMessage(), 
+                "Lỗi", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /**
+     * Lọc hóa đơn theo thời gian
+     */
+    private void filterBills() {
+        try {
+            String selectedTime = (String) cboTime.getSelectedItem();
+            List<Bill> bills = billDAO.findAll();
+            
+            List<Bill> filteredBills = new java.util.ArrayList<>();
+            
+            // Kiểm tra nếu có ngày cụ thể được chọn
+            boolean hasCustomDateRange = !txtBegin.getText().isEmpty() && !txtEnd.getText().isEmpty();
+            
+            if (hasCustomDateRange) {
+                // Lọc theo ngày cụ thể
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                java.util.Date beginDate = sdf.parse(txtBegin.getText());
+                java.util.Date endDate = sdf.parse(txtEnd.getText());
+                
+                // Thêm 1 ngày vào endDate để bao gồm cả ngày kết thúc
+                java.util.Calendar cal = java.util.Calendar.getInstance();
+                cal.setTime(endDate);
+                cal.add(java.util.Calendar.DATE, 1);
+                endDate = cal.getTime();
+                
+                for (Bill bill : bills) {
+                    if (bill.getCheckin() != null) {
+                        // Kiểm tra ngày checkin có trong khoảng thời gian không
+                        if (bill.getCheckin().after(beginDate) && bill.getCheckin().before(endDate)) {
+                            filteredBills.add(bill);
+                        }
+                    }
+                }
+            } else {
+                // Lọc theo thời gian được chọn từ combobox
+                java.util.Date now = new java.util.Date();
+                java.util.Calendar cal = java.util.Calendar.getInstance();
+                cal.setTime(now);
+                
+                for (Bill bill : bills) {
+                    if (bill.getCheckin() != null) {
+                        boolean include = false;
+                        
+                        switch (selectedTime) {
+                            case "Hôm nay":
+                                cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                                cal.set(java.util.Calendar.MINUTE, 0);
+                                cal.set(java.util.Calendar.SECOND, 0);
+                                java.util.Date startOfDay = cal.getTime();
+                                include = bill.getCheckin().after(startOfDay);
+                                break;
+                            case "Tuần này":
+                                cal.set(java.util.Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+                                cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                                cal.set(java.util.Calendar.MINUTE, 0);
+                                cal.set(java.util.Calendar.SECOND, 0);
+                                java.util.Date startOfWeek = cal.getTime();
+                                include = bill.getCheckin().after(startOfWeek);
+                                break;
+                            case "Tháng này":
+                                cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+                                cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                                cal.set(java.util.Calendar.MINUTE, 0);
+                                cal.set(java.util.Calendar.SECOND, 0);
+                                java.util.Date startOfMonth = cal.getTime();
+                                include = bill.getCheckin().after(startOfMonth);
+                                break;
+                            case "Quý này":
+                                int currentMonth = cal.get(java.util.Calendar.MONTH);
+                                int quarterStartMonth = (currentMonth / 3) * 3;
+                                cal.set(java.util.Calendar.MONTH, quarterStartMonth);
+                                cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+                                cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                                cal.set(java.util.Calendar.MINUTE, 0);
+                                cal.set(java.util.Calendar.SECOND, 0);
+                                java.util.Date startOfQuarter = cal.getTime();
+                                include = bill.getCheckin().after(startOfQuarter);
+                                break;
+                            case "Năm này":
+                                cal.set(java.util.Calendar.DAY_OF_YEAR, 1);
+                                cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                                cal.set(java.util.Calendar.MINUTE, 0);
+                                cal.set(java.util.Calendar.SECOND, 0);
+                                java.util.Date startOfYear = cal.getTime();
+                                include = bill.getCheckin().after(startOfYear);
+                                break;
+                            default:
+                                include = true;
+                                break;
+                        }
+                        
+                        if (include) {
+                            filteredBills.add(bill);
+                        }
+                    }
+                }
+            }
+            
+            // Hiển thị kết quả lọc
+            DefaultTableModel model = (DefaultTableModel) tblBill.getModel();
+            model.setRowCount(0);
+            
+            for (Bill bill : filteredBills) {
+                // Chuyển đổi Boolean status sang String để hiển thị
+                String statusText = "Đang phục vụ";
+                if (bill.getStatus() != null) {
+                    if (bill.getStatus()) {
+                        statusText = "Đã thanh toán";
+                    } else {
+                        statusText = "Đang phục vụ";
+                    }
+                }
+                
+                Object[] row = {
+                    bill.getBill_id(),
+                    bill.getUser_id(),
+                    bill.getTable_number(),
+                    String.format("%,.0f VNĐ", bill.getTotal_amount()),
+                    bill.getCheckin() != null ? dateFormat.format(bill.getCheckin()) : "",
+                    bill.getCheckout() != null ? dateFormat.format(bill.getCheckout()) : "",
+                    statusText
+                };
+                model.addRow(row);
+            }
+            
+            String message;
+            if (hasCustomDateRange) {
+                message = "Đã lọc được " + filteredBills.size() + " hóa đơn từ " + txtBegin.getText() + " đến " + txtEnd.getText() + "!";
+            } else {
+                message = "Đã lọc được " + filteredBills.size() + " hóa đơn cho " + selectedTime + "!";
+            }
+            JOptionPane.showMessageDialog(this, message);
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi lọc hóa đơn: " + e.getMessage());
+        }
     }
 
     /**
@@ -36,38 +690,38 @@ public class BillManagement extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        txtBillId = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
-        jTextField3 = new javax.swing.JTextField();
+        txtUser = new javax.swing.JTextField();
+        txtTable = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
-        jTextField4 = new javax.swing.JTextField();
+        txtAmount = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
-        jTextField5 = new javax.swing.JTextField();
-        jTextField6 = new javax.swing.JTextField();
+        txtCheckin = new javax.swing.JTextField();
+        txtCheckout = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
+        cboStatus = new javax.swing.JComboBox<>();
+        btnUpdate = new javax.swing.JButton();
+        btnRemove = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
-        jTextField7 = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
+        txtBegin = new javax.swing.JTextField();
+        btnBegin = new javax.swing.JButton();
         jLabel10 = new javax.swing.JLabel();
-        jTextField8 = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
-        jComboBox2 = new javax.swing.JComboBox<>();
-        jButton3 = new javax.swing.JButton();
+        txtEnd = new javax.swing.JTextField();
+        btnEnd = new javax.swing.JButton();
+        cboTime = new javax.swing.JComboBox<>();
+        btnFilter = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel5 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblBill = new javax.swing.JTable();
         jPanel6 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
-        jButton6 = new javax.swing.JButton();
+        tblBillDetail = new javax.swing.JTable();
+        btnExit = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -84,13 +738,13 @@ public class BillManagement extends javax.swing.JFrame {
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(181, 181, 181)
+                .addGap(380, 380, 380)
                 .addComponent(jLabel1)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1)
+            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
 
         jPanel3.setBackground(new java.awt.Color(204, 164, 133));
@@ -100,29 +754,29 @@ public class BillManagement extends javax.swing.JFrame {
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("MÃ HÓA ĐƠN :");
 
-        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtBillId.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
         jLabel3.setText("NHÂN VIÊN :");
 
-        jTextField2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtUser.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jTextField3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtTable.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("BÀN SỐ :");
 
-        jTextField4.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtAmount.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
         jLabel5.setText("TỔNG TIỀN :");
 
-        jTextField5.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtCheckin.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jTextField6.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtCheckout.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel6.setForeground(new java.awt.Color(255, 255, 255));
@@ -136,12 +790,12 @@ public class BillManagement extends javax.swing.JFrame {
         jLabel8.setForeground(new java.awt.Color(255, 255, 255));
         jLabel8.setText("TRẠNG THÁI :");
 
-        jComboBox1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ĐANG PHỤC VỤ", "ĐÃ THANH TOÁN", "HỦY" }));
+        cboStatus.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ĐANG PHỤC VỤ", "ĐÃ THANH TOÁN", "HỦY" }));
 
-        jButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
+        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
 
-        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
+        btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -161,18 +815,18 @@ public class BillManagement extends javax.swing.JFrame {
                             .addComponent(jLabel8))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jTextField2)
-                            .addComponent(jTextField5)
-                            .addComponent(jTextField6)
-                            .addComponent(jComboBox1, 0, 175, Short.MAX_VALUE)
-                            .addComponent(jTextField4)
-                            .addComponent(jTextField3)
-                            .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.TRAILING)))
+                            .addComponent(txtUser)
+                            .addComponent(txtCheckin)
+                            .addComponent(txtCheckout)
+                            .addComponent(cboStatus, 0, 175, Short.MAX_VALUE)
+                            .addComponent(txtAmount)
+                            .addComponent(txtTable)
+                            .addComponent(txtBillId, javax.swing.GroupLayout.Alignment.TRAILING)))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGap(57, 57, 57)
-                        .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnRemove, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -181,35 +835,35 @@ public class BillManagement extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtBillId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtUser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtTable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtCheckin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtCheckout, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton4)
-                    .addComponent(jButton5))
+                    .addComponent(btnUpdate)
+                    .addComponent(btnRemove))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -220,25 +874,25 @@ public class BillManagement extends javax.swing.JFrame {
         jLabel9.setForeground(new java.awt.Color(255, 255, 255));
         jLabel9.setText("TỪ :");
 
-        jTextField7.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtBegin.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jButton1.setText("...");
+        btnBegin.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnBegin.setText("...");
 
         jLabel10.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel10.setForeground(new java.awt.Color(255, 255, 255));
         jLabel10.setText("ĐẾN :");
 
-        jTextField8.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtEnd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jButton2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jButton2.setText("...");
+        btnEnd.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnEnd.setText("...");
 
-        jComboBox2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm này" }));
+        cboTime.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        cboTime.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm này" }));
 
-        jButton3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton3.setText("LỌC");
+        btnFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnFilter.setText("LỌC");
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -248,19 +902,19 @@ public class BillManagement extends javax.swing.JFrame {
                 .addGap(35, 35, 35)
                 .addComponent(jLabel9)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtBegin, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
+                .addComponent(btnBegin)
                 .addGap(29, 29, 29)
                 .addComponent(jLabel10)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField8, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txtEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2)
+                .addComponent(btnEnd)
                 .addGap(28, 28, 28)
-                .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(cboTime, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(32, 32, 32)
-                .addComponent(jButton3)
+                .addComponent(btnFilter)
                 .addContainerGap(40, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
@@ -269,15 +923,15 @@ public class BillManagement extends javax.swing.JFrame {
                 .addGap(4, 4, 4)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jButton2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jTextField8, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(btnEnd, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(txtEnd, javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnBegin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jTextField7, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addComponent(txtBegin, javax.swing.GroupLayout.Alignment.LEADING))
                     .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jButton3)
-                        .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnFilter)
+                        .addComponent(cboTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -286,7 +940,7 @@ public class BillManagement extends javax.swing.JFrame {
         jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.RIGHT);
         jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblBill.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -302,15 +956,15 @@ public class BillManagement extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(jTable1);
-        if (jTable1.getColumnModel().getColumnCount() > 0) {
-            jTable1.getColumnModel().getColumn(0).setResizable(false);
-            jTable1.getColumnModel().getColumn(1).setResizable(false);
-            jTable1.getColumnModel().getColumn(2).setResizable(false);
-            jTable1.getColumnModel().getColumn(3).setResizable(false);
-            jTable1.getColumnModel().getColumn(4).setResizable(false);
-            jTable1.getColumnModel().getColumn(5).setResizable(false);
-            jTable1.getColumnModel().getColumn(6).setResizable(false);
+        jScrollPane1.setViewportView(tblBill);
+        if (tblBill.getColumnModel().getColumnCount() > 0) {
+            tblBill.getColumnModel().getColumn(0).setResizable(false);
+            tblBill.getColumnModel().getColumn(1).setResizable(false);
+            tblBill.getColumnModel().getColumn(2).setResizable(false);
+            tblBill.getColumnModel().getColumn(3).setResizable(false);
+            tblBill.getColumnModel().getColumn(4).setResizable(false);
+            tblBill.getColumnModel().getColumn(5).setResizable(false);
+            tblBill.getColumnModel().getColumn(6).setResizable(false);
         }
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
@@ -326,7 +980,7 @@ public class BillManagement extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Hóa đơn", jPanel5);
 
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+        tblBillDetail.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -342,13 +996,13 @@ public class BillManagement extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane2.setViewportView(jTable2);
-        if (jTable2.getColumnModel().getColumnCount() > 0) {
-            jTable2.getColumnModel().getColumn(0).setResizable(false);
-            jTable2.getColumnModel().getColumn(1).setResizable(false);
-            jTable2.getColumnModel().getColumn(2).setResizable(false);
-            jTable2.getColumnModel().getColumn(3).setResizable(false);
-            jTable2.getColumnModel().getColumn(4).setResizable(false);
+        jScrollPane2.setViewportView(tblBillDetail);
+        if (tblBillDetail.getColumnModel().getColumnCount() > 0) {
+            tblBillDetail.getColumnModel().getColumn(0).setResizable(false);
+            tblBillDetail.getColumnModel().getColumn(1).setResizable(false);
+            tblBillDetail.getColumnModel().getColumn(2).setResizable(false);
+            tblBillDetail.getColumnModel().getColumn(3).setResizable(false);
+            tblBillDetail.getColumnModel().getColumn(4).setResizable(false);
         }
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
@@ -364,7 +1018,7 @@ public class BillManagement extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Chi tiết", jPanel6);
 
-        jButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -380,7 +1034,7 @@ public class BillManagement extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -392,7 +1046,7 @@ public class BillManagement extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButton6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jTabbedPane1))
                     .addGroup(jPanel1Layout.createSequentialGroup()
@@ -453,14 +1107,14 @@ public class BillManagement extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
+    private javax.swing.JButton btnBegin;
+    private javax.swing.JButton btnEnd;
+    private javax.swing.JButton btnExit;
+    private javax.swing.JButton btnFilter;
+    private javax.swing.JButton btnRemove;
+    private javax.swing.JButton btnUpdate;
+    private javax.swing.JComboBox<String> cboStatus;
+    private javax.swing.JComboBox<String> cboTime;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
@@ -480,15 +1134,15 @@ public class BillManagement extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTable jTable2;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
-    private javax.swing.JTextField jTextField5;
-    private javax.swing.JTextField jTextField6;
-    private javax.swing.JTextField jTextField7;
-    private javax.swing.JTextField jTextField8;
+    private javax.swing.JTable tblBill;
+    private javax.swing.JTable tblBillDetail;
+    private javax.swing.JTextField txtAmount;
+    private javax.swing.JTextField txtBegin;
+    private javax.swing.JTextField txtBillId;
+    private javax.swing.JTextField txtCheckin;
+    private javax.swing.JTextField txtCheckout;
+    private javax.swing.JTextField txtEnd;
+    private javax.swing.JTextField txtTable;
+    private javax.swing.JTextField txtUser;
     // End of variables declaration//GEN-END:variables
 }
