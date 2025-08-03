@@ -4,17 +4,574 @@
  */
 package com.team4.quanliquanmicay.View.Dialogs;
 
+import com.team4.quanliquanmicay.Controller.PaymentHistoryController;
+import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XDate;
+import com.team4.quanliquanmicay.DAO.BillDAO;
+import com.team4.quanliquanmicay.DAO.PaymentHistoryDAO;
+import com.team4.quanliquanmicay.DAO.PaymentMethodDAO;
+import com.team4.quanliquanmicay.DAO.UserDAO;
+import com.team4.quanliquanmicay.Entity.Bill;
+import com.team4.quanliquanmicay.Entity.PaymentHistory;
+import com.team4.quanliquanmicay.Entity.PaymentMethod;
+import com.team4.quanliquanmicay.Entity.UserAccount;
+import com.team4.quanliquanmicay.Impl.BillDAOImpl;
+import com.team4.quanliquanmicay.Impl.PaymentHistoryDAOImpl;
+import com.team4.quanliquanmicay.Impl.PaymentMethodDAOImpl;
+import com.team4.quanliquanmicay.Impl.UserDAOImpl;
+import javax.swing.table.DefaultTableModel;
+import java.util.List;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import javax.swing.JOptionPane;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 /**
  *
  * @author HP
  */
-public class LichSuJDialog extends javax.swing.JFrame {
+public class LichSuJDialog extends javax.swing.JFrame implements PaymentHistoryController {
+
+    // DAO objects
+    private final BillDAO billDAO = new BillDAOImpl();
+    private final PaymentHistoryDAO paymentHistoryDAO = new PaymentHistoryDAOImpl();
+    private final PaymentMethodDAO paymentMethodDAO = new PaymentMethodDAOImpl();
+    private final UserDAO userDAO = new UserDAOImpl(); // Thêm UserDAO
+    
+    // Date formatter
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     /**
      * Creates new form LichSuJDialog
      */
     public LichSuJDialog() {
+        this.setUndecorated(true);
+        XTheme.applyFullTheme();
         initComponents();
+        this.setLocationRelativeTo(null);
+        
+        setupTable();
+        setupEventHandlers();
+        loadAllData(); // Load tất cả dữ liệu khi mở form
+    }
+    
+    /**
+     * Thiết lập bảng
+     */
+    private void setupTable() {
+        // Thiết lập bảng Bills - chỉ 6 cột như yêu cầu
+        DefaultTableModel billsModel = new DefaultTableModel(
+            new Object[][] {},
+            new String[] {
+                "Mã hóa đơn", "Tên nhân viên", "Bàn số", "Thời gian vào", "Thời gian ra", "Trạng thái"
+            }
+        ) {
+            private static final boolean[] CAN_EDIT = {false, false, false, false, false, false};
+
+            @Override
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return CAN_EDIT[columnIndex];
+            }
+        };
+        tblBills.setModel(billsModel);
+        
+        // Thiết lập bảng Payment - sửa lại thứ tự cột
+        DefaultTableModel paymentModel = new DefaultTableModel(
+            new Object[][] {},
+            new String[] {
+                "Mã hóa đơn", "Phương thức thanh toán", "Tổng tiền", "Thời gian thanh toán", "Trạng thái"
+            }
+        ) {
+            private static final boolean[] CAN_EDIT = {false, false, false, false, false};
+
+            @Override
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return CAN_EDIT[columnIndex];
+            }
+        };
+        tblPayment.setModel(paymentModel);
+        
+        // Thiết lập độ rộng cột cho bảng Bills (6 cột)
+        tblBills.getColumnModel().getColumn(0).setPreferredWidth(100); // Mã hóa đơn
+        tblBills.getColumnModel().getColumn(1).setPreferredWidth(150); // Tên nhân viên
+        tblBills.getColumnModel().getColumn(2).setPreferredWidth(80);  // Bàn số
+        tblBills.getColumnModel().getColumn(3).setPreferredWidth(150); // Thời gian vào
+        tblBills.getColumnModel().getColumn(4).setPreferredWidth(150); // Thời gian ra
+        tblBills.getColumnModel().getColumn(5).setPreferredWidth(120); // Trạng thái
+        
+        // Thiết lập độ rộng cột cho bảng Payment (5 cột)
+        tblPayment.getColumnModel().getColumn(0).setPreferredWidth(100); // Mã hóa đơn
+        tblPayment.getColumnModel().getColumn(1).setPreferredWidth(150); // Phương thức thanh toán
+        tblPayment.getColumnModel().getColumn(2).setPreferredWidth(120); // Tổng tiền
+        tblPayment.getColumnModel().getColumn(3).setPreferredWidth(150); // Thời gian thanh toán
+        tblPayment.getColumnModel().getColumn(4).setPreferredWidth(120); // Trạng thái
+    }
+    
+    /**
+     * Thiết lập event handlers
+     */
+    private void setupEventHandlers() {
+        // Nút chọn ngày từ
+        btnCheckin.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showDatePicker(txtCheckin);
+            }
+        });
+        
+        // Nút chọn ngày đến
+        btnCheckout.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showDatePicker(txtCheckout);
+            }
+        });
+        
+        // Nút lọc
+        btnFilter.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                filterData();
+            }
+        });
+        
+        // ComboBox thời gian
+        cboFilter.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleTimeRangeSelection();
+            }
+        });
+    }
+    
+    /**
+     * Hiển thị date picker
+     */
+    private void showDatePicker(javax.swing.JTextField textField) {
+        try {
+            // Sử dụng XDialog thay cho JOptionPane
+            String dateStr = XDialog.prompt("Nhập ngày (dd/MM/yyyy):", "Chọn ngày");
+            
+            if (dateStr != null && !dateStr.trim().isEmpty()) {
+                // Validate date format
+                try {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    sdf.setLenient(false);
+                    Date date = sdf.parse(dateStr);
+                    textField.setText(dateStr);
+                } catch (Exception ex) {
+                    XDialog.error("Định dạng ngày không hợp lệ! Vui lòng nhập theo định dạng dd/MM/yyyy", "Lỗi định dạng");
+                }
+            }
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi chọn ngày: " + e.getMessage(), "Lỗi hệ thống");
+        }
+    }
+    
+    /**
+     * Validate khoảng thời gian checkin và checkout
+     */
+    private boolean validateDateRange(String fromDateStr, String toDateStr) {
+        try {
+            if (fromDateStr.isEmpty() || toDateStr.isEmpty()) {
+                return true; // Cho phép để trống
+            }
+            
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            sdf.setLenient(false);
+            
+            Date fromDate = sdf.parse(fromDateStr);
+            Date toDate = sdf.parse(toDateStr);
+            
+            // Kiểm tra checkin có lớn hơn checkout không
+            if (fromDate.after(toDate)) {
+                XDialog.error(
+                    "Ngày bắt đầu không thể lớn hơn ngày kết thúc!\n" +
+                    "Vui lòng nhập lại khoảng thời gian hợp lệ.",
+                    "Lỗi khoảng thời gian"
+                );
+                return false;
+            }
+            
+            return true;
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi kiểm tra khoảng thời gian: " + e.getMessage(), "Lỗi validation");
+            return false;
+        }
+    }
+    
+    /**
+     * Validate và format ngày tháng
+     */
+    private Date parseDate(String dateStr) {
+        try {
+            if (dateStr == null || dateStr.trim().isEmpty()) {
+                return null;
+            }
+            
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            sdf.setLenient(false);
+            return sdf.parse(dateStr.trim());
+        } catch (Exception e) {
+            XDialog.error("Định dạng ngày không hợp lệ: " + dateStr + "\nVui lòng nhập theo định dạng dd/MM/yyyy", "Lỗi định dạng");
+            return null;
+        }
+    }
+
+    /**
+     * Xử lý khi chọn khoảng thời gian từ ComboBox
+     */
+    private void handleTimeRangeSelection() {
+        try {
+            String selected = (String) cboFilter.getSelectedItem();
+            Date fromDate = null;
+            Date toDate = new Date(); // Ngày hiện tại
+            
+            switch (selected) {
+                case "Hôm nay":
+                    fromDate = getStartOfDay(new Date());
+                    break;
+                case "Tuần này":
+                    fromDate = getStartOfWeek(new Date());
+                    break;
+                case "Tháng này":
+                    fromDate = getStartOfMonth(new Date());
+                    break;
+                case "Quý này":
+                    fromDate = getStartOfQuarter(new Date());
+                    break;
+                case "Năm này":
+                    fromDate = getStartOfYear(new Date());
+                    break;
+            }
+            
+            if (fromDate != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                txtCheckin.setText(sdf.format(fromDate));
+                txtCheckout.setText(sdf.format(toDate));
+                
+                // Tự động lọc dữ liệu
+                filterDataByDateRange(fromDate, toDate);
+            }
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi xử lý khoảng thời gian: " + e.getMessage(), "Lỗi hệ thống");
+        }
+    }
+    
+    /**
+     * Lọc dữ liệu theo điều kiện
+     */
+    private void filterData() {
+        try {
+            String fromDateStr = txtCheckin.getText().trim();
+            String toDateStr = txtCheckout.getText().trim();
+            
+            // Validate khoảng thời gian trước khi lọc
+            if (!validateDateRange(fromDateStr, toDateStr)) {
+                return; // Dừng nếu validation thất bại
+            }
+            
+            if (fromDateStr.isEmpty() && toDateStr.isEmpty()) {
+                // Nếu không có điều kiện lọc, load tất cả
+                loadAllData();
+                return;
+            }
+            
+            // Parse ngày tháng
+            Date fromDate = parseDate(fromDateStr);
+            Date toDate = parseDate(toDateStr);
+            
+            if (fromDate == null && !fromDateStr.isEmpty()) {
+                return; // Dừng nếu parse thất bại
+            }
+            
+            if (toDate == null && !toDateStr.isEmpty()) {
+                return; // Dừng nếu parse thất bại
+            }
+            
+            if (toDate != null) {
+                // Set thời gian cuối ngày
+                toDate = getEndOfDay(toDate);
+            }
+            
+            filterDataByDateRange(fromDate, toDate);
+            
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi lọc dữ liệu: " + e.getMessage(), "Lỗi hệ thống");
+        }
+    }
+    
+    /**
+     * Lọc dữ liệu theo khoảng thời gian
+     */
+    private void filterDataByDateRange(Date fromDate, Date toDate) {
+        try {
+            // Load cả Bill và PaymentHistory
+            List<Bill> bills = billDAO.findAll();
+            List<PaymentHistory> paymentHistoryList = paymentHistoryDAO.findAll();
+            
+            // Lọc Bill theo khoảng thời gian
+            List<Bill> filteredBills = bills.stream()
+                .filter(bill -> {
+                    if (bill.getCheckin() == null) return false;
+                    
+                    boolean afterFromDate = fromDate == null || bill.getCheckin().after(fromDate) || bill.getCheckin().equals(fromDate);
+                    boolean beforeToDate = toDate == null || bill.getCheckin().before(toDate) || bill.getCheckin().equals(toDate);
+                    
+                    return afterFromDate && beforeToDate;
+                })
+                .collect(java.util.stream.Collectors.toList());
+            
+            // Lọc PaymentHistory theo khoảng thời gian
+            List<PaymentHistory> filteredHistory = paymentHistoryList.stream()
+                .filter(history -> {
+                    if (history.getPayment_date() == null) return false;
+                    
+                    boolean afterFromDate = fromDate == null || history.getPayment_date().after(fromDate) || history.getPayment_date().equals(fromDate);
+                    boolean beforeToDate = toDate == null || history.getPayment_date().before(toDate) || history.getPayment_date().equals(toDate);
+                    
+                    return afterFromDate && beforeToDate;
+                })
+                .collect(java.util.stream.Collectors.toList());
+            
+            fillTableWithData(filteredBills, filteredHistory);
+            
+            // Hiển thị thông báo số lượng kết quả
+            XDialog.success("Tìm thấy " + filteredBills.size() + " hóa đơn và " + filteredHistory.size() + " giao dịch thanh toán trong khoảng thời gian đã chọn!", "Kết quả tìm kiếm");
+            
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi lọc dữ liệu: " + e.getMessage(), "Lỗi hệ thống");
+        }
+    }
+    
+    /**
+     * Load tất cả dữ liệu
+     */
+    private void loadAllData() {
+        try {
+            List<Bill> bills = billDAO.findAll();
+            List<PaymentHistory> paymentHistoryList = paymentHistoryDAO.findAll();
+            fillTableWithData(bills, paymentHistoryList);
+            XDialog.success("Đã load " + bills.size() + " hóa đơn và " + paymentHistoryList.size() + " giao dịch thanh toán!", "Thành công");
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi load dữ liệu: " + e.getMessage(), "Lỗi hệ thống");
+        }
+    }
+    
+    /**
+     * Fill table với cả Bill và PaymentHistory
+     */
+    private void fillTableWithData(List<Bill> bills, List<PaymentHistory> paymentHistoryList) {
+        // Fill bảng Bills
+        DefaultTableModel billsModel = (DefaultTableModel) tblBills.getModel();
+        billsModel.setRowCount(0);
+        
+        if (bills != null) {
+            for (Bill bill : bills) {
+                String checkinTime = bill.getCheckin() != null ? dateFormat.format(bill.getCheckin()) : "N/A";
+                String checkoutTime = bill.getCheckout() != null ? dateFormat.format(bill.getCheckout()) : "N/A";
+                
+                // Sửa lại logic xử lý status - status là Boolean, cần convert sang String
+                String status = "N/A";
+                if (bill.getStatus() != null) {
+                    status = bill.getStatus() ? "Đã thanh toán" : "Đang phục vụ";
+                }
+                
+                String employeeName = getEmployeeName(bill.getUser_id()); // Lấy tên nhân viên
+                
+                Object[] row = {
+                    bill.getBill_id(),
+                    employeeName,
+                    bill.getTable_number() > 0 ? "Bàn " + bill.getTable_number() : "N/A",
+                    checkinTime,
+                    checkoutTime,
+                    status
+                };
+                billsModel.addRow(row);
+            }
+        }
+        
+        // Fill bảng Payment
+        DefaultTableModel paymentModel = (DefaultTableModel) tblPayment.getModel();
+        paymentModel.setRowCount(0);
+        
+        if (paymentHistoryList != null) {
+            for (PaymentHistory payment : paymentHistoryList) {
+                try {
+                    // Tìm bill_id tương ứng
+                    Integer billId = findBillIdByPaymentHistoryId(payment.getPayment_history_id());
+                    
+                    // Lấy thông tin phương thức thanh toán
+                    PaymentMethod paymentMethod = paymentMethodDAO.findById(payment.getPayment_method_id());
+                    String methodName = paymentMethod != null ? paymentMethod.getMethod_name() : "N/A";
+                    
+                    // Format thời gian thanh toán
+                    String paymentTime = payment.getPayment_date() != null ? dateFormat.format(payment.getPayment_date()) : "N/A";
+                    
+                    // Format số tiền
+                    String totalAmount = formatCurrency(payment.getTotal_amount());
+                    
+                    // Xử lý trạng thái - status là String trong database
+                    String status = payment.getStatus() != null ? payment.getStatus() : "N/A";
+                    
+                    Object[] row = {
+                        billId != null ? billId : "N/A", // Mã hóa đơn
+                        methodName, // Phương thức thanh toán
+                        totalAmount, // Tổng tiền
+                        paymentTime, // Thời gian thanh toán
+                        status // Trạng thái
+                    };
+                    paymentModel.addRow(row);
+                } catch (Exception e) {
+                    System.err.println("Lỗi khi xử lý payment: " + e.getMessage());
+                }
+            }
+        }
+    }
+    
+    /**
+     * Lấy tên phương thức thanh toán theo ID
+     */
+    private String getPaymentMethodName(Integer paymentMethodId) {
+        try {
+            if (paymentMethodId == null) return "N/A";
+            
+            PaymentMethod method = paymentMethodDAO.findById(paymentMethodId);
+            return method != null ? method.getMethod_name() : "N/A";
+        } catch (Exception e) {
+            return "N/A";
+        }
+    }
+    
+    /**
+     * Lấy tên nhân viên theo user_id
+     */
+    private String getEmployeeName(String userId) {
+        try {
+            if (userId == null || userId.trim().isEmpty()) return "N/A";
+            
+            UserAccount user = userDAO.findById(userId);
+            return user != null ? user.getFullName() : "N/A";
+        } catch (Exception e) {
+            return "N/A";
+        }
+    }
+    
+    /**
+     * Format tiền tệ
+     */
+    private String formatCurrency(double amount) {
+        if (amount < 0) return "0 VNĐ";
+        return String.format("%,.0f VNĐ", amount);
+    }
+    
+    /**
+     * Tìm bill_id dựa trên payment_history_id
+     */
+    private Integer findBillIdByPaymentHistoryId(Integer paymentHistoryId) {
+        if (paymentHistoryId == null) return null;
+        
+        try {
+            List<Bill> allBills = billDAO.findAll();
+            for (Bill bill : allBills) {
+                if (bill.getPayment_history_id() != null && 
+                    bill.getPayment_history_id().equals(paymentHistoryId)) {
+                    return bill.getBill_id();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tìm bill_id: " + e.getMessage());
+        }
+        return null;
+    }
+    
+    // ========== HELPER METHODS FOR DATE RANGES ==========
+    
+    /**
+     * Lấy đầu ngày
+     */
+    private Date getStartOfDay(Date date) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        cal.set(java.util.Calendar.MINUTE, 0);
+        cal.set(java.util.Calendar.SECOND, 0);
+        cal.set(java.util.Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+    
+    /**
+     * Lấy cuối ngày
+     */
+    private Date getEndOfDay(Date date) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+        cal.set(java.util.Calendar.MINUTE, 59);
+        cal.set(java.util.Calendar.SECOND, 59);
+        cal.set(java.util.Calendar.MILLISECOND, 999);
+        return cal.getTime();
+    }
+    
+    /**
+     * Lấy đầu tuần
+     */
+    private Date getStartOfWeek(Date date) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(java.util.Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        cal.set(java.util.Calendar.MINUTE, 0);
+        cal.set(java.util.Calendar.SECOND, 0);
+        cal.set(java.util.Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+    
+    /**
+     * Lấy đầu tháng
+     */
+    private Date getStartOfMonth(Date date) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        cal.set(java.util.Calendar.MINUTE, 0);
+        cal.set(java.util.Calendar.SECOND, 0);
+        cal.set(java.util.Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+    
+    /**
+     * Lấy đầu quý
+     */
+    private Date getStartOfQuarter(Date date) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        int month = cal.get(java.util.Calendar.MONTH);
+        int quarter = (month / 3) * 3;
+        cal.set(java.util.Calendar.MONTH, quarter);
+        cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        cal.set(java.util.Calendar.MINUTE, 0);
+        cal.set(java.util.Calendar.SECOND, 0);
+        cal.set(java.util.Calendar.MILLISECOND, 0);
+        return cal.getTime();
+    }
+    
+    /**
+     * Lấy đầu năm
+     */
+    private Date getStartOfYear(Date date) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(java.util.Calendar.DAY_OF_YEAR, 1);
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+        cal.set(java.util.Calendar.MINUTE, 0);
+        cal.set(java.util.Calendar.SECOND, 0);
+        cal.set(java.util.Calendar.MILLISECOND, 0);
+        return cal.getTime();
     }
 
     /**
@@ -28,24 +585,24 @@ public class LichSuJDialog extends javax.swing.JFrame {
 
         jLabel3 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
-        jPanel4 = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jButton4 = new javax.swing.JButton();
+        pnlUi = new javax.swing.JPanel();
+        pnlTitle = new javax.swing.JPanel();
+        lblTitle = new javax.swing.JLabel();
+        lblCheckin = new javax.swing.JLabel();
+        txtCheckin = new javax.swing.JTextField();
+        lblCheckout = new javax.swing.JLabel();
+        txtCheckout = new javax.swing.JTextField();
+        btnCheckin = new javax.swing.JButton();
+        btnCheckout = new javax.swing.JButton();
+        cboFilter = new javax.swing.JComboBox<>();
+        btnFilter = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel2 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTable2 = new javax.swing.JTable();
-        jPanel3 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        pnlBills = new javax.swing.JPanel();
+        jpsBIlls = new javax.swing.JScrollPane();
+        tblBills = new javax.swing.JTable();
+        pnlPayment = new javax.swing.JPanel();
+        jspPayment = new javax.swing.JScrollPane();
+        tblPayment = new javax.swing.JTable();
 
         jLabel3.setText("jLabel3");
 
@@ -54,53 +611,55 @@ public class LichSuJDialog extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(0, 51, 51));
 
-        jPanel4.setBackground(new java.awt.Color(204, 164, 133));
+        pnlUi.setBackground(new java.awt.Color(204, 164, 133));
 
-        jPanel1.setBackground(new java.awt.Color(134, 39, 43));
+        pnlTitle.setBackground(new java.awt.Color(134, 39, 43));
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 36)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("LỊCH SỬ");
+        lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 36)); // NOI18N
+        lblTitle.setForeground(new java.awt.Color(255, 255, 255));
+        lblTitle.setText("LỊCH SỬ");
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout pnlTitleLayout = new javax.swing.GroupLayout(pnlTitle);
+        pnlTitle.setLayout(pnlTitleLayout);
+        pnlTitleLayout.setHorizontalGroup(
+            pnlTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlTitleLayout.createSequentialGroup()
                 .addGap(238, 238, 238)
-                .addComponent(jLabel1)
+                .addComponent(lblTitle)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
+        pnlTitleLayout.setVerticalGroup(
+            pnlTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(lblTitle, javax.swing.GroupLayout.Alignment.TRAILING)
         );
 
-        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel2.setText("TỪ :");
+        lblCheckin.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblCheckin.setForeground(new java.awt.Color(255, 255, 255));
+        lblCheckin.setText("TỪ :");
 
-        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtCheckin.setEditable(false);
+        txtCheckin.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setText("ĐẾN :");
+        lblCheckout.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblCheckout.setForeground(new java.awt.Color(255, 255, 255));
+        lblCheckout.setText("ĐẾN :");
 
-        jTextField2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtCheckout.setEditable(false);
+        txtCheckout.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jButton1.setText("...");
+        btnCheckin.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnCheckin.setText("...");
 
-        jButton2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jButton2.setText("...");
+        btnCheckout.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnCheckout.setText("...");
 
-        jComboBox1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm này" }));
+        cboFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        cboFilter.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm này" }));
 
-        jButton4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton4.setText("LỌC");
+        btnFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnFilter.setText("LỌC");
 
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
+        tblBills.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -116,30 +675,30 @@ public class LichSuJDialog extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane2.setViewportView(jTable2);
-        if (jTable2.getColumnModel().getColumnCount() > 0) {
-            jTable2.getColumnModel().getColumn(0).setResizable(false);
-            jTable2.getColumnModel().getColumn(1).setResizable(false);
-            jTable2.getColumnModel().getColumn(2).setResizable(false);
-            jTable2.getColumnModel().getColumn(3).setResizable(false);
-            jTable2.getColumnModel().getColumn(4).setResizable(false);
-            jTable2.getColumnModel().getColumn(5).setResizable(false);
+        jpsBIlls.setViewportView(tblBills);
+        if (tblBills.getColumnModel().getColumnCount() > 0) {
+            tblBills.getColumnModel().getColumn(0).setResizable(false);
+            tblBills.getColumnModel().getColumn(1).setResizable(false);
+            tblBills.getColumnModel().getColumn(2).setResizable(false);
+            tblBills.getColumnModel().getColumn(3).setResizable(false);
+            tblBills.getColumnModel().getColumn(4).setResizable(false);
+            tblBills.getColumnModel().getColumn(5).setResizable(false);
         }
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
+        javax.swing.GroupLayout pnlBillsLayout = new javax.swing.GroupLayout(pnlBills);
+        pnlBills.setLayout(pnlBillsLayout);
+        pnlBillsLayout.setHorizontalGroup(
+            pnlBillsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jpsBIlls, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+        pnlBillsLayout.setVerticalGroup(
+            pnlBillsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jpsBIlls, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("Hóa đơn", jPanel2);
+        jTabbedPane1.addTab("Hóa đơn", pnlBills);
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblPayment.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null},
                 {null, null, null, null, null},
@@ -158,71 +717,71 @@ public class LichSuJDialog extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(jTable1);
-        if (jTable1.getColumnModel().getColumnCount() > 0) {
-            jTable1.getColumnModel().getColumn(0).setResizable(false);
-            jTable1.getColumnModel().getColumn(1).setResizable(false);
-            jTable1.getColumnModel().getColumn(2).setResizable(false);
-            jTable1.getColumnModel().getColumn(3).setResizable(false);
-            jTable1.getColumnModel().getColumn(4).setResizable(false);
+        jspPayment.setViewportView(tblPayment);
+        if (tblPayment.getColumnModel().getColumnCount() > 0) {
+            tblPayment.getColumnModel().getColumn(0).setResizable(false);
+            tblPayment.getColumnModel().getColumn(1).setResizable(false);
+            tblPayment.getColumnModel().getColumn(2).setResizable(false);
+            tblPayment.getColumnModel().getColumn(3).setResizable(false);
+            tblPayment.getColumnModel().getColumn(4).setResizable(false);
         }
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
+        javax.swing.GroupLayout pnlPaymentLayout = new javax.swing.GroupLayout(pnlPayment);
+        pnlPayment.setLayout(pnlPaymentLayout);
+        pnlPaymentLayout.setHorizontalGroup(
+            pnlPaymentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jspPayment, javax.swing.GroupLayout.DEFAULT_SIZE, 640, Short.MAX_VALUE)
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
+        pnlPaymentLayout.setVerticalGroup(
+            pnlPaymentLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jspPayment, javax.swing.GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("Thanh toán", jPanel3);
+        jTabbedPane1.addTab("Thanh toán", pnlPayment);
 
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
+        javax.swing.GroupLayout pnlUiLayout = new javax.swing.GroupLayout(pnlUi);
+        pnlUi.setLayout(pnlUiLayout);
+        pnlUiLayout.setHorizontalGroup(
+            pnlUiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(pnlTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(pnlUiLayout.createSequentialGroup()
+                .addGroup(pnlUiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlUiLayout.createSequentialGroup()
                         .addGap(13, 13, 13)
-                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lblCheckin, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtCheckin, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1)
+                        .addComponent(btnCheckin)
                         .addGap(18, 18, 18)
-                        .addComponent(jLabel4)
+                        .addComponent(lblCheckout)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(txtCheckout, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2)
+                        .addComponent(btnCheckout)
                         .addGap(18, 18, 18)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(cboFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(btnFilter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(pnlUiLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jTabbedPane1)))
                 .addContainerGap())
         );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        pnlUiLayout.setVerticalGroup(
+            pnlUiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlUiLayout.createSequentialGroup()
+                .addComponent(pnlTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1)
-                    .addComponent(jLabel4)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton4)
-                    .addComponent(jButton2))
+                .addGroup(pnlUiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblCheckin)
+                    .addComponent(txtCheckin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnCheckin)
+                    .addComponent(lblCheckout)
+                    .addComponent(txtCheckout, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cboFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnFilter)
+                    .addComponent(btnCheckout))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -232,11 +791,11 @@ public class LichSuJDialog extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(pnlUi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(pnlUi, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -278,25 +837,103 @@ public class LichSuJDialog extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
+    private javax.swing.JButton btnCheckin;
+    private javax.swing.JButton btnCheckout;
+    private javax.swing.JButton btnFilter;
+    private javax.swing.JComboBox<String> cboFilter;
     private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTable jTable2;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
+    private javax.swing.JScrollPane jpsBIlls;
+    private javax.swing.JScrollPane jspPayment;
+    private javax.swing.JLabel lblCheckin;
+    private javax.swing.JLabel lblCheckout;
+    private javax.swing.JLabel lblTitle;
+    private javax.swing.JPanel pnlBills;
+    private javax.swing.JPanel pnlPayment;
+    private javax.swing.JPanel pnlTitle;
+    private javax.swing.JPanel pnlUi;
+    private javax.swing.JTable tblBills;
+    private javax.swing.JTable tblPayment;
+    private javax.swing.JTextField txtCheckin;
+    private javax.swing.JTextField txtCheckout;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void open() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'open'");
+    }
+
+    @Override
+    public void setForm(PaymentHistory entity) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setForm'");
+    }
+
+    @Override
+    public PaymentHistory getForm() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getForm'");
+    }
+
+    @Override
+    public void fillToTable() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'fillToTable'");
+    }
+
+    @Override
+    public void edit() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'edit'");
+    }
+
+    @Override
+    public void create() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'create'");
+    }
+
+    @Override
+    public void update() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    }
+
+    @Override
+    public void delete() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'delete'");
+    }
+
+    @Override
+    public void clear() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'clear'");
+    }
+
+    @Override
+    public void setEditable(boolean editable) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setEditable'");
+    }
+
+    @Override
+    public void checkAll() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'checkAll'");
+    }
+
+    @Override
+    public void uncheckAll() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'uncheckAll'");
+    }
+
+    @Override
+    public void deleteCheckedItems() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteCheckedItems'");
+    }
 }
