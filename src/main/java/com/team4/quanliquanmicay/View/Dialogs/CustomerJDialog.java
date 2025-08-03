@@ -135,7 +135,7 @@ public class CustomerJDialog extends javax.swing.JFrame {
             customer.setCustomer_name(customerName);
             customer.setPoint_level(0); // Điểm mặc định là 0
             customer.setLevel_ranking("Thường"); // Hạng mặc định là "Thường"
-            customer.setCreated_date(new Date()); // Ngày tạo
+            customer.setCreated_date(new java.util.Date()); // Ngày tạo
             
             customerDAO.create(customer);
             createdCustomer = customer;
@@ -198,7 +198,7 @@ public class CustomerJDialog extends javax.swing.JFrame {
             .addGap(0, 100, Short.MAX_VALUE)
         );
 
-        jLabel4.setText("jLabel4");
+        jLabel4.setText("");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -239,11 +239,12 @@ public class CustomerJDialog extends javax.swing.JFrame {
 
         btn_add.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btn_add.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Create.png"))); // NOI18N
+        btn_add.setText("THÊM MỚI");
 
 
         btn_exit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btn_exit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
-        btn_exit.setText("EXIT");
+        btn_exit.setText("THOÁT");
 
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -325,12 +326,10 @@ public class CustomerJDialog extends javax.swing.JFrame {
                 // Nếu khách hàng đã tồn tại, thông báo và clear form
                 XDialog.alert("Số điện thoại đã tồn tại vui lòng chọn số điện thoại khác!");
                 clearForm();
-                btn_add.setText("THÊM MỚI");
             } else {
                 // Nếu khách hàng chưa tồn tại, chỉ set số điện thoại
                 txt_phone.setText(phoneNumber);
                 txt_name.setText("");
-                btn_add.setText("THÊM MỚI");
             }
         } catch (Exception e) {
             XDialog.alert("Lỗi khi tải thông tin khách hàng: " + e.getMessage());

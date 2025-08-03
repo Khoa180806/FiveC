@@ -6,6 +6,7 @@ import com.team4.quanliquanmicay.util.XJdbc;
 import com.team4.quanliquanmicay.util.XQuery;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Date;
 import java.util.List;
 
 public class CustomerDAOImpl implements CustomerDAO {
@@ -25,7 +26,7 @@ public class CustomerDAOImpl implements CustomerDAO {
             entity.getCustomer_name(),
             entity.getPoint_level(),
             entity.getLevel_ranking(),
-            entity.getCreated_date()
+            entity.getCreated_date() != null ? new Date(entity.getCreated_date().getTime()) : null
         };
         XJdbc.executeUpdate(createSql, values);
         return entity;
@@ -37,7 +38,7 @@ public class CustomerDAOImpl implements CustomerDAO {
             entity.getCustomer_name(),
             entity.getPoint_level(),
             entity.getLevel_ranking(),
-            entity.getCreated_date(),
+            entity.getCreated_date() != null ? new Date(entity.getCreated_date().getTime()) : null,
             entity.getPhone_number()
         };
         XJdbc.executeUpdate(updateSql, values);

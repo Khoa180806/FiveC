@@ -78,6 +78,10 @@ public class XQuery {
                                     value = "1".equals(value) || "true".equalsIgnoreCase((String) value);
                                 }
                             }
+                            // Xử lý chuyển đổi Date
+                            if (paramType == java.util.Date.class) {
+                                value = convertOracleType(paramType, value, fieldName);
+                            }
                             method.invoke(bean, value);
                             success = true;
                         }
@@ -98,6 +102,10 @@ public class XQuery {
                                 }
                                 if (paramType == float.class && value instanceof java.math.BigDecimal) {
                                     value = ((java.math.BigDecimal) value).floatValue();
+                                }
+                                // Xử lý chuyển đổi Date
+                                if (paramType == java.util.Date.class) {
+                                    value = convertOracleType(paramType, value, fieldName);
                                 }
                                 method.invoke(bean, value);
                                 success = true;
@@ -139,6 +147,10 @@ public class XQuery {
                                 if (paramType == float.class && value instanceof java.math.BigDecimal) {
                                     value = ((java.math.BigDecimal) value).floatValue();
                                 }
+                                // Xử lý chuyển đổi Date
+                                if (paramType == java.util.Date.class) {
+                                    value = convertOracleType(paramType, value, fieldName);
+                                }
                                 method.invoke(bean, value);
                                 success = true;
                             }
@@ -162,6 +174,10 @@ public class XQuery {
                                 if (paramType == float.class && value instanceof java.math.BigDecimal) {
                                     value = ((java.math.BigDecimal) value).floatValue();
                                 }
+                                // Xử lý chuyển đổi Date
+                                if (paramType == java.util.Date.class) {
+                                    value = convertOracleType(paramType, value, fieldName);
+                                }
                                 method.invoke(bean, value);
                                 success = true;
                             }
@@ -178,7 +194,7 @@ public class XQuery {
     }
 
     /**
-     * Lấy index cột dựa vào tên field - ĐÃ THÊM TABLE_FOR_CUSTOMER
+     * Lấy index cột dựa vào tên field - ĐÃ THÊM TABLE_FOR_CUSTOMER VÀ CUSTOMER
      */
     private static int getColumnIndex(String fieldName) {
         switch (fieldName) {
@@ -198,6 +214,12 @@ public class XQuery {
             case "Table_number": return 1;
             case "Amount": return 2;
             case "Status": return 3;
+            // CUSTOMER mapping
+            case "phone_number": return 1;
+            case "customer_name": return 2;
+            case "point_level": return 3;
+            case "level_ranking": return 4;
+            case "created_date": return 5;
             // CATE mapping
             case "Category_id": return 1;
             case "Category_name": return 2;
