@@ -22,12 +22,13 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.toedter.calendar.JDateChooser;
+import com.team4.quanliquanmicay.Controller.BillManagementController;
 
 /**
  *
  * @author Asus
  */
-public class BillManagement extends javax.swing.JFrame {
+public class BillManagement extends javax.swing.JFrame implements BillManagementController {
 
     private BillDAO billDAO;
     private BillDetailsDAO billDetailsDAO;
@@ -61,7 +62,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Khởi tạo date picker
      */
-    private void initDatePickers() {
+    @Override
+    public void initDatePickers() {
         // Khởi tạo ngày mặc định là hôm nay
         setDefaultDateRange();
     }
@@ -69,7 +71,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Thiết lập khoảng ngày mặc định là hôm nay
      */
-    private void setDefaultDateRange() {
+    @Override
+    public void setDefaultDateRange() {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             java.util.Date today = new java.util.Date();
@@ -92,7 +95,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Load dữ liệu hóa đơn vào table
      */
-    private void loadBillData() {
+    @Override
+    public void loadBillData() {
         try {
             List<Bill> bills = billDAO.findAll();
             DefaultTableModel model = (DefaultTableModel) tblBill.getModel();
@@ -128,7 +132,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Load chi tiết hóa đơn theo bill_id
      */
-    private void loadBillDetails(Integer billId) {
+    @Override
+    public void loadBillDetails(Integer billId) {
         try {
             List<BillDetails> billDetails = billDetailsDAO.findByBillId(billId);
             DefaultTableModel model = (DefaultTableModel) tblBillDetail.getModel();
@@ -155,7 +160,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Hiển thị thông tin hóa đơn lên form
      */
-    private void displayBillInfo(Bill bill) {
+    @Override
+    public void displayBillInfo(Bill bill) {
         if (bill == null) {
             clearForm();
             return;
@@ -188,7 +194,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Xóa form
      */
-    private void clearForm() {
+    @Override
+    public void clearForm() {
         currentBill = null;
         txtBillId.setText("");
         txtUser.setText("");
@@ -206,7 +213,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Thêm các event listeners
      */
-    private void addEventListeners() {
+    @Override
+    public void addEventListeners() {
         // Sự kiện click vào table hóa đơn
         tblBill.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
@@ -244,7 +252,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Cập nhật hóa đơn
      */
-    private void updateBill() {
+    @Override
+    public void updateBill() {
         if (currentBill == null) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn cần cập nhật!");
             return;
@@ -281,7 +290,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Xóa hóa đơn
      */
-    private void removeBill() {
+    @Override
+    public void removeBill() {
         if (currentBill == null) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn cần xóa!");
             return;
@@ -316,7 +326,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Hiển thị dialog chọn ngày sử dụng JCalendar
      */
-    private void showDatePickerDialog(String title, javax.swing.JTextField textField) {
+    @Override
+    public void showDatePickerDialog(String title, javax.swing.JTextField textField) {
         // Tạo dialog chọn ngày sử dụng JCalendar
         javax.swing.JDialog dialog = new javax.swing.JDialog(this, title, true);
         dialog.setLayout(new java.awt.BorderLayout());
@@ -377,7 +388,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Kiểm tra validation ngày bắt đầu và kết thúc
      */
-    private boolean validateDateRange(javax.swing.JTextField textField, java.util.Date selectedDate) {
+    @Override
+    public boolean validateDateRange(javax.swing.JTextField textField, java.util.Date selectedDate) {
         try {
             // Nếu đang chọn ngày bắt đầu
             if (textField == txtBegin) {
@@ -425,7 +437,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Cập nhật ngày bắt đầu và kết thúc theo combobox thời gian
      */
-    private void updateDateRangeFromComboBox() {
+    @Override
+    public void updateDateRangeFromComboBox() {
         try {
             String selectedTime = (String) cboTime.getSelectedItem();
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -541,7 +554,8 @@ public class BillManagement extends javax.swing.JFrame {
     /**
      * Lọc hóa đơn theo thời gian
      */
-    private void filterBills() {
+    @Override
+    public void filterBills() {
         try {
             String selectedTime = (String) cboTime.getSelectedItem();
             List<Bill> bills = billDAO.findAll();
@@ -673,6 +687,149 @@ public class BillManagement extends javax.swing.JFrame {
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Lỗi khi lọc hóa đơn: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Lấy danh sách tất cả hóa đơn
+     * @return Danh sách hóa đơn
+     */
+    @Override
+    public List<Bill> getAllBills() {
+        try {
+            return billDAO.findAll();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi lấy danh sách hóa đơn: " + e.getMessage());
+            return new java.util.ArrayList<>();
+        }
+    }
+    
+    /**
+     * Tìm hóa đơn theo ID
+     * @param billId ID hóa đơn
+     * @return Hóa đơn tìm được
+     */
+    @Override
+    public Bill findBillById(String billId) {
+        try {
+            return billDAO.findById(billId);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi tìm hóa đơn: " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Lọc hóa đơn theo khoảng thời gian
+     * @param beginDate Ngày bắt đầu
+     * @param endDate Ngày kết thúc
+     * @return Danh sách hóa đơn đã lọc
+     */
+    @Override
+    public List<Bill> filterBillsByDateRange(Date beginDate, Date endDate) {
+        try {
+            List<Bill> allBills = billDAO.findAll();
+            List<Bill> filteredBills = new java.util.ArrayList<>();
+            
+            // Thêm 1 ngày vào endDate để bao gồm cả ngày kết thúc
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.setTime(endDate);
+            cal.add(java.util.Calendar.DATE, 1);
+            Date adjustedEndDate = cal.getTime();
+            
+            for (Bill bill : allBills) {
+                if (bill.getCheckin() != null) {
+                    // Kiểm tra ngày checkin có trong khoảng thời gian không
+                    if (bill.getCheckin().after(beginDate) && bill.getCheckin().before(adjustedEndDate)) {
+                        filteredBills.add(bill);
+                    }
+                }
+            }
+            
+            return filteredBills;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi lọc hóa đơn theo ngày: " + e.getMessage());
+            return new java.util.ArrayList<>();
+        }
+    }
+    
+    /**
+     * Lọc hóa đơn theo thời gian định sẵn
+     * @param timeRange Loại thời gian (Hôm nay, Tuần này, Tháng này, Quý này, Năm này)
+     * @return Danh sách hóa đơn đã lọc
+     */
+    @Override
+    public List<Bill> filterBillsByTimeRange(String timeRange) {
+        try {
+            List<Bill> allBills = billDAO.findAll();
+            List<Bill> filteredBills = new java.util.ArrayList<>();
+            
+            java.util.Date now = new java.util.Date();
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.setTime(now);
+            
+            for (Bill bill : allBills) {
+                if (bill.getCheckin() != null) {
+                    boolean include = false;
+                    
+                    switch (timeRange) {
+                        case "Hôm nay":
+                            cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                            cal.set(java.util.Calendar.MINUTE, 0);
+                            cal.set(java.util.Calendar.SECOND, 0);
+                            java.util.Date startOfDay = cal.getTime();
+                            include = bill.getCheckin().after(startOfDay);
+                            break;
+                        case "Tuần này":
+                            cal.set(java.util.Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+                            cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                            cal.set(java.util.Calendar.MINUTE, 0);
+                            cal.set(java.util.Calendar.SECOND, 0);
+                            java.util.Date startOfWeek = cal.getTime();
+                            include = bill.getCheckin().after(startOfWeek);
+                            break;
+                        case "Tháng này":
+                            cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+                            cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                            cal.set(java.util.Calendar.MINUTE, 0);
+                            cal.set(java.util.Calendar.SECOND, 0);
+                            java.util.Date startOfMonth = cal.getTime();
+                            include = bill.getCheckin().after(startOfMonth);
+                            break;
+                        case "Quý này":
+                            int currentMonth = cal.get(java.util.Calendar.MONTH);
+                            int quarterStartMonth = (currentMonth / 3) * 3;
+                            cal.set(java.util.Calendar.MONTH, quarterStartMonth);
+                            cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+                            cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                            cal.set(java.util.Calendar.MINUTE, 0);
+                            cal.set(java.util.Calendar.SECOND, 0);
+                            java.util.Date startOfQuarter = cal.getTime();
+                            include = bill.getCheckin().after(startOfQuarter);
+                            break;
+                        case "Năm này":
+                            cal.set(java.util.Calendar.DAY_OF_YEAR, 1);
+                            cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+                            cal.set(java.util.Calendar.MINUTE, 0);
+                            cal.set(java.util.Calendar.SECOND, 0);
+                            java.util.Date startOfYear = cal.getTime();
+                            include = bill.getCheckin().after(startOfYear);
+                            break;
+                        default:
+                            include = true;
+                            break;
+                    }
+                    
+                    if (include) {
+                        filteredBills.add(bill);
+                    }
+                }
+            }
+            
+            return filteredBills;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Lỗi khi lọc hóa đơn theo thời gian: " + e.getMessage());
+            return new java.util.ArrayList<>();
         }
     }
 
