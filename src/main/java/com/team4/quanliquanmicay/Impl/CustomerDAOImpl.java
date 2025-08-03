@@ -14,6 +14,9 @@ public class CustomerDAOImpl implements CustomerDAO {
     String deleteSql = "DELETE FROM CUSTOMER WHERE phone_number=?";
     String findAllSql = "SELECT phone_number, customer_name, point_level, level_ranking, created_date FROM CUSTOMER";
     String findByIdSql = "SELECT phone_number, customer_name, point_level, level_ranking, created_date FROM CUSTOMER WHERE phone_number=?";
+    String searchByPhoneSql = "SELECT phone_number, customer_name, point_level, level_ranking, created_date FROM CUSTOMER WHERE phone_number LIKE ?";
+    String sortByPointAscSql = "SELECT phone_number, customer_name, point_level, level_ranking, created_date FROM CUSTOMER ORDER BY point_level ASC";
+    String sortByPointDescSql = "SELECT phone_number, customer_name, point_level, level_ranking, created_date FROM CUSTOMER ORDER BY point_level DESC";
 
     @Override
     public Customer create(Customer entity) {
@@ -55,5 +58,26 @@ public class CustomerDAOImpl implements CustomerDAO {
         return XQuery.getSingleBean(Customer.class, findByIdSql, phone_number);
     }
 
+    /**
+     * Search customers by phone number (partial match)
+     */
+    public List<Customer> searchByPhone(String phoneNumber) {
+        String searchPattern = "%" + phoneNumber + "%";
+        return XQuery.getBeanList(Customer.class, searchByPhoneSql, searchPattern);
+    }
+
+    /**
+     * Sort customers by point level in ascending order
+     */
+    public List<Customer> sortByPointAsc() {
+        return XQuery.getBeanList(Customer.class, sortByPointAscSql);
+    }
+
+    /**
+     * Sort customers by point level in descending order
+     */
+    public List<Customer> sortByPointDesc() {
+        return XQuery.getBeanList(Customer.class, sortByPointDescSql);
+    }
 
 }
