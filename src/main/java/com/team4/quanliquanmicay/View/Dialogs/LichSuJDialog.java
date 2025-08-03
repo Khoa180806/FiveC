@@ -27,6 +27,10 @@ import java.text.SimpleDateFormat;
 import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import com.toedter.calendar.JCalendar;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
 
 /**
  *
@@ -147,27 +151,38 @@ public class LichSuJDialog extends javax.swing.JFrame implements PaymentHistoryC
     }
     
     /**
-     * Hiển thị date picker
+     * Hiển thị JCalendar để chọn ngày
      */
     private void showDatePicker(javax.swing.JTextField textField) {
-        try {
-            // Sử dụng XDialog thay cho JOptionPane
-            String dateStr = XDialog.prompt("Nhập ngày (dd/MM/yyyy):", "Chọn ngày");
-            
-            if (dateStr != null && !dateStr.trim().isEmpty()) {
-                // Validate date format
-                try {
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                    sdf.setLenient(false);
-                    Date date = sdf.parse(dateStr);
-                    textField.setText(dateStr);
-                } catch (Exception ex) {
-                    XDialog.error("Định dạng ngày không hợp lệ! Vui lòng nhập theo định dạng dd/MM/yyyy", "Lỗi định dạng");
-                }
+        JDialog dialog = new JDialog(this, "Chọn ngày", true);
+        JCalendar calendar = new JCalendar();
+        JButton btnOk = new JButton("OK");
+        JButton btnCancel = new JButton("Hủy");
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(calendar, BorderLayout.CENTER);
+
+        JPanel btnPanel = new JPanel();
+        btnPanel.add(btnOk);
+        btnPanel.add(btnCancel);
+        panel.add(btnPanel, BorderLayout.SOUTH);
+
+        dialog.getContentPane().add(panel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+
+        btnOk.addActionListener(e -> {
+            java.util.Date selectedDate = calendar.getDate();
+            if (selectedDate != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                textField.setText(sdf.format(selectedDate));
             }
-        } catch (Exception e) {
-            XDialog.error("Lỗi khi chọn ngày: " + e.getMessage(), "Lỗi hệ thống");
-        }
+            dialog.dispose();
+        });
+
+        btnCancel.addActionListener(e -> dialog.dispose());
+
+        dialog.setVisible(true);
     }
     
     /**
