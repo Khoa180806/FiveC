@@ -12,6 +12,7 @@ import com.team4.quanliquanmicay.Impl.CustomerDAOImpl;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.team4.quanliquanmicay.Controller.CustomerController;
+import java.util.Date;
 
 /**
  *
@@ -132,7 +133,9 @@ public class CustomerJDialog extends javax.swing.JFrame {
             Customer customer = new Customer();
             customer.setPhone_number(phoneNumber);
             customer.setCustomer_name(customerName);
-            customer.setPoint_level(0);
+            customer.setPoint_level(0); // Điểm mặc định là 0
+            customer.setLevel_ranking("Thường"); // Hạng mặc định là "Thường"
+            customer.setCreated_date(new Date()); // Ngày tạo
             
             customerDAO.create(customer);
             createdCustomer = customer;

@@ -38,6 +38,9 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
         initializeTable();
         setupEventListeners();
         loadAllCustomers();
+        
+        // Debug: Show all customers in database
+        debugShowAllCustomers();
     }
     
     /**
@@ -102,7 +105,14 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
     private void loadAllCustomers() {
         List<Customer> customers = customerController.getAllCustomers();
         if (customers != null) {
+            System.out.println("Loaded " + customers.size() + " customers from database");
             updateTableData(customers);
+        } else {
+            System.out.println("No customers found in database");
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Không có dữ liệu khách hàng trong database!", 
+                "Thông báo", 
+                javax.swing.JOptionPane.WARNING_MESSAGE);
         }
     }
     
@@ -192,6 +202,25 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
         }
         // Vietnamese phone number format: 10-11 digits starting with 0
         return phoneNumber.matches("^0[0-9]{9,10}$");
+    }
+    
+    /**
+     * Debug method to show all customers in database
+     */
+    private void debugShowAllCustomers() {
+        List<Customer> customers = customerController.getAllCustomers();
+        if (customers != null && !customers.isEmpty()) {
+            System.out.println("=== DEBUG: All customers in database ===");
+            for (Customer customer : customers) {
+                System.out.println("Phone: " + customer.getPhone_number() + 
+                                 ", Name: " + customer.getCustomer_name() + 
+                                 ", Points: " + customer.getPoint_level() + 
+                                 ", Rank: " + customer.getLevel_ranking());
+            }
+            System.out.println("=== End DEBUG ===");
+        } else {
+            System.out.println("DEBUG: No customers found in database");
+        }
     }
     
     /**
@@ -332,14 +361,24 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
             // Get base data
             if (searchText.isEmpty()) {
                 results = customerController.getAllCustomers();
+                System.out.println("Loading all customers: " + (results != null ? results.size() : 0) + " customers");
             } else {
-                // Search by phone number - create a list with single result
-                Customer foundCustomer = customerController.findCustomerByPhone(searchText);
-                if (foundCustomer != null) {
+                // Search by phone number using partial match
+                System.out.println("Searching for phone number: " + searchText);
+                results = customerController.searchCustomersByPhone(searchText);
+                if (results == null) {
                     results = new java.util.ArrayList<>();
-                    results.add(foundCustomer);
-                } else {
-                    results = new java.util.ArrayList<>();
+                }
+                System.out.println("Found " + results.size() + " customers matching: " + searchText);
+                
+                // Show message if no results found
+                if (results.isEmpty()) {
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+                        javax.swing.JOptionPane.showMessageDialog(this, 
+                            "Không tìm thấy khách hàng nào với số điện thoại: " + searchText, 
+                            "Thông báo", 
+                            javax.swing.JOptionPane.INFORMATION_MESSAGE);
+                    });
                 }
             }
             
@@ -357,6 +396,7 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
             }
         } catch (Exception e) {
             System.err.println("Error refreshing table data: " + e.getMessage());
+            e.printStackTrace();
             // Load all customers as fallback
             loadAllCustomers();
         }
