@@ -12,7 +12,6 @@ import com.team4.quanliquanmicay.Impl.CustomerDAOImpl;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.team4.quanliquanmicay.Controller.CustomerController;
-import java.util.Date;
 
 /**
  *
@@ -198,7 +197,7 @@ public class CustomerJDialog extends javax.swing.JFrame {
             .addGap(0, 100, Short.MAX_VALUE)
         );
 
-        jLabel4.setText("");
+        jLabel4.setText("jLabel4");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -235,17 +234,16 @@ public class CustomerJDialog extends javax.swing.JFrame {
         txt_phone.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         txt_name.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
+        
 
         btn_add.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btn_add.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Create.png"))); // NOI18N
-        btn_add.setText("THÊM MỚI");
-
+        
 
         btn_exit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btn_exit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
-        btn_exit.setText("THOÁT");
-
+        btn_exit.setText("EXIT");
+        
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -266,9 +264,9 @@ public class CustomerJDialog extends javax.swing.JFrame {
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txt_name, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txt_phone, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
-                        .addComponent(btn_add, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 9, Short.MAX_VALUE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btn_add, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
+                        .addGap(6, 6, 6)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
