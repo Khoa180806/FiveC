@@ -22,6 +22,7 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
 
     private CustomerManagementController customerController;
     private DefaultTableModel tableModel;
+    private Customer selectedCustomer; // Store currently selected customer
     
     /**
      * Creates new form CustomerManagementJDialog
@@ -50,7 +51,7 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
                 return false; // Make table read-only
             }
         };
-        jTable1.setModel(tableModel);
+        tbl_customer.setModel(tableModel);
     }
     
     /**
@@ -58,7 +59,7 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
      */
     private void setupEventListeners() {
         // Search functionality - search as user types
-        jTextField1.addKeyListener(new KeyAdapter() {
+        txt_search.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
                 refreshTableData();
@@ -66,7 +67,7 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
         });
         
         // Sort functionality - sort when combo box selection changes
-        jComboBox1.addItemListener(new ItemListener() {
+        cbo_SortPoint.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
@@ -75,8 +76,24 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
             }
         });
         
+        // Table row selection functionality
+        tbl_customer.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedRow = tbl_customer.getSelectedRow();
+                if (selectedRow >= 0 && tableModel.getRowCount() > 0) {
+                    displaySelectedCustomerData(selectedRow);
+                }
+            }
+        });
+        
+        // Update button functionality
+        btn_update.addActionListener(e -> updateCustomerData());
+        
+        // Delete button functionality
+        btn_delete.addActionListener(e -> deleteCustomerData());
+        
         // Exit button functionality
-        jButton1.addActionListener(e -> dispose());
+        btn_exit.addActionListener(e -> dispose());
     }
     
     /**
@@ -109,32 +126,239 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
     }
     
     /**
+     * Display selected customer data in text fields
+     */
+    private void displaySelectedCustomerData(int selectedRow) {
+        try {
+            // Validate row index
+            if (selectedRow < 0 || selectedRow >= tableModel.getRowCount()) {
+                return;
+            }
+            
+            // Get data from the selected row with null checks
+            Object phoneNumberObj = tableModel.getValueAt(selectedRow, 0);
+            Object customerNameObj = tableModel.getValueAt(selectedRow, 1);
+            Object pointLevelObj = tableModel.getValueAt(selectedRow, 2);
+            Object levelRankingObj = tableModel.getValueAt(selectedRow, 3);
+            
+            // Validate data is not null
+            if (phoneNumberObj == null || customerNameObj == null || 
+                pointLevelObj == null || levelRankingObj == null) {
+                return;
+            }
+            
+            String phoneNumber = phoneNumberObj.toString();
+            String customerName = customerNameObj.toString();
+            Integer pointLevel = (Integer) pointLevelObj;
+            String levelRanking = levelRankingObj.toString();
+            
+            // Create customer object for the selected row
+            selectedCustomer = new Customer();
+            selectedCustomer.setPhone_number(phoneNumber);
+            selectedCustomer.setCustomer_name(customerName);
+            selectedCustomer.setPoint_level(pointLevel);
+            selectedCustomer.setLevel_ranking(levelRanking);
+            
+            // Display data in text fields
+            txt_phone_number.setText(phoneNumber);
+            txt_customer_name.setText(customerName);
+            txt_point_level.setText(String.valueOf(pointLevel));
+            txt_level_ranking.setText(levelRanking);
+            
+        } catch (Exception e) {
+            // Log error and clear form
+            System.err.println("Error displaying customer data: " + e.getMessage());
+            clearForm();
+        }
+    }
+    
+    /**
+     * Clear form fields
+     */
+    private void clearForm() {
+        selectedCustomer = null;
+        txt_phone_number.setText("");
+        txt_customer_name.setText("");
+        txt_point_level.setText("");
+        txt_level_ranking.setText("");
+    }
+    
+    /**
+     * Validate phone number format
+     */
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            return false;
+        }
+        // Vietnamese phone number format: 10-11 digits starting with 0
+        return phoneNumber.matches("^0[0-9]{9,10}$");
+    }
+    
+    /**
+     * Update customer data from text fields
+     */
+    private void updateCustomerData() {
+        if (selectedCustomer == null) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Vui lòng chọn một khách hàng để cập nhật!", 
+                "Thông báo", 
+                javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        try {
+            // Get updated data from text fields
+            String phoneNumber = txt_phone_number.getText().trim();
+            String customerName = txt_customer_name.getText().trim();
+            String pointLevelStr = txt_point_level.getText().trim();
+            String levelRanking = txt_level_ranking.getText().trim();
+            
+            // Validate input
+            if (phoneNumber.isEmpty() || customerName.isEmpty() || pointLevelStr.isEmpty() || levelRanking.isEmpty()) {
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    "Vui lòng điền đầy đủ thông tin!", 
+                    "Lỗi", 
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Validate phone number format
+            if (!isValidPhoneNumber(phoneNumber)) {
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    "Số điện thoại không hợp lệ! (Định dạng: 0xxxxxxxxx)", 
+                    "Lỗi", 
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Validate point level is a number
+            int pointLevel;
+            try {
+                pointLevel = Integer.parseInt(pointLevelStr);
+                if (pointLevel < 0) {
+                    javax.swing.JOptionPane.showMessageDialog(this, 
+                        "Điểm phải là số không âm!", 
+                        "Lỗi", 
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    "Điểm phải là số!", 
+                    "Lỗi", 
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Update customer object
+            selectedCustomer.setPhone_number(phoneNumber);
+            selectedCustomer.setCustomer_name(customerName);
+            selectedCustomer.setPoint_level(pointLevel);
+            selectedCustomer.setLevel_ranking(levelRanking);
+            
+            // Update in database
+            customerController.setForm(selectedCustomer);
+            customerController.update();
+            
+            // Refresh table data
+            refreshTableData();
+            
+            // Clear form
+            clearForm();
+            
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Lỗi khi cập nhật: " + e.getMessage(), 
+                "Lỗi", 
+                javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    /**
+     * Delete customer data
+     */
+    private void deleteCustomerData() {
+        if (selectedCustomer == null) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Vui lòng chọn một khách hàng để xóa!", 
+                "Thông báo", 
+                javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        try {
+            // Show confirmation dialog
+            int confirm = javax.swing.JOptionPane.showConfirmDialog(this, 
+                "Bạn có chắc chắn muốn xóa khách hàng: " + selectedCustomer.getCustomer_name() + "?", 
+                "Xác nhận xóa", 
+                javax.swing.JOptionPane.YES_NO_OPTION);
+            
+            if (confirm == javax.swing.JOptionPane.YES_OPTION) {
+                // Delete from database
+                customerController.setForm(selectedCustomer);
+                customerController.delete();
+                
+                // Refresh table data
+                refreshTableData();
+                
+                // Clear form
+                clearForm();
+                
+                // Show success message
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    "Dữ liệu đã được xóa thành công!", 
+                    "Thông báo", 
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
+            }
+            
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Lỗi khi xóa: " + e.getMessage(), 
+                "Lỗi", 
+                javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    /**
      * Refresh the table data based on current search and sort
      */
     private void refreshTableData() {
-        String searchText = jTextField1.getText().trim();
-        String selectedSort = (String) jComboBox1.getSelectedItem();
-        
-        List<Customer> results = null;
-        
-        // Get base data
-        if (searchText.isEmpty()) {
-            results = customerController.getAllCustomers();
-        } else {
-            results = customerController.searchCustomersByPhone(searchText);
-        }
-        
-        // Apply sorting
-        if (results != null && selectedSort != null) {
-            if ("Tăng dần".equals(selectedSort)) {
-                results.sort((c1, c2) -> Integer.compare(c1.getPoint_level(), c2.getPoint_level()));
-            } else if ("Giảm dần".equals(selectedSort)) {
-                results.sort((c1, c2) -> Integer.compare(c2.getPoint_level(), c1.getPoint_level()));
+        try {
+            String searchText = txt_search.getText().trim();
+            String selectedSort = (String) cbo_SortPoint.getSelectedItem();
+            
+            List<Customer> results = null;
+            
+            // Get base data
+            if (searchText.isEmpty()) {
+                results = customerController.getAllCustomers();
+            } else {
+                // Search by phone number - create a list with single result
+                Customer foundCustomer = customerController.findCustomerByPhone(searchText);
+                if (foundCustomer != null) {
+                    results = new java.util.ArrayList<>();
+                    results.add(foundCustomer);
+                } else {
+                    results = new java.util.ArrayList<>();
+                }
             }
-        }
-        
-        if (results != null) {
-            updateTableData(results);
+            
+            // Apply sorting
+            if (results != null && selectedSort != null) {
+                if ("Tăng dần".equals(selectedSort)) {
+                    results.sort((c1, c2) -> Integer.compare(c1.getPoint_level(), c2.getPoint_level()));
+                } else if ("Giảm dần".equals(selectedSort)) {
+                    results.sort((c1, c2) -> Integer.compare(c2.getPoint_level(), c1.getPoint_level()));
+                }
+            }
+            
+            if (results != null) {
+                updateTableData(results);
+            }
+        } catch (Exception e) {
+            System.err.println("Error refreshing table data: " + e.getMessage());
+            // Load all customers as fallback
+            loadAllCustomers();
         }
     }
 
@@ -152,24 +376,24 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tbl_customer = new javax.swing.JTable();
         jSeparator1 = new javax.swing.JSeparator();
-        jButton1 = new javax.swing.JButton();
+        btn_exit = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        txt_search = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jTextField2 = new javax.swing.JTextField();
+        cbo_SortPoint = new javax.swing.JComboBox<>();
+        txt_phone_number = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
-        jTextField3 = new javax.swing.JTextField();
+        txt_customer_name = new javax.swing.JTextField();
         jLabel7 = new javax.swing.JLabel();
-        jTextField4 = new javax.swing.JTextField();
+        txt_point_level = new javax.swing.JTextField();
         jLabel8 = new javax.swing.JLabel();
-        jTextField5 = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        txt_level_ranking = new javax.swing.JTextField();
+        btn_update = new javax.swing.JButton();
+        btn_delete = new javax.swing.JButton();
 
         jLabel3.setText("jLabel3");
 
@@ -197,7 +421,7 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
             .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tbl_customer.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -205,13 +429,13 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
                 "Số điện thoại", "Tên", "Điểm", "Hạng"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tbl_customer);
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
-        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
-        jButton1.setText("EXIT");
+        btn_exit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btn_exit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        btn_exit.setText("EXIT");
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
@@ -224,14 +448,19 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("Tìm kiếm :");
 
-        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txt_search.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txt_search.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_searchActionPerformed(evt);
+            }
+        });
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("Lọc :");
 
-        jComboBox1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Giảm dần", "Tăng dần" }));
+        cbo_SortPoint.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        cbo_SortPoint.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Giảm dần", "Tăng dần" }));
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -241,11 +470,11 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
                 .addGap(28, 28, 28)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(txt_search, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(30, 30, 30)
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(cbo_SortPoint, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -254,35 +483,35 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txt_search, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cbo_SortPoint, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jTextField2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txt_phone_number.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel6.setForeground(new java.awt.Color(255, 255, 255));
         jLabel6.setText("TÊN :");
 
-        jTextField3.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txt_customer_name.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel7.setForeground(new java.awt.Color(255, 255, 255));
         jLabel7.setText("ĐIỂM :");
 
-        jTextField4.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txt_point_level.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel8.setForeground(new java.awt.Color(255, 255, 255));
         jLabel8.setText("HẠNG :");
 
-        jTextField5.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txt_level_ranking.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
+        btn_update.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
 
-        jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
+        btn_delete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -295,32 +524,32 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
                     .addComponent(jScrollPane1)
                     .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jSeparator1)
-                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btn_exit, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel5)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(txt_phone_number, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel7)
                                 .addGap(77, 77, 77)
-                                .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(txt_point_level, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(18, 18, 18)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel8)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(txt_level_ranking, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addComponent(jLabel6)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(txt_customer_name, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 48, Short.MAX_VALUE)
-                            .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(btn_update, javax.swing.GroupLayout.DEFAULT_SIZE, 48, Short.MAX_VALUE)
+                            .addComponent(btn_delete, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -334,28 +563,28 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel5)
-                            .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txt_phone_number, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel7)
-                            .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(txt_point_level, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel6)
-                            .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(txt_customer_name, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btn_update, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(jLabel8)
-                                .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(txt_level_ranking, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btn_delete, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(12, 12, 12)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
+                .addComponent(btn_exit)
                 .addContainerGap())
         );
 
@@ -372,6 +601,10 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void txt_searchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_searchActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txt_searchActionPerformed
 
     /**
      * @param args the command line arguments
@@ -409,10 +642,10 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JButton btn_delete;
+    private javax.swing.JButton btn_exit;
+    private javax.swing.JButton btn_update;
+    private javax.swing.JComboBox<String> cbo_SortPoint;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -426,11 +659,11 @@ public class CustomerManagementJDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
-    private javax.swing.JTextField jTextField5;
+    private javax.swing.JTable tbl_customer;
+    private javax.swing.JTextField txt_customer_name;
+    private javax.swing.JTextField txt_level_ranking;
+    private javax.swing.JTextField txt_phone_number;
+    private javax.swing.JTextField txt_point_level;
+    private javax.swing.JTextField txt_search;
     // End of variables declaration//GEN-END:variables
 }

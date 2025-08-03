@@ -122,27 +122,26 @@ public class CustomerJDialog extends javax.swing.JFrame {
             // Kiểm tra xem số điện thoại đã tồn tại chưa
             Customer existingCustomer = customerDAO.findById(phoneNumber);
             if (existingCustomer != null) {
-                // Update existing customer
-                existingCustomer.setCustomer_name(customerName);
-                customerDAO.update(existingCustomer);
-                createdCustomer = existingCustomer;
-                XDialog.alert("Cập nhật khách hàng thành công!");
-            } else {
-                // Tạo khách hàng mới
-                Customer customer = new Customer();
-                customer.setPhone_number(phoneNumber);
-                customer.setCustomer_name(customerName);
-                customer.setPoint_level(0);
-                
-                customerDAO.create(customer);
-                createdCustomer = customer;
-                XDialog.alert("Tạo khách hàng thành công!");
+                // Thông báo lỗi khi số điện thoại đã tồn tại
+                XDialog.alert("Số điện thoại đã tồn tại vui lòng chọn số điện thoại khác!");
+                txt_phone.requestFocus();
+                return;
             }
             
+            // Tạo khách hàng mới
+            Customer customer = new Customer();
+            customer.setPhone_number(phoneNumber);
+            customer.setCustomer_name(customerName);
+            customer.setPoint_level(0);
+            
+            customerDAO.create(customer);
+            createdCustomer = customer;
+            
+            XDialog.alert("Tạo khách hàng thành công!");
             dispose();
             
         } catch (Exception e) {
-            XDialog.alert("Lỗi khi xử lý khách hàng: " + e.getMessage());
+            XDialog.alert("Lỗi khi tạo khách hàng: " + e.getMessage());
         }
     }
     
@@ -320,11 +319,14 @@ public class CustomerJDialog extends javax.swing.JFrame {
         try {
             Customer customer = customerDAO.findById(phoneNumber);
             if (customer != null) {
-                txt_phone.setText(customer.getPhone_number());
-                txt_name.setText(customer.getCustomer_name());
-                btn_add.setText("CẬP NHẬT");
-            } else {
+                // Nếu khách hàng đã tồn tại, thông báo và clear form
+                XDialog.alert("Số điện thoại đã tồn tại vui lòng chọn số điện thoại khác!");
                 clearForm();
+                btn_add.setText("THÊM MỚI");
+            } else {
+                // Nếu khách hàng chưa tồn tại, chỉ set số điện thoại
+                txt_phone.setText(phoneNumber);
+                txt_name.setText("");
                 btn_add.setText("THÊM MỚI");
             }
         } catch (Exception e) {
