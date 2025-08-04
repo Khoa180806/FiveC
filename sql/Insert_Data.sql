@@ -32,6 +32,7 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('Bước 2: Insert dữ liệu USER_ACCOUNT...');
 END;
 /
+select * from payment_history
 
 INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, email, phone_number, image, is_enabled, role_id) 
 VALUES ('U001', 'manager01', 'manager123', N'Nguyễn Văn Manager', 'manager@quanmicay.com', '0328456789', 'manager.jpg', 1, 'R001');
@@ -181,13 +182,14 @@ INSERT INTO PAYMENT_METHOD (payment_method_id, method_name, is_enable) VALUES (4
 INSERT INTO PAYMENT_METHOD (payment_method_id, method_name, is_enable) VALUES (5, N'QR Code', 1);
 
 -- ========================================
--- 8. INSERT PAYMENT_HISTORY - LỊCH SỬ THANH TOÁN
+-- 8. INSERT PAYMENT_HISTORY - LỊCH SỬ THANH TOÁN (25 RECORDS)
 -- ========================================
 BEGIN
     DBMS_OUTPUT.PUT_LINE('Bước 8: Insert dữ liệu PAYMENT_HISTORY...');
 END;
 /
 
+-- 5 payment history cho 5 hóa đơn hôm nay
 INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
 VALUES (1, 125000, N'Thành công', N'Thanh toán hóa đơn bàn 1');
 
@@ -195,7 +197,7 @@ INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note)
 VALUES (2, 95000, N'Thành công', N'Chuyển khoản qua Vietcombank');
 
 INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
-VALUES (4, 180000, N'Thành công', N'Thanh toán qua MoMo');
+VALUES (3, 180000, N'Thành công', N'Thanh toán bằng thẻ tín dụng');
 
 INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
 VALUES (1, 75000, N'Thành công', N'Tiền mặt bàn 5');
@@ -203,37 +205,111 @@ VALUES (1, 75000, N'Thành công', N'Tiền mặt bàn 5');
 INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
 VALUES (5, 210000, N'Thành công', N'Quét QR VietQR');
 
+-- 5 payment history cho 5 hóa đơn tuần này
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (1, 135000, N'Thành công', N'Thanh toán hóa đơn bàn 8');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (3, 89000, N'Thành công', N'Thanh toán bằng thẻ tín dụng');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (2, 165000, N'Thành công', N'Chuyển khoản qua Techcombank');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (1, 72000, N'Thành công', N'Tiền mặt bàn 11');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (4, 195000, N'Thành công', N'Thanh toán qua ZaloPay');
+
+-- 5 payment history cho 5 hóa đơn tháng này
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (2, 145000, N'Thành công', N'Chuyển khoản qua BIDV');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (1, 98000, N'Thành công', N'Tiền mặt bàn 14');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (5, 175000, N'Thành công', N'Quét QR VietQR bàn 15');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (3, 115000, N'Thành công', N'Thanh toán bằng thẻ tín dụng');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (4, 225000, N'Thành công', N'Thanh toán qua MoMo bàn 17');
+
+-- 5 payment history cho 5 hóa đơn quý này
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (1, 155000, N'Thành công', N'Tiền mặt bàn 18');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (2, 105000, N'Thành công', N'Chuyển khoản qua Vietcombank');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (5, 185000, N'Thành công', N'Quét QR VietQR bàn 20');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (1, 85000, N'Thành công', N'Tiền mặt bàn 21');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (4, 235000, N'Thành công', N'Thanh toán qua ZaloPay bàn 22');
+
+-- 5 payment history cho 5 hóa đơn năm này
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (2, 165000, N'Thành công', N'Chuyển khoản qua Techcombank');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (1, 125000, N'Thành công', N'Tiền mặt bàn 24');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (5, 195000, N'Thành công', N'Quét QR VietQR bàn 25');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (3, 95000, N'Thành công', N'Thanh toán bằng thẻ tín dụng');
+
+INSERT INTO PAYMENT_HISTORY (payment_method_id, total_amount, status, note) 
+VALUES (4, 245000, N'Thành công', N'Thanh toán qua MoMo bàn 27');
+
 -- ========================================
--- 9. INSERT BILL - HÓA ĐƠN
+-- 9. INSERT BILL - HÓA ĐƠN (25 RECORDS - KHỚP VỚI PAYMENT_HISTORY)
 -- ========================================
 BEGIN
     DBMS_OUTPUT.PUT_LINE('Bước 9: Insert dữ liệu BILL...');
 END;
 /
 
-INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkout, status) 
-VALUES ('U003', '0965432109', 1, 1, 125000, SYSDATE - 2, N'Đã thanh toán');
+-- ========================================
+-- 5 HÓA ĐƠN TRONG HÔM NAY (SYSDATE) - payment_history_id 1-5
+-- ========================================
+INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+VALUES ('U003', '0965432109', 1, 1, 125000, TO_DATE(TO_CHAR(SYSDATE, 'DD/MM/YYYY') || ' 08:30:00', 'DD/MM/YYYY HH24:MI:SS'), TO_DATE(TO_CHAR(SYSDATE, 'DD/MM/YYYY') || ' 10:15:00', 'DD/MM/YYYY HH24:MI:SS'), N'Đã thanh toán');
 
-INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkout, status) 
-VALUES ('U003', '0913456789', 2, 2, 95000, SYSDATE - 1, N'Đã thanh toán');
+INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+VALUES ('U003', '0913456789', 2, 2, 95000, TO_DATE(TO_CHAR(SYSDATE, 'DD/MM/YYYY') || ' 11:00:00', 'DD/MM/YYYY HH24:MI:SS'), TO_DATE(TO_CHAR(SYSDATE, 'DD/MM/YYYY') || ' 12:45:00', 'DD/MM/YYYY HH24:MI:SS'), N'Đã thanh toán');
 
-INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkout, status) 
-VALUES ('U004', '0908765432', 3, 4, 180000, SYSDATE - 1, N'Đã thanh toán');
+INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+VALUES ('U004', '0908765432', 3, 4, 180000, TO_DATE(TO_CHAR(SYSDATE, 'DD/MM/YYYY') || ' 13:15:00', 'DD/MM/YYYY HH24:MI:SS'), TO_DATE(TO_CHAR(SYSDATE, 'DD/MM/YYYY') || ' 15:00:00', 'DD/MM/YYYY HH24:MI:SS'), N'Đã thanh toán');
 
-INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkout, status) 
-VALUES ('U003', '0976543210', 4, 5, 75000, SYSDATE, N'Đã thanh toán');
+INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+VALUES ('U003', '0976543210', 4, 5, 75000, TO_DATE(TO_CHAR(SYSDATE, 'DD/MM/YYYY') || ' 16:30:00', 'DD/MM/YYYY HH24:MI:SS'), TO_DATE(TO_CHAR(SYSDATE, 'DD/MM/YYYY') || ' 17:45:00', 'DD/MM/YYYY HH24:MI:SS'), N'Đã thanh toán');
 
-INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkout, status) 
-VALUES ('U004', '0821234567', 5, 7, 210000, SYSDATE, N'Đã thanh toán');
+INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+VALUES ('U004', '0821234567', 5, 7, 210000, TO_DATE(TO_CHAR(SYSDATE, 'DD/MM/YYYY') || ' 18:00:00', 'DD/MM/YYYY HH24:MI:SS'), TO_DATE(TO_CHAR(SYSDATE, 'DD/MM/YYYY') || ' 20:00:00', 'DD/MM/YYYY HH24:MI:SS'), N'Đã thanh toán');
 
--- Hóa đơn đang phục vụ
-INSERT INTO BILL (user_id, phone_number, table_number, total_amount, status) 
-VALUES ('U003', '0965432109', 3, 110000, N'Đang phục vụ');
+-- ========================================
+-- 5 HÓA ĐƠN TRONG TUẦN NÀY (7 ngày gần nhất) - payment_history_id 6-10
+-- ========================================
+INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+VALUES ('U003', '0965432109', 6, 8, 135000, SYSDATE - 1, SYSDATE - 1 + 2/24, N'Đã thanh toán');
 
-<<<<<<< Updated upstream
-INSERT INTO BILL (user_id, table_number, total_amount, status) 
-VALUES ('U004', 6, 85000, N'Đang phục vụ');
-=======
+INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+VALUES ('U004', '0913456789', 7, 9, 89000, SYSDATE - 2, SYSDATE - 2 + 1.5/24, N'Đã thanh toán');
+
+INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+VALUES ('U003', '0908765432', 8, 10, 165000, SYSDATE - 3, SYSDATE - 3 + 2.5/24, N'Đã thanh toán');
+
+INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+VALUES ('U003', '0976543210', 9, 11, 72000, SYSDATE - 4, SYSDATE - 4 + 1.25/24, N'Đã thanh toán');
+
 INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
 VALUES ('U004', '0913456789', 7, 9, 89000, SYSDATE - 2, SYSDATE - 2 + 1.5/24, N'Đã thanh toán');
 
@@ -292,6 +368,7 @@ INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total
 VALUES ('U003', '0913456789', 22, 24, 125000, SYSDATE - 75, SYSDATE - 75 + 2/24, N'Đã thanh toán');
 
 INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+
 VALUES ('U004', '0908765432', 23, 22, 195000, SYSDATE - 90, SYSDATE - 90 + 3/24, N'Đã thanh toán');
 
 INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
@@ -299,7 +376,6 @@ VALUES ('U003', '0976543210', 24, 23, 95000, SYSDATE - 120, SYSDATE - 120 + 1.5/
 
 INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
 VALUES ('U004', '0821234567', 25, 24, 245000, SYSDATE - 150, SYSDATE - 150 + 3.5/24, N'Đã thanh toán');
->>>>>>> Stashed changes
 
 -- ========================================
 -- 10. INSERT BILL_DETAIL - CHI TIẾT HÓA ĐƠN
@@ -308,7 +384,7 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('Bước 10: Insert dữ liệu BILL_DETAIL...');
 END;
 /
-
+select * from bill
 -- Chi tiết hóa đơn 10000 (đã thanh toán)
 INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10000, 'P002', 2, 50000, 0.00);
 INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10000, 'P006', 1, 25000, 0.00);
@@ -401,3 +477,4 @@ UNION ALL
 SELECT 'BILL_DETAIL' AS TABLE_NAME
     ,COUNT(*) AS TOTAL_RECORDS
 FROM BILL_DETAIL;
+

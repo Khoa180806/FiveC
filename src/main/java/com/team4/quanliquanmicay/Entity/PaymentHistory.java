@@ -11,10 +11,10 @@ import lombok.*;
 @Builder 
 @Data 
 public class PaymentHistory {
-    private String payment_history_id;
+    private Integer payment_history_id;
     private Integer payment_method_id;
     private Date payment_date;
     private double total_amount;
-    private Boolean status;
+    private String status; // Sửa thành String để khớp với database
     private String note; 
 }
