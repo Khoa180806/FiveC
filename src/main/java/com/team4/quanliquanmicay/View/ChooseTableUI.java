@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.team4.quanliquanmicay.View.Dialogs;
+package com.team4.quanliquanmicay.View;
 
 import com.team4.quanliquanmicay.util.XTheme;
 
@@ -22,12 +22,12 @@ import javax.swing.border.CompoundBorder;
  *
  * @author Asus
  */
-public class ChooseTable extends javax.swing.JFrame {
+public class ChooseTableUI extends javax.swing.JFrame {
 
     /**
      * Creates new form ChooseTable
      */
-    public ChooseTable() {
+    public ChooseTableUI() {
         this.setUndecorated(true);
         XTheme.applyFullTheme();
         initComponents();
@@ -76,7 +76,7 @@ public class ChooseTable extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jTabbedPane1.setBorder(javax.swing.BorderFactory.createLineBorder(null));
+        jTabbedPane1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -122,7 +122,7 @@ public class ChooseTable extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    // Thêm các biến sau vào class ChooseTable
+    // Thêm các biến sau vào class ChooseTableUI
     private TableForCustomerDAO tableDAO = new TableForCustomerDAOImpl();
     private JButton selectedButton = null;
     private int selectedTableNumber = -1;
@@ -290,26 +290,26 @@ public class ChooseTable extends javax.swing.JFrame {
         selectedButton = btnTable;
         selectedTableNumber = tableNumber;
 
-        // Mở HoaDonJDialog và truyền thông tin bàn
+        // Mở BillUI và truyền thông tin bàn
         openHoaDonDialog(tableNumber);
     }
     
     /**
-     * Mở HoaDonJDialog với thông tin bàn đã chọn
+     * Mở BillUI với thông tin bàn đã chọn
      */
     private void openHoaDonDialog(int tableNumber) {
         try {
-            // Tạo HoaDonJDialog mới
-//            HoaDonJDialog hoaDonDialog = new HoaDonJDialog();
-            HoaDonJDialog hoaDonDialog = new HoaDonJDialog();
+            // Tạo BillUI mới
+//            BillUI hoaDonDialog = new BillUI();
+            BillUI hoaDonDialog = new BillUI();
             
             // Set thông tin bàn vào dialog
             hoaDonDialog.setTableInfo(tableNumber);
             
-            // Ẩn ChooseTable
+            // Ẩn ChooseTableUI
             this.setVisible(false);
             
-            // Hiển thị HoaDonJDialog
+            // Hiển thị BillUI
             hoaDonDialog.setVisible(true);
             
         } catch (Exception e) {
@@ -353,20 +353,21 @@ public class ChooseTable extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ChooseTable.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ChooseTableUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ChooseTable.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ChooseTableUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ChooseTable.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ChooseTableUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ChooseTable.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ChooseTableUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new ChooseTable().setVisible(true);
+                new ChooseTableUI().setVisible(true);
             }
         });
     }

@@ -4,7 +4,6 @@ import com.team4.quanliquanmicay.Controller.LoginController;
 import com.team4.quanliquanmicay.DAO.UserDAO;
 import com.team4.quanliquanmicay.Entity.UserAccount;
 import com.team4.quanliquanmicay.Impl.UserDAOImpl;
-import com.team4.quanliquanmicay.View.Admin.AdminJDialog;
 
 import java.awt.event.KeyEvent;
 
@@ -385,7 +384,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
         } else {
             XAuth.user = user;
             this.dispose();
-            new AdminJDialog().setVisible(true);
+            new MainUI().setVisible(true);
         }
         password = null;
         txtPassword.setText("");

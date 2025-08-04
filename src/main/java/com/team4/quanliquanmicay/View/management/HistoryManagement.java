@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.team4.quanliquanmicay.View.Dialogs;
+package com.team4.quanliquanmicay.View.management;
 
 import com.team4.quanliquanmicay.Controller.PaymentHistoryController;
 import com.team4.quanliquanmicay.util.XTheme;
@@ -36,7 +36,7 @@ import java.awt.event.*;
  *
  * @author HP
  */
-public class LichSuJDialog extends javax.swing.JFrame implements PaymentHistoryController {
+public class HistoryManagement extends javax.swing.JFrame implements PaymentHistoryController {
 
     // DAO objects
     private final BillDAO billDAO = new BillDAOImpl();
@@ -50,7 +50,7 @@ public class LichSuJDialog extends javax.swing.JFrame implements PaymentHistoryC
     /**
      * Creates new form LichSuJDialog
      */
-    public LichSuJDialog() {
+    public HistoryManagement() {
         this.setUndecorated(true);
         XTheme.applyFullTheme();
         initComponents();
@@ -834,20 +834,21 @@ public class LichSuJDialog extends javax.swing.JFrame implements PaymentHistoryC
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(LichSuJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HistoryManagement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(LichSuJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HistoryManagement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(LichSuJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HistoryManagement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(LichSuJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(HistoryManagement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new LichSuJDialog().setVisible(true);
+                new HistoryManagement().setVisible(true);
             }
         });
     }

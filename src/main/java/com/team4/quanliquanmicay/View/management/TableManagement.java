@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.team4.quanliquanmicay.View.Dialogs;
+package com.team4.quanliquanmicay.View.management;
 
 import com.team4.quanliquanmicay.Controller.TableController;
 import com.team4.quanliquanmicay.DAO.TableForCustomerDAO;
@@ -24,12 +24,12 @@ import javax.swing.border.EmptyBorder;
  *
  * @author HP
  */
-public class BanJDialog extends javax.swing.JFrame implements TableController {
+public class TableManagement extends javax.swing.JFrame implements TableController {
 
     /**
      * Creates new form BanJDialog
      */
-    public BanJDialog() {
+    public TableManagement() {
         this.setUndecorated(true);
         XTheme.applyFullTheme();
         initComponents();
@@ -347,7 +347,7 @@ public class BanJDialog extends javax.swing.JFrame implements TableController {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(pnlTitle2, javax.swing.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)
-                    .addComponent(jPanel35, javax.swing.GroupLayout.PREFERRED_SIZE, 511, Short.MAX_VALUE))
+                    .addComponent(jPanel35, javax.swing.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
@@ -442,13 +442,13 @@ System.exit(0);
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(BanJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TableManagement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(BanJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TableManagement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(BanJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TableManagement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(BanJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(TableManagement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         try {
             javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getCrossPlatformLookAndFeelClassName());
@@ -458,7 +458,7 @@ System.exit(0);
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new BanJDialog().setVisible(true);
+                new TableManagement().setVisible(true);
             }
         });
     }
@@ -492,7 +492,7 @@ System.exit(0);
 
     private TableForCustomerDAO tableDAO;
 
-    // Thêm biến này vào class BanJDialog
+    // Thêm biến này vào class TableManagement
     private JButton selectedButton = null;
     private int selectedTableNumber = -1;
 

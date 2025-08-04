@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.team4.quanliquanmicay.View.Dialogs;
+package com.team4.quanliquanmicay.View;
 
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
@@ -30,7 +30,7 @@ import com.team4.quanliquanmicay.util.XStr;
  * Dialog quản lý hóa đơn - chỉ để xem và quản lý bill
  * @author HP
  */
-public class HoaDonJDialog extends javax.swing.JFrame implements BillController {
+public class BillUI extends javax.swing.JFrame implements BillController {
 
     // DAO objects
     private final BillDAO billDAO = new BillDAOImpl();
@@ -51,7 +51,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     /**
      * Creates new form HoaDonJDialog
      */
-    public HoaDonJDialog() {
+    public BillUI() {
         this.setUndecorated(true);
         XTheme.applyFullTheme();
         initComponents();
@@ -120,7 +120,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
             return;
         }
         
-        ThanhToanJDialog paymentDialog = new ThanhToanJDialog();
+        PayUI paymentDialog = new PayUI();
         paymentDialog.setVisible(true);
         
         // Truyền thông tin bill hiện tại cho dialog thanh toán
@@ -140,7 +140,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
             return;
         }
         
-        OrderJDialog datMonDialog = new OrderJDialog(this, currentBill);
+        OrderUI datMonDialog = new OrderUI(this, currentBill);
         datMonDialog.setVisible(true);
     }
     
@@ -1029,20 +1029,21 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(HoaDonJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(BillUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(HoaDonJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(BillUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(HoaDonJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(BillUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(HoaDonJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(BillUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new HoaDonJDialog().setVisible(true);
+                new BillUI().setVisible(true);
             }
         });
     }

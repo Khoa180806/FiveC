@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.team4.quanliquanmicay.View.Dialogs;
+package com.team4.quanliquanmicay.View.management;
 
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.Controller.ProductController;
@@ -22,7 +22,7 @@ import com.team4.quanliquanmicay.util.XDialog;
  *
  * @author HP
  */
-public class MonAnJDialog extends javax.swing.JFrame implements ProductController{
+public class ProductManagement extends javax.swing.JFrame implements ProductController{
 
     // Thêm DAO cho category
     private CategoryDAO categoryDAO = new CategoryDAOImpl();
@@ -43,7 +43,7 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
     /**
      * Creates new form MonAnJDialog
      */
-    public MonAnJDialog() {
+    public ProductManagement() {
         this.setUndecorated(true);
         XTheme.applyFullTheme();
         initComponents();
@@ -526,20 +526,21 @@ public class MonAnJDialog extends javax.swing.JFrame implements ProductControlle
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MonAnJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProductManagement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MonAnJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProductManagement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MonAnJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProductManagement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MonAnJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ProductManagement.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new MonAnJDialog().setVisible(true);
+                new ProductManagement().setVisible(true);
             }
         });
     }
