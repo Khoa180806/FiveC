@@ -311,6 +311,15 @@ INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total
 VALUES ('U003', '0976543210', 9, 11, 72000, SYSDATE - 4, SYSDATE - 4 + 1.25/24, N'Đã thanh toán');
 
 INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+VALUES ('U004', '0913456789', 7, 9, 89000, SYSDATE - 2, SYSDATE - 2 + 1.5/24, N'Đã thanh toán');
+
+INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+VALUES ('U003', '0908765432', 8, 10, 165000, SYSDATE - 3, SYSDATE - 3 + 2.5/24, N'Đã thanh toán');
+
+INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
+VALUES ('U003', '0976543210', 9, 11, 72000, SYSDATE - 4, SYSDATE - 4 + 1.25/24, N'Đã thanh toán');
+
+INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
 VALUES ('U004', '0821234567', 10, 12, 195000, SYSDATE - 5, SYSDATE - 5 + 2.75/24, N'Đã thanh toán');
 
 -- ========================================
@@ -359,13 +368,14 @@ INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total
 VALUES ('U003', '0913456789', 22, 24, 125000, SYSDATE - 75, SYSDATE - 75 + 2/24, N'Đã thanh toán');
 
 INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
-VALUES ('U004', '0908765432', 23, 25, 195000, SYSDATE - 90, SYSDATE - 90 + 3/24, N'Đã thanh toán');
+
+VALUES ('U004', '0908765432', 23, 22, 195000, SYSDATE - 90, SYSDATE - 90 + 3/24, N'Đã thanh toán');
 
 INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
-VALUES ('U003', '0976543210', 24, 26, 95000, SYSDATE - 120, SYSDATE - 120 + 1.5/24, N'Đã thanh toán');
+VALUES ('U003', '0976543210', 24, 23, 95000, SYSDATE - 120, SYSDATE - 120 + 1.5/24, N'Đã thanh toán');
 
 INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) 
-VALUES ('U004', '0821234567', 25, 27, 245000, SYSDATE - 150, SYSDATE - 150 + 3.5/24, N'Đã thanh toán');
+VALUES ('U004', '0821234567', 25, 24, 245000, SYSDATE - 150, SYSDATE - 150 + 3.5/24, N'Đã thanh toán');
 
 -- ========================================
 -- 10. INSERT BILL_DETAIL - CHI TIẾT HÓA ĐƠN
