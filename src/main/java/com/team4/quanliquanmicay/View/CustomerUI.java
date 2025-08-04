@@ -404,6 +404,22 @@ public class CustomerUI extends javax.swing.JFrame {
         loadCustomerByPhone(phoneNumber);
     }
 
+    // Event handler methods
+    private void txt_nameActionPerformed(java.awt.event.ActionEvent evt) {
+        // Xử lý khi nhấn Enter trong text field tên
+        handleCustomerAction();
+    }
+
+    private void btn_addActionPerformed(java.awt.event.ActionEvent evt) {
+        // Xử lý khi nhấn nút thêm
+        handleCustomerAction();
+    }
+
+    private void btn_exitActionPerformed(java.awt.event.ActionEvent evt) {
+        // Xử lý khi nhấn nút thoát
+        dispose();
+    }
+
     /**
      * @param args the command line arguments
      */
