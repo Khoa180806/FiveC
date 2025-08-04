@@ -75,6 +75,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Unknown person.png"))); // NOI18N
         jLabel3.setText("Tên đăng nhập :");
 
         txtUsername.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
@@ -86,6 +87,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
+        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Lock.png"))); // NOI18N
         jLabel4.setText("Mật Khẩu :");
 
         txtPassword.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
@@ -120,7 +122,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
             }
         });
 
-        btnExit.setBackground(new java.awt.Color(149, 2, 2));
+        btnExit.setBackground(new java.awt.Color(119, 50, 5));
         btnExit.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnExit.setForeground(new java.awt.Color(255, 255, 255));
         btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Log out.png"))); // NOI18N
