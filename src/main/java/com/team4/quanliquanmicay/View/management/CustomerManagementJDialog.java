@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.team4.quanliquanmicay.View.Dialogs;
+package com.team4.quanliquanmicay.View.management;
 
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.Controller.CustomerManagementController;

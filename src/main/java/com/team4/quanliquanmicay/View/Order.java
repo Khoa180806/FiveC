@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.team4.quanliquanmicay.View.Dialogs;
+package com.team4.quanliquanmicay.View;
 
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
@@ -34,7 +34,7 @@ import javax.swing.SwingConstants;
  *
  * @author HP
  */
-public class OrderJDialog extends javax.swing.JFrame {
+public class Order extends javax.swing.JFrame {
 
     // DAO objects
     private ProductDAO productDAO = new ProductDAOImpl();
@@ -43,7 +43,7 @@ public class OrderJDialog extends javax.swing.JFrame {
     
     // Current bill
     private Bill currentBill;
-    private HoaDonJDialog parentDialog;
+    private Bill parentDialog;
     
     // Cart items
     private List<CartItem> cartItems = new ArrayList<>();
@@ -64,7 +64,7 @@ public class OrderJDialog extends javax.swing.JFrame {
     /**
      * Creates new form DatMonJDialog
      */
-    public OrderJDialog(HoaDonJDialog parent, Bill bill) {
+    public Order(Bill parent, Bill bill) {
         this.parentDialog = parent;
         this.currentBill = bill;
         
@@ -90,7 +90,7 @@ public class OrderJDialog extends javax.swing.JFrame {
     /**
      * Constructor đơn giản cho testing
      */
-    public OrderJDialog() {
+    public Order() {
         this(null, null);
     }
     
@@ -1266,21 +1266,23 @@ public class OrderJDialog extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(OrderJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Order.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(OrderJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Order.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(OrderJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Order.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(OrderJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Order.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new OrderJDialog(null, null).setVisible(true);
+                new Order(null, null).setVisible(true);
             }
         });
     }

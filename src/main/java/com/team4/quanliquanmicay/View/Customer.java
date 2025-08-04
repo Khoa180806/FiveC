@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.team4.quanliquanmicay.View.Dialogs;
+package com.team4.quanliquanmicay.View;
 
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
@@ -17,7 +17,7 @@ import com.team4.quanliquanmicay.Controller.CustomerController;
  *
  * @author Asus
  */
-public class CustomerJDialog extends javax.swing.JFrame {
+public class Customer extends javax.swing.JFrame {
 
     
     private CustomerDAO customerDAO;
@@ -27,7 +27,7 @@ public class CustomerJDialog extends javax.swing.JFrame {
     /**
      * Creates new form CustomerJDialog
      */
-    public CustomerJDialog() {
+    public Customer() {
         this.setUndecorated(true);
         XTheme.applyFullTheme();
         initComponents();
@@ -47,7 +47,7 @@ public class CustomerJDialog extends javax.swing.JFrame {
     /**
      * Creates new form CustomerJDialog with phone number
      */
-    public CustomerJDialog(String phoneNumber) {
+    public Customer(String phoneNumber) {
         this.setUndecorated(true);
         XTheme.applyFullTheme();
         initComponents();
@@ -234,16 +234,28 @@ public class CustomerJDialog extends javax.swing.JFrame {
         txt_phone.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         txt_name.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        
+        txt_name.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txt_nameActionPerformed(evt);
+            }
+        });
 
         btn_add.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btn_add.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Create.png"))); // NOI18N
-        
+        btn_add.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_addActionPerformed(evt);
+            }
+        });
 
         btn_exit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btn_exit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
         btn_exit.setText("EXIT");
-        
+        btn_exit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_exitActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -385,20 +397,21 @@ public class CustomerJDialog extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CustomerJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Customer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CustomerJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Customer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CustomerJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Customer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CustomerJDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(Customer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
         //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new CustomerJDialog().setVisible(true);
+                new Customer().setVisible(true);
             }
         });
     }

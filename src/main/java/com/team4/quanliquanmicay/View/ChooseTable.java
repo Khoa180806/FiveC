@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
-package com.team4.quanliquanmicay.View.Dialogs;
+package com.team4.quanliquanmicay.View;
 
 import com.team4.quanliquanmicay.util.XTheme;
 
@@ -76,7 +76,7 @@ public class ChooseTable extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jTabbedPane1.setBorder(javax.swing.BorderFactory.createLineBorder(null));
+        jTabbedPane1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -290,18 +290,18 @@ public class ChooseTable extends javax.swing.JFrame {
         selectedButton = btnTable;
         selectedTableNumber = tableNumber;
 
-        // Mở HoaDonJDialog và truyền thông tin bàn
+        // Mở Bill và truyền thông tin bàn
         openHoaDonDialog(tableNumber);
     }
     
     /**
-     * Mở HoaDonJDialog với thông tin bàn đã chọn
+     * Mở Bill với thông tin bàn đã chọn
      */
     private void openHoaDonDialog(int tableNumber) {
         try {
-            // Tạo HoaDonJDialog mới
-//            HoaDonJDialog hoaDonDialog = new HoaDonJDialog();
-            HoaDonJDialog hoaDonDialog = new HoaDonJDialog();
+            // Tạo Bill mới
+//            Bill hoaDonDialog = new Bill();
+            Bill hoaDonDialog = new Bill();
             
             // Set thông tin bàn vào dialog
             hoaDonDialog.setTableInfo(tableNumber);
@@ -309,7 +309,7 @@ public class ChooseTable extends javax.swing.JFrame {
             // Ẩn ChooseTable
             this.setVisible(false);
             
-            // Hiển thị HoaDonJDialog
+            // Hiển thị Bill
             hoaDonDialog.setVisible(true);
             
         } catch (Exception e) {
