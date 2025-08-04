@@ -380,6 +380,22 @@ public class CustomerUI extends javax.swing.JFrame {
         loadCustomerByPhone(phoneNumber);
     }
 
+    // Event handler methods
+    private void txt_nameActionPerformed(java.awt.event.ActionEvent evt) {
+        // Xử lý khi nhấn Enter trong text field tên
+        handleCustomerAction();
+    }
+
+    private void btn_addActionPerformed(java.awt.event.ActionEvent evt) {
+        // Xử lý khi nhấn nút thêm
+        handleCustomerAction();
+    }
+
+    private void btn_exitActionPerformed(java.awt.event.ActionEvent evt) {
+        // Xử lý khi nhấn nút thoát
+        dispose();
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -397,13 +413,13 @@ public class CustomerUI extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Customer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(CustomerUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Customer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(CustomerUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Customer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(CustomerUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Customer.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(CustomerUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
         //</editor-fold>
@@ -411,7 +427,7 @@ public class CustomerUI extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Customer().setVisible(true);
+                new CustomerUI().setVisible(true);
             }
         });
     }
