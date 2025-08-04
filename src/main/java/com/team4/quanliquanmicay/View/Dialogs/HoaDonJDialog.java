@@ -98,6 +98,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         btnUnOrder.addActionListener(e -> deleteSelectedItem());
         btnUnBill.addActionListener(e -> cancelBill());
         btnExit.addActionListener(e -> dispose());
+        btnPayment.addActionListener(e -> openPaymentDialog());
         
         // Double click để xem chi tiết
         tbBill.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -108,6 +109,25 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                 }
             }
         });
+    }
+    
+    /**
+     * Mở dialog thanh toán
+     */
+    private void openPaymentDialog() {
+        if (currentBill == null) {
+            XDialog.alert("Vui lòng chọn hóa đơn trước khi thanh toán!");
+            return;
+        }
+        
+        ThanhToanJDialog paymentDialog = new ThanhToanJDialog();
+        paymentDialog.setVisible(true);
+        
+        // Truyền thông tin bill hiện tại cho dialog thanh toán
+        paymentDialog.loadBillDirectly(currentBill);
+        
+        // Đóng dialog hiện tại
+        this.dispose();
     }
     
     /**
@@ -761,6 +781,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
         btnOrder = new javax.swing.JButton();
         btnUnBill = new javax.swing.JButton();
         lblImage = new javax.swing.JLabel();
+        btnPayment = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(0, 51, 51));
@@ -875,6 +896,10 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
 
         lblImage.setText("Image");
 
+        btnPayment.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnPayment.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
+        btnPayment.setText("Thanh Toán");
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -889,7 +914,8 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                             .addComponent(jSeparator1)
                             .addComponent(btnExit, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(btnUnBill, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
-                            .addComponent(lblImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(lblImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnPayment, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE))
                         .addContainerGap())
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -950,8 +976,10 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(lblImage, javax.swing.GroupLayout.PREFERRED_SIZE, 214, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(lblImage, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(55, 55, 55)
+                        .addComponent(btnPayment)
+                        .addGap(18, 18, 18)
                         .addComponent(btnUnBill)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1022,6 +1050,7 @@ public class HoaDonJDialog extends javax.swing.JFrame implements BillController 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnOrder;
+    private javax.swing.JButton btnPayment;
     private javax.swing.JButton btnUnBill;
     private javax.swing.JButton btnUnOrder;
     private javax.swing.JLabel jLabel1;
