@@ -14,7 +14,8 @@ public class XTheme {
     // Định nghĩa bảng màu cho Light Theme
     private static final Color LIGHT_BACKGROUND = new Color(255, 255, 255);
     private static final Color LIGHT_SURFACE = new Color(248, 249, 250);
-    private static final Color LIGHT_ACCENT = new Color(102, 0, 0);
+    private static final Color LIGHT_ACCENT = new Color(134, 39, 43); // Đỏ mì cay #86272B
+    private static final Color LIGHT_BE = new Color(204, 164, 133); // Be #CCA485
     private static final Color LIGHT_TEXT_PRIMARY = new Color(33, 37, 41);
     private static final Color LIGHT_TEXT_SECONDARY = new Color(108, 117, 125);
     private static final Color LIGHT_BORDER = new Color(206, 212, 218);
@@ -72,87 +73,89 @@ public class XTheme {
         UIManager.put("Tree.foreground", LIGHT_TEXT_PRIMARY);
         
         // === BUTTON STYLING ===
-        UIManager.put("Button.background", LIGHT_SURFACE);
-        UIManager.put("Button.hoverBackground", LIGHT_HOVER);
-        UIManager.put("Button.pressedBackground", LIGHT_ACCENT);
-        UIManager.put("Button.borderColor", LIGHT_BORDER);
+        UIManager.put("Button.background", LIGHT_BE);
+        UIManager.put("Button.hoverBackground", new Color(194, 154, 123)); // Be đậm hơn khi hover
+        UIManager.put("Button.pressedBackground", new Color(184, 144, 113)); // Be đậm nhất khi click
+        UIManager.put("Button.borderColor", LIGHT_ACCENT);
         UIManager.put("Button.focusedBorderColor", LIGHT_ACCENT);
-        UIManager.put("Button.arc", 8); // Bo góc button
+        UIManager.put("Button.arc", 12); // Bo góc button hiện đại hơn
         
         // === INPUT FIELDS ===
-        UIManager.put("TextField.background", LIGHT_BACKGROUND);
-        UIManager.put("TextArea.background", LIGHT_BACKGROUND);
-        UIManager.put("ComboBox.background", LIGHT_BACKGROUND);
-        UIManager.put("TextField.borderColor", LIGHT_BORDER);
+        UIManager.put("TextField.background", new Color(252, 250, 248)); // Nền nhẹ với tông be
+        UIManager.put("TextArea.background", new Color(252, 250, 248));
+        UIManager.put("ComboBox.background", new Color(252, 250, 248));
+        UIManager.put("TextField.borderColor", LIGHT_BE);
         UIManager.put("TextField.focusedBorderColor", LIGHT_ACCENT);
-        UIManager.put("TextArea.borderColor", LIGHT_BORDER);
-        UIManager.put("ComboBox.borderColor", LIGHT_BORDER);
+        UIManager.put("TextArea.borderColor", LIGHT_BE);
+        UIManager.put("ComboBox.borderColor", LIGHT_BE);
         
         // === TABLE STYLING ===
         UIManager.put("Table.background", LIGHT_BACKGROUND);
-        UIManager.put("Table.alternateRowColor", new Color(248, 249, 250));
-        UIManager.put("Table.selectionBackground", new Color(232, 62, 140, 30));
+        UIManager.put("Table.alternateRowColor", new Color(252, 250, 248)); // Tông be nhẹ
+        UIManager.put("Table.selectionBackground", new Color(134, 39, 43, 20)); // Đỏ mì cay với độ trong suốt
         UIManager.put("Table.selectionForeground", LIGHT_TEXT_PRIMARY);
-        UIManager.put("Table.gridColor", new Color(230, 230, 230));
-        UIManager.put("TableHeader.background", LIGHT_SURFACE);
-        UIManager.put("TableHeader.foreground", LIGHT_TEXT_PRIMARY);
-        UIManager.put("TableHeader.separatorColor", LIGHT_BORDER);
+        UIManager.put("Table.gridColor", LIGHT_BE);
+        UIManager.put("TableHeader.background", LIGHT_ACCENT);
+        UIManager.put("TableHeader.foreground", Color.WHITE);
+        UIManager.put("TableHeader.separatorColor", LIGHT_BE);
         
         // === MENU STYLING ===
-        UIManager.put("MenuBar.background", LIGHT_SURFACE);
-        UIManager.put("MenuBar.borderColor", LIGHT_BORDER);
-        UIManager.put("Menu.background", LIGHT_SURFACE);
-        UIManager.put("Menu.foreground", LIGHT_TEXT_PRIMARY);
-        UIManager.put("Menu.hoverBackground", LIGHT_HOVER);
+        UIManager.put("MenuBar.background", LIGHT_ACCENT);
+        UIManager.put("MenuBar.borderColor", LIGHT_BE);
+        UIManager.put("Menu.background", LIGHT_ACCENT);
+        UIManager.put("Menu.foreground", Color.WHITE);
+        UIManager.put("Menu.hoverBackground", new Color(154, 49, 53)); // Đỏ đậm hơn khi hover
         UIManager.put("MenuItem.background", LIGHT_BACKGROUND);
         UIManager.put("MenuItem.foreground", LIGHT_TEXT_PRIMARY);
-        UIManager.put("MenuItem.hoverBackground", LIGHT_HOVER);
+        UIManager.put("MenuItem.hoverBackground", new Color(252, 250, 248)); // Tông be nhẹ khi hover
         
         // === SCROLL BAR ===
-        UIManager.put("ScrollBar.background", LIGHT_SURFACE);
-        UIManager.put("ScrollBar.thumb", new Color(180, 180, 180));
-        UIManager.put("ScrollBar.hoverThumbColor", new Color(150, 150, 150));
+        UIManager.put("ScrollBar.background", new Color(252, 250, 248));
+        UIManager.put("ScrollBar.thumb", LIGHT_BE);
+        UIManager.put("ScrollBar.hoverThumbColor", new Color(184, 144, 113)); // Be đậm hơn
         UIManager.put("ScrollBar.pressedThumbColor", LIGHT_ACCENT);
-        UIManager.put("ScrollBar.width", 12);
+        UIManager.put("ScrollBar.width", 14); // Rộng hơn một chút
         
         // === TABS ===
-        UIManager.put("TabbedPane.background", LIGHT_SURFACE);
+        UIManager.put("TabbedPane.background", new Color(252, 250, 248));
         UIManager.put("TabbedPane.foreground", LIGHT_TEXT_PRIMARY);
-        UIManager.put("TabbedPane.selectedBackground", LIGHT_BACKGROUND);
-        UIManager.put("TabbedPane.selectedForeground", LIGHT_ACCENT);
-        UIManager.put("TabbedPane.hoverColor", LIGHT_HOVER);
+        UIManager.put("TabbedPane.selectedBackground", LIGHT_ACCENT);
+        UIManager.put("TabbedPane.selectedForeground", Color.WHITE);
+        UIManager.put("TabbedPane.hoverColor", LIGHT_BE); // Màu be khi hover
         
         // === PROGRESS BAR ===
-        UIManager.put("ProgressBar.background", LIGHT_SURFACE);
+        UIManager.put("ProgressBar.background", new Color(252, 250, 248));
         UIManager.put("ProgressBar.foreground", LIGHT_ACCENT);
-        UIManager.put("ProgressBar.selectionBackground", LIGHT_BACKGROUND);
+        UIManager.put("ProgressBar.selectionBackground", LIGHT_BE);
         UIManager.put("ProgressBar.selectionForeground", LIGHT_TEXT_PRIMARY);
         
         // === TOOLTIP ===
-        UIManager.put("ToolTip.background", new Color(255, 255, 240));
+        UIManager.put("ToolTip.background", new Color(252, 250, 248));
         UIManager.put("ToolTip.foreground", LIGHT_TEXT_PRIMARY);
-        UIManager.put("ToolTip.border", new LineBorder(LIGHT_BORDER, 1));
+        UIManager.put("ToolTip.border", new LineBorder(LIGHT_BE, 2));
         
         // === LIST & TREE ===
         UIManager.put("List.background", LIGHT_BACKGROUND);
-        UIManager.put("List.selectionBackground", new Color(232, 62, 140, 30));
+        UIManager.put("List.selectionBackground", new Color(134, 39, 43, 20)); // Đỏ mì cay với độ trong suốt
         UIManager.put("List.selectionForeground", LIGHT_TEXT_PRIMARY);
         UIManager.put("Tree.background", LIGHT_BACKGROUND);
-        UIManager.put("Tree.selectionBackground", new Color(232, 62, 140, 30));
+        UIManager.put("Tree.selectionBackground", new Color(134, 39, 43, 20)); // Đỏ mì cay với độ trong suốt
         UIManager.put("Tree.selectionForeground", LIGHT_TEXT_PRIMARY);
         
         // === CHECKBOX & RADIO ===
         UIManager.put("CheckBox.background", LIGHT_BACKGROUND);
         UIManager.put("CheckBox.foreground", LIGHT_TEXT_PRIMARY);
         UIManager.put("CheckBox.focusedBorderColor", LIGHT_ACCENT);
+        UIManager.put("CheckBox.iconColor", LIGHT_ACCENT);
         UIManager.put("RadioButton.background", LIGHT_BACKGROUND);
         UIManager.put("RadioButton.foreground", LIGHT_TEXT_PRIMARY);
         UIManager.put("RadioButton.focusedBorderColor", LIGHT_ACCENT);
+        UIManager.put("RadioButton.iconColor", LIGHT_ACCENT);
         
         // === BORDERS ===
-        UIManager.put("Component.borderColor", LIGHT_BORDER);
+        UIManager.put("Component.borderColor", LIGHT_BE);
         UIManager.put("Component.focusedBorderColor", LIGHT_ACCENT);
-        UIManager.put("Component.arc", 6); // Bo góc chung
+        UIManager.put("Component.arc", 8); // Bo góc chung hiện đại hơn
     }
     
     /**
@@ -472,12 +475,32 @@ public class XTheme {
         
         return button;
     }
-    
+        
     /**
      * Áp dụng theme đầy đủ bao gồm cả dialog
+     * Theme hiện đại với màu chủ đạo đỏ mì cay và be
      */
     public static void applyFullTheme() {
         applyLightTheme();
         customizeDialogs();
+        
+        // Thêm các tùy chỉnh bổ sung cho theme hiện đại
+        try {
+            // Tùy chỉnh thêm cho các component đặc biệt
+            UIManager.put("Panel.background", new Color(252, 250, 248)); // Nền nhẹ với tông be
+            UIManager.put("Frame.background", new Color(252, 250, 248));
+            UIManager.put("Dialog.background", new Color(252, 250, 248));
+            
+            // Tùy chỉnh cho các label quan trọng
+            UIManager.put("Label.font", new Font("Segoe UI", Font.BOLD, 13));
+            
+            // Tùy chỉnh cho các button đặc biệt
+            UIManager.put("Button.font", new Font("Segoe UI", Font.BOLD, 12));
+            
+            System.out.println("🎨 Đã áp dụng thành công Modern Mì Cay Theme với màu đỏ #86272B và be #CCA485");
+            
+        } catch (Exception e) {
+            System.err.println("⚠️ Lỗi khi áp dụng theme bổ sung: " + e.getMessage());
+        }
     }
 }
