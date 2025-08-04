@@ -23,6 +23,7 @@ import com.team4.quanliquanmicay.Impl.TableForCustomerDAOImpl;
 import com.team4.quanliquanmicay.DAO.BillDAO;
 import com.team4.quanliquanmicay.Impl.BillDAOImpl;
 import com.team4.quanliquanmicay.Controller.PaymentController;
+import com.team4.quanliquanmicay.View.CustomerUI;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.*;
 import java.awt.*;
@@ -1121,8 +1122,8 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
             return;
         }
         
-        // Mở Customer để tạo hội viên mới
-        Customer customerDialog = new Customer();
+        // Mở CustomerUI để tạo hội viên mới
+        CustomerUI customerDialog = new CustomerUI();
         customerDialog.setVisible(true);
         
         // Sau khi đóng dialog, kiểm tra xem có tạo thành công không
