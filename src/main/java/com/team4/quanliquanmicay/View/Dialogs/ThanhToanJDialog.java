@@ -913,11 +913,23 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             if (currentCustomer != null) {
                 // Không fill số điện thoại, chỉ cập nhật điểm
                 customerPoints = currentCustomer.getPoint_level();
-                lblPoint.setText(String.valueOf(customerPoints));
+                // Tính điểm mới nếu có hóa đơn
+                if (currentBill != null && totalAmount > 0) {
+                    int newPoints = calculateNewPoints(customerPoints, totalAmount);
+                    lblPoint.setText(String.valueOf(newPoints));
+                } else {
+                    lblPoint.setText(String.valueOf(customerPoints));
+                }
             } else {
                 // Không fill số điện thoại, reset điểm
                 customerPoints = 0;
-                lblPoint.setText("0");
+                // Hiển thị điểm tiềm năng nếu có hóa đơn
+                if (currentBill != null && totalAmount > 0) {
+                    int potentialPoints = (int)Math.round(totalAmount / 1000);
+                    lblPoint.setText(String.valueOf(potentialPoints));
+                } else {
+                    lblPoint.setText("0");
+                }
             }
         } catch (Exception e) {
             // Không fill số điện thoại, reset điểm
@@ -933,14 +945,14 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         tableModel.setRowCount(0);
         if (details != null) {
             for (BillDetails detail : details) {
-                Object[] row = {
-                    detail.getProduct_id(),
-                    getProductName(detail.getProduct_id()),
-                    detail.getAmount(),
-                    formatCurrency(detail.getPrice()),
-                    formatDiscount(detail.getDiscount()),
-                    formatCurrency((detail.getPrice() - detail.getDiscount()) * detail.getAmount())
-                };
+                                        Object[] row = {
+                            detail.getProduct_id(),
+                            getProductName(detail.getProduct_id()),
+                            detail.getAmount(),
+                            formatCurrency(detail.getPrice()),
+                            formatDiscount(detail.getDiscount()),
+                            formatCurrency(detail.getTotalPrice())
+                        };
                 tableModel.addRow(row);
             }
         }
@@ -962,7 +974,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             lblPoint.setText(String.valueOf(newPoints));
         } else if (totalAmount > 0) {
             // Nếu chưa có khách hàng nhưng có hóa đơn, hiển thị điểm tiềm năng
-            int potentialPoints = (int)(totalAmount / 1000); // 1 điểm cho mỗi 1000đ
+            int potentialPoints = (int)Math.round(totalAmount / 1000); // 1 điểm cho mỗi 1000đ, làm tròn
             lblPoint.setText(String.valueOf(potentialPoints));
         } else {
             lblPoint.setText("0");
@@ -987,7 +999,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
                 }
             } else if (totalAmount > 0) {
                 // Nếu chưa có khách hàng nhưng có hóa đơn, hiển thị điểm tiềm năng
-                int potentialPoints = (int)(totalAmount / 1000); // 1 điểm cho mỗi 1000đ
+                int potentialPoints = (int)Math.round(totalAmount / 1000); // 1 điểm cho mỗi 1000đ, làm tròn
                 lblPoint.setText(String.valueOf(potentialPoints));
             } else {
                 lblPoint.setText("0");
@@ -1042,7 +1054,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         // Tính điểm sẽ được tích
         int pointsToEarn = 0;
         if (customerToUse != null) {
-            pointsToEarn = (int)(totalAmount / 1000); // 1 điểm cho mỗi 1000đ
+            pointsToEarn = (int)Math.round(totalAmount / 1000); // 1 điểm cho mỗi 1000đ, làm tròn
         }
         
         // Xác nhận thanh toán với thông tin tích điểm
@@ -1051,9 +1063,12 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         
         if (customerToUse != null) {
             confirmMessage += "\nKhách hàng: " + customerToUse.getCustomer_name() +
+                            "\nSố điện thoại: " + customerToUse.getPhone_number() +
                             "\nĐiểm hiện tại: " + customerToUse.getPoint_level() +
                             "\nĐiểm sẽ tích thêm: " + pointsToEarn +
                             "\nTổng điểm sau thanh toán: " + (customerToUse.getPoint_level() + pointsToEarn);
+        } else {
+            confirmMessage += "\nKhách hàng: Khách lẻ (không tích điểm)";
         }
         
         boolean confirm = XDialog.confirm(confirmMessage);
@@ -1069,8 +1084,11 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             
             if (customerToUse != null) {
                 successMessage += "\nKhách hàng: " + customerToUse.getCustomer_name() +
+                                "\nSố điện thoại: " + customerToUse.getPhone_number() +
                                 "\nĐã tích thêm: " + pointsToEarn + " điểm" +
                                 "\nTổng điểm hiện tại: " + (customerToUse.getPoint_level() + pointsToEarn);
+            } else {
+                successMessage += "\nKhách hàng: Khách lẻ (không tích điểm)";
             }
             
             XDialog.alert(successMessage);
@@ -1096,16 +1114,14 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
      * Tạo hội viên mới và tự động cập nhật điểm
      */
     private void createMember() {
-        String phoneNumber = txtPhoneNumber.getText().trim();
-        
-        if (phoneNumber.isEmpty()) {
-            XDialog.alert("Vui lòng nhập số điện thoại trước khi tạo hội viên!");
-            txtPhoneNumber.requestFocus();
+        // Kiểm tra xem có hóa đơn để thanh toán không
+        if (currentBill == null || totalAmount <= 0) {
+            XDialog.alert("Vui lòng chọn bàn có hóa đơn để thanh toán trước khi tạo hội viên!");
             return;
         }
         
-        // Mở CustomerJDialog với số điện thoại hiện tại
-        CustomerJDialog customerDialog = new CustomerJDialog(phoneNumber);
+        // Mở CustomerJDialog để tạo hội viên mới
+        CustomerJDialog customerDialog = new CustomerJDialog();
         customerDialog.setVisible(true);
         
         // Sau khi đóng dialog, kiểm tra xem có tạo thành công không
@@ -1113,18 +1129,24 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             currentCustomer = customerDialog.getCustomer();
             customerPoints = currentCustomer.getPoint_level();
             
+            // Tự động điền số điện thoại vào txtPhoneNumber
+            txtPhoneNumber.setText(currentCustomer.getPhone_number());
+            
             // Tự động tính điểm mới dựa trên hóa đơn hiện tại
-            if (currentBill != null && totalAmount > 0) {
+            if (totalAmount > 0) {
                 int newPoints = calculateNewPoints(customerPoints, totalAmount);
                 lblPoint.setText(String.valueOf(newPoints));
                 XDialog.alert("Tạo hội viên thành công!\n" +
                              "Khách hàng: " + currentCustomer.getCustomer_name() + "\n" +
+                             "Số điện thoại: " + currentCustomer.getPhone_number() + "\n" +
                              "Số điểm hiện tại: " + customerPoints + "\n" +
-                             "Điểm sau thanh toán: " + newPoints);
+                             "Điểm sau thanh toán: " + newPoints + "\n" +
+                             "Tổng tiền hóa đơn: " + formatCurrency(totalAmount));
             } else {
                 lblPoint.setText(String.valueOf(customerPoints));
                 XDialog.alert("Tạo hội viên thành công!\n" +
                              "Khách hàng: " + currentCustomer.getCustomer_name() + "\n" +
+                             "Số điện thoại: " + currentCustomer.getPhone_number() + "\n" +
                              "Số điểm hiện tại: " + customerPoints);
             }
         }
@@ -1160,6 +1182,8 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
     private void searchCustomerByPhone() {
         String phoneNumber = txtPhoneNumber.getText().trim();
         if (phoneNumber.isEmpty()) {
+            XDialog.alert("Vui lòng nhập số điện thoại để tìm kiếm!");
+            txtPhoneNumber.requestFocus();
             return;
         }
         
@@ -1177,15 +1201,19 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
                 lblPoint.setText(String.valueOf(customerPoints));
             }
             
+            int newPoints = (currentBill != null && totalAmount > 0) ? 
+                calculateNewPoints(customerPoints, totalAmount) : customerPoints;
             XDialog.alert("Tìm thấy khách hàng: " + customer.getCustomer_name() + 
                          "\nSố điểm hiện tại: " + customerPoints +
-                         "\nĐiểm sau thanh toán: " + (currentBill != null && totalAmount > 0 ? 
-                             calculateNewPoints(customerPoints, totalAmount) : customerPoints));
+                         "\nĐiểm sau thanh toán: " + newPoints);
         } else {
             currentCustomer = null;
             customerPoints = 0;
             lblPoint.setText("0");
-            XDialog.alert("Không tìm thấy khách hàng với số điện thoại này!\nBạn có thể tạo hội viên mới.");
+            XDialog.alert("Không tìm thấy khách hàng với số điện thoại này!\n" +
+                         "Bạn có thể:\n" +
+                         "1. Kiểm tra lại số điện thoại\n" +
+                         "2. Bấm 'TẠO HỘI VIÊN' để tạo khách hàng mới");
         }
     }
     
@@ -1194,7 +1222,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
      * 1 điểm = 1.000 VNĐ
      */
     private int calculateNewPoints(int currentPoints, double totalAmount) {
-        int earnedPoints = (int)(totalAmount / 1000); // 1 điểm cho mỗi 1000đ
+        int earnedPoints = (int)Math.round(totalAmount / 1000); // 1 điểm cho mỗi 1000đ, làm tròn
         return currentPoints + earnedPoints;
     }
     
@@ -1225,7 +1253,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             // Thêm thông tin tích điểm nếu có khách hàng
             if (currentCustomer != null && totalAmount > 0) {
                 int currentPoints = currentCustomer.getPoint_level();
-                int earnedPoints = (int)(totalAmount / 1000);
+                int earnedPoints = (int)Math.round(totalAmount / 1000);
                 int newPoints = currentPoints + earnedPoints;
                 
                 info += String.format(
@@ -1391,7 +1419,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
         double total = 0.0;
         if (billDetails != null) {
             for (BillDetails detail : billDetails) {
-                total += (detail.getPrice() - detail.getDiscount()) * detail.getAmount();
+                total += detail.getTotalPrice();
             }
         }
         return total;
@@ -1438,7 +1466,7 @@ public class ThanhToanJDialog extends javax.swing.JFrame implements PaymentContr
             // Tự động tích điểm cho khách hàng (1 điểm = 1.000 VNĐ)
             if (customer != null) {
                 int currentPoints = customer.getPoint_level();
-                int earnedPoints = (int)(totalAmount / 1000); // 1 điểm cho mỗi 1000đ
+                int earnedPoints = (int)Math.round(totalAmount / 1000); // 1 điểm cho mỗi 1000đ, làm tròn
                 int newPoints = currentPoints + earnedPoints;
                 
                 // Cập nhật điểm khách hàng
