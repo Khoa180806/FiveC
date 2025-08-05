@@ -33,20 +33,20 @@ BEGIN
 END;
 /
 
-INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, email, phone_number, image, is_enabled, role_id) 
-VALUES ('U001', 'manager01', 'manager123', N'Nguyễn Văn Manager', 'manager@quanmicay.com', '0328456789', 'manager.jpg', 1, 'R001');
+INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, role_id) 
+VALUES ('U001', 'manager01', 'manager123', N'Nguyễn Văn Manager', 1, 'manager@quanmicay.com', '0328456789', 'manager.jpg', 1, 'R001');
 
-INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, email, phone_number, image, is_enabled, role_id) 
-VALUES ('U002', 'manager02', 'manager123', N'Trần Thị Quản Lý', 'manager02@quanmicay.com', '0912345678', 'manager2.jpg', 1, 'R001');
+INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, role_id) 
+VALUES ('U002', 'manager02', 'manager123', N'Trần Thị Quản Lý', 0, 'manager02@quanmicay.com', '0912345678', 'manager2.jpg', 1, 'R001');
 
-INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, email, phone_number, image, is_enabled, role_id) 
-VALUES ('U003', 'staff01', 'staff123', N'Lê Văn Phục Vụ', 'staff01@quanmicay.com', '0909876543', 'staff01.jpg', 1, 'R002');
+INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, role_id) 
+VALUES ('U003', 'staff01', 'staff123', N'Lê Văn Phục Vụ', 1, 'staff01@quanmicay.com', '0909876543', 'staff01.jpg', 1, 'R002');
 
-INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, email, phone_number, image, is_enabled, role_id) 
-VALUES ('U004', 'staff02', 'staff123', N'Phạm Thị Bếp', 'staff02@quanmicay.com', '0967123987', 'staff02.jpg', 1, 'R002');
+INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, role_id) 
+VALUES ('U004', 'staff02', 'staff123', N'Phạm Thị Bếp', 0, 'staff02@quanmicay.com', '0967123987', 'staff02.jpg', 1, 'R002');
 
-INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, email, phone_number, image, is_enabled, role_id) 
-VALUES ('U005', 'staff03', 'staff123', N'Hoàng Văn Thu Ngân', 'staff03@quanmicay.com', '0834567890', 'staff03.jpg', 1, 'R002');
+INSERT INTO USER_ACCOUNT (user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, role_id) 
+VALUES ('U005', 'staff03', 'staff123', N'Hoàng Văn Thu Ngân', 1, 'staff03@quanmicay.com', '0834567890', 'staff03.jpg', 1, 'R002');
 
 -- ========================================
 -- 3. INSERT CUSTOMER - KHÁCH HÀNG
