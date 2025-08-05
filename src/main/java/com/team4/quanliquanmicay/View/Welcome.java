@@ -1,10 +1,20 @@
 package com.team4.quanliquanmicay.View;
 
+
 import com.team4.quanliquanmicay.Controller.WelcomeCotroller;
 import com.team4.quanliquanmicay.util.XTheme;
 import java.awt.Color;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import java.awt.Graphics;
+import java.awt.Insets;
+import javax.swing.plaf.basic.BasicProgressBarUI;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.FontMetrics;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -27,8 +37,25 @@ public class Welcome extends javax.swing.JFrame implements WelcomeCotroller{
         initComponents();
         this.setLocationRelativeTo(null);
 
+        // Cấu hình progress bar
+        progressBar.setBackground(new java.awt.Color(240, 240, 240));
+        progressBar.setForeground(new java.awt.Color(134, 39, 43));
+        progressBar.setStringPainted(true);
+        progressBar.setString("0%");
+        progressBar.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        progressBar.setPreferredSize(new java.awt.Dimension(600, 35));
+        progressBar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(134, 39, 43), 2));
+
+        // Ép màu text ban đầu
         SwingUtilities.invokeLater(() -> {
-        com.team4.quanliquanmicay.util.XImage.setImageToLabel(jLabel4, "/icons_and_images/z6810531607696_a2974bb8a766d61fe1f24293cd57ffb8.jpg");
+            UIManager.put("ProgressBar.selectionForeground", new Color(134, 39, 43));
+            UIManager.put("ProgressBar.selectionBackground", new Color(134, 39, 43));
+            progressBar.updateUI();
+            progressBar.setForeground(new Color(134, 39, 43));
+        });
+
+        SwingUtilities.invokeLater(() -> {
+            com.team4.quanliquanmicay.util.XImage.setImageToLabel(jLabel4, "/icons_and_images/z6810531607696_a2974bb8a766d61fe1f24293cd57ffb8.jpg");
         });
     }
 
@@ -100,8 +127,57 @@ public class Welcome extends javax.swing.JFrame implements WelcomeCotroller{
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
         jLabel5.setText("\"Cay không chỉ ở vị, mà còn ở cách sống.\"");
 
-        progressBar.setBackground(new java.awt.Color(255, 255, 255));
-        progressBar.setForeground(new java.awt.Color(153, 0, 0));
+        progressBar.setBackground(new java.awt.Color(240, 240, 240));
+        progressBar.setForeground(new java.awt.Color(134, 39, 43));
+        progressBar.setStringPainted(true);
+        progressBar.setString("0%");
+        progressBar.setFont(new java.awt.Font("Segoe UI", 1, 16));
+        progressBar.setPreferredSize(new java.awt.Dimension(600, 35));
+        progressBar.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(134, 39, 43), 2));
+
+        // Tùy chỉnh UI để ép cập nhật màu text
+        progressBar.setUI(new javax.swing.plaf.basic.BasicProgressBarUI() {
+            @Override
+            protected void paintDeterminate(Graphics g, JComponent c) {
+                // Vẽ background
+                g.setColor(progressBar.getBackground());
+                g.fillRect(0, 0, progressBar.getWidth(), progressBar.getHeight());
+                
+                // Vẽ thanh progress
+                g.setColor(new Color(134, 39, 43));
+                int width = (int)((double)progressBar.getValue() / progressBar.getMaximum() * progressBar.getWidth());
+                g.fillRect(0, 0, width, progressBar.getHeight());
+                
+                // Vẽ text với màu tùy chỉnh
+                if (progressBar.isStringPainted()) {
+                    Graphics2D g2d = (Graphics2D) g.create();
+                    g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+                    
+                    String progressString = progressBar.getString();
+                    g2d.setFont(progressBar.getFont());
+                    FontMetrics fm = g2d.getFontMetrics();
+                    
+                    int stringWidth = fm.stringWidth(progressString);
+                    int stringHeight = fm.getHeight();
+                    
+                    int x = (progressBar.getWidth() - stringWidth) / 2;
+                    int y = (progressBar.getHeight() - stringHeight) / 2 + fm.getAscent();
+                    
+                    // Set màu text dựa vào giá trị progress
+                    if (progressBar.getValue() >= 50) {
+                        g2d.setColor(Color.WHITE);
+                    } else {
+                        g2d.setColor(new Color(134, 39, 43));
+                    }
+                    
+                    g2d.drawString(progressString, x, y);
+                    g2d.dispose();
+                }
+            }
+        });
+
+        // Thêm listener để cập nhật khi giá trị thay đổi
+        progressBar.addChangeListener(e -> progressBar.repaint());
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -201,16 +277,31 @@ waiting();        // TODO add your handling code here:
 
     @Override
     public void waiting() {
-this.setLocationRelativeTo(null);
-    new Thread(() -> {
-        try {
-            for (var i = 0; i <= 100; i++) {
-            progressBar.setValue(i);
-            Thread.sleep(100);
+        this.setLocationRelativeTo(null);
+        new Thread(() -> {
+            try {
+                for (var i = 0; i <= 100; i++) {
+                    final int value = i;
+                    SwingUtilities.invokeLater(() -> {
+                        progressBar.setValue(value);
+                        progressBar.setString(value + "%");
+                        
+                        // Ép màu text
+                        if (value >= 50) {
+                            UIManager.put("ProgressBar.selectionForeground", Color.WHITE);
+     
+                        } else {
+                            UIManager.put("ProgressBar.selectionForeground", new Color(134, 39, 43));
+                            progressBar.setForeground(new Color(134, 39, 43));
+                        }
+                        progressBar.updateUI();
+                    });
+                    Thread.sleep(100);
+                }
+                Welcome.this.dispose();
+            } catch (InterruptedException ex) {
+                System.exit(0);
             }
-            Welcome.this.dispose();
-        } catch (InterruptedException ex) {
-            System.exit(0);
-        }
-    }).start();}
+        }).start();
+    }
 }
