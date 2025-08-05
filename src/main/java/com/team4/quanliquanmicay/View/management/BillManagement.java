@@ -950,9 +950,13 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         cboStatus.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ĐANG PHỤC VỤ", "ĐÃ THANH TOÁN", "HỦY" }));
 
+        btnUpdate.setBackground(new java.awt.Color(255, 231, 153));
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
+        btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
+        btnRemove.setBackground(new java.awt.Color(255, 179, 179));
         btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
+        btnRemove.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -1048,8 +1052,10 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         cboTime.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         cboTime.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm này" }));
 
+        btnFilter.setBackground(new java.awt.Color(129, 212, 250));
         btnFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnFilter.setText("LỌC");
+        btnFilter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -1070,9 +1076,9 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 .addComponent(btnEnd)
                 .addGap(28, 28, 28)
                 .addComponent(cboTime, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(32, 32, 32)
-                .addComponent(btnFilter)
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(btnFilter, javax.swing.GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
+                .addContainerGap())
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1132,7 +1138,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Hóa đơn", jPanel5);
@@ -1170,12 +1176,14 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("Chi tiết", jPanel6);
 
+        btnExit.setBackground(new java.awt.Color(119, 50, 5));
         btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
