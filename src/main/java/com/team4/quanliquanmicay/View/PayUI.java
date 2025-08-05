@@ -32,12 +32,17 @@ import java.util.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.sql.ResultSet;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  *
  * @author HP
  */
 public class PayUI extends javax.swing.JFrame implements PaymentController {
+    
+    // Logger cho debugging
+    private static final Logger LOGGER = Logger.getLogger(PayUI.class.getName());
     
     // DAO objects
     private final BillDetailsDAO billDetailsDAO;
@@ -61,7 +66,10 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
     private int selectedTableNumber = -1;
     
     // Cache để lưu bill của từng bàn
-    private java.util.Map<Integer, Bill> tableBillCache = new java.util.HashMap<>();
+    private final java.util.Map<Integer, Bill> tableBillCache = new java.util.HashMap<>();
+    
+    // Lock cho thread safety
+    private final Object cacheLock = new Object();
 
     /**
      * Creates new form ThanhToanJDialog
@@ -725,8 +733,10 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
      * Cập nhật cache khi có bill mới
      */
     public void updateBillCache(int tableNumber, Bill bill) {
-        if (bill != null) {
-            tableBillCache.put(tableNumber, bill);
+        synchronized (cacheLock) {
+            if (bill != null) {
+                tableBillCache.put(tableNumber, bill);
+            }
         }
     }
     
@@ -734,7 +744,9 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
      * Xóa bill khỏi cache khi thanh toán xong
      */
     public void removeBillFromCache(int tableNumber) {
-        tableBillCache.remove(tableNumber);
+        synchronized (cacheLock) {
+            tableBillCache.remove(tableNumber);
+        }
     }
     
     /**
@@ -839,9 +851,9 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         try {
             // Debug: Kiểm tra tất cả bill của bàn này
             List<Bill> allBills = ((BillDAOImpl) billDAO).findAllByTableNumber(tableNumber);
-            System.out.println("Debug: Tìm thấy " + allBills.size() + " bill cho bàn " + tableNumber);
+            LOGGER.log(Level.INFO, "Debug: Tìm thấy " + allBills.size() + " bill cho bàn " + tableNumber);
             for (Bill bill : allBills) {
-                System.out.println("  Bill ID: " + bill.getBill_id() + ", Status: " + bill.getStatus());
+                LOGGER.log(Level.INFO, "  Bill ID: " + bill.getBill_id() + ", Status: " + bill.getStatus());
             }
             
             // Sử dụng controller để lấy bill
@@ -876,6 +888,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
             }
             
         } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi load hóa đơn cho bàn " + tableNumber, e);
             XDialog.alert("Lỗi khi load hóa đơn: " + e.getMessage());
         }
     }
@@ -1189,6 +1202,13 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
             return;
         }
         
+        // Validate phone number format
+        if (!isValidPhoneNumber(phoneNumber)) {
+            XDialog.alert("Số điện thoại không hợp lệ! Vui lòng nhập 10-11 chữ số.");
+            txtPhoneNumber.requestFocus();
+            return;
+        }
+        
         Customer customer = this.searchCustomer(phoneNumber);
         if (customer != null) {
             currentCustomer = customer;
@@ -1476,7 +1496,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
                 customerDAO.update(customer);
                 
                 // Log thông tin tích điểm
-                System.out.println("Tích điểm thành công: " + customer.getCustomer_name() + 
+                LOGGER.log(Level.INFO, "Tích điểm thành công: " + customer.getCustomer_name() + 
                                  " - Điểm cũ: " + currentPoints + 
                                  " - Điểm mới: " + newPoints + 
                                  " - Tích thêm: " + earnedPoints + " điểm");
@@ -1579,5 +1599,91 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
      */
     private String generatePaymentId() {
         return "PAY" + System.currentTimeMillis();
+    }
+
+    /**
+     * Cleanup resources khi đóng form
+     */
+    public void cleanup() {
+        try {
+            // Clear cache
+            if (tableBillCache != null) {
+                tableBillCache.clear();
+            }
+            
+            // Clear current data
+            currentBill = null;
+            currentCustomer = null;
+            billDetails = null;
+            
+            // Clear table model
+            if (tableModel != null) {
+                tableModel.setRowCount(0);
+            }
+            
+            LOGGER.log(Level.INFO, "PayUI cleanup completed");
+            
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Error during cleanup", e);
+        }
+    }
+    
+    /**
+     * Override dispose để cleanup resources
+     */
+    @Override
+    public void dispose() {
+        cleanup();
+        super.dispose();
+    }
+
+    /**
+     * Validate phone number format
+     */
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            return false;
+        }
+        // Vietnamese phone number format: 10-11 digits
+        return phoneNumber.trim().matches("\\d{10,11}");
+    }
+    
+    /**
+     * Validate table number
+     */
+    private boolean isValidTableNumber(int tableNumber) {
+        return tableNumber >= 1 && tableNumber <= 24;
+    }
+    
+    /**
+     * Validate bill amount
+     */
+    private boolean isValidAmount(double amount) {
+        return amount >= 0;
+    }
+
+    /**
+     * Kiểm tra kết nối database
+     */
+    private boolean checkDatabaseConnection() {
+        try {
+            // Test connection bằng cách thực hiện một query đơn giản
+            String testSql = "SELECT 1 FROM DUAL";
+            XJdbc.executeQuery(testSql, rs -> {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+                return null;
+            });
+            return true;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Database connection failed", e);
+            XDialog.alert("Lỗi kết nối database: " + e.getMessage() + 
+                         "\nVui lòng kiểm tra:\n" +
+                         "1. Oracle Database đã được khởi động\n" +
+                         "2. Thông tin kết nối trong XJdbc.java\n" +
+                         "3. Network connection");
+            return false;
+        }
     }
 }

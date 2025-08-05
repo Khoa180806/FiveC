@@ -31,6 +31,10 @@ public class Login extends javax.swing.JFrame implements LoginController{
         XTheme.applyFullTheme();
         initComponents();
         txtPassword.setEchoChar('*');
+        // Set icon mắt mở với kích thước 20x20
+        javax.swing.ImageIcon eyeOpenIcon = new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/iconEyeOpen.png"));
+        java.awt.Image eyeOpenImg = eyeOpenIcon.getImage().getScaledInstance(30, 30, java.awt.Image.SCALE_SMOOTH);
+        lblShowPassword.setIcon(new javax.swing.ImageIcon(eyeOpenImg));
         this.open();
     }
 
@@ -102,7 +106,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
 
         lblShowPassword.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         lblShowPassword.setForeground(new java.awt.Color(255, 255, 255));
-        lblShowPassword.setText("Hiển thị");
+        lblShowPassword.setText(" ");
         lblShowPassword.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         lblShowPassword.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -260,10 +264,18 @@ public class Login extends javax.swing.JFrame implements LoginController{
         // TODO add your handling code here:
         if (txtPassword.getEchoChar() == (char) 0) {
             txtPassword.setEchoChar('*');
-            lblShowPassword.setText("Ẩn");
+            lblShowPassword.setText("");
+            // Set icon mắt đóng với kích thước 20x20
+            javax.swing.ImageIcon eyeCloseIcon = new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/iconEyeClose.png"));
+            java.awt.Image eyeCloseImg = eyeCloseIcon.getImage().getScaledInstance(30, 30, java.awt.Image.SCALE_SMOOTH);
+            lblShowPassword.setIcon(new javax.swing.ImageIcon(eyeCloseImg));
         } else {
             txtPassword.setEchoChar((char) 0);
-            lblShowPassword.setText("Hiển thị");
+            lblShowPassword.setText("");
+            // Set icon mắt mở với kích thước 20x20
+            javax.swing.ImageIcon eyeOpenIcon = new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/iconEyeOpen.png"));
+            java.awt.Image eyeOpenImg = eyeOpenIcon.getImage().getScaledInstance(30, 30, java.awt.Image.SCALE_SMOOTH);
+            lblShowPassword.setIcon(new javax.swing.ImageIcon(eyeOpenImg));
         }
     }//GEN-LAST:event_lblShowPasswordMouseClicked
 
@@ -332,14 +344,32 @@ public class Login extends javax.swing.JFrame implements LoginController{
     public void login() {
         String username = txtUsername.getText().trim();
         String password = new String(txtPassword.getPassword());
+        
+        // Kiểm tra username có rỗng không
+        if (username.isEmpty()) {
+            XDialog.error("Vui lòng nhập tên đăng nhập!", "Lỗi đăng nhập");
+            txtUsername.requestFocus();
+            return;
+        }
+        
+        // Kiểm tra password có rỗng không
+        if (password.isEmpty()) {
+            XDialog.error("Vui lòng nhập mật khẩu!", "Lỗi đăng nhập");
+            txtPassword.requestFocus();
+            return;
+        }
+        
         UserDAO dao = new UserDAOImpl();
         UserAccount user = dao.findByUsername(username);
+        
         if (user == null) {
-            XDialog.alert("Sai tên đăng nhập!");
+            XDialog.error("Tên đăng nhập không tồn tại!", "Lỗi đăng nhập");
+            txtUsername.requestFocus();
         } else if (!password.equals(user.getPass())) {
-            XDialog.alert("Sai mật khẩu đăng nhập!");
+            XDialog.error("Sai mật khẩu đăng nhập!", "Lỗi đăng nhập");
+            txtPassword.requestFocus();
         } else if (!(user.getIs_enabled() == 0)) {
-            XDialog.alert("Tài khoản của bạn đang tạm dừng!");
+            XDialog.warning("Tài khoản của bạn đang tạm dừng!", "Cảnh báo");
         } else {
             XAuth.user = user;
             this.dispose();

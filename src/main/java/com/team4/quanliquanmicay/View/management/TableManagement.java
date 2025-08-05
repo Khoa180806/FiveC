@@ -499,38 +499,56 @@ System.exit(0);
         }
     }
 
-    // Hàm lấy màu đậm khi chọn
-    private Color getSelectedColorByStatus(int status) {
+    // Hàm lấy màu gốc theo trạng thái
+    private Color getBaseColorByStatus(int status) {
         switch (status) {
             case 0: // Trống
-                return Color.decode("#616161"); // Xám đậm hơn
-            case 1: // Hoạt động
-                return Color.decode("#186a3b"); // Xanh đậm hơn
-            case 2: // Ngưng phục vụ
-                return Color.decode("#757575"); // Xám đậm khi chọn
+                return Color.decode("#A8E6A1");
+            case 1: // Đang phục vụ
+                return Color.decode("#FFB347");
+            case 2: // Ngưng hoạt động
+                return Color.decode("#D3D3D3");
             default:
                 return Color.GRAY;
         }
     }
 
-    // Thêm vào class:
+    // Hàm lấy màu hover (+15% sáng)
     private Color getHoverColorByStatus(int status) {
-        switch (status) {
-            case 0: return Color.decode("#616161"); // Xám đậm
-            case 1: return Color.decode("#196f3d"); // Xanh đậm
-            case 2: return Color.decode("#bdbdbd"); // Xám đậm hơn xám trắng
-            default: return Color.GRAY;
-        }
+        Color baseColor = getBaseColorByStatus(status);
+        return brightenColor(baseColor, 0.15f);
     }
 
-    // Sửa lại createButton
+    // Hàm lấy màu click (-20% sáng)
+    private Color getClickColorByStatus(int status) {
+        Color baseColor = getBaseColorByStatus(status);
+        return darkenColor(baseColor, 0.20f);
+    }
+
+    // Hàm làm sáng màu
+    private Color brightenColor(Color color, float factor) {
+        int red = Math.min(255, (int) (color.getRed() + (255 - color.getRed()) * factor));
+        int green = Math.min(255, (int) (color.getGreen() + (255 - color.getGreen()) * factor));
+        int blue = Math.min(255, (int) (color.getBlue() + (255 - color.getBlue()) * factor));
+        return new Color(red, green, blue);
+    }
+
+    // Hàm làm tối màu
+    private Color darkenColor(Color color, float factor) {
+        int red = Math.max(0, (int) (color.getRed() * (1 - factor)));
+        int green = Math.max(0, (int) (color.getGreen() * (1 - factor)));
+        int blue = Math.max(0, (int) (color.getBlue() * (1 - factor)));
+        return new Color(red, green, blue);
+    }
+
+        // Sửa lại createButton
     private JButton createButton(int tableNumber, TableForCustomer table) {
         JButton btnTable = new JButton();
         btnTable.setContentAreaFilled(false); // Tắt nền mặc định
         btnTable.setOpaque(true);             // Cho phép vẽ nền custom
         btnTable.setText(String.format("Bàn #%d", tableNumber));
-        btnTable.setPreferredSize(new Dimension(120, 120));
-        btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
+        btnTable.setPreferredSize(new Dimension(100, 100)); // Giảm kích thước
+        btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18)); // Giảm font
 
         btnTable.setOpaque(true);
         btnTable.setContentAreaFilled(true);
@@ -545,22 +563,17 @@ System.exit(0);
             btnTable.setBackground(new Color(120, 144, 156));
         } else {
             btnTable.setEnabled(true);
-            btnTable.setBorder(javax.swing.BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
+            btnTable.setBorder(javax.swing.BorderFactory.createLineBorder(Color.WHITE, 2)); // Viền trắng
             btnTable.setBorderPainted(true);
             if (tableNumber == selectedTableNumber) {
                 btnTable.setBorder(new CompoundBorder(
                     new LineBorder(Color.PINK, 4, true),
-                    new LineBorder(Color.LIGHT_GRAY, 2)
+                    new LineBorder(Color.WHITE, 2)
                 ));
                 btnTable.setBorderPainted(true);
                 selectedButton = btnTable;
             } else {
-                switch (buttonStatus) {
-                    case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break;
-                    case 1: btnTable.setBackground(Color.decode("#27ae60")); break;
-                    case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break;
-                    default: btnTable.setBackground(new Color(55, 71, 79));
-                }
+                btnTable.setBackground(getBaseColorByStatus(buttonStatus));
             }
             btnTable.setActionCommand(String.valueOf(table.getTable_number()));
             btnTable.addActionListener((ActionEvent e) -> {
@@ -579,20 +592,15 @@ System.exit(0);
                 @Override
                 public void mouseExited(java.awt.event.MouseEvent evt) {
                     if (btnTable != selectedButton && btnTable.isEnabled()) {
-                        switch (buttonStatus) {
-                            case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break;
-                            case 1: btnTable.setBackground(Color.decode("#27ae60")); break;
-                            case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break;
-                            default: btnTable.setBackground(new Color(55, 71, 79));
-                        }
+                        btnTable.setBackground(getBaseColorByStatus(buttonStatus));
                         btnTable.repaint();
                     }
                 }
                 @Override
                 public void mousePressed(java.awt.event.MouseEvent evt) {
-                    // Khi nhấn chuột, tạm thời đổi sang màu hồng
+                    // Khi nhấn chuột, đổi sang màu tối hơn
                     if (btnTable.isEnabled()) {
-                        btnTable.setBackground(Color.decode("#ff69b4")); // Màu hồng
+                        btnTable.setBackground(getClickColorByStatus(buttonStatus));
                         btnTable.repaint();
                     }
                 }
@@ -604,16 +612,11 @@ System.exit(0);
                             // Nếu là button đã chọn, trả về màu "selected"
                             TableForCustomer table = tableDAO.findById(Integer.parseInt(btnTable.getActionCommand()));
                             if (table != null) {
-                                btnTable.setBackground(getSelectedColorByStatus(table.getStatus()));
+                                btnTable.setBackground(getBaseColorByStatus(table.getStatus()));
                             }
                         } else {
                             // Nếu không phải button đã chọn, trả về màu trạng thái bình thường
-                            switch (buttonStatus) {
-                                case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break;
-                                case 1: btnTable.setBackground(Color.decode("#27ae60")); break;
-                                case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break;
-                                default: btnTable.setBackground(new Color(55, 71, 79));
-                            }
+                            btnTable.setBackground(getBaseColorByStatus(buttonStatus));
                         }
                         btnTable.repaint();
                     }
@@ -650,10 +653,10 @@ System.exit(0);
         ));
         btnTable.setBorderPainted(true);
 
-        // Đổi màu nền button được chọn thành màu đậm hơn theo status
+        // Đổi màu nền button được chọn thành màu gốc theo status
         TableForCustomer table = tableDAO.findById(tableNumber);
         if (table != null) {
-            btnTable.setBackground(getSelectedColorByStatus(table.getStatus()));
+            btnTable.setBackground(getBaseColorByStatus(table.getStatus()));
         }
 
         selectedButton = btnTable;
@@ -747,7 +750,7 @@ System.exit(0);
 
         // Kiểm tra trống thông tin
         if (tableNumberStr.isEmpty() || amountStr.isEmpty() || statusText == null || statusText.trim().isEmpty()) {
-            XDialog.alert("Vui lòng nhập đầy đủ thông tin bàn!");
+            XDialog.error("Vui lòng nhập đầy đủ thông tin bàn!", "Lỗi thêm bàn");
             return;
         }
 
@@ -756,13 +759,13 @@ System.exit(0);
             tableNumber = Integer.parseInt(tableNumberStr);
             amount = Integer.parseInt(amountStr);
         } catch (NumberFormatException e) {
-            XDialog.alert("Số bàn và số chỗ ngồi phải là số nguyên!");
+            XDialog.error("Số bàn và số chỗ ngồi phải là số nguyên!", "Lỗi định dạng");
             return;
         }
 
         // Kiểm tra trùng số bàn
         if (tableDAO.findById(tableNumber) != null) {
-            XDialog.alert("Số bàn này đã tồn tại! Vui lòng nhập số bàn khác.");
+            XDialog.warning("Số bàn này đã tồn tại! Vui lòng nhập số bàn khác.", "Cảnh báo");
             return;
         }
 
@@ -774,11 +777,11 @@ System.exit(0);
 
         try {
             tableDAO.create(table);
-            XDialog.alert("Thêm bàn thành công!");
+            XDialog.success("Thêm bàn thành công!", "Thành công");
             loadTable(); // Reload lại để hiển thị bàn mới
             clear();
         } catch (Exception ex) {
-            XDialog.alert("Có lỗi xảy ra khi thêm bàn: " + ex.getMessage());
+            XDialog.error("Có lỗi xảy ra khi thêm bàn: " + ex.getMessage(), "Lỗi hệ thống");
         }
     }
 
@@ -791,7 +794,7 @@ System.exit(0);
         // Lấy thông tin cũ từ DB
         TableForCustomer oldTable = tableDAO.findById(newTable.getTable_number());
         if (oldTable == null) {
-            XDialog.alert("Không tìm thấy bàn này trong hệ thống!");
+            XDialog.error("Không tìm thấy bàn này trong hệ thống!", "Lỗi cập nhật");
             return;
         }
 
@@ -810,11 +813,11 @@ System.exit(0);
         if (XDialog.confirm(message.toString(), "Xác nhận cập nhật")) {
             try {
                 tableDAO.update(newTable);
-                XDialog.alert("Cập nhật bàn thành công!");
+                XDialog.success("Cập nhật bàn thành công!", "Thành công");
                 loadTable();
                 clear();
             } catch (Exception ex) {
-                XDialog.alert("Cập nhật bàn thất bại!\n" + ex.getMessage());
+                XDialog.error("Cập nhật bàn thất bại!\n" + ex.getMessage(), "Lỗi hệ thống");
             }
         }
         // Nếu chọn "Không" thì không làm gì cả
@@ -827,7 +830,7 @@ System.exit(0);
 
         // 1. Kiểm tra đã nhập số bàn chưa
         if (tableNumberStr.isEmpty()) {
-            XDialog.alert("Vui lòng nhập số bàn cần xóa!");
+            XDialog.error("Vui lòng nhập số bàn cần xóa!", "Lỗi xóa bàn");
             return;
         }
 
@@ -835,14 +838,14 @@ System.exit(0);
         try {
             tableNumber = Integer.parseInt(tableNumberStr);
         } catch (NumberFormatException e) {
-            XDialog.alert("Số bàn phải là số nguyên!");
+            XDialog.error("Số bàn phải là số nguyên!", "Lỗi định dạng");
             return;
         }
 
         // 2. Kiểm tra bàn có tồn tại không
         TableForCustomer table = tableDAO.findById(tableNumber);
         if (table == null) {
-            XDialog.alert("Không tìm thấy bàn số " + tableNumber + " trong hệ thống!");
+            XDialog.error("Không tìm thấy bàn số " + tableNumber + " trong hệ thống!", "Lỗi tìm kiếm");
             return;
         }
 
@@ -856,11 +859,11 @@ System.exit(0);
         if (XDialog.confirm(message.toString(), "Xác nhận xóa bàn")) {
             try {
                 tableDAO.deleteById(tableNumber);
-                XDialog.alert("Xóa bàn thành công!");
+                XDialog.success("Xóa bàn thành công!", "Thành công");
                 loadTable();
                 clear();
             } catch (Exception ex) {
-                XDialog.alert("Xóa bàn thất bại!\n" + ex.getMessage());
+                XDialog.error("Xóa bàn thất bại!\n" + ex.getMessage(), "Lỗi hệ thống");
             }
         }
         // Nếu chọn "Không" thì không làm gì cả
@@ -873,9 +876,9 @@ System.exit(0);
             txtTable_Number.setText("");
             txtAmount.setText("");
             cboTable_Status.setSelectedIndex(0);
-            XDialog.alert("Làm mới thành công!");
+            XDialog.success("Làm mới thành công!", "Thành công");
         } catch (Exception ex) {
-            XDialog.alert("Làm mới thất bại!\n" + ex.getMessage());
+            XDialog.error("Làm mới thất bại!\n" + ex.getMessage(), "Lỗi hệ thống");
         }
     }
 
