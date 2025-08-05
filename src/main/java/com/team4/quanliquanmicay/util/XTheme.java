@@ -73,12 +73,28 @@ public class XTheme {
         UIManager.put("Tree.foreground", LIGHT_TEXT_PRIMARY);
         
         // === BUTTON STYLING ===
+        // Màu nền chính cho button
         UIManager.put("Button.background", LIGHT_BE);
+        
+        // Hiệu ứng hover - màu đậm hơn một chút
         UIManager.put("Button.hoverBackground", new Color(194, 154, 123)); // Be đậm hơn khi hover
+        
+        // Hiệu ứng click/pressed - màu đậm nhất
         UIManager.put("Button.pressedBackground", new Color(184, 144, 113)); // Be đậm nhất khi click
+        
+        // Màu viền và focus
         UIManager.put("Button.borderColor", LIGHT_ACCENT);
         UIManager.put("Button.focusedBorderColor", LIGHT_ACCENT);
-        UIManager.put("Button.arc", 12); // Bo góc button hiện đại hơn
+        
+        // Bo góc hiện đại
+        UIManager.put("Button.arc", 12);
+        
+        // Thêm hiệu ứng shadow nhẹ khi hover
+        UIManager.put("Button.shadowColor", new Color(0, 0, 0, 20));
+        UIManager.put("Button.hoverShadowColor", new Color(0, 0, 0, 30));
+        
+        // Hiệu ứng transition mượt mà
+        UIManager.put("Button.animationDuration", 150);
         
         // === INPUT FIELDS ===
         UIManager.put("TextField.background", new Color(252, 250, 248)); // Nền nhẹ với tông be
@@ -454,18 +470,30 @@ public class XTheme {
         button.setPreferredSize(new Dimension(90, 35));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // Hover effect
+        // Hover effect với màu tùy chỉnh
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             Color originalColor = bgColor;
+            Color hoverColor = createHoverColor(bgColor);
+            Color pressedColor = createPressedColor(bgColor);
             
             @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(bgColor.darker());
+                button.setBackground(hoverColor);
             }
             
             @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 button.setBackground(originalColor);
+            }
+            
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                button.setBackground(pressedColor);
+            }
+            
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                button.setBackground(hoverColor);
             }
         });
         
@@ -474,6 +502,173 @@ public class XTheme {
         }
         
         return button;
+    }
+    
+    /**
+     * Tạo màu hover từ màu gốc
+     */
+    private static Color createHoverColor(Color originalColor) {
+        // Làm đậm màu lên 15%
+        return new Color(
+            Math.min(255, (int)(originalColor.getRed() * 0.85)),
+            Math.min(255, (int)(originalColor.getGreen() * 0.85)),
+            Math.min(255, (int)(originalColor.getBlue() * 0.85))
+        );
+    }
+    
+    /**
+     * Tạo màu pressed từ màu gốc
+     */
+    private static Color createPressedColor(Color originalColor) {
+        // Làm đậm màu lên 25%
+        return new Color(
+            Math.min(255, (int)(originalColor.getRed() * 0.75)),
+            Math.min(255, (int)(originalColor.getGreen() * 0.75)),
+            Math.min(255, (int)(originalColor.getBlue() * 0.75))
+        );
+    }
+    
+    /**
+     * Tạo button với hiệu ứng hover và click tùy chỉnh
+     * @param text Text hiển thị trên button
+     * @param bgColor Màu nền chính
+     * @param textColor Màu chữ
+     * @param action Action khi click
+     * @return JButton với hiệu ứng đẹp
+     */
+    public static JButton createCustomButton(String text, Color bgColor, Color textColor, ActionListener action) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        button.setForeground(textColor);
+        button.setBackground(bgColor);
+        button.setBorderPainted(false);
+        button.setFocusPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        // Tạo màu hover và pressed từ màu gốc
+        Color hoverColor = createHoverColor(bgColor);
+        Color pressedColor = createPressedColor(bgColor);
+        
+        // Hiệu ứng hover và click
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(hoverColor);
+            }
+            
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(bgColor);
+            }
+            
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                button.setBackground(pressedColor);
+            }
+            
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                button.setBackground(hoverColor);
+            }
+        });
+        
+        if (action != null) {
+            button.addActionListener(action);
+        }
+        
+        return button;
+    }
+    
+    /**
+     * Tạo button với theme mì cay (màu đỏ mì cay)
+     */
+    public static JButton createMiyCayButton(String text, ActionListener action) {
+        return createCustomButton(text, LIGHT_ACCENT, Color.WHITE, action);
+    }
+    
+    /**
+     * Tạo button với theme be
+     */
+    public static JButton createBeButton(String text, ActionListener action) {
+        return createCustomButton(text, LIGHT_BE, LIGHT_TEXT_PRIMARY, action);
+    }
+    
+    /**
+     * Tạo button thành công (màu xanh)
+     */
+    public static JButton createSuccessButton(String text, ActionListener action) {
+        return createCustomButton(text, LIGHT_SUCCESS, Color.WHITE, action);
+    }
+    
+    /**
+     * Tạo button cảnh báo (màu vàng)
+     */
+    public static JButton createWarningButton(String text, ActionListener action) {
+        return createCustomButton(text, LIGHT_WARNING, LIGHT_TEXT_PRIMARY, action);
+    }
+    
+    /**
+     * Tạo button lỗi (màu đỏ)
+     */
+    public static JButton createErrorButton(String text, ActionListener action) {
+        return createCustomButton(text, LIGHT_ERROR, Color.WHITE, action);
+    }
+    
+    /**
+     * Áp dụng hiệu ứng hover và click cho button hiện có
+     * @param button Button cần áp dụng hiệu ứng
+     * @param bgColor Màu nền chính
+     */
+    public static void applyHoverEffect(JButton button, Color bgColor) {
+        Color hoverColor = createHoverColor(bgColor);
+        Color pressedColor = createPressedColor(bgColor);
+        
+        // Xóa các listener cũ nếu có
+        for (java.awt.event.MouseListener listener : button.getMouseListeners()) {
+            button.removeMouseListener(listener);
+        }
+        
+        // Thêm hiệu ứng mới
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(hoverColor);
+            }
+            
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(bgColor);
+            }
+            
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                button.setBackground(pressedColor);
+            }
+            
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                button.setBackground(hoverColor);
+            }
+        });
+        
+        // Thiết lập cursor
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+    
+    /**
+     * Áp dụng hiệu ứng hover và click cho tất cả button trong container
+     * @param container Container chứa các button
+     */
+    public static void applyHoverEffectToAllButtons(Container container) {
+        for (Component comp : container.getComponents()) {
+            if (comp instanceof JButton) {
+                JButton button = (JButton) comp;
+                Color bgColor = button.getBackground();
+                applyHoverEffect(button, bgColor);
+            } else if (comp instanceof Container) {
+                applyHoverEffectToAllButtons((Container) comp);
+            }
+        }
     }
         
     /**
@@ -497,7 +692,15 @@ public class XTheme {
             // Tùy chỉnh cho các button đặc biệt
             UIManager.put("Button.font", new Font("Segoe UI", Font.BOLD, 12));
             
+            // Áp dụng hiệu ứng hover cho tất cả button hiện có
+            SwingUtilities.invokeLater(() -> {
+                for (Window window : Window.getWindows()) {
+                    applyHoverEffectToAllButtons(window);
+                }
+            });
+            
             System.out.println("🎨 Đã áp dụng thành công Modern Mì Cay Theme với màu đỏ #86272B và be #CCA485");
+            System.out.println("✨ Hiệu ứng hover và click đã được áp dụng cho tất cả button");
             
         } catch (Exception e) {
             System.err.println("⚠️ Lỗi khi áp dụng theme bổ sung: " + e.getMessage());
