@@ -619,6 +619,8 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         pnlPayment = new javax.swing.JPanel();
         jspPayment = new javax.swing.JScrollPane();
         tblPayment = new javax.swing.JTable();
+        jSeparator1 = new javax.swing.JSeparator();
+        jButton1 = new javax.swing.JButton();
 
         jLabel3.setText("jLabel3");
 
@@ -672,8 +674,10 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         cboFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         cboFilter.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm này" }));
 
+        btnFilter.setBackground(new java.awt.Color(129, 212, 250));
         btnFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnFilter.setText("LỌC");
+        btnFilter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         tblBills.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -755,17 +759,23 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
 
         jTabbedPane1.addTab("Thanh toán", pnlPayment);
 
+        jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
+
+        jButton1.setBackground(new java.awt.Color(119, 50, 5));
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Log out.png"))); // NOI18N
+        jButton1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+
         javax.swing.GroupLayout pnlUiLayout = new javax.swing.GroupLayout(pnlUi);
         pnlUi.setLayout(pnlUiLayout);
         pnlUiLayout.setHorizontalGroup(
             pnlUiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(pnlTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(pnlUiLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(pnlUiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnlUiLayout.createSequentialGroup()
-                        .addGap(13, 13, 13)
                         .addComponent(lblCheckin, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(7, 7, 7)
                         .addComponent(txtCheckin, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnCheckin)
@@ -775,20 +785,20 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                         .addComponent(txtCheckout, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnCheckout)
-                        .addGap(18, 18, 18)
+                        .addGap(24, 24, 24)
                         .addComponent(cboFilter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(btnFilter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(pnlUiLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jTabbedPane1)))
+                    .addComponent(jTabbedPane1)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         pnlUiLayout.setVerticalGroup(
             pnlUiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlUiLayout.createSequentialGroup()
                 .addComponent(pnlTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlUiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblCheckin)
                     .addComponent(txtCheckin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -800,7 +810,11 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                     .addComponent(btnCheckout))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -858,8 +872,10 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
     private javax.swing.JButton btnCheckout;
     private javax.swing.JButton btnFilter;
     private javax.swing.JComboBox<String> cboFilter;
+    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JScrollPane jpsBIlls;
     private javax.swing.JScrollPane jspPayment;
