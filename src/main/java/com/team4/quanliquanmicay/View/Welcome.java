@@ -280,6 +280,11 @@ waiting();        // TODO add your handling code here:
         this.setLocationRelativeTo(null);
         new Thread(() -> {
             try {
+                // Tính toán thời gian delay để chạy trong 3 giây
+                int totalSteps = 100;
+                int totalTimeMs = 3000; // 3 giây
+                int delayMs = totalTimeMs / totalSteps; // 30ms mỗi bước
+                
                 for (var i = 0; i <= 100; i++) {
                     final int value = i;
                     SwingUtilities.invokeLater(() -> {
@@ -296,9 +301,15 @@ waiting();        // TODO add your handling code here:
                         }
                         progressBar.updateUI();
                     });
-                    Thread.sleep(100);
+                    Thread.sleep(delayMs);
                 }
-                Welcome.this.dispose();
+                
+                // Sau khi hoàn thành, đóng Welcome và mở Login
+                SwingUtilities.invokeLater(() -> {
+                    Welcome.this.dispose();
+                    new Login().setVisible(true);
+                });
+                
             } catch (InterruptedException ex) {
                 System.exit(0);
             }
