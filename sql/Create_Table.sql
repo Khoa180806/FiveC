@@ -2,7 +2,7 @@
 -- DATABASE QUẢN LÝ QUÁN MÌ CAY - SCRIPT CREATE DATABASE HOÀN CHỈNH
 -- CHỈ CẦN BẤM EXECUTE MỘT LẦN
 -- Author: FiveC
--- Version: 1.0
+-- Version: 2.0 (Oracle 21c)
 -- Date: 03/07/2025
 -- Description: Hệ thống quản lý quán mì cay với 10 bảng chính
 -- ========================================
@@ -110,12 +110,13 @@ CREATE TABLE USER_ROLE (
     ,name_role NVARCHAR2(15) NOT NULL
 );
 
--- 2. BẢNG USER_ACCOUNT
+-- 2. BẢNG USER_ACCOUNT (THÊM TRƯỜNG GENDER)
 CREATE TABLE USER_ACCOUNT (
     user_id NVARCHAR2(20) PRIMARY KEY
     ,username NVARCHAR2(20) NOT NULL UNIQUE
     ,pass NVARCHAR2(50) NOT NULL
     ,fullName NVARCHAR2(50) NOT NULL
+    ,gender NUMBER(1) DEFAULT 1
     ,email NVARCHAR2(100) UNIQUE
     ,phone_number NVARCHAR2(11) UNIQUE
     ,image NVARCHAR2(255)
@@ -123,6 +124,7 @@ CREATE TABLE USER_ACCOUNT (
     ,created_date DATE DEFAULT SYSDATE
     ,role_id NVARCHAR2(5) NOT NULL
     ,CONSTRAINT FK_User_Role FOREIGN KEY (role_id) REFERENCES USER_ROLE(role_id)
+    ,CONSTRAINT CHK_User_Gender CHECK (gender IN (0, 1, 2))
 );
 
 -- 3. BẢNG CUSTOMER
@@ -173,7 +175,7 @@ CREATE TABLE PRODUCT (
     ,CONSTRAINT CHK_Product_Discount CHECK (discount >= 0 AND discount <= 1)
 );
 
--- 8. BẢNG PAYMENT_HISTORY
+-- 8. BẢNG PAYMENT_HISTORY (IDENTITY)
 CREATE TABLE PAYMENT_HISTORY (
     payment_history_id NUMBER GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1) PRIMARY KEY
     ,payment_method_id NUMBER(1) NOT NULL
@@ -184,7 +186,7 @@ CREATE TABLE PAYMENT_HISTORY (
     ,CONSTRAINT FK_PaymentHistory_PaymentMethod FOREIGN KEY (payment_method_id) REFERENCES PAYMENT_METHOD(payment_method_id)
 );
 
--- 9. BẢNG BILL
+-- 9. BẢNG BILL (IDENTITY)
 CREATE TABLE BILL (
     bill_id NUMBER GENERATED ALWAYS AS IDENTITY (START WITH 10000 INCREMENT BY 1) PRIMARY KEY
     ,user_id NVARCHAR2(20) NOT NULL 
@@ -202,7 +204,7 @@ CREATE TABLE BILL (
     ,CONSTRAINT CHK_Bill_Amount CHECK (total_amount >= 0)
 );
 
--- 10. BẢNG BILL_DETAIL
+-- 10. BẢNG BILL_DETAIL (IDENTITY)
 CREATE TABLE BILL_DETAIL (
     bill_detail_id NUMBER GENERATED ALWAYS AS IDENTITY (START WITH 1000 INCREMENT BY 1) PRIMARY KEY
     ,bill_id NUMBER NOT NULL
@@ -232,6 +234,7 @@ END;
 
 CREATE INDEX IDX_USER_USERNAME ON USER_ACCOUNT(username);
 CREATE INDEX IDX_USER_ROLE ON USER_ACCOUNT(role_id);
+CREATE INDEX IDX_USER_GENDER ON USER_ACCOUNT(gender);
 CREATE INDEX IDX_CUSTOMER_PHONE ON CUSTOMER(phone_number);
 CREATE INDEX IDX_PRODUCT_CATEGORY ON PRODUCT(category_id);
 CREATE INDEX IDX_BILL_CUSTOMER ON BILL(phone_number);
@@ -241,7 +244,7 @@ CREATE INDEX IDX_BILLDETAIL_BILL ON BILL_DETAIL(bill_id);
 CREATE INDEX IDX_BILLDETAIL_PRODUCT ON BILL_DETAIL(product_id);
 
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('✅ Đã tạo thành công 9 index!');
+    DBMS_OUTPUT.PUT_LINE('✅ Đã tạo thành công 10 index!');
 END;
 /
 
@@ -254,7 +257,9 @@ COMMIT;
 BEGIN
     DBMS_OUTPUT.PUT_LINE(' HOÀN THÀNH TẠO DATABASE QUẢN LÝ QUÁN MÌ CAY!');
     DBMS_OUTPUT.PUT_LINE('✅ 10 bảng đã được tạo thành công');
-    DBMS_OUTPUT.PUT_LINE('✅ 9 index đã được tạo thành công');
+    DBMS_OUTPUT.PUT_LINE('✅ 10 index đã được tạo thành công');
+    DBMS_OUTPUT.PUT_LINE('✅ Thêm trường gender vào USER_ACCOUNT');
+    DBMS_OUTPUT.PUT_LINE('✅ Tối ưu cho Oracle 21c');
     DBMS_OUTPUT.PUT_LINE('✅ Database sẵn sàng sử dụng!');
     DBMS_OUTPUT.PUT_LINE('🎉 Ready for production!');
 END;
