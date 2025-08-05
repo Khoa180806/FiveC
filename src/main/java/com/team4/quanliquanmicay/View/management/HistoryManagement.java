@@ -679,6 +679,8 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         btnFilter.setText("LỌC");
         btnFilter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
+        jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+
         tblBills.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 

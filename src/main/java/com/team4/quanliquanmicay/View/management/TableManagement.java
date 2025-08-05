@@ -93,8 +93,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         pnlTable.setBackground(new java.awt.Color(204, 164, 133));
 
         jTabbedPane1.setBackground(new java.awt.Color(204, 164, 133));
-        jTabbedPane1.setForeground(new java.awt.Color(255, 255, 255));
-        jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 
         pnlNormalTable.setBackground(new java.awt.Color(255, 255, 255));
         pnlNormalTable.setPreferredSize(new java.awt.Dimension(1180, 479));

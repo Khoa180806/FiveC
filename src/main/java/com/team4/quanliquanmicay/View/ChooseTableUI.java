@@ -65,8 +65,6 @@ public class ChooseTableUI extends javax.swing.JFrame {
 
         jPanel5.setBackground(new java.awt.Color(204, 164, 133));
 
-        jTabbedPane1.setBackground(new java.awt.Color(204, 164, 133));
-        jTabbedPane1.setForeground(new java.awt.Color(255, 255, 255));
         jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
