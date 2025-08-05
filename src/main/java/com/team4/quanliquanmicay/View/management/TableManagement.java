@@ -228,7 +228,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(cboTable_Status, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(txtTable_Number, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtAmount, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtAmount))
                 .addGap(31, 31, 31)
                 .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -500,27 +500,31 @@ System.exit(0);
     }
 
     // Hàm lấy màu đậm khi chọn
-    private Color getSelectedColorByStatus(int status) {
+    private Color getBaseColorByStatus(int status) {
         switch (status) {
-            case 0: // Trống
-                return Color.decode("#616161"); // Xám đậm hơn
-            case 1: // Hoạt động
-                return Color.decode("#186a3b"); // Xanh đậm hơn
-            case 2: // Ngưng phục vụ
-                return Color.decode("#757575"); // Xám đậm khi chọn
-            default:
-                return Color.GRAY;
-        }
-    }
-
-    // Thêm vào class:
-    private Color getHoverColorByStatus(int status) {
-        switch (status) {
-            case 0: return Color.decode("#616161"); // Xám đậm
-            case 1: return Color.decode("#196f3d"); // Xanh đậm
-            case 2: return Color.decode("#bdbdbd"); // Xám đậm hơn xám trắng
+            case 0: return Color.decode("#A8E6A1"); // Trống
+            case 1: return Color.decode("#FFB347"); // Đang phục vụ
+            case 2: return Color.decode("#D3D3D3"); // Ngưng hoạt động
             default: return Color.GRAY;
         }
+    }
+    private Color brightenColor(Color color, float factor) {
+        int r = Math.min(255, (int)(color.getRed() + (255 - color.getRed()) * factor));
+        int g = Math.min(255, (int)(color.getGreen() + (255 - color.getGreen()) * factor));
+        int b = Math.min(255, (int)(color.getBlue() + (255 - color.getBlue()) * factor));
+        return new Color(r, g, b);
+    }
+    private Color darkenColor(Color color, float factor) {
+        int r = Math.max(0, (int)(color.getRed() * (1 - factor)));
+        int g = Math.max(0, (int)(color.getGreen() * (1 - factor)));
+        int b = Math.max(0, (int)(color.getBlue() * (1 - factor)));
+        return new Color(r, g, b);
+    }
+    private Color getHoverColorByStatus(int status) {
+        return brightenColor(getBaseColorByStatus(status), 0.15f);
+    }
+    private Color getClickColorByStatus(int status) {
+        return darkenColor(getBaseColorByStatus(status), 0.20f);
     }
 
     // Sửa lại createButton
@@ -529,12 +533,13 @@ System.exit(0);
         btnTable.setContentAreaFilled(false); // Tắt nền mặc định
         btnTable.setOpaque(true);             // Cho phép vẽ nền custom
         btnTable.setText(String.format("Bàn #%d", tableNumber));
-        btnTable.setPreferredSize(new Dimension(120, 120));
-        btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
+        btnTable.setPreferredSize(new Dimension(90, 90)); // Kích thước 90x90
+        btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 
         btnTable.setOpaque(true);
         btnTable.setContentAreaFilled(true);
-        btnTable.setBorderPainted(false);
+        btnTable.setBorder(javax.swing.BorderFactory.createLineBorder(Color.WHITE, 2)); // Viền trắng dày 2
+        btnTable.setBorderPainted(true);
         btnTable.setFocusPainted(false);
         btnTable.setRolloverEnabled(false); // Tắt rollover mặc định
 
@@ -545,22 +550,15 @@ System.exit(0);
             btnTable.setBackground(new Color(120, 144, 156));
         } else {
             btnTable.setEnabled(true);
-            btnTable.setBorder(javax.swing.BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
-            btnTable.setBorderPainted(true);
             if (tableNumber == selectedTableNumber) {
                 btnTable.setBorder(new CompoundBorder(
                     new LineBorder(Color.PINK, 4, true),
-                    new LineBorder(Color.LIGHT_GRAY, 2)
+                    new LineBorder(Color.WHITE, 2)
                 ));
                 btnTable.setBorderPainted(true);
                 selectedButton = btnTable;
             } else {
-                switch (buttonStatus) {
-                    case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break;
-                    case 1: btnTable.setBackground(Color.decode("#27ae60")); break;
-                    case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break;
-                    default: btnTable.setBackground(new Color(55, 71, 79));
-                }
+                btnTable.setBackground(getBaseColorByStatus(buttonStatus));
             }
             btnTable.setActionCommand(String.valueOf(table.getTable_number()));
             btnTable.addActionListener((ActionEvent e) -> {
@@ -579,12 +577,7 @@ System.exit(0);
                 @Override
                 public void mouseExited(java.awt.event.MouseEvent evt) {
                     if (btnTable != selectedButton && btnTable.isEnabled()) {
-                        switch (buttonStatus) {
-                            case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break;
-                            case 1: btnTable.setBackground(Color.decode("#27ae60")); break;
-                            case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break;
-                            default: btnTable.setBackground(new Color(55, 71, 79));
-                        }
+                        btnTable.setBackground(getBaseColorByStatus(buttonStatus));
                         btnTable.repaint();
                     }
                 }
@@ -592,7 +585,7 @@ System.exit(0);
                 public void mousePressed(java.awt.event.MouseEvent evt) {
                     // Khi nhấn chuột, tạm thời đổi sang màu hồng
                     if (btnTable.isEnabled()) {
-                        btnTable.setBackground(Color.decode("#ff69b4")); // Màu hồng
+                        btnTable.setBackground(getClickColorByStatus(buttonStatus));
                         btnTable.repaint();
                     }
                 }
@@ -604,16 +597,11 @@ System.exit(0);
                             // Nếu là button đã chọn, trả về màu "selected"
                             TableForCustomer table = tableDAO.findById(Integer.parseInt(btnTable.getActionCommand()));
                             if (table != null) {
-                                btnTable.setBackground(getSelectedColorByStatus(table.getStatus()));
+                                btnTable.setBackground(getBaseColorByStatus(table.getStatus()));
                             }
                         } else {
                             // Nếu không phải button đã chọn, trả về màu trạng thái bình thường
-                            switch (buttonStatus) {
-                                case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break;
-                                case 1: btnTable.setBackground(Color.decode("#27ae60")); break;
-                                case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break;
-                                default: btnTable.setBackground(new Color(55, 71, 79));
-                            }
+                            btnTable.setBackground(getBaseColorByStatus(buttonStatus));
                         }
                         btnTable.repaint();
                     }
@@ -653,7 +641,7 @@ System.exit(0);
         // Đổi màu nền button được chọn thành màu đậm hơn theo status
         TableForCustomer table = tableDAO.findById(tableNumber);
         if (table != null) {
-            btnTable.setBackground(getSelectedColorByStatus(table.getStatus()));
+            btnTable.setBackground(getBaseColorByStatus(table.getStatus()));
         }
 
         selectedButton = btnTable;

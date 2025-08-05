@@ -257,7 +257,7 @@
                           <Group type="103" groupAlignment="1" max="-2" attributes="0">
                               <Component id="cboTable_Status" alignment="0" max="32767" attributes="0"/>
                               <Component id="txtTable_Number" alignment="0" max="32767" attributes="0"/>
-                              <Component id="txtAmount" min="-2" pref="125" max="-2" attributes="0"/>
+                              <Component id="txtAmount" alignment="1" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
                           <Component id="btnAdd" min="-2" pref="100" max="-2" attributes="0"/>
