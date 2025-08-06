@@ -11,6 +11,7 @@ import com.team4.quanliquanmicay.util.XAuth;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.Entity.UserAccount;
+import java.awt.Color;
 /**
  *
  * @author HP
@@ -25,6 +26,7 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
+        addInputListeners();
     }
 
     /**
@@ -259,10 +261,45 @@ public void close() {
 }
 @Override
 public void save() {
-    System.out.println("XAuth.user: " + XAuth.user);
+    // Màu gốc của các trường
+    Color defaultBg = Color.WHITE;
+    Color errorBg = new Color(255, 204, 204); // Màu đỏ nhạt
+
     String username = txtUsername.getText();
     String newpass = txtNewpass.getText();
     String confirm = txtConfirm.getText();
+
+    // Reset màu trước khi kiểm tra
+    txtUsername.setBackground(defaultBg);
+    txtNewpass.setBackground(defaultBg);
+    txtConfirm.setBackground(defaultBg);
+
+    // Kiểm tra trường trống và tạo thông báo chi tiết
+    StringBuilder missingFields = new StringBuilder();
+    boolean hasError = false;
+
+    if (username.trim().isEmpty()) {
+        missingFields.append("• Vui lòng điền thông tin tên tài khoản\n");
+        txtUsername.setBackground(errorBg);
+        hasError = true;
+    }
+    if (newpass.trim().isEmpty()) {
+        missingFields.append("• Vui lòng điền thông tin mật khẩu mới\n");
+        txtNewpass.setBackground(errorBg);
+        hasError = true;
+    }
+    if (confirm.trim().isEmpty()) {
+        missingFields.append("• Vui lòng điền thông tin xác nhận mật khẩu mới\n");
+        txtConfirm.setBackground(errorBg);
+        hasError = true;
+    }
+
+    if (hasError) {
+        String errorMessage = "Các trường thông tin bị thiếu:\n" + missingFields.toString();
+        XDialog.alert(errorMessage);
+        return;
+    }
+
     if (!newpass.equals(confirm)) {
         XDialog.alert("Xác nhận mật khẩu không đúng!");
         return;
@@ -289,5 +326,21 @@ public void save() {
             this.close();
         }
     }
+}
+
+private void addInputListeners() {
+    Color defaultBg = Color.WHITE;
+    java.awt.event.KeyAdapter resetColorListener = new java.awt.event.KeyAdapter() {
+        @Override
+        public void keyReleased(java.awt.event.KeyEvent e) {
+            javax.swing.JTextField field = (javax.swing.JTextField) e.getSource();
+            if (!field.getText().trim().isEmpty()) {
+                field.setBackground(defaultBg);
+            }
+        }
+    };
+    txtUsername.addKeyListener(resetColorListener);
+    txtNewpass.addKeyListener(resetColorListener);
+    txtConfirm.addKeyListener(resetColorListener);
 }
 }
