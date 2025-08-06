@@ -13,7 +13,6 @@ public class XDialog {
     public static void alert(String message){
         alert(null, message, "Thông báo!");
     }
-    
     /**
      * Hiển thị thông báo với title tùy chỉnh
      */

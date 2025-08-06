@@ -58,6 +58,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             }
         });
         fillUnitsByCategory();
+        createCategoryTabs(); // Tạo tabpanel cho từng loại món
         fillToTable();
         setupSearchFunctionality();
         setupImageSelection(); // Thêm setup cho chọn ảnh
@@ -169,6 +170,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jTabbedPane1.setForeground(new java.awt.Color(255, 255, 255));
         jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.RIGHT);
         jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jTabbedPane1.setPreferredSize(new java.awt.Dimension(700, 250)); // Kích thước cố định
 
         tableInfo.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         tableInfo.setModel(new javax.swing.table.DefaultTableModel(
@@ -202,7 +204,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             tableInfo.getColumnModel().getColumn(5).setResizable(false);
         }
 
-        jTabbedPane1.addTab("Mì Cay", jScrollPane3);
+        // Tab sẽ được tạo động trong createCategoryTabs()
 
         jPanel5.setBackground(new java.awt.Color(204, 164, 133));
         jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
@@ -474,12 +476,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     }//GEN-LAST:event_btnExitActionPerformed
 
     private void tableInfoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableInfoMouseClicked
-        int row = tableInfo.getSelectedRow();
-        if (row >= 0) {
-            String productId = (String) tableInfo.getValueAt(row, 0);
-            Product product = getProductFromCache(productId);
-            setForm(product);
-        }
+        // Method này không còn cần thiết vì mỗi table có mouse listener riêng
     }//GEN-LAST:event_tableInfoMouseClicked
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
@@ -734,12 +731,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
 
     @Override
     public void fillToTable() {
-        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
-        model.setRowCount(0); // clear table
-        
-        String selectedCateName = (String) cboCate.getSelectedItem();
-        
-        // Load cache if needed
+        // Load cache nếu cần
         if (!isProductCacheValid || productCache.isEmpty()) {
             productCache = productDAO.findAll();
             isProductCacheValid = true;
@@ -749,58 +741,83 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             isCategoryCacheValid = true;
         }
         
-        // Create category map for faster lookup
+        // Tạo map để tra cứu nhanh
         java.util.Map<String, String> categoryMap = new java.util.HashMap<>();
         for (Category cate : categoryCache) {
             categoryMap.put(cate.getCategory_id(), cate.getCategory_name());
         }
         
-        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
+        // Tạo map để nhóm sản phẩm theo category
+        java.util.Map<String, java.util.List<Product>> productsByCategory = new java.util.HashMap<>();
         
+        // Nhóm sản phẩm theo category
         for (Product p : productCache) {
-            // Lấy tên loại món từ map (faster than loop)
-            String cateName = categoryMap.get(p.getCategoryId());
-            
-            // Nếu chọn loại món, chỉ hiển thị sản phẩm thuộc loại đó
-            if (selectedCateName == null || selectedCateName.isEmpty() || selectedCateName.equals(cateName)) {
-                // Hiển thị giảm giá dạng phần trăm
-                String discountStr = "";
-                double discount = p.getDiscount();
-                if (discount > 0) {
-                    int percent = (int)Math.round(discount * 100);
-                    discountStr = percent + "%";
-                } else {
-                    discountStr = "0%";
-                }
-                
-                // Format giá tiền
-                String priceStr = vndFormat.format(p.getPrice());
-                
-                model.addRow(new Object[] {
-                    p.getProductId(),
-                    p.getProductName(),
-                    priceStr,
-                    discountStr,
-                    p.getUnit(),
-                    p.isAvailable() ? "Còn bán" : "Ngừng bán"
-                });
+            String categoryId = p.getCategoryId();
+            if (!productsByCategory.containsKey(categoryId)) {
+                productsByCategory.put(categoryId, new java.util.ArrayList<>());
             }
+            productsByCategory.get(categoryId).add(p);
         }
         
-        // Set column widths
-        setColumnWidths();
+        // Format cho tiền tệ
+        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
+        
+        // Cập nhật từng tab
+        for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
+            javax.swing.JScrollPane scrollPane = (javax.swing.JScrollPane) jTabbedPane1.getComponentAt(i);
+            javax.swing.JTable table = (javax.swing.JTable) scrollPane.getViewport().getView();
+            javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) table.getModel();
+            
+            // Clear table
+            model.setRowCount(0);
+            
+            // Lấy tên category của tab này
+            String tabTitle = jTabbedPane1.getTitleAt(i);
+            String categoryId = getCategoryIdByName(tabTitle);
+            
+            // Lấy danh sách sản phẩm của category này
+            java.util.List<Product> categoryProducts = productsByCategory.get(categoryId);
+            if (categoryProducts != null) {
+                for (Product p : categoryProducts) {
+                    // Hiển thị giảm giá dạng phần trăm
+                    String discountStr = "";
+                    double discount = p.getDiscount();
+                    if (discount > 0) {
+                        int percent = (int)Math.round(discount * 100);
+                        discountStr = percent + "%";
+                    } else {
+                        discountStr = "0%";
+                    }
+                    
+                    // Format giá tiền
+                    String priceStr = vndFormat.format(p.getPrice());
+                    
+                    model.addRow(new Object[] {
+                        p.getProductId(),
+                        p.getProductName(),
+                        priceStr,
+                        discountStr,
+                        p.getUnit(),
+                        p.isAvailable() ? "Còn bán" : "Ngừng bán"
+                    });
+                }
+            }
+            
+            // Set column widths cho table này
+            setColumnWidthsForTable(table);
+        }
     }
     
     /**
-     * ✅ OPTIMIZED: Set column widths for better performance
+     * ✅ OPTIMIZED: Set column widths for specific table
      */
-    private void setColumnWidths() {
-        tableInfo.getColumnModel().getColumn(0).setPreferredWidth(80);   // Mã món ăn
-        tableInfo.getColumnModel().getColumn(1).setPreferredWidth(220);  // Tên món ăn
-        tableInfo.getColumnModel().getColumn(2).setPreferredWidth(100);  // Giá
-        tableInfo.getColumnModel().getColumn(3).setPreferredWidth(60);   // Giảm giá
-        tableInfo.getColumnModel().getColumn(4).setPreferredWidth(60);   // Đơn vị
-        tableInfo.getColumnModel().getColumn(5).setPreferredWidth(80);   // Trạng thái
+    private void setColumnWidthsForTable(javax.swing.JTable table) {
+        table.getColumnModel().getColumn(0).setPreferredWidth(80);   // Mã món ăn
+        table.getColumnModel().getColumn(1).setPreferredWidth(220);  // Tên món ăn
+        table.getColumnModel().getColumn(2).setPreferredWidth(100);  // Giá
+        table.getColumnModel().getColumn(3).setPreferredWidth(60);   // Giảm giá
+        table.getColumnModel().getColumn(4).setPreferredWidth(60);   // Đơn vị
+        table.getColumnModel().getColumn(5).setPreferredWidth(80);   // Trạng thái
     }
 
     @Override
@@ -998,6 +1015,69 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         }
     }
 
+    // Thêm phương thức tạo tabpanel cho từng loại món
+    private void createCategoryTabs() {
+        // Xóa tab cũ
+        jTabbedPane1.removeAll();
+        
+        // Load categories nếu cần
+        if (!isCategoryCacheValid || categoryCache.isEmpty()) {
+            categoryCache = categoryDAO.findAll();
+            isCategoryCacheValid = true;
+        }
+        
+        // Tạo tab cho từng loại món
+        for (Category category : categoryCache) {
+            if (category.getIs_available() == 1) {
+                // Tạo panel cho tab
+                javax.swing.JPanel tabPanel = new javax.swing.JPanel();
+                tabPanel.setLayout(new java.awt.BorderLayout());
+                tabPanel.setBackground(new java.awt.Color(255, 255, 255));
+                
+                // Tạo table cho tab này
+                javax.swing.JTable categoryTable = new javax.swing.JTable();
+                categoryTable.setFont(new java.awt.Font("Segoe UI", 0, 14));
+                categoryTable.setModel(new javax.swing.table.DefaultTableModel(
+                    new Object [][] {},
+                    new String [] {
+                        "Mã món ăn", "Tên món ăn", "Giá", "Giảm giá", "Đơn vị", "Trạng thái"
+                    }
+                ) {
+                    boolean[] canEdit = new boolean [] {
+                        false, false, false, false, false, false
+                    };
+
+                    public boolean isCellEditable(int rowIndex, int columnIndex) {
+                        return canEdit [columnIndex];
+                    }
+                });
+                
+                // Thêm mouse listener cho table
+                categoryTable.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseClicked(java.awt.event.MouseEvent evt) {
+                        int row = categoryTable.getSelectedRow();
+                        if (row >= 0) {
+                            String productId = (String) categoryTable.getValueAt(row, 0);
+                            Product product = getProductFromCache(productId);
+                            setForm(product);
+                        }
+                    }
+                });
+                
+                // Tạo scroll pane cho table
+                javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(categoryTable);
+                scrollPane.setPreferredSize(new java.awt.Dimension(700, 250)); // Kích thước cố định
+                tabPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
+                
+                // Thêm tab vào tabbed pane
+                jTabbedPane1.addTab(category.getCategory_name(), scrollPane);
+            }
+        }
+        
+        // Set kích thước cố định cho tabbed pane
+        jTabbedPane1.setPreferredSize(new java.awt.Dimension(700, 250));
+    }
+
     private void setupSearchFunctionality() {
         txtSearch.setText("Tìm theo tên món...");
         txtSearch.setForeground(java.awt.Color.GRAY);
@@ -1035,12 +1115,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             return;
         }
         
-        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
-        model.setRowCount(0);
-        
-        String selectedCateName = (String) cboCate.getSelectedItem();
-        
-        // Load cache if needed
+        // Load cache nếu cần
         if (!isProductCacheValid || productCache.isEmpty()) {
             productCache = productDAO.findAll();
             isProductCacheValid = true;
@@ -1050,45 +1125,74 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             isCategoryCacheValid = true;
         }
         
-        // Create category map for faster lookup
+        // Tạo map để tra cứu nhanh
         java.util.Map<String, String> categoryMap = new java.util.HashMap<>();
         for (Category cate : categoryCache) {
             categoryMap.put(cate.getCategory_id(), cate.getCategory_name());
         }
         
-        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
-        String lowerKeyword = keyword.toLowerCase();
+        // Tạo map để nhóm sản phẩm theo category
+        java.util.Map<String, java.util.List<Product>> productsByCategory = new java.util.HashMap<>();
         
+        // Nhóm sản phẩm theo category và lọc theo keyword
+        String lowerKeyword = keyword.toLowerCase();
         for (Product p : productCache) {
-            // Lấy tên loại món từ map (faster than loop)
-            String cateName = categoryMap.get(p.getCategoryId());
-            
-            // Lọc theo loại món và tên món
-            if ((selectedCateName == null || selectedCateName.isEmpty() || selectedCateName.equals(cateName))
-                && p.getProductName() != null && p.getProductName().toLowerCase().contains(lowerKeyword)) {
-                
-                String discountStr = "";
-                double discount = p.getDiscount();
-                if (discount > 0) {
-                    int percent = (int)Math.round(discount * 100);
-                    discountStr = percent + "%";
-                } else {
-                    discountStr = "0%";
+            if (p.getProductName() != null && p.getProductName().toLowerCase().contains(lowerKeyword)) {
+                String categoryId = p.getCategoryId();
+                if (!productsByCategory.containsKey(categoryId)) {
+                    productsByCategory.put(categoryId, new java.util.ArrayList<>());
                 }
-                
-                String priceStr = vndFormat.format(p.getPrice());
-                model.addRow(new Object[] {
-                    p.getProductId(),
-                    p.getProductName(),
-                    priceStr,
-                    discountStr,
-                    p.getUnit(),
-                    p.isAvailable() ? "Còn bán" : "Ngừng bán"
-                });
+                productsByCategory.get(categoryId).add(p);
             }
         }
         
-        setColumnWidths();
+        // Format cho tiền tệ
+        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
+        
+        // Cập nhật từng tab
+        for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
+            javax.swing.JScrollPane scrollPane = (javax.swing.JScrollPane) jTabbedPane1.getComponentAt(i);
+            javax.swing.JTable table = (javax.swing.JTable) scrollPane.getViewport().getView();
+            javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) table.getModel();
+            
+            // Clear table
+            model.setRowCount(0);
+            
+            // Lấy tên category của tab này
+            String tabTitle = jTabbedPane1.getTitleAt(i);
+            String categoryId = getCategoryIdByName(tabTitle);
+            
+            // Lấy danh sách sản phẩm đã lọc của category này
+            java.util.List<Product> categoryProducts = productsByCategory.get(categoryId);
+            if (categoryProducts != null) {
+                for (Product p : categoryProducts) {
+                    // Hiển thị giảm giá dạng phần trăm
+                    String discountStr = "";
+                    double discount = p.getDiscount();
+                    if (discount > 0) {
+                        int percent = (int)Math.round(discount * 100);
+                        discountStr = percent + "%";
+                    } else {
+                        discountStr = "0%";
+                    }
+                    
+                    // Format giá tiền
+                    String priceStr = vndFormat.format(p.getPrice());
+                    
+                    model.addRow(new Object[] {
+                        p.getProductId(),
+                        p.getProductName(),
+                        priceStr,
+                        discountStr,
+                        p.getUnit(),
+                        p.isAvailable() ? "Còn bán" : "Ngừng bán"
+                    });
+                }
+            }
+            
+            // Set column widths cho table này
+            setColumnWidthsForTable(table);
+        }
     }
 
     // ====== SETUP CHỌN ẢNH SẢN PHẨM ======
