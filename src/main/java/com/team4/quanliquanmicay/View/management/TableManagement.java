@@ -567,6 +567,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         
         Color originalColor = button.getBackground();
         
+        // Sử dụng ButtonModel để xử lý hiệu ứng pressed
         button.getModel().addChangeListener(e -> {
             ButtonModel model = button.getModel();
             if (model.isPressed()) {
@@ -575,9 +576,12 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
                 button.setBackground(originalColor); // trở lại màu gốc
             }
         });
+        
+        // Áp dụng hiệu ứng hover từ XTheme
+        XTheme.applyHoverEffect(button, originalColor);
     }
 
-    // Sửa lại createButton để giữ màu nền nhưng tắt hiệu ứng mặc định
+    // Sửa lại createButton để sử dụng hiệu ứng hover từ XTheme
     private JButton createButton(int tableNumber, TableForCustomer table) {
         JButton btnTable = new JButton();
         
@@ -632,7 +636,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
             final Color originalButtonColor = getBaseColorByStatus(buttonStatus);
             final Color selectedButtonColor = darkenColor(originalButtonColor, 0.20f);
 
-            // Sử dụng ButtonModel để xử lý hiệu ứng
+            // Sử dụng ButtonModel để xử lý hiệu ứng pressed (màu PINK)
             btnTable.getModel().addChangeListener(e -> {
                 ButtonModel model = btnTable.getModel();
                 
@@ -643,9 +647,6 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
                 if (model.isPressed()) {
                     // Khi bấm giữ - đổi thành màu PINK
                     btnTable.setBackground(Color.PINK);
-                } else if (model.isRollover()) {
-                    // Khi hover - làm sáng 15%
-                    btnTable.setBackground(getHoverColorByStatus(buttonStatus));
                 } else {
                     // Khi thả chuột - trở về màu ban đầu
                     if (btnTable == selectedButton) {
@@ -658,30 +659,8 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
                 }
             });
 
-            // Thêm MouseListener chỉ để xử lý hover (vì ButtonModel không xử lý hover tốt)
-            btnTable.addMouseListener(new java.awt.event.MouseAdapter() {
-                @Override
-                public void mouseEntered(java.awt.event.MouseEvent evt) {
-                    if (btnTable.isEnabled() && !isProcessingSelection && !btnTable.getModel().isPressed()) {
-                        // Hover: làm sáng 15% so với màu gốc
-                        btnTable.setBackground(getHoverColorByStatus(buttonStatus));
-                        btnTable.repaint();
-                    }
-                }
-                @Override
-                public void mouseExited(java.awt.event.MouseEvent evt) {
-                    if (btnTable.isEnabled() && !isProcessingSelection && !btnTable.getModel().isPressed()) {
-                        if (btnTable == selectedButton) {
-                            // Nếu là button đã chọn thì về màu đậm hơn 20%
-                            btnTable.setBackground(selectedButtonColor);
-                        } else {
-                            // Nếu không phải button đã chọn thì về màu gốc
-                            btnTable.setBackground(originalButtonColor);
-                        }
-                        btnTable.repaint();
-                    }
-                }
-            });
+            // Áp dụng hiệu ứng hover từ XTheme cho button bàn
+            XTheme.applyHoverEffect(btnTable, originalButtonColor);
         }
         return btnTable;
     }
