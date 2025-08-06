@@ -77,6 +77,10 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                 
                 // ✅ SETUP: Periodic size enforcement timer
                 setupSizeEnforcementTimer();
+                
+                // ✅ FIX: Immediately enforce table size and column widths
+                enforceTableSize();
+                setColumnWidths();
             }
         });
     }
@@ -133,8 +137,17 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                     
                     edit();
                     
-                    // ✅ PROTECT: Enforce table size after edit
-                    javax.swing.SwingUtilities.invokeLater(() -> enforceTableSize());
+                    // ✅ PROTECT: Enforce table size after edit with multiple attempts
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+                        enforceTableSize();
+                        // Double-check after a short delay
+                        javax.swing.Timer delayTimer = new javax.swing.Timer(100, e -> {
+                            enforceTableSize();
+                            ((javax.swing.Timer)e.getSource()).stop();
+                        });
+                        delayTimer.setRepeats(false);
+                        delayTimer.start();
+                    });
                 }
             }
         });
@@ -461,7 +474,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                                     .addComponent(jLabel6)
                                     .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel12)
                             .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel5Layout.createSequentialGroup()
@@ -510,17 +523,19 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1364, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1364, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -800,7 +815,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                     emp.getUsername(), // Tài khoản
                     emp.getPass(), // Mật khẩu
                     emp.getFullName(), // Họ và tên
-                    emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "N/A", // Giới tính
+                    getGenderDisplayText(emp.getGender()), // Giới tính
                     emp.getPhone_number(), // SĐT
                     emp.getEmail(), // Email
                     emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động", // Trạng thái
@@ -811,6 +826,14 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             }
 
             System.out.println("Đã load " + employees.size() + " nhân viên lên bảng");
+            
+            // ✅ FIX: Re-apply column widths after filling data
+            setColumnWidths();
+            
+            // ✅ FIX: Ensure table size is maintained
+            if (frozenTableSize != null) {
+                enforceTableSize();
+            }
 
         } catch (Exception e) {
             XDialog.alert("Lỗi khi load dữ liệu: " + e.getMessage());
@@ -887,16 +910,27 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
      */
     private void setColumnWidths() {
         try {
-            tableInfo.getColumnModel().getColumn(0).setPreferredWidth(120);  // Mã NV
-            tableInfo.getColumnModel().getColumn(1).setPreferredWidth(100); // Tài khoản
-            tableInfo.getColumnModel().getColumn(2).setPreferredWidth(80);  // Mật khẩu
-            tableInfo.getColumnModel().getColumn(3).setPreferredWidth(150); // Họ tên
-            tableInfo.getColumnModel().getColumn(4).setPreferredWidth(100);  // Giới tính
-            tableInfo.getColumnModel().getColumn(5).setPreferredWidth(100); // SĐT
-            tableInfo.getColumnModel().getColumn(6).setPreferredWidth(110); // Email
-            tableInfo.getColumnModel().getColumn(7).setPreferredWidth(100); // Trạng thái
-            tableInfo.getColumnModel().getColumn(8).setPreferredWidth(70);  // Vai trò
-            tableInfo.getColumnModel().getColumn(9).setPreferredWidth(130); // Ngày tạo
+            // ✅ FIX: Tăng độ rộng tất cả các cột để đảm bảo hiển thị đầy đủ
+            tableInfo.getColumnModel().getColumn(0).setPreferredWidth(150);  // Mã NV
+            tableInfo.getColumnModel().getColumn(1).setPreferredWidth(120);  // Tài khoản
+            tableInfo.getColumnModel().getColumn(2).setPreferredWidth(100);  // Mật khẩu
+            tableInfo.getColumnModel().getColumn(3).setPreferredWidth(180);  // Họ tên
+            tableInfo.getColumnModel().getColumn(4).setPreferredWidth(120);  // Giới tính
+            tableInfo.getColumnModel().getColumn(5).setPreferredWidth(120);  // SĐT
+            tableInfo.getColumnModel().getColumn(6).setPreferredWidth(250);  // Email - Tăng độ rộng lớn hơn
+            tableInfo.getColumnModel().getColumn(7).setPreferredWidth(120);  // Trạng thái
+            tableInfo.getColumnModel().getColumn(8).setPreferredWidth(80);  // Vai trò
+            tableInfo.getColumnModel().getColumn(9).setPreferredWidth(120);  // Ngày tạo
+            
+            // ✅ FIX: Đảm bảo table không tự động resize
+            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+            
+            // ✅ FIX: Set minimum width cho từng cột để tránh bị cắt
+            for (int i = 0; i < tableInfo.getColumnCount(); i++) {
+                tableInfo.getColumnModel().getColumn(i).setMinWidth(80);
+            }
+            
+            System.out.println("✅ Column widths set successfully");
         } catch (Exception e) {
             System.err.println("Lỗi set column width: " + e.getMessage());
         }
@@ -1175,7 +1209,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         System.out.println("Full Name: " + employee.getFullName());
         System.out.println("Email: " + employee.getEmail());
         System.out.println("Phone: " + employee.getPhone_number());
-        System.out.println("Gender: " + (employee.getGender() == 1 ? "Nam" : "Nữ"));
+        System.out.println("Gender: " + (employee.getGender() != null ? (employee.getGender() == 1 ? "Nam" : (employee.getGender() == 0 ? "Nữ" : "N/A")) : "N/A"));
         System.out.println("Role: " + employee.getRole_id());
         System.out.println("Time: " + new java.util.Date());
         System.out.println("========================");
@@ -1185,6 +1219,31 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
      * ✅ OPTIMIZED: Utility methods
      */
     private boolean isBlank(String str) { return str == null || str.trim().isEmpty(); }
+    
+    /**
+     * ✅ HELPER: Convert gender value to display text
+     */
+    private String getGenderDisplayText(Integer gender) {
+        if (gender == null) return "N/A";
+        return gender == 1 ? "Nam" : (gender == 0 ? "Nữ" : "N/A");
+    }
+    
+    /**
+     * ✅ HELPER: Set gender checkboxes based on gender value
+     */
+    private void setGenderCheckboxes(Integer gender) {
+        if (gender == null) {
+            groupGioiTinh.clearSelection();
+        } else if (gender == 1) {
+            chkMale.setSelected(true);
+            chkFemale.setSelected(false);
+        } else if (gender == 0) {
+            chkMale.setSelected(false);
+            chkFemale.setSelected(true);
+        } else {
+            groupGioiTinh.clearSelection();
+        }
+    }
     
     private boolean isFormEmpty() {
         return isBlank(txtIdEmployee.getText()) && isBlank(txtNameAccount.getText()) &&
@@ -1415,6 +1474,14 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         for (UserAccount emp : employeeCache) {
             model.addRow(createRowData(emp));
         }
+        
+        // ✅ FIX: Re-apply column widths after populating data
+        setColumnWidths();
+        
+        // ✅ FIX: Ensure table size is maintained
+        if (frozenTableSize != null) {
+            enforceTableSize();
+        }
     }
 
     /**
@@ -1451,7 +1518,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             emp.getUsername(),
             emp.getPass(),
             emp.getFullName(),
-            emp.getGender() != null ? (emp.getGender() == 1 ? "Nam" : "Nữ") : "N/A",
+            getGenderDisplayText(emp.getGender()),
             emp.getPhone_number(),
             emp.getEmail(),
             emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động",
@@ -2242,9 +2309,15 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 
             // Gender handling - optimized
             if (entity.getGender() != null) {
-                boolean isMale = entity.getGender() == 1;
-                chkMale.setSelected(isMale);
-                chkFemale.setSelected(!isMale);
+                if (entity.getGender() == 1) {
+                    chkMale.setSelected(true);
+                    chkFemale.setSelected(false);
+                } else if (entity.getGender() == 0) {
+                    chkMale.setSelected(false);
+                    chkFemale.setSelected(true);
+                } else {
+                    groupGioiTinh.clearSelection();
+                }
             } else {
                 groupGioiTinh.clearSelection();
             }
@@ -2415,13 +2488,17 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         try {
             layoutFrozen = true;
             
-            // ✅ DISABLE: Auto-resize capabilities
-            if (frozenTableSize != null) {
-                jScrollPane1.setPreferredSize(frozenTableSize);
-                jScrollPane1.setMinimumSize(frozenTableSize);
-                jScrollPane1.setMaximumSize(frozenTableSize);
-                tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+            // ✅ INITIALIZE: Set frozen table size if not already set
+            if (frozenTableSize == null) {
+                frozenTableSize = new java.awt.Dimension(jScrollPane1.getSize());
+                System.out.println("📐 Captured table size for freezing: " + frozenTableSize);
             }
+            
+            // ✅ DISABLE: Auto-resize capabilities
+            jScrollPane1.setPreferredSize(frozenTableSize);
+            jScrollPane1.setMinimumSize(frozenTableSize);
+            jScrollPane1.setMaximumSize(frozenTableSize);
+            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
             
             // ✅ LOCK: Window resize
             setResizable(false);
@@ -2435,16 +2512,32 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
      * ✅ ENFORCE: Force table to stay at frozen size
      */
     private void enforceTableSize() {
-        if (frozenTableSize != null && !layoutFrozen) {
+        if (frozenTableSize != null) {
             javax.swing.SwingUtilities.invokeLater(() -> {
                 try {
-                    if (!jScrollPane1.getSize().equals(frozenTableSize)) {
+                    java.awt.Dimension currentSize = jScrollPane1.getSize();
+                    if (!currentSize.equals(frozenTableSize)) {
+                        // ✅ FIX: Enforce table size more aggressively
                         jScrollPane1.setSize(frozenTableSize);
                         jScrollPane1.setPreferredSize(frozenTableSize);
-                        System.out.println("🔒 Enforced table size: " + frozenTableSize);
+                        jScrollPane1.setMinimumSize(frozenTableSize);
+                        jScrollPane1.setMaximumSize(frozenTableSize);
+                        
+                        // ✅ FIX: Ensure table itself maintains size
+                        tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+                        tableInfo.setPreferredSize(new java.awt.Dimension(frozenTableSize.width - 20, frozenTableSize.height - 20));
+                        
+                        // ✅ FIX: Re-apply column widths to ensure they don't get reset
+                        setColumnWidths();
+                        
+                        // ✅ FIX: Force layout update
+                        jScrollPane1.validate();
+                        jScrollPane1.repaint();
+                        
+                        System.out.println("🔒 Enforced table size: " + frozenTableSize + " (was: " + currentSize + ")");
                     }
                 } catch (Exception e) {
-                    // Silent fail
+                    System.err.println("Error enforcing table size: " + e.getMessage());
                 }
             });
         }
@@ -2634,6 +2727,14 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                             model.addRow(createRowData(emp));
                         }
                     }
+                }
+                
+                // ✅ FIX: Re-apply column widths after search filtering
+                setColumnWidths();
+                
+                // ✅ FIX: Ensure table size is maintained
+                if (frozenTableSize != null) {
+                    enforceTableSize();
                 }
                 
             } catch (Exception e) {
