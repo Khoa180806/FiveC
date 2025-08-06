@@ -356,36 +356,24 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
         btnUpdate.setBackground(new java.awt.Color(255, 231, 153));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
-<<<<<<< Updated upstream
-        btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-=======
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnUpdateActionPerformed(evt);
             }
         });
->>>>>>> Stashed changes
 
         btnRemove.setBackground(new java.awt.Color(255, 179, 179));
         btnRemove.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-<<<<<<< Updated upstream
-        btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
-        btnRemove.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-=======
         btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
         btnRemove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRemoveActionPerformed(evt);
             }
         });
->>>>>>> Stashed changes
 
         btnClear.setBackground(new java.awt.Color(164, 216, 255));
         btnClear.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
-<<<<<<< Updated upstream
-        btnClear.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-=======
         btnClear.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnClearActionPerformed(evt);
@@ -398,7 +386,6 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
                 btnExitActionPerformed(evt);
             }
         });
->>>>>>> Stashed changes
 
         javax.swing.GroupLayout pnlFeatureLayout = new javax.swing.GroupLayout(pnlFeature);
         pnlFeature.setLayout(pnlFeatureLayout);
