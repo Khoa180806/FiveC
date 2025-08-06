@@ -49,6 +49,59 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        // Debug: Check if buttons are created and enabled
+        System.out.println("Button Save exists: " + (btnSave != null));
+        System.out.println("Button Update exists: " + (btnUpdate != null));
+        System.out.println("Button Clear exists: " + (btnClear != null));
+        System.out.println("Button Exit exists: " + (btnExit != null));
+        
+        System.out.println("Button Save enabled: " + btnSave.isEnabled());
+        System.out.println("Button Update enabled: " + btnUpdate.isEnabled());
+        System.out.println("Button Clear enabled: " + btnClear.isEnabled());
+        System.out.println("Button Exit enabled: " + btnExit.isEnabled());
+        
+        // Debug: Check if action listeners are attached
+        System.out.println("Button Save action listeners: " + btnSave.getActionListeners().length);
+        System.out.println("Button Update action listeners: " + btnUpdate.getActionListeners().length);
+        System.out.println("Button Clear action listeners: " + btnClear.getActionListeners().length);
+        System.out.println("Button Exit action listeners: " + btnExit.getActionListeners().length);
+        
+        // Test: Manually add action listeners to see if they work
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                System.out.println("MANUAL Button Save clicked!");
+                create();
+            }
+        });
+        
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                System.out.println("MANUAL Button Update clicked!");
+                update();
+            }
+        });
+        
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                System.out.println("MANUAL Button Clear clicked!");
+                clear();
+            }
+        });
+        
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                System.out.println("MANUAL Button Exit clicked!");
+                dispose();
+            }
+        });
+        
+        System.out.println("Manual action listeners added. Button Save action listeners: " + btnSave.getActionListeners().length);
+        
         fillCategories(); // Gọi fillCategories khi khởi tạo dialog
         fillStatus(); // Gọi duy nhất ở đây
         cboCate.addActionListener(new java.awt.event.ActionListener() {
@@ -70,6 +123,12 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 btnUpdate.setEnabled(true);
             }
         });
+        
+        // Debug: Kiểm tra cache đã được load chưa
+        System.out.println("Product cache size: " + productCache.size());
+        System.out.println("Category cache size: " + categoryCache.size());
+        System.out.println("Product cache valid: " + isProductCacheValid);
+        System.out.println("Category cache valid: " + isCategoryCacheValid);
     }
 
     /**
@@ -171,7 +230,6 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jTabbedPane1.setForeground(new java.awt.Color(255, 255, 255));
         jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.RIGHT);
         jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jTabbedPane1.setPreferredSize(new java.awt.Dimension(700, 250)); // Kích thước cố định
 
         tableInfo.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         tableInfo.setModel(new javax.swing.table.DefaultTableModel(
@@ -205,7 +263,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             tableInfo.getColumnModel().getColumn(5).setResizable(false);
         }
 
-        // Tab sẽ được tạo động trong createCategoryTabs()
+        jTabbedPane1.addTab("Mì Cay", jScrollPane3);
 
         jPanel5.setBackground(new java.awt.Color(204, 164, 133));
         jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
@@ -470,6 +528,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     }//GEN-LAST:event_txtPriceActionPerformed
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+        System.out.println("Button Exit clicked!");
         // Xác nhận trước khi thoát
         if (XDialog.confirm("Bạn có chắc chắn muốn thoát không?", "Xác nhận thoát")) {
             this.dispose();
@@ -480,20 +539,22 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         // Method này không còn cần thiết vì mỗi table có mouse listener riêng
     }//GEN-LAST:event_tableInfoMouseClicked
 
-    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        // TODO add your handling code here:
-        create();
-    }//GEN-LAST:event_btnSaveActionPerformed
-
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        System.out.println("Button Update clicked!");
         // Thêm xác nhận khi cập nhật
         if (!XDialog.confirm("Bạn có chắc chắn muốn cập nhật sản phẩm này?", "Xác nhận cập nhật")) return;
         update();
     }//GEN-LAST:event_btnUpdateActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
-        // TODO add your handling code here:
+        System.out.println("Button Clear clicked!");
+        clear();
     }//GEN-LAST:event_btnClearActionPerformed
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        System.out.println("Button Save clicked!");
+        create();
+    }//GEN-LAST:event_btnSaveActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1127,9 +1188,18 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 debounceSearch(); 
             }
         });
+        
+        // Thêm ActionListener cho txtSearch để có thể search ngay khi nhấn Enter
+        txtSearch.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                performSearch();
+            }
+        });
     }
 
     private void debounceSearch() {
+        System.out.println("Debouncing search...");
         // Reset timer mỗi khi có thay đổi
         searchDebounceTimer.restart();
         
@@ -1141,10 +1211,13 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     }
 
     private void performSearch() {
+        System.out.println("Performing search...");
         String searchText = txtSearch.getText().trim();
+        System.out.println("Search text: " + searchText);
         
         // Bỏ qua nếu là placeholder text
         if (searchText.isEmpty() || searchText.equals("Tìm theo tên món...")) {
+            System.out.println("Empty search, loading all products");
             loadAllProducts(); // Load lại tất cả sản phẩm
             return;
         }
@@ -1166,6 +1239,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 }
             }
         }
+
+        System.out.println("Found " + allResults.size() + " results");
 
         // Hiển thị kết quả
         if (!allResults.isEmpty()) {

@@ -623,7 +623,7 @@ public class XTheme {
         Color hoverColor = createHoverColor(bgColor);
         Color pressedColor = createPressedColor(bgColor);
         
-        // Xóa các listener cũ nếu có
+        // Xóa các mouse listener cũ nếu có (chỉ xóa mouse listener, không xóa action listener)
         for (java.awt.event.MouseListener listener : button.getMouseListeners()) {
             button.removeMouseListener(listener);
         }
@@ -692,15 +692,15 @@ public class XTheme {
             // Tùy chỉnh cho các button đặc biệt
             UIManager.put("Button.font", new Font("Segoe UI", Font.BOLD, 12));
             
-            // Áp dụng hiệu ứng hover cho tất cả button hiện có
-            SwingUtilities.invokeLater(() -> {
-                for (Window window : Window.getWindows()) {
-                    applyHoverEffectToAllButtons(window);
-                }
-            });
+            // TẠM THỜI VÔ HIỆU HÓA HOVER EFFECT ĐỂ TEST
+            // SwingUtilities.invokeLater(() -> {
+            //     for (Window window : Window.getWindows()) {
+            //         applyHoverEffectToAllButtons(window);
+            //     }
+            // });
             
             System.out.println("🎨 Đã áp dụng thành công Modern Mì Cay Theme với màu đỏ #86272B và be #CCA485");
-            System.out.println("✨ Hiệu ứng hover và click đã được áp dụng cho tất cả button");
+            System.out.println("⚠️ Hover effect tạm thời bị vô hiệu hóa để test button functionality");
             
         } catch (Exception e) {
             System.err.println("⚠️ Lỗi khi áp dụng theme bổ sung: " + e.getMessage());
