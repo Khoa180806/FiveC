@@ -28,7 +28,7 @@ public class XDialog {
         showDialogWithParent(parent, () -> {
             XTheme.customizeDialogs();
             JOptionPane optionPane = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE);
-            optionPane.setIcon(createSimpleIcon("info"));
+            optionPane.setIcon(createDialogIcon("info"));
             JDialog dialog = optionPane.createDialog(parent, title);
             dialog.setVisible(true);
         });
@@ -58,7 +58,7 @@ public class XDialog {
             XTheme.customizeDialogs();
             JOptionPane optionPane = new JOptionPane(message, JOptionPane.QUESTION_MESSAGE, 
                 JOptionPane.YES_NO_OPTION);
-            optionPane.setIcon(createSimpleIcon("question"));
+            optionPane.setIcon(createDialogIcon("question"));
             JDialog dialog = optionPane.createDialog(parent, title);
             dialog.setVisible(true);
             result[0] = (optionPane.getValue() != null && 
@@ -92,7 +92,7 @@ public class XDialog {
             XTheme.customizeDialogs();
             JOptionPane optionPane = new JOptionPane(message, JOptionPane.QUESTION_MESSAGE, 
                 JOptionPane.OK_CANCEL_OPTION);
-            optionPane.setIcon(createSimpleIcon("question"));
+            optionPane.setIcon(createDialogIcon("question"));
             optionPane.setWantsInput(true);
             JDialog dialog = optionPane.createDialog(parent, title);
             dialog.setVisible(true);
@@ -111,7 +111,7 @@ public class XDialog {
         showDialogWithParent(parent, () -> {
             XTheme.customizeDialogs();
             JOptionPane optionPane = new JOptionPane(message, JOptionPane.WARNING_MESSAGE);
-            optionPane.setIcon(createSimpleIcon("warning"));
+            optionPane.setIcon(createDialogIcon("warning"));
             JDialog dialog = optionPane.createDialog(parent, title);
             dialog.setVisible(true);
         });
@@ -132,7 +132,7 @@ public class XDialog {
         showDialogWithParent(parent, () -> {
             XTheme.customizeDialogs();
             JOptionPane optionPane = new JOptionPane(message, JOptionPane.ERROR_MESSAGE);
-            optionPane.setIcon(createSimpleIcon("error"));
+            optionPane.setIcon(createDialogIcon("error"));
             JDialog dialog = optionPane.createDialog(parent, title);
             dialog.setVisible(true);
         });
@@ -153,7 +153,7 @@ public class XDialog {
         showDialogWithParent(parent, () -> {
             XTheme.customizeDialogs();
             JOptionPane optionPane = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE);
-            optionPane.setIcon(createSimpleIcon("success"));
+            optionPane.setIcon(createDialogIcon("success"));
             JDialog dialog = optionPane.createDialog(parent, title);
             dialog.setVisible(true);
         });
@@ -176,7 +176,7 @@ public class XDialog {
         showDialogWithParent(parent, () -> {
             XTheme.customizeDialogs();
             JOptionPane optionPane = new JOptionPane(message, JOptionPane.QUESTION_MESSAGE, 
-                JOptionPane.OK_CANCEL_OPTION, createSimpleIcon("question"), options, 
+                JOptionPane.OK_CANCEL_OPTION, createDialogIcon("question"), options, 
                 options.length > 0 ? options[0] : null);
             JDialog dialog = optionPane.createDialog(parent, title);
             dialog.setVisible(true);
@@ -382,7 +382,7 @@ public class XDialog {
                 break;
             case "error":
                 iconColor = new Color(220, 53, 69);
-                symbol = "✖";
+                symbol = "X";
                 break;
             case "success":
                 iconColor = new Color(40, 167, 69);
@@ -449,7 +449,7 @@ public class XDialog {
                 break;
             case "error":
                 iconColor = new Color(220, 53, 69);
-                symbol = "✖";
+                symbol = "X";
                 break;
             case "success":
                 iconColor = new Color(40, 167, 69);

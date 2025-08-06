@@ -28,13 +28,18 @@ public class Login extends javax.swing.JFrame implements LoginController{
      */
     public Login() {
         this.setUndecorated(true);
+        
+        // Áp dụng XTheme trước khi khởi tạo components
         XTheme.applyFullTheme();
+        
         initComponents();
+        
         txtPassword.setEchoChar('*');
         // Set icon mắt mở với kích thước 20x20
         javax.swing.ImageIcon eyeOpenIcon = new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/iconEyeOpen.png"));
         java.awt.Image eyeOpenImg = eyeOpenIcon.getImage().getScaledInstance(30, 30, java.awt.Image.SCALE_SMOOTH);
         lblShowPassword.setIcon(new javax.swing.ImageIcon(eyeOpenImg));
+        
         this.open();
     }
 
@@ -342,41 +347,46 @@ public class Login extends javax.swing.JFrame implements LoginController{
     
     @Override
     public void login() {
-        String username = txtUsername.getText().trim();
-        String password = new String(txtPassword.getPassword());
-        
-        // Kiểm tra username có rỗng không
-        if (username.isEmpty()) {
-            XDialog.error("Vui lòng nhập tên đăng nhập!", "Lỗi đăng nhập");
-            txtUsername.requestFocus();
-            return;
+        try {
+            String username = txtUsername.getText().trim();
+            String password = new String(txtPassword.getPassword());
+            
+            // Kiểm tra username có rỗng không
+            if (username.isEmpty()) {
+                XDialog.error("Vui lòng nhập tên đăng nhập!", "Lỗi đăng nhập");
+                txtUsername.requestFocus();
+                return;
+            }
+            
+            // Kiểm tra password có rỗng không
+            if (password.isEmpty()) {
+                XDialog.error("Vui lòng nhập mật khẩu!", "Lỗi đăng nhập");
+                txtPassword.requestFocus();
+                return;
+            }
+            
+            UserDAO dao = new UserDAOImpl();
+            UserAccount user = dao.findByUsername(username);
+            
+            if (user == null) {
+                XDialog.error("Tên đăng nhập không tồn tại!", "Lỗi đăng nhập");
+                txtUsername.requestFocus();
+            } else if (!password.equals(user.getPass())) {
+                XDialog.error("Sai mật khẩu đăng nhập!", "Lỗi đăng nhập");
+                txtPassword.requestFocus();
+            } else if (!(user.getIs_enabled() == 0)) {
+                XDialog.warning("Tài khoản của bạn đang tạm dừng!", "Cảnh báo");
+            } else {
+                XAuth.user = user;
+                this.dispose();
+                new MainUI().setVisible(true);
+            }
+            password = null;
+            txtPassword.setText("");
+        } catch (Exception e) {
+            e.printStackTrace();
+            XDialog.error("Có lỗi xảy ra: " + e.getMessage(), "Lỗi");
         }
-        
-        // Kiểm tra password có rỗng không
-        if (password.isEmpty()) {
-            XDialog.error("Vui lòng nhập mật khẩu!", "Lỗi đăng nhập");
-            txtPassword.requestFocus();
-            return;
-        }
-        
-        UserDAO dao = new UserDAOImpl();
-        UserAccount user = dao.findByUsername(username);
-        
-        if (user == null) {
-            XDialog.error("Tên đăng nhập không tồn tại!", "Lỗi đăng nhập");
-            txtUsername.requestFocus();
-        } else if (!password.equals(user.getPass())) {
-            XDialog.error("Sai mật khẩu đăng nhập!", "Lỗi đăng nhập");
-            txtPassword.requestFocus();
-        } else if (!(user.getIs_enabled() == 0)) {
-            XDialog.warning("Tài khoản của bạn đang tạm dừng!", "Cảnh báo");
-        } else {
-            XAuth.user = user;
-            this.dispose();
-            new MainUI().setVisible(true);
-        }
-        password = null;
-        txtPassword.setText("");
     }
 
     @Override
