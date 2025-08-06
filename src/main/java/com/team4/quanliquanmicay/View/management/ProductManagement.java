@@ -12,8 +12,6 @@ import com.team4.quanliquanmicay.Entity.Category;
 import com.team4.quanliquanmicay.Impl.CategoryDAOImpl;
 import com.team4.quanliquanmicay.DAO.ProductDAO;
 import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
-import javax.swing.table.DefaultTableModel;
-import java.util.List;
 import static com.team4.quanliquanmicay.util.XValidation.isEmpty;
 import static com.team4.quanliquanmicay.util.XValidation.isNumber;
 import com.team4.quanliquanmicay.util.XDialog;
