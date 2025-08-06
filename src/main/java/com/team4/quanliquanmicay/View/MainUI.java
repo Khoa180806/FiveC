@@ -5,6 +5,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.*;
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -28,6 +30,7 @@ public class MainUI extends javax.swing.JFrame {
         
         setupCategoryManagementPopup();
         setupBillManagementPopup();
+        setupDateTimeDisplay();
     }
     
     /**
@@ -74,6 +77,23 @@ public class MainUI extends javax.swing.JFrame {
 
         popupQuanLyDanhMuc.add(itemLoaiMon);
         popupQuanLyDanhMuc.add(itemSanPham);
+        
+        // Thêm ActionListener cho menu item "Loại món ăn"
+        itemLoaiMon.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new com.team4.quanliquanmicay.View.management.CategoryManagement().setVisible(true);
+            }
+        });
+        
+        // Thêm ActionListener cho menu item "Sản phẩm"
+        itemSanPham.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new com.team4.quanliquanmicay.View.management.ProductManagement().setVisible(true);
+            }
+        });
+        
         btnCategoryManagement.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int width = btnCategoryManagement.getWidth();
@@ -145,6 +165,15 @@ public class MainUI extends javax.swing.JFrame {
         popupQuanLyHoaDon.add(itemHoaDon);
         popupQuanLyHoaDon.add(itemPhuongThucThanhToan);
         popupQuanLyHoaDon.add(itemLichSuThanhToan);
+        
+        // Thêm ActionListener cho menu item "Hóa đơn"
+        itemHoaDon.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new com.team4.quanliquanmicay.View.management.BillManagement().setVisible(true);
+            }
+        });
+        
         btnBillManagement.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int width = btnBillManagement.getWidth();
@@ -156,9 +185,38 @@ public class MainUI extends javax.swing.JFrame {
                 }
                 popupQuanLyHoaDon.show(btnBillManagement, 0, btnBillManagement.getHeight());
             }
-        });
+                });
     }
-
+    
+    /**
+     * Hàm thiết lập hiển thị ngày giờ
+     */
+    private void setupDateTimeDisplay() {
+        // Cập nhật thời gian ngay lập tức
+        updateDateTime();
+        
+        // Tạo timer để cập nhật thời gian mỗi giây
+        Timer timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateDateTime();
+            }
+        });
+        timer.start();
+    }
+    
+    /**
+     * Hàm cập nhật ngày giờ
+     */
+    private void updateDateTime() {
+        Date now = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+        
+        txtDay.setText(dateFormat.format(now));
+        txtTime.setText(timeFormat.format(now));
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -253,6 +311,11 @@ public class MainUI extends javax.swing.JFrame {
         jButton14.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Unlock.png"))); // NOI18N
         jButton14.setText("Đổi mật khẩu");
         jButton14.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        jButton14.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                new com.team4.quanliquanmicay.View.ChangePassword().setVisible(true);
+            }
+        });
 
         javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
@@ -379,6 +442,9 @@ public class MainUI extends javax.swing.JFrame {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btnTableManagementMouseEntered(evt);
             }
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                new com.team4.quanliquanmicay.View.management.TableManagement().setVisible(true);
+            }
         });
 
         btnUserManagement.setBackground(new java.awt.Color(134, 39, 43));
@@ -390,6 +456,9 @@ public class MainUI extends javax.swing.JFrame {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btnUserManagementMouseEntered(evt);
             }
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                new com.team4.quanliquanmicay.View.management.UserManagement().setVisible(true);
+            }
         });
 
         btnCustomerManagement.setBackground(new java.awt.Color(134, 39, 43));
@@ -400,6 +469,9 @@ public class MainUI extends javax.swing.JFrame {
         btnCustomerManagement.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btnCustomerManagementMouseEntered(evt);
+            }
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                new com.team4.quanliquanmicay.View.management.CustomerManagement().setVisible(true);
             }
         });
 
@@ -445,6 +517,11 @@ public class MainUI extends javax.swing.JFrame {
         jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Address book.png"))); // NOI18N
         jButton7.setText("CHỌN BÀN");
         jButton7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                new com.team4.quanliquanmicay.View.ChooseTableUI().setVisible(true);
+            }
+        });
 
         jButton9.setBackground(new java.awt.Color(167, 239, 163));
         jButton9.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -454,7 +531,7 @@ public class MainUI extends javax.swing.JFrame {
         jButton9.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         jButton9.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton9ActionPerformed(evt);
+                new com.team4.quanliquanmicay.View.PayUI().setVisible(true);
             }
         });
 

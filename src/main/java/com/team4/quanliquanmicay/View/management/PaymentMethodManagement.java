@@ -341,17 +341,12 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
 
         btnCreate.setBackground(new java.awt.Color(183, 239, 197));
         btnCreate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-<<<<<<< Updated upstream
-        btnCreate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
-        btnCreate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-=======
         btnCreate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Create.png"))); // NOI18N
         btnCreate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCreateActionPerformed(evt);
             }
         });
->>>>>>> Stashed changes
 
         btnUpdate.setBackground(new java.awt.Color(255, 231, 153));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -443,13 +438,6 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-<<<<<<< Updated upstream
-        btnExit.setBackground(new java.awt.Color(119, 50, 5));
-        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
-        btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-
-=======
->>>>>>> Stashed changes
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
