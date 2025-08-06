@@ -38,6 +38,9 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     // Biến để kiểm soát kích thước ảnh
     private java.awt.Dimension originalImageSize = null;
 
+    private javax.swing.Timer searchDebounceTimer;
+    private boolean lastSearchHadNoResult = false;
+
     /**
      * Creates new form MonAnJDialog
      */
@@ -1079,6 +1082,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     private void setupSearchFunctionality() {
         txtSearch.setText("Tìm theo tên món...");
         txtSearch.setForeground(java.awt.Color.GRAY);
+
         txtSearch.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -1087,109 +1091,145 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                     txtSearch.setForeground(java.awt.Color.BLACK);
                 }
             }
+
             @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
-                if (txtSearch.getText().trim().isEmpty()) {
+                if (txtSearch.getText().isEmpty()) {
                     txtSearch.setText("Tìm theo tên món...");
                     txtSearch.setForeground(java.awt.Color.GRAY);
-                    fillToTable();
                 }
             }
         });
+
+        // Khởi tạo timer với delay 2 giây
+        searchDebounceTimer = new javax.swing.Timer(2000, new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                performSearch();
+            }
+        });
+        searchDebounceTimer.setRepeats(false);
+
+        // Thêm DocumentListener để debounce
         txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { performSearch(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { 
+                debounceSearch(); 
+            }
+
             @Override
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { performSearch(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { 
+                debounceSearch(); 
+            }
+
             @Override
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { performSearch(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { 
+                debounceSearch(); 
+            }
         });
     }
 
+    private void debounceSearch() {
+        // Reset timer mỗi khi có thay đổi
+        searchDebounceTimer.restart();
+        
+        // Nếu đang gõ, ẩn thông báo "không tìm thấy" nếu có
+        if (lastSearchHadNoResult) {
+            lastSearchHadNoResult = false;
+            // Có thể thêm code để ẩn thông báo ở đây nếu cần
+        }
+    }
+
     private void performSearch() {
-        String keyword = txtSearch.getText().trim();
-        if (keyword.equals("Tìm theo tên món...") || keyword.isEmpty()) {
-            fillToTable();
+        String searchText = txtSearch.getText().trim();
+        
+        // Bỏ qua nếu là placeholder text
+        if (searchText.isEmpty() || searchText.equals("Tìm theo tên món...")) {
+            loadAllProducts(); // Load lại tất cả sản phẩm
             return;
         }
+
+        // Tìm kiếm trong tất cả các danh mục
+        java.util.List<com.team4.quanliquanmicay.Entity.Product> allResults = new java.util.ArrayList<>();
+        java.util.Set<String> foundCategories = new java.util.HashSet<>();
         
-        // Load cache nếu cần
-        if (!isProductCacheValid || productCache.isEmpty()) {
-            productCache = productDAO.findAll();
-            isProductCacheValid = true;
-        }
-        if (!isCategoryCacheValid || categoryCache.isEmpty()) {
-            categoryCache = categoryDAO.findAll();
-            isCategoryCacheValid = true;
-        }
-        
-        // Tạo map để tra cứu nhanh
-        java.util.Map<String, String> categoryMap = new java.util.HashMap<>();
-        for (Category cate : categoryCache) {
-            categoryMap.put(cate.getCategory_id(), cate.getCategory_name());
-        }
-        
-        // Tạo map để nhóm sản phẩm theo category
-        java.util.Map<String, java.util.List<Product>> productsByCategory = new java.util.HashMap<>();
-        
-        // Nhóm sản phẩm theo category và lọc theo keyword
-        String lowerKeyword = keyword.toLowerCase();
-        for (Product p : productCache) {
-            if (p.getProductName() != null && p.getProductName().toLowerCase().contains(lowerKeyword)) {
-                String categoryId = p.getCategoryId();
-                if (!productsByCategory.containsKey(categoryId)) {
-                    productsByCategory.put(categoryId, new java.util.ArrayList<>());
-                }
-                productsByCategory.get(categoryId).add(p);
-            }
-        }
-        
-        // Format cho tiền tệ
-        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
-        
-        // Cập nhật từng tab
-        for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
-            javax.swing.JScrollPane scrollPane = (javax.swing.JScrollPane) jTabbedPane1.getComponentAt(i);
-            javax.swing.JTable table = (javax.swing.JTable) scrollPane.getViewport().getView();
-            javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) table.getModel();
-            
-            // Clear table
-            model.setRowCount(0);
-            
-            // Lấy tên category của tab này
-            String tabTitle = jTabbedPane1.getTitleAt(i);
-            String categoryId = getCategoryIdByName(tabTitle);
-            
-            // Lấy danh sách sản phẩm đã lọc của category này
-            java.util.List<Product> categoryProducts = productsByCategory.get(categoryId);
-            if (categoryProducts != null) {
-                for (Product p : categoryProducts) {
-                    // Hiển thị giảm giá dạng phần trăm
-                    String discountStr = "";
-                    double discount = p.getDiscount();
-                    if (discount > 0) {
-                        int percent = (int)Math.round(discount * 100);
-                        discountStr = percent + "%";
-                    } else {
-                        discountStr = "0%";
+        // Tìm kiếm trong productCache thay vì gọi DAO
+        for (com.team4.quanliquanmicay.Entity.Product product : productCache) {
+            if (product.getProductName() != null && product.getProductName().toLowerCase().contains(searchText.toLowerCase())) {
+                allResults.add(product);
+                // Tìm tên category từ categoryId
+                for (com.team4.quanliquanmicay.Entity.Category category : categoryCache) {
+                    if (category.getCategory_id().equals(product.getCategoryId())) {
+                        foundCategories.add(category.getCategory_name());
+                        break;
                     }
-                    
-                    // Format giá tiền
-                    String priceStr = vndFormat.format(p.getPrice());
-                    
-                    model.addRow(new Object[] {
-                        p.getProductId(),
-                        p.getProductName(),
-                        priceStr,
-                        discountStr,
-                        p.getUnit(),
-                        p.isAvailable() ? "Còn bán" : "Ngừng bán"
-                    });
                 }
             }
-            
-            // Set column widths cho table này
-            setColumnWidthsForTable(table);
+        }
+
+        // Hiển thị kết quả
+        if (!allResults.isEmpty()) {
+            // Nếu chỉ có 1 danh mục có kết quả, chuyển sang tab đó
+            if (foundCategories.size() == 1) {
+                String categoryName = foundCategories.iterator().next();
+                // Tìm và chọn tab tương ứng
+                for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
+                    if (jTabbedPane1.getTitleAt(i).equals(categoryName)) {
+                        jTabbedPane1.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+            // Hiển thị tất cả kết quả
+            displaySearchResults(allResults);
+            lastSearchHadNoResult = false;
+        } else {
+            // Không tìm thấy kết quả
+            lastSearchHadNoResult = true;
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Không tìm thấy món \"" + searchText + "\"", 
+                "Kết quả tìm kiếm", 
+                javax.swing.JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void displaySearchResults(java.util.List<com.team4.quanliquanmicay.Entity.Product> results) {
+        // Xóa dữ liệu cũ trong table
+        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tableInfo.getModel();
+        model.setRowCount(0);
+        
+        // Thêm kết quả tìm kiếm vào table
+        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
+        for (com.team4.quanliquanmicay.Entity.Product product : results) {
+            String discountStr = (product.getDiscount() > 0) ? ((int)Math.round(product.getDiscount() * 100)) + "%" : "0%";
+            String priceStr = vndFormat.format(product.getPrice());
+            model.addRow(new Object[]{
+                product.getProductId(),
+                product.getProductName(),
+                priceStr,
+                discountStr,
+                product.getUnit(),
+                product.isAvailable() ? "Còn bán" : "Ngừng bán"
+            });
+        }
+    }
+
+    private void loadAllProducts() {
+        // Load lại tất cả sản phẩm như ban đầu
+        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tableInfo.getModel();
+        model.setRowCount(0);
+        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
+        for (Product p : productCache) {
+            String discountStr = (p.getDiscount() > 0) ? ((int)Math.round(p.getDiscount() * 100)) + "%" : "0%";
+            String priceStr = vndFormat.format(p.getPrice());
+            model.addRow(new Object[]{
+                p.getProductId(),
+                p.getProductName(),
+                priceStr,
+                discountStr,
+                p.getUnit(),
+                p.isAvailable() ? "Còn bán" : "Ngừng bán"
+            });
         }
     }
 

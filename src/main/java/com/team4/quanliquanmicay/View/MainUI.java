@@ -31,6 +31,69 @@ public class MainUI extends javax.swing.JFrame {
         setupCategoryManagementPopup();
         setupBillManagementPopup();
         setupDateTimeDisplay();
+        
+        // Thêm event listener cho các button
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
+        
+        jButton11.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton11ActionPerformed(evt);
+            }
+        });
+        
+        jButton12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton12ActionPerformed(evt);
+            }
+        });
+        
+        // Thêm ActionListener cho các button management
+        btnCategoryManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCategoryManagementActionPerformed(evt);
+            }
+        });
+        
+        btnBillManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBillManagementActionPerformed(evt);
+            }
+        });
+        
+        btnTableManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTableManagementActionPerformed(evt);
+            }
+        });
+        
+        btnUserManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUserManagementActionPerformed(evt);
+            }
+        });
+        
+        btnCustomerManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCustomerManagementActionPerformed(evt);
+            }
+        });
+        
+        // Thêm ActionListener cho jButton13 (Thống kê) và jButton14 (Đổi mật khẩu)
+        jButton13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton13ActionPerformed(evt);
+            }
+        });
+        
+        jButton14.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton14ActionPerformed(evt);
+            }
+        });
     }
     
     /**
@@ -684,6 +747,62 @@ public class MainUI extends javax.swing.JFrame {
     private void btnCustomerManagementMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCustomerManagementMouseEntered
         // TODO add your handling code here:
     }//GEN-LAST:event_btnCustomerManagementMouseEntered
+
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
+        // Mở ChooseTableUI
+        new ChooseTableUI().setVisible(true);
+        this.setVisible(false);
+    }//GEN-LAST:event_jButton7ActionPerformed
+
+    private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
+        // Hiển thị dialog hỗ trợ
+        javax.swing.JOptionPane.showMessageDialog(this, 
+            "Hệ thống quản lý nhà hàng mì cay\n" +
+            "Phiên bản: 1.0\n" +
+            "Liên hệ hỗ trợ: support@fivec.com", 
+            "Hỗ trợ", 
+            javax.swing.JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jButton11ActionPerformed
+
+    private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
+        // Thoát ứng dụng
+        System.exit(0);
+    }//GEN-LAST:event_jButton12ActionPerformed
+    
+    private void btnCategoryManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở CategoryManagement
+        new com.team4.quanliquanmicay.View.management.CategoryManagement().setVisible(true);
+    }
+    
+    private void btnBillManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở BillManagement
+        new com.team4.quanliquanmicay.View.management.BillManagement().setVisible(true);
+    }
+    
+    private void btnTableManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở TableManagement
+        new com.team4.quanliquanmicay.View.management.TableManagement().setVisible(true);
+    }
+    
+    private void btnUserManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở UserManagement
+        new com.team4.quanliquanmicay.View.management.UserManagement().setVisible(true);
+    }
+    
+    private void btnCustomerManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở CustomerManagement
+        new com.team4.quanliquanmicay.View.management.CustomerManagement().setVisible(true);
+    }
+    
+    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở HistoryManagement (Thống kê)
+        new com.team4.quanliquanmicay.View.management.HistoryManagement().setVisible(true);
+    }
+    
+    private void jButton14ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở ChangePassword (Đổi mật khẩu)
+        new com.team4.quanliquanmicay.View.ChangePassword().setVisible(true);
+    }
 
     /**
      * @param args the command line arguments
