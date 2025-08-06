@@ -19,6 +19,7 @@ import javax.swing.JButton;
 import javax.swing.border.LineBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.ButtonModel;
 
 /**
  *
@@ -38,6 +39,9 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         pnlNormalTable.setLayout(new java.awt.GridLayout(2, 6, 15, 15)); // 3 hàng 4 cột
         pnlVipTable.setLayout(new java.awt.GridLayout(2, 6, 15, 15));    // 2 hàng 6 cột
         jTabbedPane1.setSelectedIndex(0); // Luôn hiển thị tab Normal Table trước
+        
+        // Áp dụng hiệu ứng mouse press cho tất cả button
+        applyMousePressEffectToAllButtons();
     }
 
     /**
@@ -107,7 +111,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         );
         pnlNormalTableLayout.setVerticalGroup(
             pnlNormalTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 361, Short.MAX_VALUE)
+            .addGap(0, 362, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("1-12", pnlNormalTable);
@@ -122,7 +126,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         );
         pnlVipTableLayout.setVerticalGroup(
             pnlVipTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 361, Short.MAX_VALUE)
+            .addGap(0, 362, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("13-24", pnlVipTable);
@@ -131,7 +135,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         pnlTable.setLayout(pnlTableLayout);
         pnlTableLayout.setHorizontalGroup(
             pnlTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 822, Short.MAX_VALUE)
         );
         pnlTableLayout.setVerticalGroup(
             pnlTableLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -273,16 +277,17 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(pnlTable, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(pnlTable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pnlTable, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -329,12 +334,20 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
-        // Làm mới form
-        clear();
+        // Hỏi xác nhận trước khi làm mới
+        if (XDialog.confirm("Bạn có chắc chắn muốn làm mới tất cả thông tin không?", "Xác nhận làm mới")) {
+            // Làm mới form
+            clear();
+        }
+        // Nếu chọn "Không" thì không làm gì cả
     }//GEN-LAST:event_btnClearActionPerformed
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
-System.exit(0);
+        // Hỏi xác nhận trước khi thoát
+        if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) {
+            System.exit(0);
+        }
+        // Nếu chọn "Không" thì không làm gì cả
     }//GEN-LAST:event_btnExitActionPerformed
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
@@ -421,6 +434,8 @@ System.exit(0);
     // Thêm biến này vào class TableManagement
     private JButton selectedButton = null;
     private int selectedTableNumber = -1;
+    // Thêm flag để tránh xử lý nhiều sự kiện đồng thời
+    private boolean isProcessingSelection = false;
 
     // Thêm phương thức mới để fill bàn đầu tiên lên form
     private void fillFirstTableToForm() {
@@ -499,46 +514,89 @@ System.exit(0);
     // Hàm lấy màu đậm khi chọn
     private Color getBaseColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#A8E6A1"); // Trống
-            case 1: return Color.decode("#FFB347"); // Đang phục vụ
-            case 2: return Color.decode("#D3D3D3"); // Ngưng hoạt động
+            case 0: return Color.decode("#A8E6A1"); // Trống - xanh nhạt
+            case 1: return Color.decode("#FFB347"); // Đang phục vụ - cam
+            case 2: return Color.decode("#D3D3D3"); // Ngưng hoạt động - xám
             default: return Color.GRAY;
         }
     }
+    
     private Color brightenColor(Color color, float factor) {
         int r = Math.min(255, (int)(color.getRed() + (255 - color.getRed()) * factor));
         int g = Math.min(255, (int)(color.getGreen() + (255 - color.getGreen()) * factor));
         int b = Math.min(255, (int)(color.getBlue() + (255 - color.getBlue()) * factor));
         return new Color(r, g, b);
     }
+    
     private Color darkenColor(Color color, float factor) {
         int r = Math.max(0, (int)(color.getRed() * (1 - factor)));
         int g = Math.max(0, (int)(color.getGreen() * (1 - factor)));
         int b = Math.max(0, (int)(color.getBlue() * (1 - factor)));
         return new Color(r, g, b);
     }
+    
+    // Hover: làm sáng 15%
     private Color getHoverColorByStatus(int status) {
         return brightenColor(getBaseColorByStatus(status), 0.15f);
     }
-    private Color getClickColorByStatus(int status) {
-        return darkenColor(getBaseColorByStatus(status), 0.20f);
+    
+    // Chọn: làm tối 20%
+    private Color getSelectedColorByStatus(int status) {
+        switch (status) {
+            case 0: return Color.decode("#87D68B"); // Trống - xanh đậm hơn 20%
+            case 1: return Color.decode("#E69A3D"); // Đang phục vụ - cam đậm hơn 20%
+            case 2: return Color.decode("#A9A9A9"); // Ngưng hoạt động - xám đậm hơn 20%
+            default: return Color.GRAY;
+        }
+    }
+    
+    // Nhấn chuột: làm tối 30% (tạm thời)
+    private Color getPressedColorByStatus(int status) {
+        return darkenColor(getBaseColorByStatus(status), 0.30f);
     }
 
-    // Sửa lại createButton
+    // Thêm hàm helper để thêm hiệu ứng mouse press cho button sử dụng ButtonModel
+    private void addMousePressEffect(JButton button) {
+        // Giữ màu nền nhưng tắt hiệu ứng mặc định
+        button.setOpaque(true);
+        button.setContentAreaFilled(true);
+        button.setFocusPainted(false);
+        button.setRolloverEnabled(false);
+        button.setFocusable(false);
+        button.setRequestFocusEnabled(false);
+        
+        Color originalColor = button.getBackground();
+        
+        button.getModel().addChangeListener(e -> {
+            ButtonModel model = button.getModel();
+            if (model.isPressed()) {
+                button.setBackground(Color.PINK); // màu khi bấm giữ
+            } else {
+                button.setBackground(originalColor); // trở lại màu gốc
+            }
+        });
+    }
+
+    // Sửa lại createButton để giữ màu nền nhưng tắt hiệu ứng mặc định
     private JButton createButton(int tableNumber, TableForCustomer table) {
         JButton btnTable = new JButton();
-        btnTable.setContentAreaFilled(false); // Tắt nền mặc định
+        
+        // Thiết lập thuộc tính cơ bản
         btnTable.setOpaque(true);             // Cho phép vẽ nền custom
+        btnTable.setContentAreaFilled(true);  // Bật nền để hiển thị màu
         btnTable.setText(String.format("Bàn #%d", tableNumber));
         btnTable.setPreferredSize(new Dimension(90, 90)); // Kích thước 90x90
         btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 
-        btnTable.setOpaque(true);
-        btnTable.setContentAreaFilled(true);
+        // Thiết lập viền và tắt hiệu ứng mặc định
         btnTable.setBorder(javax.swing.BorderFactory.createLineBorder(Color.WHITE, 2)); // Viền trắng dày 2
         btnTable.setBorderPainted(true);
-        btnTable.setFocusPainted(false);
-        btnTable.setRolloverEnabled(false); // Tắt rollover mặc định
+        btnTable.setFocusPainted(false);      // Tắt hiệu ứng focus
+        btnTable.setRolloverEnabled(false);   // Tắt rollover mặc định
+        
+        // Tắt focus để tránh hiệu ứng focus
+        btnTable.setFocusable(false);
+        btnTable.setRequestFocusEnabled(false);
 
         final int buttonStatus = (table != null) ? table.getStatus() : -1;
 
@@ -549,56 +607,76 @@ System.exit(0);
             btnTable.setEnabled(true);
             if (tableNumber == selectedTableNumber) {
                 btnTable.setBorder(new CompoundBorder(
-                    new LineBorder(Color.PINK, 4, true),
+                    new LineBorder(Color.decode("#424242"), 2, true), // Viền xám đậm
                     new LineBorder(Color.WHITE, 2)
                 ));
                 btnTable.setBorderPainted(true);
                 selectedButton = btnTable;
+                // Button đã chọn sẽ có màu đậm hơn 20% của màu gốc
+                Color baseColor = getBaseColorByStatus(buttonStatus);
+                Color activeColor = darkenColor(baseColor, 0.20f);
+                btnTable.setBackground(activeColor);
             } else {
                 btnTable.setBackground(getBaseColorByStatus(buttonStatus));
             }
             btnTable.setActionCommand(String.valueOf(table.getTable_number()));
             btnTable.addActionListener((ActionEvent e) -> {
-                int num = Integer.parseInt(e.getActionCommand());
-                this.selectTable(num, btnTable);
+                // Thêm kiểm tra để tránh xử lý nhiều sự kiện đồng thời
+                if (!isProcessingSelection) {
+                    int num = Integer.parseInt(e.getActionCommand());
+                    this.selectTable(num, btnTable);
+                }
             });
 
+            // Lưu màu gốc của button
+            final Color originalButtonColor = getBaseColorByStatus(buttonStatus);
+            final Color selectedButtonColor = darkenColor(originalButtonColor, 0.20f);
+
+            // Sử dụng ButtonModel để xử lý hiệu ứng
+            btnTable.getModel().addChangeListener(e -> {
+                ButtonModel model = btnTable.getModel();
+                
+                if (!btnTable.isEnabled() || isProcessingSelection) {
+                    return;
+                }
+                
+                if (model.isPressed()) {
+                    // Khi bấm giữ - đổi thành màu PINK
+                    btnTable.setBackground(Color.PINK);
+                } else if (model.isRollover()) {
+                    // Khi hover - làm sáng 15%
+                    btnTable.setBackground(getHoverColorByStatus(buttonStatus));
+                } else {
+                    // Khi thả chuột - trở về màu ban đầu
+                    if (btnTable == selectedButton) {
+                        // Nếu là button đã chọn thì về màu đậm hơn 20%
+                        btnTable.setBackground(selectedButtonColor);
+                    } else {
+                        // Nếu không phải button đã chọn thì về màu gốc
+                        btnTable.setBackground(originalButtonColor);
+                    }
+                }
+            });
+
+            // Thêm MouseListener chỉ để xử lý hover (vì ButtonModel không xử lý hover tốt)
             btnTable.addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override
                 public void mouseEntered(java.awt.event.MouseEvent evt) {
-                    if (btnTable != selectedButton && btnTable.isEnabled()) {
+                    if (btnTable.isEnabled() && !isProcessingSelection && !btnTable.getModel().isPressed()) {
+                        // Hover: làm sáng 15% so với màu gốc
                         btnTable.setBackground(getHoverColorByStatus(buttonStatus));
                         btnTable.repaint();
                     }
                 }
                 @Override
                 public void mouseExited(java.awt.event.MouseEvent evt) {
-                    if (btnTable != selectedButton && btnTable.isEnabled()) {
-                        btnTable.setBackground(getBaseColorByStatus(buttonStatus));
-                        btnTable.repaint();
-                    }
-                }
-                @Override
-                public void mousePressed(java.awt.event.MouseEvent evt) {
-                    // Khi nhấn chuột, tạm thời đổi sang màu hồng
-                    if (btnTable.isEnabled()) {
-                        btnTable.setBackground(getClickColorByStatus(buttonStatus));
-                        btnTable.repaint();
-                    }
-                }
-                @Override
-                public void mouseReleased(java.awt.event.MouseEvent evt) {
-                    // Khi thả chuột, trả lại màu đúng
-                    if (btnTable.isEnabled()) {
+                    if (btnTable.isEnabled() && !isProcessingSelection && !btnTable.getModel().isPressed()) {
                         if (btnTable == selectedButton) {
-                            // Nếu là button đã chọn, trả về màu "selected"
-                            TableForCustomer table = tableDAO.findById(Integer.parseInt(btnTable.getActionCommand()));
-                            if (table != null) {
-                                btnTable.setBackground(getBaseColorByStatus(table.getStatus()));
-                            }
+                            // Nếu là button đã chọn thì về màu đậm hơn 20%
+                            btnTable.setBackground(selectedButtonColor);
                         } else {
-                            // Nếu không phải button đã chọn, trả về màu trạng thái bình thường
-                            btnTable.setBackground(getBaseColorByStatus(buttonStatus));
+                            // Nếu không phải button đã chọn thì về màu gốc
+                            btnTable.setBackground(originalButtonColor);
                         }
                         btnTable.repaint();
                     }
@@ -610,45 +688,54 @@ System.exit(0);
 
     // Sửa lại selectTable
     private void selectTable(int tableNumber, JButton btnTable) {
-        System.out.println("Đã chọn bàn số: " + tableNumber);
+        // Đặt flag để tránh xử lý nhiều sự kiện đồng thời
+        isProcessingSelection = true;
+        
+        try {
+            System.out.println("Đã chọn bàn số: " + tableNumber);
 
-        // Đổi border và màu button cũ về mặc định
-        if (selectedButton != null && selectedButton != btnTable) {
-            selectedButton.setBorder(javax.swing.BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
-            selectedButton.setBorderPainted(true);
-            // Lấy lại trạng thái của button cũ để set lại màu nền
-            TableForCustomer oldTable = tableDAO.findById(selectedTableNumber);
-            if (oldTable != null) {
-                switch (oldTable.getStatus()) {
-                    case 0: selectedButton.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
-                    case 1: selectedButton.setBackground(Color.decode("#27ae60")); break; // Xanh lá
-                    case 2: selectedButton.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
-                    default: selectedButton.setBackground(new Color(55, 71, 79));
+            // Đổi border và màu button cũ về mặc định
+            if (selectedButton != null && selectedButton != btnTable) {
+                selectedButton.setBorder(javax.swing.BorderFactory.createLineBorder(Color.WHITE, 2));
+                selectedButton.setBorderPainted(true);
+                // Lấy lại trạng thái của button cũ để set lại màu nền
+                TableForCustomer oldTable = tableDAO.findById(selectedTableNumber);
+                if (oldTable != null) {
+                    selectedButton.setBackground(getBaseColorByStatus(oldTable.getStatus()));
                 }
+                selectedButton.repaint();
             }
-        }
 
-        // Đặt border màu #00fe92 dày 4px cho button mới
-        btnTable.setBorder(new CompoundBorder(
-            new LineBorder(Color.decode("#00fe92"), 4, true),
-            new LineBorder(Color.LIGHT_GRAY, 2)
-        ));
-        btnTable.setBorderPainted(true);
+            // Đặt border màu xám đậm dày 4px cho button mới
+            btnTable.setBorder(new CompoundBorder(
+                new LineBorder(Color.decode("#424242"), 2, true),
+                new LineBorder(Color.WHITE, 2)
+            ));
+            btnTable.setBorderPainted(true);
 
-        // Đổi màu nền button được chọn thành màu đậm hơn theo status
-        TableForCustomer table = tableDAO.findById(tableNumber);
-        if (table != null) {
-            btnTable.setBackground(getBaseColorByStatus(table.getStatus()));
-        }
+            // Đổi màu nền button được chọn thành màu đậm hơn 20% theo status
+            TableForCustomer table = tableDAO.findById(tableNumber);
+            if (table != null) {
+                // Sử dụng màu đậm hơn thay vì màu tối
+                Color baseColor = getBaseColorByStatus(table.getStatus());
+                Color activeColor = darkenColor(baseColor, 0.20f);
+                btnTable.setBackground(activeColor);
+            }
 
-        selectedButton = btnTable;
-        selectedTableNumber = tableNumber;
+            selectedButton = btnTable;
+            selectedTableNumber = tableNumber;
+            btnTable.repaint();
 
-        // Fill form
-        if (table != null) {
-            setForm(table);
-        } else {
-            System.err.println("Không tìm thấy bàn số " + tableNumber + " trong database!");
+            // Fill form
+            if (table != null) {
+                setForm(table);
+            } else {
+                System.err.println("Không tìm thấy bàn số " + tableNumber + " trong database!");
+            }
+            
+        } finally {
+            // Đảm bảo flag được reset sau khi xử lý xong
+            isProcessingSelection = false;
         }
     }
 
@@ -983,5 +1070,15 @@ System.exit(0);
             }
         }
         // Nếu chọn "Không" thì không làm gì cả
+    }
+
+    // Thêm hàm để áp dụng hiệu ứng cho tất cả button trong form
+    private void applyMousePressEffectToAllButtons() {
+        // Áp dụng cho các button chính
+        addMousePressEffect(btnAdd);
+        addMousePressEffect(btnUpdate);
+        addMousePressEffect(btnClear);
+        addMousePressEffect(btnDelete);
+        addMousePressEffect(btnExit);
     }
 }

@@ -218,7 +218,6 @@ public class ChooseTableUI extends javax.swing.JFrame {
         btnTable.setContentAreaFilled(true);
         btnTable.setBorderPainted(false);
         btnTable.setFocusPainted(false);
-        btnTable.setRolloverEnabled(false);
 
         final int buttonStatus = (table != null) ? table.getStatus() : -1;
 
