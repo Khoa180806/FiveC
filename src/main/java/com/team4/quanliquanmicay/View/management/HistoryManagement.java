@@ -58,7 +58,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         
         setupTable();
         setupEventHandlers();
-        loadAllData(); // Load tất cả dữ liệu khi mở form
+        // BỎ DÒNG loadAllData() - KHÔNG TỰ ĐỘNG LOAD DỮ LIỆU KHI MỞ FORM
     }
     
     /**
@@ -81,6 +81,9 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         };
         tblBills.setModel(billsModel);
         
+        // TẮT KHẢ NĂNG DI CHUYỂN CỘT CHO BẢNG BILLS
+        tblBills.getTableHeader().setReorderingAllowed(false);
+        
         // Thiết lập bảng Payment - sửa lại thứ tự cột
         DefaultTableModel paymentModel = new DefaultTableModel(
             new Object[][] {},
@@ -96,6 +99,9 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
             }
         };
         tblPayment.setModel(paymentModel);
+        
+        // TẮT KHẢ NĂNG DI CHUYỂN CỘT CHO BẢNG PAYMENT
+        tblPayment.getTableHeader().setReorderingAllowed(false);
         
         // Thiết lập độ rộng cột cho bảng Bills (6 cột)
         tblBills.getColumnModel().getColumn(0).setPreferredWidth(100); // Mã hóa đơn
@@ -146,6 +152,14 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
             @Override
             public void actionPerformed(ActionEvent e) {
                 handleTimeRangeSelection();
+            }
+        });
+        
+        // THÊM EVENT HANDLER CHO NÚT EXIT
+        jButton1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                handleExit();
             }
         });
     }
@@ -242,33 +256,38 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         try {
             String selected = (String) cboFilter.getSelectedItem();
             Date fromDate = null;
-            Date toDate = new Date(); // Ngày hiện tại
+            Date toDate = null;
             
             switch (selected) {
                 case "Hôm nay":
                     fromDate = getStartOfDay(new Date());
+                    toDate = getEndOfDay(new Date()); // Cùng ngày hôm nay
                     break;
                 case "Tuần này":
                     fromDate = getStartOfWeek(new Date());
+                    toDate = getEndOfWeek(new Date()); // Đến cuối tuần
                     break;
                 case "Tháng này":
                     fromDate = getStartOfMonth(new Date());
+                    toDate = getEndOfMonth(new Date()); // Đến cuối tháng
                     break;
                 case "Quý này":
                     fromDate = getStartOfQuarter(new Date());
+                    toDate = getEndOfQuarter(new Date()); // Đến cuối quý
                     break;
                 case "Năm này":
                     fromDate = getStartOfYear(new Date());
+                    toDate = getEndOfYear(new Date()); // Đến cuối năm
                     break;
             }
             
-            if (fromDate != null) {
+            if (fromDate != null && toDate != null) {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
                 txtCheckin.setText(sdf.format(fromDate));
                 txtCheckout.setText(sdf.format(toDate));
                 
-                // Tự động lọc dữ liệu
-                filterDataByDateRange(fromDate, toDate);
+                // BỎ DÒNG TỰ ĐỘNG LỌC DỮ LIỆU - CHỈ FILL NGÀY THÁNG
+                // filterDataByDateRange(fromDate, toDate);
             }
         } catch (Exception e) {
             XDialog.error("Lỗi khi xử lý khoảng thời gian: " + e.getMessage(), "Lỗi hệ thống");
@@ -353,8 +372,14 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
             
             fillTableWithData(filteredBills, filteredHistory);
             
-            // Bỏ thông báo này đi
-            // XDialog.success("Tìm thấy " + filteredBills.size() + " hóa đơn và " + filteredHistory.size() + " giao dịch thanh toán trong khoảng thời gian đã chọn!", "Kết quả tìm kiếm");
+            // HIỂN THỊ THÔNG BÁO SỐ LƯỢNG RECORD ĐƯỢC LỌC
+            String message = String.format(
+                "Tìm thấy %d hóa đơn và %d giao dịch thanh toán trong khoảng thời gian đã chọn!",
+                filteredBills.size(),
+                filteredHistory.size()
+            );
+            
+            XDialog.success(message, "Kết quả lọc dữ liệu");
             
         } catch (Exception e) {
             XDialog.error("Lỗi khi lọc dữ liệu: " + e.getMessage(), "Lỗi hệ thống");
@@ -369,8 +394,15 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
             List<Bill> bills = billDAO.findAll();
             List<PaymentHistory> paymentHistoryList = paymentHistoryDAO.findAll();
             fillTableWithData(bills, paymentHistoryList);
-            // Bỏ thông báo này đi
-            // XDialog.success("Đã load " + bills.size() + " hóa đơn và " + paymentHistoryList.size() + " giao dịch thanh toán!", "Thành công");
+            
+            // HIỂN THỊ THÔNG BÁO KHI LOAD TẤT CẢ DỮ LIỆU
+            String message = String.format(
+                "Đã load %d hóa đơn và %d giao dịch thanh toán!",
+                bills.size(),
+                paymentHistoryList.size()
+            );
+            
+            XDialog.success(message, "Thành công");
         } catch (Exception e) {
             XDialog.error("Lỗi khi load dữ liệu: " + e.getMessage(), "Lỗi hệ thống");
         }
@@ -590,6 +622,67 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         return cal.getTime();
     }
 
+    // ========== THÊM CÁC HÀM HELPER MỚI ==========
+    
+    /**
+     * Lấy cuối tuần
+     */
+    private Date getEndOfWeek(Date date) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(java.util.Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek() + 6); // Chủ nhật
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+        cal.set(java.util.Calendar.MINUTE, 59);
+        cal.set(java.util.Calendar.SECOND, 59);
+        cal.set(java.util.Calendar.MILLISECOND, 999);
+        return cal.getTime();
+    }
+    
+    /**
+     * Lấy cuối tháng
+     */
+    private Date getEndOfMonth(Date date) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+        cal.set(java.util.Calendar.MINUTE, 59);
+        cal.set(java.util.Calendar.SECOND, 59);
+        cal.set(java.util.Calendar.MILLISECOND, 999);
+        return cal.getTime();
+    }
+    
+    /**
+     * Lấy cuối quý
+     */
+    private Date getEndOfQuarter(Date date) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        int month = cal.get(java.util.Calendar.MONTH);
+        int quarter = (month / 3) * 3 + 2; // Tháng cuối của quý
+        cal.set(java.util.Calendar.MONTH, quarter);
+        cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+        cal.set(java.util.Calendar.MINUTE, 59);
+        cal.set(java.util.Calendar.SECOND, 59);
+        cal.set(java.util.Calendar.MILLISECOND, 999);
+        return cal.getTime();
+    }
+    
+    /**
+     * Lấy cuối năm
+     */
+    private Date getEndOfYear(Date date) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(java.util.Calendar.DAY_OF_YEAR, cal.getActualMaximum(java.util.Calendar.DAY_OF_YEAR));
+        cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
+        cal.set(java.util.Calendar.MINUTE, 59);
+        cal.set(java.util.Calendar.SECOND, 59);
+        cal.set(java.util.Calendar.MILLISECOND, 999);
+        return cal.getTime();
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -676,7 +769,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
 
         btnFilter.setBackground(new java.awt.Color(129, 212, 250));
         btnFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnFilter.setText("LỌC");
+        btnFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/icons8-sort-24.png"))); // NOI18N
         btnFilter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -970,5 +1063,15 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
     public void deleteCheckedItems() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'deleteCheckedItems'");
+    }
+
+    /**
+     * Xử lý sự kiện exit với XDialog
+     */
+    private void handleExit() {
+        if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng?", "Xác nhận thoát")) {
+            System.exit(0);
+        }
+        // Nếu chọn NO thì không làm gì cả, tiếp tục sử dụng ứng dụng
     }
 }

@@ -578,7 +578,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         });
         
         // Áp dụng hiệu ứng hover từ XTheme
-        XTheme.applyHoverEffect(button, originalColor);
+ 
     }
 
     // Sửa lại createButton để sử dụng hiệu ứng hover từ XTheme
@@ -660,7 +660,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
             });
 
             // Áp dụng hiệu ứng hover từ XTheme cho button bàn
-            XTheme.applyHoverEffect(btnTable, originalButtonColor);
+    
         }
         return btnTable;
     }

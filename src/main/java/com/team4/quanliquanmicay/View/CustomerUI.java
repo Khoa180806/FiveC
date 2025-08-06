@@ -37,11 +37,11 @@ public class CustomerUI extends javax.swing.JFrame {
         customerDAO = new CustomerDAOImpl();
         customerController = new CustomerController();
         
-        // Setup event handlers
-        setupEventHandlers();
-        
         // Setup text field placeholders
         setupTextFieldPlaceholders();
+        
+        // Setup text field listeners for color change
+        setupTextFieldListeners();
     }
     
     /**
@@ -62,68 +62,120 @@ public class CustomerUI extends javax.swing.JFrame {
             txt_phone.setText(phoneNumber.trim());
         }
         
-        // Setup event handlers
-        setupEventHandlers();
-        
         // Setup text field placeholders
         setupTextFieldPlaceholders();
+        
+        // Setup text field listeners for color change
+        setupTextFieldListeners();
     }
     
-    private void setupEventHandlers() {
-        // jButton1 là nút Create/Update
-        btn_add.addActionListener(new ActionListener() {
+    // XÓA HOÀN TOÀN setupEventHandlers() vì không cần thiết
+        
+    /**
+     * Setup listeners cho text field để thay đổi màu khi nhập liệu
+     */
+    private void setupTextFieldListeners() {
+        // Lưu màu gốc của text field
+        final java.awt.Color originalPhoneColor = txt_phone.getBackground();
+        final java.awt.Color originalNameColor = txt_name.getBackground();
+        
+        // Listener cho txt_phone
+        txt_phone.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                handleCustomerAction();
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                // Reset màu về gốc khi có text
+                txt_phone.setBackground(originalPhoneColor);
+            }
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                // Reset màu về gốc khi có text
+                txt_phone.setBackground(originalPhoneColor);
+            }
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                // Reset màu về gốc khi có text
+                txt_phone.setBackground(originalPhoneColor);
             }
         });
         
-        // jButton2 là nút Exit
-        btn_exit.addActionListener(new ActionListener() {
+        // Listener cho txt_name
+        txt_name.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                // Reset màu về gốc khi có text
+                txt_name.setBackground(originalNameColor);
+            }
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                // Reset màu về gốc khi có text
+                txt_name.setBackground(originalNameColor);
+            }
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                // Reset màu về gốc khi có text
+                txt_name.setBackground(originalNameColor);
             }
         });
+    }
+    
+    /**
+     * Kiểm tra dữ liệu rỗng và trả về thông báo lỗi
+     */
+    private String validateFormData() {
+        StringBuilder errorMessage = new StringBuilder();
+        boolean hasError = false;
+        
+        // Kiểm tra số điện thoại
+        String phoneNumber = txt_phone.getText().trim();
+        if (phoneNumber.isEmpty()) {
+            errorMessage.append("• Số điện thoại không được để trống\n");
+            hasError = true;
+            // Tô đỏ text field
+            txt_phone.setBackground(new java.awt.Color(255, 200, 200));
+        } else if (!isValidPhoneNumber(phoneNumber)) {
+            errorMessage.append("• Số điện thoại không hợp lệ (phải là 10-11 số bắt đầu bằng 0)\n");
+            hasError = true;
+            // Tô đỏ text field
+            txt_phone.setBackground(new java.awt.Color(255, 200, 200));
+        }
+        
+        // Kiểm tra tên khách hàng
+        String customerName = txt_name.getText().trim();
+        if (customerName.isEmpty()) {
+            errorMessage.append("• Tên khách hàng không được để trống\n");
+            hasError = true;
+            // Tô đỏ text field
+            txt_name.setBackground(new java.awt.Color(255, 200, 200));
+        } else if (!isValidCustomerName(customerName)) {
+            errorMessage.append("• Tên khách hàng phải có ít nhất 2 ký tự\n");
+            hasError = true;
+            // Tô đỏ text field
+            txt_name.setBackground(new java.awt.Color(255, 200, 200));
+        }
+        
+        if (hasError) {
+            return "Vui lòng kiểm tra và sửa các lỗi sau:\n\n" + errorMessage.toString();
+        }
+        
+        return null; // Không có lỗi
     }
     
     private void handleCustomerAction() {
+        // Kiểm tra dữ liệu rỗng
+        String validationError = validateFormData();
+        if (validationError != null) {
+            XDialog.error(validationError, "Lỗi nhập liệu");
+            return;
+        }
+        
         String phoneNumber = txt_phone.getText().trim();
         String customerName = txt_name.getText().trim();
-        
-        // Validate input
-        if (phoneNumber.isEmpty()) {
-            XDialog.alert("Vui lòng nhập số điện thoại!");
-            txt_phone.requestFocus();
-            return;
-        }
-        
-        if (customerName.isEmpty()) {
-            XDialog.alert("Vui lòng nhập tên khách hàng!");
-            txt_name.requestFocus();
-            return;
-        }
-        
-        // Validate phone number format
-        if (!isValidPhoneNumber(phoneNumber)) {
-            XDialog.alert("Số điện thoại không hợp lệ! Vui lòng nhập số điện thoại 10-11 số bắt đầu bằng 0.");
-            txt_phone.requestFocus();
-            return;
-        }
-        
-        // Validate customer name
-        if (!isValidCustomerName(customerName)) {
-            XDialog.alert("Tên khách hàng không hợp lệ! Vui lòng nhập tên có ít nhất 2 ký tự.");
-            txt_name.requestFocus();
-            return;
-        }
         
         try {
             // Kiểm tra xem số điện thoại đã tồn tại chưa
             Customer existingCustomer = customerDAO.findById(phoneNumber);
             if (existingCustomer != null) {
-                // Thông báo lỗi khi số điện thoại đã tồn tại
-                XDialog.alert("Số điện thoại đã tồn tại vui lòng chọn số điện thoại khác!");
+                XDialog.error("Số điện thoại '" + phoneNumber + "' đã tồn tại!\nVui lòng nhập số điện thoại khác.", "Dữ liệu đã tồn tại");
                 txt_phone.requestFocus();
                 return;
             }
@@ -139,11 +191,12 @@ public class CustomerUI extends javax.swing.JFrame {
             customerDAO.create(customer);
             createdCustomer = customer;
             
-            XDialog.alert("Tạo khách hàng thành công!");
+            XDialog.success("Tạo khách hàng thành công!");
             dispose();
             
         } catch (Exception e) {
-            XDialog.alert("Lỗi khi tạo khách hàng: " + e.getMessage());
+            e.printStackTrace();
+            XDialog.error("Lỗi: " + e.getMessage(), "Thêm mới thất bại");
         }
     }
     
@@ -340,8 +393,7 @@ public class CustomerUI extends javax.swing.JFrame {
      * Event handler for btn_exit ActionListener
      */
     private void btn_exitActionPerformed(java.awt.event.ActionEvent evt) {
-        // Handle Exit button click
-        dispose();
+        // Handle Exit button click - không làm gì vì đã xử lý trong setupEventHandlers
     }
     
     /**
