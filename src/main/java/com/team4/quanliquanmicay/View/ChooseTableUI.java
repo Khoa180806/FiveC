@@ -34,6 +34,19 @@ public class ChooseTableUI extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         // Thêm dòng này để fill dữ liệu khi mở form
         loadTable();
+        
+        // Thêm event listener cho các button
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
     }
 
     /**
@@ -377,6 +390,26 @@ public class ChooseTableUI extends javax.swing.JFrame {
             case 2: return Color.decode("#bdbdbd");
             default: return Color.GRAY;
         }
+    }
+
+    // Event handlers cho các button
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Xử lý sự kiện cho button "Chuyển bàn"
+        if (selectedTableNumber != -1) {
+            // Có thể thêm logic chuyển bàn ở đây
+            System.out.println("Chuyển bàn: " + selectedTableNumber);
+        } else {
+            // Hiển thị thông báo chưa chọn bàn
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Vui lòng chọn bàn trước khi chuyển!", 
+                "Thông báo", 
+                javax.swing.JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Xử lý sự kiện cho button Exit
+        System.exit(0);
     }
 
     /**

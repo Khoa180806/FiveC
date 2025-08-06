@@ -341,66 +341,73 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
 
         btnCreate.setBackground(new java.awt.Color(183, 239, 197));
         btnCreate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-<<<<<<< Updated upstream
-        btnCreate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
-        btnCreate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-=======
         btnCreate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Create.png"))); // NOI18N
         btnCreate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCreateActionPerformed(evt);
             }
         });
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> 5e8f12bea3f4ef4fd76a6e29e30822787e878309
 
         btnUpdate.setBackground(new java.awt.Color(255, 231, 153));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
         btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> 5e8f12bea3f4ef4fd76a6e29e30822787e878309
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnUpdateActionPerformed(evt);
             }
         });
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> 5e8f12bea3f4ef4fd76a6e29e30822787e878309
 
         btnRemove.setBackground(new java.awt.Color(255, 179, 179));
         btnRemove.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-<<<<<<< Updated upstream
-        btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
-        btnRemove.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-=======
         btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
         btnRemove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRemoveActionPerformed(evt);
             }
         });
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> 5e8f12bea3f4ef4fd76a6e29e30822787e878309
 
         btnClear.setBackground(new java.awt.Color(164, 216, 255));
         btnClear.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
         btnClear.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> 5e8f12bea3f4ef4fd76a6e29e30822787e878309
         btnClear.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnClearActionPerformed(evt);
@@ -413,10 +420,13 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
                 btnExitActionPerformed(evt);
             }
         });
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> 5e8f12bea3f4ef4fd76a6e29e30822787e878309
 
         javax.swing.GroupLayout pnlFeatureLayout = new javax.swing.GroupLayout(pnlFeature);
         pnlFeature.setLayout(pnlFeatureLayout);
@@ -474,6 +484,7 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
         btnExit.setBackground(new java.awt.Color(119, 50, 5));
@@ -484,6 +495,8 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> 5e8f12bea3f4ef4fd76a6e29e30822787e878309
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(

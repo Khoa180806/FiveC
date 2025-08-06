@@ -12,8 +12,6 @@ import com.team4.quanliquanmicay.Entity.Category;
 import com.team4.quanliquanmicay.Impl.CategoryDAOImpl;
 import com.team4.quanliquanmicay.DAO.ProductDAO;
 import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
-import javax.swing.table.DefaultTableModel;
-import java.util.List;
 import static com.team4.quanliquanmicay.util.XValidation.isEmpty;
 import static com.team4.quanliquanmicay.util.XValidation.isNumber;
 import com.team4.quanliquanmicay.util.XDialog;
@@ -40,6 +38,9 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     // Biến để kiểm soát kích thước ảnh
     private java.awt.Dimension originalImageSize = null;
 
+    private javax.swing.Timer searchDebounceTimer;
+    private boolean lastSearchHadNoResult = false;
+
     /**
      * Creates new form MonAnJDialog
      */
@@ -48,6 +49,59 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        // Debug: Check if buttons are created and enabled
+        System.out.println("Button Save exists: " + (btnSave != null));
+        System.out.println("Button Update exists: " + (btnUpdate != null));
+        System.out.println("Button Clear exists: " + (btnClear != null));
+        System.out.println("Button Exit exists: " + (btnExit != null));
+        
+        System.out.println("Button Save enabled: " + btnSave.isEnabled());
+        System.out.println("Button Update enabled: " + btnUpdate.isEnabled());
+        System.out.println("Button Clear enabled: " + btnClear.isEnabled());
+        System.out.println("Button Exit enabled: " + btnExit.isEnabled());
+        
+        // Debug: Check if action listeners are attached
+        System.out.println("Button Save action listeners: " + btnSave.getActionListeners().length);
+        System.out.println("Button Update action listeners: " + btnUpdate.getActionListeners().length);
+        System.out.println("Button Clear action listeners: " + btnClear.getActionListeners().length);
+        System.out.println("Button Exit action listeners: " + btnExit.getActionListeners().length);
+        
+        // Test: Manually add action listeners to see if they work
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                System.out.println("MANUAL Button Save clicked!");
+                create();
+            }
+        });
+        
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                System.out.println("MANUAL Button Update clicked!");
+                update();
+            }
+        });
+        
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                System.out.println("MANUAL Button Clear clicked!");
+                clear();
+            }
+        });
+        
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                System.out.println("MANUAL Button Exit clicked!");
+                dispose();
+            }
+        });
+        
+        System.out.println("Manual action listeners added. Button Save action listeners: " + btnSave.getActionListeners().length);
+        
         fillCategories(); // Gọi fillCategories khi khởi tạo dialog
         fillStatus(); // Gọi duy nhất ở đây
         cboCate.addActionListener(new java.awt.event.ActionListener() {
@@ -58,6 +112,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             }
         });
         fillUnitsByCategory();
+        createCategoryTabs(); // Tạo tabpanel cho từng loại món
         fillToTable();
         setupSearchFunctionality();
         setupImageSelection(); // Thêm setup cho chọn ảnh
@@ -68,6 +123,12 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 btnUpdate.setEnabled(true);
             }
         });
+        
+        // Debug: Kiểm tra cache đã được load chưa
+        System.out.println("Product cache size: " + productCache.size());
+        System.out.println("Category cache size: " + categoryCache.size());
+        System.out.println("Product cache valid: " + isProductCacheValid);
+        System.out.println("Category cache valid: " + isCategoryCacheValid);
     }
 
     /**
@@ -467,6 +528,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     }//GEN-LAST:event_txtPriceActionPerformed
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+        System.out.println("Button Exit clicked!");
         // Xác nhận trước khi thoát
         if (XDialog.confirm("Bạn có chắc chắn muốn thoát không?", "Xác nhận thoát")) {
             this.dispose();
@@ -474,28 +536,25 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     }//GEN-LAST:event_btnExitActionPerformed
 
     private void tableInfoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableInfoMouseClicked
-        int row = tableInfo.getSelectedRow();
-        if (row >= 0) {
-            String productId = (String) tableInfo.getValueAt(row, 0);
-            Product product = getProductFromCache(productId);
-            setForm(product);
-        }
+        // Method này không còn cần thiết vì mỗi table có mouse listener riêng
     }//GEN-LAST:event_tableInfoMouseClicked
 
-    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        // TODO add your handling code here:
-        create();
-    }//GEN-LAST:event_btnSaveActionPerformed
-
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        System.out.println("Button Update clicked!");
         // Thêm xác nhận khi cập nhật
         if (!XDialog.confirm("Bạn có chắc chắn muốn cập nhật sản phẩm này?", "Xác nhận cập nhật")) return;
         update();
     }//GEN-LAST:event_btnUpdateActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
-        // TODO add your handling code here:
+        System.out.println("Button Clear clicked!");
+        clear();
     }//GEN-LAST:event_btnClearActionPerformed
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        System.out.println("Button Save clicked!");
+        create();
+    }//GEN-LAST:event_btnSaveActionPerformed
 
     /**
      * @param args the command line arguments
@@ -734,12 +793,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
 
     @Override
     public void fillToTable() {
-        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
-        model.setRowCount(0); // clear table
-        
-        String selectedCateName = (String) cboCate.getSelectedItem();
-        
-        // Load cache if needed
+        // Load cache nếu cần
         if (!isProductCacheValid || productCache.isEmpty()) {
             productCache = productDAO.findAll();
             isProductCacheValid = true;
@@ -749,58 +803,83 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             isCategoryCacheValid = true;
         }
         
-        // Create category map for faster lookup
+        // Tạo map để tra cứu nhanh
         java.util.Map<String, String> categoryMap = new java.util.HashMap<>();
         for (Category cate : categoryCache) {
             categoryMap.put(cate.getCategory_id(), cate.getCategory_name());
         }
         
-        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
+        // Tạo map để nhóm sản phẩm theo category
+        java.util.Map<String, java.util.List<Product>> productsByCategory = new java.util.HashMap<>();
         
+        // Nhóm sản phẩm theo category
         for (Product p : productCache) {
-            // Lấy tên loại món từ map (faster than loop)
-            String cateName = categoryMap.get(p.getCategoryId());
-            
-            // Nếu chọn loại món, chỉ hiển thị sản phẩm thuộc loại đó
-            if (selectedCateName == null || selectedCateName.isEmpty() || selectedCateName.equals(cateName)) {
-                // Hiển thị giảm giá dạng phần trăm
-                String discountStr = "";
-                double discount = p.getDiscount();
-                if (discount > 0) {
-                    int percent = (int)Math.round(discount * 100);
-                    discountStr = percent + "%";
-                } else {
-                    discountStr = "0%";
-                }
-                
-                // Format giá tiền
-                String priceStr = vndFormat.format(p.getPrice());
-                
-                model.addRow(new Object[] {
-                    p.getProductId(),
-                    p.getProductName(),
-                    priceStr,
-                    discountStr,
-                    p.getUnit(),
-                    p.isAvailable() ? "Còn bán" : "Ngừng bán"
-                });
+            String categoryId = p.getCategoryId();
+            if (!productsByCategory.containsKey(categoryId)) {
+                productsByCategory.put(categoryId, new java.util.ArrayList<>());
             }
+            productsByCategory.get(categoryId).add(p);
         }
         
-        // Set column widths
-        setColumnWidths();
+        // Format cho tiền tệ
+        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
+        
+        // Cập nhật từng tab
+        for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
+            javax.swing.JScrollPane scrollPane = (javax.swing.JScrollPane) jTabbedPane1.getComponentAt(i);
+            javax.swing.JTable table = (javax.swing.JTable) scrollPane.getViewport().getView();
+            javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) table.getModel();
+            
+            // Clear table
+            model.setRowCount(0);
+            
+            // Lấy tên category của tab này
+            String tabTitle = jTabbedPane1.getTitleAt(i);
+            String categoryId = getCategoryIdByName(tabTitle);
+            
+            // Lấy danh sách sản phẩm của category này
+            java.util.List<Product> categoryProducts = productsByCategory.get(categoryId);
+            if (categoryProducts != null) {
+                for (Product p : categoryProducts) {
+                    // Hiển thị giảm giá dạng phần trăm
+                    String discountStr = "";
+                    double discount = p.getDiscount();
+                    if (discount > 0) {
+                        int percent = (int)Math.round(discount * 100);
+                        discountStr = percent + "%";
+                    } else {
+                        discountStr = "0%";
+                    }
+                    
+                    // Format giá tiền
+                    String priceStr = vndFormat.format(p.getPrice());
+                    
+                    model.addRow(new Object[] {
+                        p.getProductId(),
+                        p.getProductName(),
+                        priceStr,
+                        discountStr,
+                        p.getUnit(),
+                        p.isAvailable() ? "Còn bán" : "Ngừng bán"
+                    });
+                }
+            }
+            
+            // Set column widths cho table này
+            setColumnWidthsForTable(table);
+        }
     }
     
     /**
-     * ✅ OPTIMIZED: Set column widths for better performance
+     * ✅ OPTIMIZED: Set column widths for specific table
      */
-    private void setColumnWidths() {
-        tableInfo.getColumnModel().getColumn(0).setPreferredWidth(80);   // Mã món ăn
-        tableInfo.getColumnModel().getColumn(1).setPreferredWidth(220);  // Tên món ăn
-        tableInfo.getColumnModel().getColumn(2).setPreferredWidth(100);  // Giá
-        tableInfo.getColumnModel().getColumn(3).setPreferredWidth(60);   // Giảm giá
-        tableInfo.getColumnModel().getColumn(4).setPreferredWidth(60);   // Đơn vị
-        tableInfo.getColumnModel().getColumn(5).setPreferredWidth(80);   // Trạng thái
+    private void setColumnWidthsForTable(javax.swing.JTable table) {
+        table.getColumnModel().getColumn(0).setPreferredWidth(80);   // Mã món ăn
+        table.getColumnModel().getColumn(1).setPreferredWidth(220);  // Tên món ăn
+        table.getColumnModel().getColumn(2).setPreferredWidth(100);  // Giá
+        table.getColumnModel().getColumn(3).setPreferredWidth(60);   // Giảm giá
+        table.getColumnModel().getColumn(4).setPreferredWidth(60);   // Đơn vị
+        table.getColumnModel().getColumn(5).setPreferredWidth(80);   // Trạng thái
     }
 
     @Override
@@ -998,9 +1077,73 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         }
     }
 
+    // Thêm phương thức tạo tabpanel cho từng loại món
+    private void createCategoryTabs() {
+        // Xóa tab cũ
+        jTabbedPane1.removeAll();
+        
+        // Load categories nếu cần
+        if (!isCategoryCacheValid || categoryCache.isEmpty()) {
+            categoryCache = categoryDAO.findAll();
+            isCategoryCacheValid = true;
+        }
+        
+        // Tạo tab cho từng loại món
+        for (Category category : categoryCache) {
+            if (category.getIs_available() == 1) {
+                // Tạo panel cho tab
+                javax.swing.JPanel tabPanel = new javax.swing.JPanel();
+                tabPanel.setLayout(new java.awt.BorderLayout());
+                tabPanel.setBackground(new java.awt.Color(255, 255, 255));
+                
+                // Tạo table cho tab này
+                javax.swing.JTable categoryTable = new javax.swing.JTable();
+                categoryTable.setFont(new java.awt.Font("Segoe UI", 0, 14));
+                categoryTable.setModel(new javax.swing.table.DefaultTableModel(
+                    new Object [][] {},
+                    new String [] {
+                        "Mã món ăn", "Tên món ăn", "Giá", "Giảm giá", "Đơn vị", "Trạng thái"
+                    }
+                ) {
+                    boolean[] canEdit = new boolean [] {
+                        false, false, false, false, false, false
+                    };
+
+                    public boolean isCellEditable(int rowIndex, int columnIndex) {
+                        return canEdit [columnIndex];
+                    }
+                });
+                
+                // Thêm mouse listener cho table
+                categoryTable.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseClicked(java.awt.event.MouseEvent evt) {
+                        int row = categoryTable.getSelectedRow();
+                        if (row >= 0) {
+                            String productId = (String) categoryTable.getValueAt(row, 0);
+                            Product product = getProductFromCache(productId);
+                            setForm(product);
+                        }
+                    }
+                });
+                
+                // Tạo scroll pane cho table
+                javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(categoryTable);
+                scrollPane.setPreferredSize(new java.awt.Dimension(700, 250)); // Kích thước cố định
+                tabPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
+                
+                // Thêm tab vào tabbed pane
+                jTabbedPane1.addTab(category.getCategory_name(), scrollPane);
+            }
+        }
+        
+        // Set kích thước cố định cho tabbed pane
+        jTabbedPane1.setPreferredSize(new java.awt.Dimension(700, 250));
+    }
+
     private void setupSearchFunctionality() {
         txtSearch.setText("Tìm theo tên món...");
         txtSearch.setForeground(java.awt.Color.GRAY);
+
         txtSearch.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
@@ -1009,86 +1152,160 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                     txtSearch.setForeground(java.awt.Color.BLACK);
                 }
             }
+
             @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
-                if (txtSearch.getText().trim().isEmpty()) {
+                if (txtSearch.getText().isEmpty()) {
                     txtSearch.setText("Tìm theo tên món...");
                     txtSearch.setForeground(java.awt.Color.GRAY);
-                    fillToTable();
                 }
             }
         });
+
+        // Khởi tạo timer với delay 2 giây
+        searchDebounceTimer = new javax.swing.Timer(2000, new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                performSearch();
+            }
+        });
+        searchDebounceTimer.setRepeats(false);
+
+        // Thêm DocumentListener để debounce
         txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { performSearch(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { 
+                debounceSearch(); 
+            }
+
             @Override
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { performSearch(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { 
+                debounceSearch(); 
+            }
+
             @Override
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { performSearch(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { 
+                debounceSearch(); 
+            }
+        });
+        
+        // Thêm ActionListener cho txtSearch để có thể search ngay khi nhấn Enter
+        txtSearch.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                performSearch();
+            }
         });
     }
 
+    private void debounceSearch() {
+        System.out.println("Debouncing search...");
+        // Reset timer mỗi khi có thay đổi
+        searchDebounceTimer.restart();
+        
+        // Nếu đang gõ, ẩn thông báo "không tìm thấy" nếu có
+        if (lastSearchHadNoResult) {
+            lastSearchHadNoResult = false;
+            // Có thể thêm code để ẩn thông báo ở đây nếu cần
+        }
+    }
+
     private void performSearch() {
-        String keyword = txtSearch.getText().trim();
-        if (keyword.equals("Tìm theo tên món...") || keyword.isEmpty()) {
-            fillToTable();
+        System.out.println("Performing search...");
+        String searchText = txtSearch.getText().trim();
+        System.out.println("Search text: " + searchText);
+        
+        // Bỏ qua nếu là placeholder text
+        if (searchText.isEmpty() || searchText.equals("Tìm theo tên món...")) {
+            System.out.println("Empty search, loading all products");
+            loadAllProducts(); // Load lại tất cả sản phẩm
             return;
         }
+
+        // Tìm kiếm trong tất cả các danh mục
+        java.util.List<com.team4.quanliquanmicay.Entity.Product> allResults = new java.util.ArrayList<>();
+        java.util.Set<String> foundCategories = new java.util.HashSet<>();
         
-        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
-        model.setRowCount(0);
-        
-        String selectedCateName = (String) cboCate.getSelectedItem();
-        
-        // Load cache if needed
-        if (!isProductCacheValid || productCache.isEmpty()) {
-            productCache = productDAO.findAll();
-            isProductCacheValid = true;
-        }
-        if (!isCategoryCacheValid || categoryCache.isEmpty()) {
-            categoryCache = categoryDAO.findAll();
-            isCategoryCacheValid = true;
-        }
-        
-        // Create category map for faster lookup
-        java.util.Map<String, String> categoryMap = new java.util.HashMap<>();
-        for (Category cate : categoryCache) {
-            categoryMap.put(cate.getCategory_id(), cate.getCategory_name());
-        }
-        
-        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
-        String lowerKeyword = keyword.toLowerCase();
-        
-        for (Product p : productCache) {
-            // Lấy tên loại món từ map (faster than loop)
-            String cateName = categoryMap.get(p.getCategoryId());
-            
-            // Lọc theo loại món và tên món
-            if ((selectedCateName == null || selectedCateName.isEmpty() || selectedCateName.equals(cateName))
-                && p.getProductName() != null && p.getProductName().toLowerCase().contains(lowerKeyword)) {
-                
-                String discountStr = "";
-                double discount = p.getDiscount();
-                if (discount > 0) {
-                    int percent = (int)Math.round(discount * 100);
-                    discountStr = percent + "%";
-                } else {
-                    discountStr = "0%";
+        // Tìm kiếm trong productCache thay vì gọi DAO
+        for (com.team4.quanliquanmicay.Entity.Product product : productCache) {
+            if (product.getProductName() != null && product.getProductName().toLowerCase().contains(searchText.toLowerCase())) {
+                allResults.add(product);
+                // Tìm tên category từ categoryId
+                for (com.team4.quanliquanmicay.Entity.Category category : categoryCache) {
+                    if (category.getCategory_id().equals(product.getCategoryId())) {
+                        foundCategories.add(category.getCategory_name());
+                        break;
+                    }
                 }
-                
-                String priceStr = vndFormat.format(p.getPrice());
-                model.addRow(new Object[] {
-                    p.getProductId(),
-                    p.getProductName(),
-                    priceStr,
-                    discountStr,
-                    p.getUnit(),
-                    p.isAvailable() ? "Còn bán" : "Ngừng bán"
-                });
             }
         }
+
+        System.out.println("Found " + allResults.size() + " results");
+
+        // Hiển thị kết quả
+        if (!allResults.isEmpty()) {
+            // Nếu chỉ có 1 danh mục có kết quả, chuyển sang tab đó
+            if (foundCategories.size() == 1) {
+                String categoryName = foundCategories.iterator().next();
+                // Tìm và chọn tab tương ứng
+                for (int i = 0; i < jTabbedPane1.getTabCount(); i++) {
+                    if (jTabbedPane1.getTitleAt(i).equals(categoryName)) {
+                        jTabbedPane1.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+            // Hiển thị tất cả kết quả
+            displaySearchResults(allResults);
+            lastSearchHadNoResult = false;
+        } else {
+            // Không tìm thấy kết quả
+            lastSearchHadNoResult = true;
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Không tìm thấy món \"" + searchText + "\"", 
+                "Kết quả tìm kiếm", 
+                javax.swing.JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private void displaySearchResults(java.util.List<com.team4.quanliquanmicay.Entity.Product> results) {
+        // Xóa dữ liệu cũ trong table
+        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tableInfo.getModel();
+        model.setRowCount(0);
         
-        setColumnWidths();
+        // Thêm kết quả tìm kiếm vào table
+        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
+        for (com.team4.quanliquanmicay.Entity.Product product : results) {
+            String discountStr = (product.getDiscount() > 0) ? ((int)Math.round(product.getDiscount() * 100)) + "%" : "0%";
+            String priceStr = vndFormat.format(product.getPrice());
+            model.addRow(new Object[]{
+                product.getProductId(),
+                product.getProductName(),
+                priceStr,
+                discountStr,
+                product.getUnit(),
+                product.isAvailable() ? "Còn bán" : "Ngừng bán"
+            });
+        }
+    }
+
+    private void loadAllProducts() {
+        // Load lại tất cả sản phẩm như ban đầu
+        javax.swing.table.DefaultTableModel model = (javax.swing.table.DefaultTableModel) tableInfo.getModel();
+        model.setRowCount(0);
+        java.text.DecimalFormat vndFormat = new java.text.DecimalFormat("###,### VNĐ");
+        for (Product p : productCache) {
+            String discountStr = (p.getDiscount() > 0) ? ((int)Math.round(p.getDiscount() * 100)) + "%" : "0%";
+            String priceStr = vndFormat.format(p.getPrice());
+            model.addRow(new Object[]{
+                p.getProductId(),
+                p.getProductName(),
+                priceStr,
+                discountStr,
+                p.getUnit(),
+                p.isAvailable() ? "Còn bán" : "Ngừng bán"
+            });
+        }
     }
 
     // ====== SETUP CHỌN ẢNH SẢN PHẨM ======

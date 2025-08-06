@@ -5,6 +5,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import javax.swing.*;
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -28,6 +30,70 @@ public class MainUI extends javax.swing.JFrame {
         
         setupCategoryManagementPopup();
         setupBillManagementPopup();
+        setupDateTimeDisplay();
+        
+        // Thêm event listener cho các button
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
+        
+        jButton11.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton11ActionPerformed(evt);
+            }
+        });
+        
+        jButton12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton12ActionPerformed(evt);
+            }
+        });
+        
+        // Thêm ActionListener cho các button management
+        btnCategoryManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCategoryManagementActionPerformed(evt);
+            }
+        });
+        
+        btnBillManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBillManagementActionPerformed(evt);
+            }
+        });
+        
+        btnTableManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTableManagementActionPerformed(evt);
+            }
+        });
+        
+        btnUserManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUserManagementActionPerformed(evt);
+            }
+        });
+        
+        btnCustomerManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCustomerManagementActionPerformed(evt);
+            }
+        });
+        
+        // Thêm ActionListener cho jButton13 (Thống kê) và jButton14 (Đổi mật khẩu)
+        jButton13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton13ActionPerformed(evt);
+            }
+        });
+        
+        jButton14.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton14ActionPerformed(evt);
+            }
+        });
     }
     
     /**
@@ -74,6 +140,23 @@ public class MainUI extends javax.swing.JFrame {
 
         popupQuanLyDanhMuc.add(itemLoaiMon);
         popupQuanLyDanhMuc.add(itemSanPham);
+        
+        // Thêm ActionListener cho menu item "Loại món ăn"
+        itemLoaiMon.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new com.team4.quanliquanmicay.View.management.CategoryManagement().setVisible(true);
+            }
+        });
+        
+        // Thêm ActionListener cho menu item "Sản phẩm"
+        itemSanPham.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new com.team4.quanliquanmicay.View.management.ProductManagement().setVisible(true);
+            }
+        });
+        
         btnCategoryManagement.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int width = btnCategoryManagement.getWidth();
@@ -145,6 +228,15 @@ public class MainUI extends javax.swing.JFrame {
         popupQuanLyHoaDon.add(itemHoaDon);
         popupQuanLyHoaDon.add(itemPhuongThucThanhToan);
         popupQuanLyHoaDon.add(itemLichSuThanhToan);
+        
+        // Thêm ActionListener cho menu item "Hóa đơn"
+        itemHoaDon.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                new com.team4.quanliquanmicay.View.management.BillManagement().setVisible(true);
+            }
+        });
+        
         btnBillManagement.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int width = btnBillManagement.getWidth();
@@ -156,9 +248,38 @@ public class MainUI extends javax.swing.JFrame {
                 }
                 popupQuanLyHoaDon.show(btnBillManagement, 0, btnBillManagement.getHeight());
             }
-        });
+                });
     }
-
+    
+    /**
+     * Hàm thiết lập hiển thị ngày giờ
+     */
+    private void setupDateTimeDisplay() {
+        // Cập nhật thời gian ngay lập tức
+        updateDateTime();
+        
+        // Tạo timer để cập nhật thời gian mỗi giây
+        Timer timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateDateTime();
+            }
+        });
+        timer.start();
+    }
+    
+    /**
+     * Hàm cập nhật ngày giờ
+     */
+    private void updateDateTime() {
+        Date now = new Date();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+        
+        txtDay.setText(dateFormat.format(now));
+        txtTime.setText(timeFormat.format(now));
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -180,8 +301,8 @@ public class MainUI extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
-        jTextField2 = new javax.swing.JTextField();
+        txtDay = new javax.swing.JTextField();
+        txtTime = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         btnCategoryManagement = new javax.swing.JButton();
         btnBillManagement = new javax.swing.JButton();
@@ -287,9 +408,9 @@ public class MainUI extends javax.swing.JFrame {
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Alarm.png"))); // NOI18N
         jLabel3.setText("Giờ :");
 
-        jTextField1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtDay.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jTextField2.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtTime.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -301,11 +422,11 @@ public class MainUI extends javax.swing.JFrame {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(txtTime, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(txtDay, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -313,11 +434,11 @@ public class MainUI extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtDay, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
                 .addContainerGap())
         );
@@ -627,6 +748,62 @@ public class MainUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnCustomerManagementMouseEntered
 
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
+        // Mở ChooseTableUI
+        new ChooseTableUI().setVisible(true);
+        this.setVisible(false);
+    }//GEN-LAST:event_jButton7ActionPerformed
+
+    private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
+        // Hiển thị dialog hỗ trợ
+        javax.swing.JOptionPane.showMessageDialog(this, 
+            "Hệ thống quản lý nhà hàng mì cay\n" +
+            "Phiên bản: 1.0\n" +
+            "Liên hệ hỗ trợ: support@fivec.com", 
+            "Hỗ trợ", 
+            javax.swing.JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jButton11ActionPerformed
+
+    private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
+        // Thoát ứng dụng
+        System.exit(0);
+    }//GEN-LAST:event_jButton12ActionPerformed
+    
+    private void btnCategoryManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở CategoryManagement
+        new com.team4.quanliquanmicay.View.management.CategoryManagement().setVisible(true);
+    }
+    
+    private void btnBillManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở BillManagement
+        new com.team4.quanliquanmicay.View.management.BillManagement().setVisible(true);
+    }
+    
+    private void btnTableManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở TableManagement
+        new com.team4.quanliquanmicay.View.management.TableManagement().setVisible(true);
+    }
+    
+    private void btnUserManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở UserManagement
+        new com.team4.quanliquanmicay.View.management.UserManagement().setVisible(true);
+    }
+    
+    private void btnCustomerManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở CustomerManagement
+        new com.team4.quanliquanmicay.View.management.CustomerManagement().setVisible(true);
+    }
+    
+    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở HistoryManagement (Thống kê)
+        new com.team4.quanliquanmicay.View.management.HistoryManagement().setVisible(true);
+    }
+    
+    private void jButton14ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Mở ChangePassword (Đổi mật khẩu)
+        new com.team4.quanliquanmicay.View.ChangePassword().setVisible(true);
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -698,7 +875,7 @@ public class MainUI extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextArea jTextArea2;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
+    private javax.swing.JTextField txtDay;
+    private javax.swing.JTextField txtTime;
     // End of variables declaration//GEN-END:variables
 }
