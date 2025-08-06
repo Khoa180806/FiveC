@@ -31,69 +31,6 @@ public class MainUI extends javax.swing.JFrame {
         setupCategoryManagementPopup();
         setupBillManagementPopup();
         setupDateTimeDisplay();
-        
-        // Thêm event listener cho các button
-        jButton7.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton7ActionPerformed(evt);
-            }
-        });
-        
-        jButton11.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton11ActionPerformed(evt);
-            }
-        });
-        
-        jButton12.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton12ActionPerformed(evt);
-            }
-        });
-        
-        // Thêm ActionListener cho các button management
-        btnCategoryManagement.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCategoryManagementActionPerformed(evt);
-            }
-        });
-        
-        btnBillManagement.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBillManagementActionPerformed(evt);
-            }
-        });
-        
-        btnTableManagement.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnTableManagementActionPerformed(evt);
-            }
-        });
-        
-        btnUserManagement.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUserManagementActionPerformed(evt);
-            }
-        });
-        
-        btnCustomerManagement.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCustomerManagementActionPerformed(evt);
-            }
-        });
-        
-        // Thêm ActionListener cho jButton13 (Thống kê) và jButton14 (Đổi mật khẩu)
-        jButton13.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton13ActionPerformed(evt);
-            }
-        });
-        
-        jButton14.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton14ActionPerformed(evt);
-            }
-        });
     }
     
     /**
@@ -112,12 +49,14 @@ public class MainUI extends javax.swing.JFrame {
         itemLoaiMon.setBackground(new java.awt.Color(134, 39, 43));
         itemLoaiMon.setForeground(new java.awt.Color(255, 255, 255));
         itemLoaiMon.setFont(new java.awt.Font("Segoe UI", 1, 12));
-        itemLoaiMon.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        itemLoaiMon.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        itemLoaiMon.setToolTipText("Quản lý các loại món ăn trong hệ thống");
 
         itemSanPham.setBackground(new java.awt.Color(134, 39, 43));
         itemSanPham.setForeground(new java.awt.Color(255, 255, 255));
         itemSanPham.setFont(new java.awt.Font("Segoe UI", 1, 12));
-        itemSanPham.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        itemSanPham.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        itemSanPham.setToolTipText("Quản lý các sản phẩm/món ăn trong hệ thống");
 
         // Thêm hover effect
         itemLoaiMon.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -145,7 +84,17 @@ public class MainUI extends javax.swing.JFrame {
         itemLoaiMon.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new com.team4.quanliquanmicay.View.management.CategoryManagement().setVisible(true);
+                try {
+                    System.out.println("🔄 Đang mở CategoryManagement...");
+                    new com.team4.quanliquanmicay.View.management.CategoryManagement().setVisible(true);
+                    System.out.println("✅ CategoryManagement đã được mở thành công!");
+                } catch (Exception ex) {
+                    System.err.println("❌ Lỗi khi mở CategoryManagement: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(null, 
+                        "Lỗi khi mở Quản lý Loại món: " + ex.getMessage(), 
+                        "Lỗi", 
+                        JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
         
@@ -153,7 +102,17 @@ public class MainUI extends javax.swing.JFrame {
         itemSanPham.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new com.team4.quanliquanmicay.View.management.ProductManagement().setVisible(true);
+                try {
+                    System.out.println("🔄 Đang mở ProductManagement...");
+                    new com.team4.quanliquanmicay.View.management.ProductManagement().setVisible(true);
+                    System.out.println("✅ ProductManagement đã được mở thành công!");
+                } catch (Exception ex) {
+                    System.err.println("❌ Lỗi khi mở ProductManagement: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(null, 
+                        "Lỗi khi mở Quản lý Sản phẩm: " + ex.getMessage(), 
+                        "Lỗi", 
+                        JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
         
@@ -167,6 +126,10 @@ public class MainUI extends javax.swing.JFrame {
                     }
                 }
                 popupQuanLyDanhMuc.show(btnCategoryManagement, 0, btnCategoryManagement.getHeight());
+            }
+            
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnCategoryManagement.setToolTipText("Click để mở menu quản lý danh mục");
             }
         });
     }
@@ -185,17 +148,20 @@ public class MainUI extends javax.swing.JFrame {
         itemHoaDon.setBackground(new java.awt.Color(134, 39, 43));
         itemHoaDon.setForeground(new java.awt.Color(255, 255, 255));
         itemHoaDon.setFont(new java.awt.Font("Segoe UI", 1, 12));
-        itemHoaDon.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        itemHoaDon.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        itemHoaDon.setToolTipText("Quản lý hóa đơn và chi tiết hóa đơn");
 
         itemPhuongThucThanhToan.setBackground(new java.awt.Color(134, 39, 43));
         itemPhuongThucThanhToan.setForeground(new java.awt.Color(255, 255, 255));
         itemPhuongThucThanhToan.setFont(new java.awt.Font("Segoe UI", 1, 12));
-        itemPhuongThucThanhToan.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        itemPhuongThucThanhToan.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        itemPhuongThucThanhToan.setToolTipText("Quản lý các phương thức thanh toán");
 
         itemLichSuThanhToan.setBackground(new java.awt.Color(134, 39, 43));
         itemLichSuThanhToan.setForeground(new java.awt.Color(255, 255, 255));
         itemLichSuThanhToan.setFont(new java.awt.Font("Segoe UI", 1, 12));
-        itemLichSuThanhToan.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        itemLichSuThanhToan.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        itemLichSuThanhToan.setToolTipText("Xem lịch sử thanh toán và hóa đơn");
 
         // Thêm hover effect
         itemHoaDon.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -233,7 +199,53 @@ public class MainUI extends javax.swing.JFrame {
         itemHoaDon.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new com.team4.quanliquanmicay.View.management.BillManagement().setVisible(true);
+                try {
+                    System.out.println("🔄 Đang mở BillManagement...");
+                    new com.team4.quanliquanmicay.View.management.BillManagement().setVisible(true);
+                    System.out.println("✅ BillManagement đã được mở thành công!");
+                } catch (Exception ex) {
+                    System.err.println("❌ Lỗi khi mở BillManagement: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(null, 
+                        "Lỗi khi mở Quản lý Hóa đơn: " + ex.getMessage(), 
+                        "Lỗi", 
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        
+        // Thêm ActionListener cho menu item "Phương thức thanh toán"
+        itemPhuongThucThanhToan.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    System.out.println("🔄 Đang mở PaymentMethodManagement...");
+                    new com.team4.quanliquanmicay.View.management.PaymentMethodManagement().setVisible(true);
+                    System.out.println("✅ PaymentMethodManagement đã được mở thành công!");
+                } catch (Exception ex) {
+                    System.err.println("❌ Lỗi khi mở PaymentMethodManagement: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(null, 
+                        "Lỗi khi mở Quản lý Phương thức thanh toán: " + ex.getMessage(), 
+                        "Lỗi", 
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        
+        // Thêm ActionListener cho menu item "Lịch sử"
+        itemLichSuThanhToan.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    System.out.println("🔄 Đang mở HistoryManagement...");
+                    new com.team4.quanliquanmicay.View.management.HistoryManagement().setVisible(true);
+                    System.out.println("✅ HistoryManagement đã được mở thành công!");
+                } catch (Exception ex) {
+                    System.err.println("❌ Lỗi khi mở HistoryManagement: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(null, 
+                        "Lỗi khi mở Quản lý Lịch sử: " + ex.getMessage(), 
+                        "Lỗi", 
+                        JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
         
@@ -248,7 +260,10 @@ public class MainUI extends javax.swing.JFrame {
                 }
                 popupQuanLyHoaDon.show(btnBillManagement, 0, btnBillManagement.getHeight());
             }
-                });
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnBillManagement.setToolTipText("Click để mở menu quản lý hóa đơn");
+            }
+        });
     }
     
     /**
@@ -367,6 +382,11 @@ public class MainUI extends javax.swing.JFrame {
         jButton13.setText("Thống kê");
         jButton13.setToolTipText("");
         jButton13.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        jButton13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton13ActionPerformed(evt);
+            }
+        });
 
         jButton14.setBackground(new java.awt.Color(248, 248, 248));
         jButton14.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -374,6 +394,11 @@ public class MainUI extends javax.swing.JFrame {
         jButton14.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Unlock.png"))); // NOI18N
         jButton14.setText("Đổi mật khẩu");
         jButton14.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        jButton14.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton14ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
         jPanel10.setLayout(jPanel10Layout);
@@ -501,6 +526,11 @@ public class MainUI extends javax.swing.JFrame {
                 btnTableManagementMouseEntered(evt);
             }
         });
+        btnTableManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTableManagementActionPerformed(evt);
+            }
+        });
 
         btnUserManagement.setBackground(new java.awt.Color(134, 39, 43));
         btnUserManagement.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -512,6 +542,11 @@ public class MainUI extends javax.swing.JFrame {
                 btnUserManagementMouseEntered(evt);
             }
         });
+        btnUserManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUserManagementActionPerformed(evt);
+            }
+        });
 
         btnCustomerManagement.setBackground(new java.awt.Color(134, 39, 43));
         btnCustomerManagement.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
@@ -521,6 +556,11 @@ public class MainUI extends javax.swing.JFrame {
         btnCustomerManagement.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btnCustomerManagementMouseEntered(evt);
+            }
+        });
+        btnCustomerManagement.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCustomerManagementActionPerformed(evt);
             }
         });
 
@@ -566,6 +606,11 @@ public class MainUI extends javax.swing.JFrame {
         jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Address book.png"))); // NOI18N
         jButton7.setText("CHỌN BÀN");
         jButton7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        jButton7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton7ActionPerformed(evt);
+            }
+        });
 
         jButton9.setBackground(new java.awt.Color(167, 239, 163));
         jButton9.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -614,6 +659,11 @@ public class MainUI extends javax.swing.JFrame {
         jButton12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
         jButton12.setToolTipText("");
         jButton12.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        jButton12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton12ActionPerformed(evt);
+            }
+        });
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
@@ -726,6 +776,7 @@ public class MainUI extends javax.swing.JFrame {
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
         // TODO add your handling code here:
+        new com.team4.quanliquanmicay.View.PayUI().setVisible(true);
     }//GEN-LAST:event_jButton9ActionPerformed
 
     private void btnCategoryManagementMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCategoryManagementMouseEntered
@@ -748,61 +799,42 @@ public class MainUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnCustomerManagementMouseEntered
 
+    private void btnTableManagementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTableManagementActionPerformed
+        // TODO add your handling code here:
+        new com.team4.quanliquanmicay.View.management.TableManagement().setVisible(true);
+    }//GEN-LAST:event_btnTableManagementActionPerformed
+
+    private void btnUserManagementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUserManagementActionPerformed
+        // TODO add your handling code here:
+        new com.team4.quanliquanmicay.View.management.UserManagement().setVisible(true);
+    }//GEN-LAST:event_btnUserManagementActionPerformed
+
+    private void btnCustomerManagementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCustomerManagementActionPerformed
+        // TODO add your handling code here:
+        new com.team4.quanliquanmicay.View.management.CustomerManagement().setVisible(true);
+    }//GEN-LAST:event_btnCustomerManagementActionPerformed
+
     private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        // Mở ChooseTableUI
-        new ChooseTableUI().setVisible(true);
-        this.setVisible(false);
+        // TODO add your handling code here:
+        new com.team4.quanliquanmicay.View.ChooseTableUI().setVisible(true);
     }//GEN-LAST:event_jButton7ActionPerformed
 
-    private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-        // Hiển thị dialog hỗ trợ
-        javax.swing.JOptionPane.showMessageDialog(this, 
-            "Hệ thống quản lý nhà hàng mì cay\n" +
-            "Phiên bản: 1.0\n" +
-            "Liên hệ hỗ trợ: support@fivec.com", 
-            "Hỗ trợ", 
-            javax.swing.JOptionPane.INFORMATION_MESSAGE);
-    }//GEN-LAST:event_jButton11ActionPerformed
-
     private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
-        // Thoát ứng dụng
+        // TODO add your handling code here:
         System.exit(0);
     }//GEN-LAST:event_jButton12ActionPerformed
-    
-    private void btnCategoryManagementActionPerformed(java.awt.event.ActionEvent evt) {
-        // Mở CategoryManagement
-        new com.team4.quanliquanmicay.View.management.CategoryManagement().setVisible(true);
-    }
-    
-    private void btnBillManagementActionPerformed(java.awt.event.ActionEvent evt) {
-        // Mở BillManagement
-        new com.team4.quanliquanmicay.View.management.BillManagement().setVisible(true);
-    }
-    
-    private void btnTableManagementActionPerformed(java.awt.event.ActionEvent evt) {
-        // Mở TableManagement
-        new com.team4.quanliquanmicay.View.management.TableManagement().setVisible(true);
-    }
-    
-    private void btnUserManagementActionPerformed(java.awt.event.ActionEvent evt) {
-        // Mở UserManagement
-        new com.team4.quanliquanmicay.View.management.UserManagement().setVisible(true);
-    }
-    
-    private void btnCustomerManagementActionPerformed(java.awt.event.ActionEvent evt) {
-        // Mở CustomerManagement
-        new com.team4.quanliquanmicay.View.management.CustomerManagement().setVisible(true);
-    }
-    
-    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {
-        // Mở HistoryManagement (Thống kê)
-        new com.team4.quanliquanmicay.View.management.HistoryManagement().setVisible(true);
-    }
-    
-    private void jButton14ActionPerformed(java.awt.event.ActionEvent evt) {
-        // Mở ChangePassword (Đổi mật khẩu)
+
+    private void jButton14ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton14ActionPerformed
+        // TODO add your handling code here:
         new com.team4.quanliquanmicay.View.ChangePassword().setVisible(true);
-    }
+    }//GEN-LAST:event_jButton14ActionPerformed
+
+    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton13ActionPerformed
+        // TODO add your handling code here:
+        new com.team4.quanliquanmicay.View.management.ReportManagement().setVisible(true);
+    }//GEN-LAST:event_jButton13ActionPerformed
+
+
 
     /**
      * @param args the command line arguments

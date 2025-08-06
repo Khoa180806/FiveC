@@ -7,7 +7,6 @@ package com.team4.quanliquanmicay.View.management;
 import com.team4.quanliquanmicay.Controller.PaymentHistoryController;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
-import com.team4.quanliquanmicay.util.XDate;
 import com.team4.quanliquanmicay.DAO.BillDAO;
 import com.team4.quanliquanmicay.DAO.PaymentHistoryDAO;
 import com.team4.quanliquanmicay.DAO.PaymentMethodDAO;
@@ -24,13 +23,11 @@ import javax.swing.table.DefaultTableModel;
 import java.util.List;
 import java.util.Date;
 import java.text.SimpleDateFormat;
-import javax.swing.JOptionPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.toedter.calendar.JCalendar;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 
 /**
  *
