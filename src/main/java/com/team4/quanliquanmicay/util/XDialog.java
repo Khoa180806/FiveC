@@ -13,7 +13,6 @@ public class XDialog {
     public static void alert(String message){
         alert(null, message, "Thông báo!");
     }
-    
     /**
      * Hiển thị thông báo với title tùy chỉnh
      */
@@ -27,7 +26,10 @@ public class XDialog {
     public static void alert(Window parent, String message, String title){
         showDialogWithParent(parent, () -> {
             XTheme.customizeDialogs();
-            JOptionPane.showMessageDialog(parent, message, title, JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane optionPane = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE);
+            optionPane.setIcon(createDialogIcon("info"));
+            JDialog dialog = optionPane.createDialog(parent, title);
+            dialog.setVisible(true);
         });
     }
     
@@ -53,9 +55,13 @@ public class XDialog {
         
         showDialogWithParent(parent, () -> {
             XTheme.customizeDialogs();
-            int choice = JOptionPane.showConfirmDialog(parent, message, title, 
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            result[0] = (choice == JOptionPane.YES_OPTION);
+            JOptionPane optionPane = new JOptionPane(message, JOptionPane.QUESTION_MESSAGE, 
+                JOptionPane.YES_NO_OPTION);
+            optionPane.setIcon(createDialogIcon("question"));
+            JDialog dialog = optionPane.createDialog(parent, title);
+            dialog.setVisible(true);
+            result[0] = (optionPane.getValue() != null && 
+                        optionPane.getValue().equals(JOptionPane.YES_OPTION));
         });
         
         return result[0];
@@ -83,7 +89,13 @@ public class XDialog {
         
         showDialogWithParent(parent, () -> {
             XTheme.customizeDialogs();
-            result[0] = JOptionPane.showInputDialog(parent, message, title, JOptionPane.QUESTION_MESSAGE);
+            JOptionPane optionPane = new JOptionPane(message, JOptionPane.QUESTION_MESSAGE, 
+                JOptionPane.OK_CANCEL_OPTION);
+            optionPane.setIcon(createDialogIcon("question"));
+            optionPane.setWantsInput(true);
+            JDialog dialog = optionPane.createDialog(parent, title);
+            dialog.setVisible(true);
+            result[0] = (String) optionPane.getInputValue();
         });
         
         return result[0];
@@ -97,7 +109,10 @@ public class XDialog {
     public static void warning(Window parent, String message, String title) {
         showDialogWithParent(parent, () -> {
             XTheme.customizeDialogs();
-            JOptionPane.showMessageDialog(parent, message, title, JOptionPane.WARNING_MESSAGE);
+            JOptionPane optionPane = new JOptionPane(message, JOptionPane.WARNING_MESSAGE);
+            optionPane.setIcon(createDialogIcon("warning"));
+            JDialog dialog = optionPane.createDialog(parent, title);
+            dialog.setVisible(true);
         });
     }
     
@@ -115,7 +130,10 @@ public class XDialog {
     public static void error(Window parent, String message, String title) {
         showDialogWithParent(parent, () -> {
             XTheme.customizeDialogs();
-            JOptionPane.showMessageDialog(parent, message, title, JOptionPane.ERROR_MESSAGE);
+            JOptionPane optionPane = new JOptionPane(message, JOptionPane.ERROR_MESSAGE);
+            optionPane.setIcon(createDialogIcon("error"));
+            JDialog dialog = optionPane.createDialog(parent, title);
+            dialog.setVisible(true);
         });
     }
     
@@ -133,7 +151,10 @@ public class XDialog {
     public static void success(Window parent, String message, String title) {
         showDialogWithParent(parent, () -> {
             XTheme.customizeDialogs();
-            JOptionPane.showMessageDialog(parent, message, title, JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane optionPane = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE);
+            optionPane.setIcon(createDialogIcon("success"));
+            JDialog dialog = optionPane.createDialog(parent, title);
+            dialog.setVisible(true);
         });
     }
     
@@ -153,8 +174,12 @@ public class XDialog {
         
         showDialogWithParent(parent, () -> {
             XTheme.customizeDialogs();
-            result[0] = (String) JOptionPane.showInputDialog(parent, message, title, 
-                JOptionPane.QUESTION_MESSAGE, null, options, options.length > 0 ? options[0] : null);
+            JOptionPane optionPane = new JOptionPane(message, JOptionPane.QUESTION_MESSAGE, 
+                JOptionPane.OK_CANCEL_OPTION, createDialogIcon("question"), options, 
+                options.length > 0 ? options[0] : null);
+            JDialog dialog = optionPane.createDialog(parent, title);
+            dialog.setVisible(true);
+            result[0] = (String) optionPane.getValue();
         });
         
         return result[0];
@@ -183,27 +208,29 @@ public class XDialog {
             dialog.setLayout(new BorderLayout());
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             
-            // Panel chính
+            // Panel chính với theme mì cay
             JPanel mainPanel = new JPanel(new BorderLayout());
-            mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-            mainPanel.setBackground(Color.WHITE);
+            mainPanel.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
+            mainPanel.setBackground(new Color(252, 250, 248)); // Nền nhẹ với tông be
             
-            // Message label
-            JLabel messageLabel = new JLabel("<html><div style='text-align: center; width: 300px;'>" 
+            // Message label với styling đẹp
+            JLabel messageLabel = new JLabel("<html><div style='text-align: center; width: 320px; line-height: 1.4;'>" 
                 + message + "</div></html>");
             messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
             messageLabel.setForeground(new Color(33, 37, 41));
             messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            messageLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10));
+            messageLabel.setBorder(BorderFactory.createEmptyBorder(15, 15, 25, 15));
             
             // Button panel
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-            buttonPanel.setBackground(Color.WHITE);
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 0));
+            buttonPanel.setBackground(new Color(252, 250, 248));
             
-            // Tạo các button
+            // Tạo các button với màu sắc phù hợp
             for (int i = 0; i < buttonLabels.length && i < buttonActions.length; i++) {
                 final int index = i;
-                JButton button = createStyledButton(buttonLabels[i], getButtonColor(i), Color.WHITE);
+                Color bgColor = getButtonColor(i);
+                Color textColor = (bgColor.equals(new Color(204, 164, 133))) ? new Color(33, 37, 41) : Color.WHITE;
+                JButton button = createStyledButton(buttonLabels[i], bgColor, textColor);
                 
                 button.addActionListener(e -> {
                     result.buttonIndex = index;
@@ -225,10 +252,16 @@ public class XDialog {
             mainPanel.add(buttonPanel, BorderLayout.SOUTH);
             dialog.add(mainPanel);
             
-            // Dialog settings
-            dialog.setSize(400, 200);
+            // Dialog settings với theme mì cay
+            dialog.setSize(450, 220);
             dialog.setLocationRelativeTo(parent);
             dialog.setResizable(false);
+            
+            // Thêm viền đẹp cho dialog
+            dialog.getRootPane().setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(204, 164, 133), 2),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            ));
             
             // Đóng dialog khi nhấn X
             dialog.addWindowListener(new WindowAdapter() {
@@ -258,29 +291,33 @@ public class XDialog {
             dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             
             JPanel mainPanel = new JPanel(new BorderLayout());
-            mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-            mainPanel.setBackground(Color.WHITE);
+            mainPanel.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
+            mainPanel.setBackground(new Color(252, 250, 248)); // Nền nhẹ với tông be
             
             // Message
             JLabel messageLabel = new JLabel(message);
             messageLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-            messageLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+            messageLabel.setForeground(new Color(33, 37, 41));
+            messageLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
             
-            // Input field
+            // Input field với theme mì cay
             JTextField textField = new JTextField(defaultValue != null ? defaultValue : "", 20);
             textField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             textField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(206, 212, 218), 1),
-                BorderFactory.createEmptyBorder(8, 12, 8, 12)
+                BorderFactory.createLineBorder(new Color(204, 164, 133), 2),
+                BorderFactory.createEmptyBorder(10, 15, 10, 15)
             ));
+            textField.setBackground(new Color(252, 250, 248));
             
             // Button panel
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 15));
-            buttonPanel.setBackground(Color.WHITE);
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 20));
+            buttonPanel.setBackground(new Color(252, 250, 248));
             
             for (int i = 0; i < buttonLabels.length; i++) {
                 final int index = i;
-                JButton button = createStyledButton(buttonLabels[i], getButtonColor(i), Color.WHITE);
+                Color bgColor = getButtonColor(i);
+                Color textColor = (bgColor.equals(new Color(204, 164, 133))) ? new Color(33, 37, 41) : Color.WHITE;
+                JButton button = createStyledButton(buttonLabels[i], bgColor, textColor);
                 
                 button.addActionListener(e -> {
                     result.buttonIndex = index;
@@ -307,9 +344,15 @@ public class XDialog {
             mainPanel.add(buttonPanel, BorderLayout.SOUTH);
             dialog.add(mainPanel);
             
-            dialog.setSize(400, 180);
+            dialog.setSize(450, 200);
             dialog.setLocationRelativeTo(parent);
             dialog.setResizable(false);
+            
+            // Thêm viền đẹp cho dialog
+            dialog.getRootPane().setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(204, 164, 133), 2),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            ));
             
             SwingUtilities.invokeLater(() -> textField.requestFocus());
             dialog.setVisible(true);
@@ -319,6 +362,140 @@ public class XDialog {
     }
     
     // === HELPER METHODS ===
+    
+    /**
+     * Tạo icon đẹp cho dialog theo theme mì cay
+     */
+    private static Icon createDialogIcon(String type) {
+        Color iconColor;
+        String symbol;
+        
+        switch (type.toLowerCase()) {
+            case "info":
+                iconColor = new Color(52, 144, 220);
+                symbol = "i";
+                break;
+            case "warning":
+                iconColor = new Color(255, 193, 7);
+                symbol = "!";
+                break;
+            case "error":
+                iconColor = new Color(220, 53, 69);
+                symbol = "X";
+                break;
+            case "success":
+                iconColor = new Color(40, 167, 69);
+                symbol = "✓";
+                break;
+            case "question":
+                iconColor = new Color(134, 39, 43); // Đỏ mì cay
+                symbol = "?";
+                break;
+            default:
+                iconColor = new Color(134, 39, 43); // Đỏ mì cay
+                symbol = "●";
+        }
+        
+        return new Icon() {
+            @Override
+            public void paintIcon(Component c, Graphics g, int x, int y) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Vẽ hình tròn nền với màu nhạt hơn
+                g2.setColor(new Color(iconColor.getRed(), iconColor.getGreen(), iconColor.getBlue(), 15));
+                g2.fillOval(x, y, getIconWidth(), getIconHeight());
+                
+                // Vẽ viền đậm hơn
+                g2.setColor(iconColor);
+                g2.setStroke(new BasicStroke(3.5f));
+                g2.drawOval(x + 2, y + 2, getIconWidth() - 4, getIconHeight() - 4);
+                
+                // Vẽ symbol với màu đậm và rõ ràng
+                g2.setColor(iconColor);
+                g2.setFont(new Font("Segoe UI", Font.BOLD, 26));
+                FontMetrics fm = g2.getFontMetrics();
+                int textX = x + (getIconWidth() - fm.stringWidth(symbol)) / 2;
+                int textY = y + (getIconHeight() + fm.getAscent()) / 2 - 4;
+                g2.drawString(symbol, textX, textY);
+                
+                g2.dispose();
+            }
+            
+            @Override
+            public int getIconWidth() { return 42; }
+            
+            @Override
+            public int getIconHeight() { return 42; }
+        };
+    }
+    
+    /**
+     * Tạo icon đơn giản hơn cho trường hợp cần thiết
+     */
+    private static Icon createSimpleIcon(String type) {
+        Color iconColor;
+        String symbol;
+        
+        switch (type.toLowerCase()) {
+            case "info":
+                iconColor = new Color(52, 144, 220);
+                symbol = "i";
+                break;
+            case "warning":
+                iconColor = new Color(255, 193, 7);
+                symbol = "!";
+                break;
+            case "error":
+                iconColor = new Color(220, 53, 69);
+                symbol = "X";
+                break;
+            case "success":
+                iconColor = new Color(40, 167, 69);
+                symbol = "✓";
+                break;
+            case "question":
+                iconColor = new Color(134, 39, 43); // Đỏ mì cay
+                symbol = "?";
+                break;
+            default:
+                iconColor = new Color(134, 39, 43); // Đỏ mì cay
+                symbol = "●";
+        }
+        
+        return new Icon() {
+            @Override
+            public void paintIcon(Component c, Graphics g, int x, int y) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Vẽ hình tròn nền nhẹ
+                g2.setColor(new Color(iconColor.getRed(), iconColor.getGreen(), iconColor.getBlue(), 20));
+                g2.fillOval(x, y, getIconWidth(), getIconHeight());
+                
+                // Vẽ viền
+                g2.setColor(iconColor);
+                g2.setStroke(new BasicStroke(2f));
+                g2.drawOval(x + 1, y + 1, getIconWidth() - 2, getIconHeight() - 2);
+                
+                // Vẽ symbol với màu đậm và rõ ràng
+                g2.setColor(iconColor);
+                g2.setFont(new Font("Segoe UI", Font.BOLD, 20));
+                FontMetrics fm = g2.getFontMetrics();
+                int textX = x + (getIconWidth() - fm.stringWidth(symbol)) / 2;
+                int textY = y + (getIconHeight() + fm.getAscent()) / 2 - 2;
+                g2.drawString(symbol, textX, textY);
+                
+                g2.dispose();
+            }
+            
+            @Override
+            public int getIconWidth() { return 32; }
+            
+            @Override
+            public int getIconHeight() { return 32; }
+        };
+    }
     
     /**
      * Phương thức chính để ẩn/hiện parent window
@@ -349,7 +526,7 @@ public class XDialog {
     }
     
     /**
-     * Tạo button với styling đẹp
+     * Tạo button với styling đẹp theo theme mì cay
      */
     private static JButton createStyledButton(String text, Color bgColor, Color textColor) {
         JButton button = new JButton(text);
@@ -358,14 +535,23 @@ public class XDialog {
         button.setBackground(bgColor);
         button.setBorderPainted(false);
         button.setFocusPainted(false);
-        button.setPreferredSize(new Dimension(90, 35));
+        button.setPreferredSize(new Dimension(100, 38));
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         
-        // Hover effect
+        // Bo góc hiện đại
+        button.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
+        
+        // Hover effect với màu mì cay
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(bgColor.darker());
+                if (bgColor.equals(new Color(134, 39, 43))) { // Đỏ mì cay
+                    button.setBackground(new Color(154, 49, 53));
+                } else if (bgColor.equals(new Color(204, 164, 133))) { // Be
+                    button.setBackground(new Color(184, 144, 113));
+                } else {
+                    button.setBackground(bgColor.darker());
+                }
             }
             
             @Override
@@ -378,15 +564,15 @@ public class XDialog {
     }
     
     /**
-     * Lấy màu cho button theo index
+     * Lấy màu cho button theo index - Theme mì cay
      */
     private static Color getButtonColor(int index) {
         Color[] colors = {
-            new Color(102, 0, 0),      // Đỏ đậm (Primary)
+            new Color(134, 39, 43),     // Đỏ mì cay (Primary)
+            new Color(204, 164, 133),   // Be (Secondary)
             new Color(40, 167, 69),     // Xanh lá (Success)
             new Color(255, 193, 7),     // Vàng (Warning)
             new Color(220, 53, 69),     // Đỏ (Danger)
-            new Color(108, 117, 125),   // Xám (Secondary)
             new Color(52, 144, 220)     // Xanh dương (Info)
         };
         

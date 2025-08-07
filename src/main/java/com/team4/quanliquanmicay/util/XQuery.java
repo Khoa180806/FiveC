@@ -59,13 +59,15 @@ public class XQuery {
                     Object value = null;
                     Class<?> paramType = method.getParameterTypes()[0];
                     // DEBUG: In ra tên setter và fieldName
-                    System.out.println("[DEBUG] Setter: " + name + " | fieldName: " + fieldName);
+                    // System.out.println("[DEBUG] Setter: " + name + " | fieldName: " + fieldName);
                     // Cách 1: Thử lấy theo đúng tên thuộc tính (alias SQL)
                     try {
+                        // System.out.println("[DEBUG] Trying to get column: " + fieldName.toUpperCase());
                         value = resultSet.getObject(fieldName.toUpperCase());
                         if (value != null) {
                             // Nếu kiểu setter là int hoặc Integer và value là BigDecimal thì convert
                             if ((paramType == int.class || paramType == Integer.class) && value instanceof java.math.BigDecimal) {
+                                // System.out.println("[DEBUG] Converting BigDecimal to Integer in readBean: " + value + " for field: " + fieldName);
                                 value = ((java.math.BigDecimal) value).intValue();
                             }
                             if (paramType == double.class && value instanceof java.math.BigDecimal) {
@@ -92,6 +94,7 @@ public class XQuery {
                     // Cách 2: Thử lấy theo đúng tên thuộc tính (alias SQL)
                     if (!success) {
                         try {
+                            // System.out.println("[DEBUG] Trying to get column: " + fieldName);
                             value = resultSet.getObject(fieldName);
                             if (value != null) {
                                 if ((paramType == int.class || paramType == Integer.class) && value instanceof java.math.BigDecimal) {
@@ -125,7 +128,6 @@ public class XQuery {
                                     value = ((java.math.BigDecimal) value).intValue();
                                 }
                                 method.invoke(bean, value);
-                                System.out.printf("SUCCESS (by snake UPPERCASE): Set %s = %s\r\n", fieldName, value);
                                 success = true;
                             }
                         } catch (Exception e) {
@@ -136,6 +138,7 @@ public class XQuery {
                     // Cách 3: Thử với tên cột lowercase
                     if (!success) {
                         try {
+                            // System.out.println("[DEBUG] Trying to get column: " + fieldName.toLowerCase());
                             value = resultSet.getObject(fieldName.toLowerCase());
                             if (value != null) {
                                 if (paramType == int.class && value instanceof java.math.BigDecimal) {
@@ -163,6 +166,7 @@ public class XQuery {
                     if (!success) {
                         try {
                             int columnIndex = getColumnIndex(fieldName);
+                            // System.out.println("[DEBUG] Trying to get column by index: " + columnIndex + " for field: " + fieldName);
                             if (columnIndex > 0) {
                                 value = resultSet.getObject(columnIndex);
                                 if (paramType == int.class && value instanceof java.math.BigDecimal) {
@@ -198,12 +202,12 @@ public class XQuery {
      */
     private static int getColumnIndex(String fieldName) {
         switch (fieldName) {
-            // USER_ACCOUNT mapping
+            // USER_ACCOUNT mapping (0-based index)
             case "User_id": return 1;
             case "Username": return 2;
             case "Pass": return 3;
             case "FullName": return 4;
-            case "Gender": return 5;
+            case "Gender": return 5; // Cột thứ 5 trong bảng USER_ACCOUNT
             case "Email": return 6;
             case "Phone_number": return 7;
             case "Image": return 8;
@@ -233,7 +237,10 @@ public class XQuery {
      * Convert kiểu dữ liệu phù hợp với Oracle (BigDecimal -> Integer, Timestamp/Date -> java.util.Date)
      */
     private static Object convertOracleType(Class<?> paramType, Object value, String fieldName) {
-        if (value == null) return null;
+        if (value == null) {
+            // System.out.println("[DEBUG] Null value for field: " + fieldName);
+            return null;
+        }
         // Xử lý BigDecimal -> Integer
         if (paramType == int.class || paramType == Integer.class) {
             if (value instanceof java.math.BigDecimal) {
