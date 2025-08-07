@@ -18,6 +18,8 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.border.LineBorder;
 import javax.swing.border.CompoundBorder;
+import java.awt.GridLayout;
+
 
 /**
  *
@@ -34,6 +36,8 @@ public class ChooseTableUI extends javax.swing.JFrame {
         initComponents();
         
         // Xóa các dòng ép buộc kích thước cố định
+        // XÓA hoặc COMMENT các dòng dưới đây để dùng đúng layout, size, ... của .form
+
         // this.setSize(800, 600);
         // this.setPreferredSize(new java.awt.Dimension(800, 600));
         // this.setMaximumSize(new java.awt.Dimension(800, 600));
@@ -45,6 +49,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
         jTabbedPane1.setSelectedIndex(0);
         
         // Xóa các dòng ép buộc kích thước button
+        // ÉP BUỘC KÍCH THƯỚC KHÁC NHAU CHO HAI NÚT
         // jButton1.setPreferredSize(new java.awt.Dimension(350, 50));
         // jButton1.setMinimumSize(new java.awt.Dimension(350, 50));
         // jButton1.setMaximumSize(new java.awt.Dimension(350, 50));
@@ -221,10 +226,12 @@ public class ChooseTableUI extends javax.swing.JFrame {
     // Hàm fill dữ liệu bàn lên 2 panel
     public void loadTable() {
         List<TableForCustomer> tables = tableDAO.findAll();
-
-        // Xóa tất cả bàn cũ trong panel
         jPanel2.removeAll();
         jPanel3.removeAll();
+
+        // PHẢI set layout cho panel để add button động!
+        jPanel2.setLayout(new GridLayout(2, 6, 15, 15));
+        jPanel3.setLayout(new GridLayout(2, 6, 15, 15));
 
         // Tạo map để tra cứu nhanh
         java.util.Map<Integer, TableForCustomer> tableMap = new java.util.HashMap<>();
@@ -232,16 +239,22 @@ public class ChooseTableUI extends javax.swing.JFrame {
             tableMap.put(t.getTable_number(), t);
         }
 
-        // 1-12: Normal - Không ép buộc layout, để Form Designer quản lý
+        // 1-12: Normal
         for (int i = 1; i <= 12; i++) {
             TableForCustomer table = tableMap.get(i);
-            jPanel2.add(this.createButton(i, table));
+            JButton btn = createButton(i, table);
+            btn.setMaximumSize(new Dimension(120, 800));
+            btn.setPreferredSize(new Dimension(120, 800));
+            jPanel2.add(btn);
         }
 
-        // 13-24: VIP - Không ép buộc layout, để Form Designer quản lý
+        // 13-24: VIP
         for (int i = 13; i <= 24; i++) {
             TableForCustomer table = tableMap.get(i);
-            jPanel3.add(this.createButton(i, table));
+            JButton btn = createButton(i, table);
+            btn.setMaximumSize(new Dimension(120, 100));
+            btn.setPreferredSize(new Dimension(120, 100));
+            jPanel3.add(btn);
         }
 
         // Cập nhật giao diện
@@ -257,8 +270,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
         btnTable.setContentAreaFilled(false);
         btnTable.setOpaque(true);
         btnTable.setText(String.format("Bàn #%d", tableNumber));
-        // Xóa dòng ép buộc kích thước để tôn trọng thiết kế Form Designer
-        // btnTable.setPreferredSize(new Dimension(120, 120));
+        btnTable.setPreferredSize(new Dimension(120, 100)); // <-- Thêm dòng này để set height 100px
         btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
         btnTable.setOpaque(true);
         btnTable.setContentAreaFilled(true);
