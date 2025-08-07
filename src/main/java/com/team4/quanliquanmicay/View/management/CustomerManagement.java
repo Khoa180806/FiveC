@@ -498,14 +498,6 @@ public class CustomerManagement extends javax.swing.JFrame {
     }
 
     /**
-     * Log operation với timestamp
-     */
-    private void logOperation(String operation, String details) {
-        String timestamp = java.time.LocalDateTime.now().toString();
-        System.out.println("[" + timestamp + "] " + operation + ": " + details);
-    }
-
-    /**
      * Thiết lập tooltip cho các field
      */
     private void setupTooltips() {
