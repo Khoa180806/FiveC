@@ -33,25 +33,25 @@ public class ChooseTableUI extends javax.swing.JFrame {
         XTheme.applyFullTheme();
         initComponents();
         
-        // Thiết lập kích thước cố định cho UI
-        this.setSize(800, 600);
-        this.setPreferredSize(new java.awt.Dimension(800, 600));
-        this.setMaximumSize(new java.awt.Dimension(800, 600));
-        this.setMinimumSize(new java.awt.Dimension(800, 600));
+        // Xóa các dòng ép buộc kích thước cố định
+        // this.setSize(800, 600);
+        // this.setPreferredSize(new java.awt.Dimension(800, 600));
+        // this.setMaximumSize(new java.awt.Dimension(800, 600));
+        // this.setMinimumSize(new java.awt.Dimension(800, 600));
         
         this.setLocationRelativeTo(null);
         
         // Đặt tab 1-12 làm tab mặc định
         jTabbedPane1.setSelectedIndex(0);
         
-        // ÉP BUỘC KÍCH THƯỚC KHÁC NHAU CHO HAI NÚT
-        jButton1.setPreferredSize(new java.awt.Dimension(350, 50));
-        jButton1.setMinimumSize(new java.awt.Dimension(350, 50));
-        jButton1.setMaximumSize(new java.awt.Dimension(350, 50));
+        // Xóa các dòng ép buộc kích thước button
+        // jButton1.setPreferredSize(new java.awt.Dimension(350, 50));
+        // jButton1.setMinimumSize(new java.awt.Dimension(350, 50));
+        // jButton1.setMaximumSize(new java.awt.Dimension(350, 50));
         
-        jButton2.setPreferredSize(new java.awt.Dimension(200, 50));
-        jButton2.setMinimumSize(new java.awt.Dimension(200, 50));
-        jButton2.setMaximumSize(new java.awt.Dimension(200, 50));
+        // jButton2.setPreferredSize(new java.awt.Dimension(200, 50));
+        // jButton2.setMinimumSize(new java.awt.Dimension(200, 50));
+        // jButton2.setMaximumSize(new java.awt.Dimension(200, 50));
         
         // Thêm dòng này để fill dữ liệu khi mở form
         loadTable();
@@ -68,6 +68,9 @@ public class ChooseTableUI extends javax.swing.JFrame {
                 jButton2ActionPerformed(evt);
             }
         });
+        
+        // Đảm bảo giao diện hiển thị đúng theo thiết kế
+        pack();
     }
 
     /**
@@ -96,7 +99,6 @@ public class ChooseTableUI extends javax.swing.JFrame {
         lblTitle.setFont(new java.awt.Font("Segoe UI", 1, 36)); // NOI18N
         lblTitle.setForeground(new java.awt.Color(255, 255, 255));
         lblTitle.setText("CHỌN BÀN");
-        pnlTitle.add(lblTitle);
 
         jPanel5.setBackground(new java.awt.Color(204, 164, 133));
 
@@ -106,11 +108,11 @@ public class ChooseTableUI extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 556, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 359, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("1-12", jPanel2);
@@ -119,11 +121,11 @@ public class ChooseTableUI extends javax.swing.JFrame {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 556, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 359, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab("13-24", jPanel3);
@@ -131,6 +133,11 @@ public class ChooseTableUI extends javax.swing.JFrame {
         jButton2.setBackground(new java.awt.Color(119, 50, 5));
         jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
         jButton2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
@@ -150,28 +157,54 @@ public class ChooseTableUI extends javax.swing.JFrame {
                     .addComponent(jTabbedPane1)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 351, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, 200)))
+                        .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        pnlTitle.add(jPanel5);
+        javax.swing.GroupLayout pnlTitleLayout = new javax.swing.GroupLayout(pnlTitle);
+        pnlTitle.setLayout(pnlTitleLayout);
+        pnlTitleLayout.setHorizontalGroup(
+            pnlTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlTitleLayout.createSequentialGroup()
+                .addContainerGap(258, Short.MAX_VALUE)
+                .addComponent(lblTitle)
+                .addGap(249, 249, 249))
+        );
+        pnlTitleLayout.setVerticalGroup(
+            pnlTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlTitleLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lblTitle)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
 
-        getContentPane().add(pnlTitle, java.awt.BorderLayout.CENTER);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(pnlTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(pnlTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -199,15 +232,13 @@ public class ChooseTableUI extends javax.swing.JFrame {
             tableMap.put(t.getTable_number(), t);
         }
 
-        // 1-12: Normal
-        jPanel2.setLayout(new java.awt.GridLayout(2, 6, 15, 15));
+        // 1-12: Normal - Không ép buộc layout, để Form Designer quản lý
         for (int i = 1; i <= 12; i++) {
             TableForCustomer table = tableMap.get(i);
             jPanel2.add(this.createButton(i, table));
         }
 
-        // 13-24: VIP
-        jPanel3.setLayout(new java.awt.GridLayout(2, 6, 15, 15));
+        // 13-24: VIP - Không ép buộc layout, để Form Designer quản lý
         for (int i = 13; i <= 24; i++) {
             TableForCustomer table = tableMap.get(i);
             jPanel3.add(this.createButton(i, table));
@@ -226,7 +257,8 @@ public class ChooseTableUI extends javax.swing.JFrame {
         btnTable.setContentAreaFilled(false);
         btnTable.setOpaque(true);
         btnTable.setText(String.format("Bàn #%d", tableNumber));
-        btnTable.setPreferredSize(new Dimension(120, 120));
+        // Xóa dòng ép buộc kích thước để tôn trọng thiết kế Form Designer
+        // btnTable.setPreferredSize(new Dimension(120, 120));
         btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
         btnTable.setOpaque(true);
         btnTable.setContentAreaFilled(true);
