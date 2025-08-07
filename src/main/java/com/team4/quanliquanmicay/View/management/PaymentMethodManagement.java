@@ -359,24 +359,11 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
 
         btnCreate.setBackground(new java.awt.Color(185, 163, 147));
         btnCreate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-<<<<<<< HEAD
         btnCreate.setForeground(new java.awt.Color(255, 255, 255));
         btnCreate.setText("Thêm");
         btnCreate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
 
         btnUpdate.setBackground(new java.awt.Color(185, 163, 147));
-=======
-
-        btnCreate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Create.png"))); // NOI18N
-        btnCreate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCreateActionPerformed(evt);
-            }
-        });
-
-
-        btnUpdate.setBackground(new java.awt.Color(255, 231, 153));
->>>>>>> 08553c4d2d2b350cb38e4ec534b83c8290f28256
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnUpdate.setForeground(new java.awt.Color(255, 255, 255));
         btnUpdate.setText("Cập Nhật");
@@ -384,14 +371,9 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
 
         btnRemove.setBackground(new java.awt.Color(185, 163, 147));
         btnRemove.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-<<<<<<< HEAD
         btnRemove.setForeground(new java.awt.Color(255, 255, 255));
         btnRemove.setText("Xóa");
         btnRemove.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
-=======
-        btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
-        btnRemove.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
->>>>>>> 08553c4d2d2b350cb38e4ec534b83c8290f28256
         btnRemove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRemoveActionPerformed(evt);
@@ -400,28 +382,9 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
 
         btnClear.setBackground(new java.awt.Color(185, 163, 147));
         btnClear.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-<<<<<<< HEAD
         btnClear.setForeground(new java.awt.Color(255, 255, 255));
         btnClear.setText("Làm mới");
         btnClear.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
-=======
-        btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
-        btnClear.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-        btnClear.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnClearActionPerformed(evt);
-            }
-        });
-
-        btnExit.setBackground(new java.awt.Color(119, 50, 5));
-        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
-        btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-        btnExit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnExitActionPerformed(evt);
-            }
-        });
->>>>>>> 08553c4d2d2b350cb38e4ec534b83c8290f28256
 
         javax.swing.GroupLayout pnlFeatureLayout = new javax.swing.GroupLayout(pnlFeature);
         pnlFeature.setLayout(pnlFeatureLayout);
