@@ -385,7 +385,7 @@ public class XDialog {
                 break;
             case "success":
                 iconColor = new Color(40, 167, 69);
-                symbol = "✓";
+                symbol = "S";
                 break;
             case "question":
                 iconColor = new Color(134, 39, 43); // Đỏ mì cay
@@ -452,7 +452,7 @@ public class XDialog {
                 break;
             case "success":
                 iconColor = new Color(40, 167, 69);
-                symbol = "✓";
+                symbol = "S";
                 break;
             case "question":
                 iconColor = new Color(134, 39, 43); // Đỏ mì cay
