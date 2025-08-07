@@ -844,11 +844,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         btnUnOrder.setForeground(new java.awt.Color(102, 102, 102));
         btnUnOrder.setText("Xóa món");
         btnUnOrder.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-        btnUnOrder.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUnOrderActionPerformed(evt);
-            }
-        });
+
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
@@ -1031,7 +1027,8 @@ public class BillUI extends javax.swing.JFrame implements BillController {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnUnOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUnOrderActionPerformed
-        // TODO add your handling code here:
+        // Gọi method deleteSelectedItem() thay vì để trống
+        deleteSelectedItem();
     }//GEN-LAST:event_btnUnOrderActionPerformed
 
     /**

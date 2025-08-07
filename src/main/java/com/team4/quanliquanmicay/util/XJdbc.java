@@ -26,13 +26,22 @@ public class XJdbc {
      */
     public static Connection openConnection() {
         var driver = "oracle.jdbc.driver.OracleDriver";
-        var dburl = "jdbc:oracle:thin:@localhost:1521/XE";
+        var dburl = "jdbc:oracle:thin:@127.0.0.1:1521/XE";
         var username = "SYSTEM";
         var password = "root123";
         try {
             if (!XJdbc.isReady()) {
                 Class.forName(driver);
-                connection = DriverManager.getConnection(dburl, username, password);
+                
+                // Thêm properties để cải thiện kết nối
+                java.util.Properties props = new java.util.Properties();
+                props.setProperty("user", username);
+                props.setProperty("password", password);
+                props.setProperty("oracle.net.CONNECT_TIMEOUT", "10000"); // 10 giây timeout
+                props.setProperty("oracle.jdbc.ReadTimeout", "30000"); // 30 giây read timeout
+                props.setProperty("oracle.net.TNS_ADMIN", "");
+                
+                connection = DriverManager.getConnection(dburl, props);
                 System.out.println("Kết nối database thành công!");
             }
         } catch (ClassNotFoundException e) {
@@ -41,15 +50,29 @@ public class XJdbc {
             throw new RuntimeException("Oracle JDBC Driver không tồn tại", e);
         } catch (SQLException e) {
             System.err.println("Lỗi kết nối database: " + e.getMessage());
+            System.err.println("Mã lỗi: " + e.getErrorCode());
             System.err.println("Hãy kiểm tra:");
             System.err.println("1. Oracle Database đã được cài đặt và chạy chưa?");
             System.err.println("2. Listener đã được khởi động chưa?");
-            System.err.println("3. Thông tin kết nối có đúng không?");
-            System.err.println("   - Host: localhost");
+            System.err.println("3. Firewall có chặn port 1521 không?");
+            System.err.println("4. Network connectivity đến 127.0.0.1:1521");
+            System.err.println("5. Thông tin kết nối có đúng không?");
+            System.err.println("   - Host: 127.0.0.1");
             System.err.println("   - Port: 1521");
-            System.err.println("   - SID: XE");
+            System.err.println("   - Service: XE");
             System.err.println("   - Username: SYSTEM");
             System.err.println("   - Password: root123");
+            
+            // Thêm thông tin debug
+            if (e.getErrorCode() == 12170) {
+                System.err.println("ORA-12170: TNS:Connect timeout occurred");
+                System.err.println("Nguyên nhân có thể:");
+                System.err.println("- Oracle listener không chạy");
+                System.err.println("- Firewall chặn kết nối");
+                System.err.println("- IP 127.0.0.1 không đúng");
+                System.err.println("- Port 1521 bị chặn");
+            }
+            
             throw new RuntimeException("Không thể kết nối đến database", e);
         }
         return connection;
@@ -164,14 +187,7 @@ public class XJdbc {
             XJdbc.openConnection();
             System.out.println("Kết nối thành công! Có thể chạy các demo.");
             
-            // Uncomment các dòng sau khi database đã sẵn sàng
-            // demo1();
-            // demo2();
-            // demo3();
-            
-            // String sql = "INSERT INTO CATE (category_id, category_name) VALUES(?, ?)";
-            // XJdbc.executeUpdate(sql, "C01", "Loại 1");
-            // XJdbc.executeUpdate(sql, "C02", "Loại 2");
+  
             
         } catch (Exception e) {
             System.err.println("Không thể kết nối database: " + e.getMessage());
@@ -180,20 +196,6 @@ public class XJdbc {
             XJdbc.closeConnection();
         }
     }
-
-    // XÓA HOẶC COMMENT demo1 vì nó dùng executeQuery trả về ResultSet (KHÔNG AN TOÀN)
-    // private static void demo1() {
-    //     // Lấy tất cả user có role là 'ADMIN'
-    //     String sql = "SELECT * FROM USER_ACCOUNT WHERE role_id = ?";
-    //     var rs = XJdbc.executeQuery(sql, "ADMIN");
-    //     try {
-    //         while (rs.next()) {
-    //             System.out.println("Username: " + rs.getString("username"));
-    //         }
-    //     } catch (SQLException e) {
-    //         e.printStackTrace();
-    //     }
-    // }
 
     private static void demo2() {
         // Lấy số lượng user đang kích hoạt

@@ -179,7 +179,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
             .addGap(0, 419, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("tab1", pnPayment);
+        jTabbedPane1.addTab("1-12", pnPayment);
 
         jPanel5.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -194,7 +194,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
             .addGap(0, 419, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("tab2", jPanel5);
+        jTabbedPane1.addTab("13-24", jPanel5);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
