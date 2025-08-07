@@ -1091,6 +1091,7 @@ public class OrderUI extends javax.swing.JFrame {
         jPanel3.setBackground(new java.awt.Color(204, 164, 133));
         jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
 
+        tblOrder.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         tblOrder.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         tblOrder.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -1111,26 +1112,27 @@ public class OrderUI extends javax.swing.JFrame {
         jScrollPane3.setViewportView(tblOrder);
         if (tblOrder.getColumnModel().getColumnCount() > 0) {
             tblOrder.getColumnModel().getColumn(0).setResizable(false);
-            tblOrder.getColumnModel().getColumn(1).setResizable(false);
+            tblOrder.getColumnModel().getColumn(1).setMinWidth(40);
+            tblOrder.getColumnModel().getColumn(1).setMaxWidth(60);
             tblOrder.getColumnModel().getColumn(2).setResizable(false);
         }
 
-        btnRemove.setBackground(new java.awt.Color(255, 179, 179));
+        btnRemove.setBackground(new java.awt.Color(204, 204, 204));
         btnRemove.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnRemove.setForeground(new java.awt.Color(255, 0, 0));
-        btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
+        btnRemove.setForeground(new java.awt.Color(153, 153, 153));
+        btnRemove.setText("Xóa Món");
         btnRemove.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
-        btnExit.setBackground(new java.awt.Color(119, 50, 5));
+        btnExit.setBackground(new java.awt.Color(204, 204, 204));
         btnExit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnExit.setForeground(new java.awt.Color(102, 102, 102));
-        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        btnExit.setForeground(new java.awt.Color(153, 153, 153));
+        btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
-        btnAdd.setBackground(new java.awt.Color(183, 239, 197));
+        btnAdd.setBackground(new java.awt.Color(204, 204, 204));
         btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnAdd.setForeground(new java.awt.Color(255, 255, 255));
-        btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
+        btnAdd.setForeground(new java.awt.Color(153, 153, 153));
+        btnAdd.setText("Thêm món");
         btnAdd.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -1198,7 +1200,7 @@ public class OrderUI extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(437, Short.MAX_VALUE)
+                .addContainerGap(438, Short.MAX_VALUE)
                 .addComponent(jLabel1)
                 .addGap(418, 418, 418))
         );

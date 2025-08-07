@@ -123,10 +123,10 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
 
         jPanel4.setBackground(new java.awt.Color(204, 164, 133));
 
-        btnExit.setBackground(new java.awt.Color(119, 50, 5));
+        btnExit.setBackground(new java.awt.Color(185, 163, 147));
         btnExit.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnExit.setForeground(new java.awt.Color(204, 204, 204));
-        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Log out.png"))); // NOI18N
+        btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -196,7 +196,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         if (tableInfo.getColumnModel().getColumnCount() > 0) {
             tableInfo.getColumnModel().getColumn(0).setResizable(false);
             tableInfo.getColumnModel().getColumn(1).setResizable(false);
-            tableInfo.getColumnModel().getColumn(2).setResizable(false);
+            tableInfo.getColumnModel().getColumn(2).setMinWidth(40);
+            tableInfo.getColumnModel().getColumn(2).setMaxWidth(60);
             tableInfo.getColumnModel().getColumn(3).setResizable(false);
             tableInfo.getColumnModel().getColumn(4).setResizable(false);
             tableInfo.getColumnModel().getColumn(5).setResizable(false);
@@ -223,7 +224,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("Loại món");
 
-        cboCate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        cboCate.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        cboCate.setForeground(new java.awt.Color(204, 204, 204));
         cboCate.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Mỳ Cay ", "Đồ ăn vặt ", "Combo", "Nước giải khát", " " }));
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -247,15 +249,17 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jLabel12.setForeground(new java.awt.Color(255, 255, 255));
         jLabel12.setText("Đơn Vị");
 
-        cboUnit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        cboUnit.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        cboUnit.setForeground(new java.awt.Color(204, 204, 204));
         cboUnit.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel8.setForeground(new java.awt.Color(255, 255, 255));
         jLabel8.setText("Trạng thái :");
 
-        cboStatus.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "CHƯA CÓ", "CẦN CẬP NHẬT", " " }));
+        cboStatus.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        cboStatus.setForeground(new java.awt.Color(204, 204, 204));
+        cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Chưa có ", "Cần cập nhật", " " }));
 
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel7.setForeground(new java.awt.Color(255, 255, 255));
@@ -270,32 +274,33 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         lblImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
         lblImage.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
 
-        btnSave.setBackground(new java.awt.Color(183, 239, 197));
+        btnSave.setBackground(new java.awt.Color(185, 163, 147));
         btnSave.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
-        btnSave.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnSave.setForeground(new java.awt.Color(255, 255, 255));
+        btnSave.setText("Thêm");
+        btnSave.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 3));
         btnSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSaveActionPerformed(evt);
             }
         });
 
-        btnUpdate.setBackground(new java.awt.Color(255, 231, 153));
+        btnUpdate.setBackground(new java.awt.Color(185, 163, 147));
         btnUpdate.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        btnUpdate.setForeground(new java.awt.Color(0, 102, 51));
-        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
-        btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnUpdate.setForeground(new java.awt.Color(255, 255, 255));
+        btnUpdate.setText("Cập nhật");
+        btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 3));
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnUpdateActionPerformed(evt);
             }
         });
 
-        btnClear.setBackground(new java.awt.Color(164, 216, 255));
+        btnClear.setBackground(new java.awt.Color(185, 163, 147));
         btnClear.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        btnClear.setForeground(new java.awt.Color(0, 102, 51));
-        btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
-        btnClear.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnClear.setForeground(new java.awt.Color(255, 255, 255));
+        btnClear.setText("Làm mới");
+        btnClear.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 3));
         btnClear.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnClearActionPerformed(evt);
@@ -456,7 +461,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 415, Short.MAX_VALUE)
+            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();

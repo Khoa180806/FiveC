@@ -497,14 +497,14 @@ public class MainUI extends javax.swing.JFrame {
         jPanel6.setBackground(new java.awt.Color(191, 139, 98));
         jPanel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
-        jButton7.setBackground(new java.awt.Color(255, 217, 102));
+        jButton7.setBackground(new java.awt.Color(204, 204, 204));
         jButton7.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton7.setForeground(new java.awt.Color(122, 82, 0));
         jButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Address book.png"))); // NOI18N
         jButton7.setText("CHỌN BÀN");
         jButton7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
-        jButton9.setBackground(new java.awt.Color(167, 239, 163));
+        jButton9.setBackground(new java.awt.Color(204, 204, 204));
         jButton9.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton9.setForeground(new java.awt.Color(30, 122, 30));
         jButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Price list.png"))); // NOI18N
@@ -547,8 +547,8 @@ public class MainUI extends javax.swing.JFrame {
 
         jButton12.setBackground(new java.awt.Color(119, 50, 5));
         jButton12.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton12.setForeground(new java.awt.Color(153, 0, 0));
-        jButton12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        jButton12.setForeground(new java.awt.Color(204, 204, 204));
+        jButton12.setText("Thoát ");
         jButton12.setToolTipText("");
         jButton12.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 

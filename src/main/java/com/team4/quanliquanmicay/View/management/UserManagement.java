@@ -222,12 +222,12 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 
         groupGioiTinh.add(chkMale);
         chkMale.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        chkMale.setForeground(new java.awt.Color(255, 255, 255));
+        chkMale.setForeground(new java.awt.Color(204, 204, 204));
         chkMale.setText("Nam");
 
         groupGioiTinh.add(chkFemale);
         chkFemale.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        chkFemale.setForeground(new java.awt.Color(255, 255, 255));
+        chkFemale.setForeground(new java.awt.Color(204, 204, 204));
         chkFemale.setText("Nữ");
 
         txtPhoneNumber.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -284,43 +284,44 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         cboRole.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         cboRole.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        btnSave.setBackground(new java.awt.Color(183, 239, 197));
+        btnSave.setBackground(new java.awt.Color(185, 163, 147));
         btnSave.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        btnSave.setForeground(new java.awt.Color(102, 102, 102));
-        btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
-        btnSave.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnSave.setForeground(new java.awt.Color(255, 255, 255));
+        btnSave.setText("Thêm nhân viên");
+        btnSave.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
         btnSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnSaveActionPerformed(evt);
             }
         });
 
-        btnUpdate.setBackground(new java.awt.Color(164, 216, 255));
+        btnUpdate.setBackground(new java.awt.Color(185, 163, 147));
         btnUpdate.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        btnUpdate.setForeground(new java.awt.Color(102, 102, 102));
-        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
-        btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnUpdate.setForeground(new java.awt.Color(255, 255, 255));
+        btnUpdate.setText("Làm mới ");
+        btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnUpdateActionPerformed(evt);
             }
         });
 
-        btnClear.setBackground(new java.awt.Color(255, 179, 179));
+        btnClear.setBackground(new java.awt.Color(185, 163, 147));
         btnClear.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        btnClear.setForeground(new java.awt.Color(0, 102, 51));
-        btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
-        btnClear.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnClear.setForeground(new java.awt.Color(255, 255, 255));
+        btnClear.setText("Xóa");
+        btnClear.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
         btnClear.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnClearActionPerformed(evt);
             }
         });
 
-        btnDelete.setBackground(new java.awt.Color(255, 231, 153));
+        btnDelete.setBackground(new java.awt.Color(185, 163, 147));
         btnDelete.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        btnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
-        btnDelete.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnDelete.setForeground(new java.awt.Color(255, 255, 255));
+        btnDelete.setText("Cập Nhật");
+        btnDelete.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
         btnDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnDeleteActionPerformed(evt);
@@ -330,9 +331,10 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Search.png"))); // NOI18N
         jLabel6.setText("jLabel6");
 
-        btnExit.setBackground(new java.awt.Color(119, 50, 5));
+        btnExit.setBackground(new java.awt.Color(185, 163, 147));
         btnExit.setFont(new java.awt.Font("Times New Roman", 0, 14)); // NOI18N
-        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Log out.png"))); // NOI18N
+        btnExit.setForeground(new java.awt.Color(255, 255, 255));
+        btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -388,8 +390,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                         .addComponent(jLabel14)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
-                .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
+                .addComponent(btnSave)
                 .addGap(18, 18, 18)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
@@ -496,7 +498,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             tableInfo.getColumnModel().getColumn(1).setResizable(false);
             tableInfo.getColumnModel().getColumn(2).setResizable(false);
             tableInfo.getColumnModel().getColumn(3).setResizable(false);
-            tableInfo.getColumnModel().getColumn(4).setResizable(false);
+            tableInfo.getColumnModel().getColumn(4).setMinWidth(40);
+            tableInfo.getColumnModel().getColumn(4).setMaxWidth(60);
             tableInfo.getColumnModel().getColumn(5).setResizable(false);
             tableInfo.getColumnModel().getColumn(6).setResizable(false);
             tableInfo.getColumnModel().getColumn(7).setResizable(false);

@@ -671,13 +671,15 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         btnCheckout.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnCheckout.setText("...");
 
-        cboFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        cboFilter.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        cboFilter.setForeground(new java.awt.Color(204, 204, 204));
         cboFilter.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm này" }));
 
-        btnFilter.setBackground(new java.awt.Color(129, 212, 250));
+        btnFilter.setBackground(new java.awt.Color(204, 204, 204));
         btnFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnFilter.setForeground(new java.awt.Color(153, 153, 153));
         btnFilter.setText("LỌC");
-        btnFilter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnFilter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
 
         jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 
@@ -701,7 +703,8 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         if (tblBills.getColumnModel().getColumnCount() > 0) {
             tblBills.getColumnModel().getColumn(0).setResizable(false);
             tblBills.getColumnModel().getColumn(1).setResizable(false);
-            tblBills.getColumnModel().getColumn(2).setResizable(false);
+            tblBills.getColumnModel().getColumn(2).setMinWidth(40);
+            tblBills.getColumnModel().getColumn(2).setMaxWidth(60);
             tblBills.getColumnModel().getColumn(3).setResizable(false);
             tblBills.getColumnModel().getColumn(4).setResizable(false);
             tblBills.getColumnModel().getColumn(5).setResizable(false);
@@ -728,7 +731,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                 {null, null, null, null, null}
             },
             new String [] {
-                "Mã hóa đơn", "Phương thức  thanh toán", "Tổng tiền", "Thời gian thanh toán", "Trạng thái"
+                "Mã hóa đơn", "Cách thức thanh toán", "Tổng tiền", "Thời gian thanh toán", "Trạng thái"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -742,9 +745,12 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         jspPayment.setViewportView(tblPayment);
         if (tblPayment.getColumnModel().getColumnCount() > 0) {
             tblPayment.getColumnModel().getColumn(0).setResizable(false);
-            tblPayment.getColumnModel().getColumn(1).setResizable(false);
-            tblPayment.getColumnModel().getColumn(2).setResizable(false);
-            tblPayment.getColumnModel().getColumn(3).setResizable(false);
+            tblPayment.getColumnModel().getColumn(1).setMinWidth(130);
+            tblPayment.getColumnModel().getColumn(1).setMaxWidth(150);
+            tblPayment.getColumnModel().getColumn(2).setMinWidth(60);
+            tblPayment.getColumnModel().getColumn(2).setMaxWidth(70);
+            tblPayment.getColumnModel().getColumn(3).setMinWidth(120);
+            tblPayment.getColumnModel().getColumn(3).setMaxWidth(140);
             tblPayment.getColumnModel().getColumn(4).setResizable(false);
         }
 
@@ -763,9 +769,11 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
-        jButton1.setBackground(new java.awt.Color(119, 50, 5));
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Log out.png"))); // NOI18N
-        jButton1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        jButton1.setBackground(new java.awt.Color(185, 163, 147));
+        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jButton1.setForeground(new java.awt.Color(255, 255, 255));
+        jButton1.setText("Thoát");
+        jButton1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
 
         javax.swing.GroupLayout pnlUiLayout = new javax.swing.GroupLayout(pnlUi);
         pnlUi.setLayout(pnlUiLayout);

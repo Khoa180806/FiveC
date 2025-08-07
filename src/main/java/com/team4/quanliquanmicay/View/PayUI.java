@@ -235,9 +235,11 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         if (tbBillDetail.getColumnModel().getColumnCount() > 0) {
             tbBillDetail.getColumnModel().getColumn(0).setResizable(false);
             tbBillDetail.getColumnModel().getColumn(1).setResizable(false);
-            tbBillDetail.getColumnModel().getColumn(2).setResizable(false);
+            tbBillDetail.getColumnModel().getColumn(2).setMinWidth(40);
+            tbBillDetail.getColumnModel().getColumn(2).setMaxWidth(60);
             tbBillDetail.getColumnModel().getColumn(3).setResizable(false);
-            tbBillDetail.getColumnModel().getColumn(4).setResizable(false);
+            tbBillDetail.getColumnModel().getColumn(4).setMinWidth(40);
+            tbBillDetail.getColumnModel().getColumn(4).setMaxWidth(60);
         }
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
@@ -266,14 +268,16 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
         jLabel3.setText("TỔNG TIỀN :");
 
-        btnPay.setBackground(new java.awt.Color(149, 255, 175));
+        btnPay.setBackground(new java.awt.Color(204, 204, 204));
         btnPay.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnPay.setForeground(new java.awt.Color(0, 102, 0));
         btnPay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Price list.png"))); // NOI18N
-        btnPay.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnPay.setText("Thanh Toán");
+        btnPay.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 51, 51), 3));
 
-        btnExit.setBackground(new java.awt.Color(119, 50, 5));
+        btnExit.setBackground(new java.awt.Color(204, 204, 204));
         btnExit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -288,9 +292,10 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         lblTotalAmout.setForeground(new java.awt.Color(255, 255, 255));
         lblTotalAmout.setText("0");
 
-        btnCreateMember.setBackground(new java.awt.Color(246, 175, 140));
+        btnCreateMember.setBackground(new java.awt.Color(204, 204, 204));
         btnCreateMember.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnCreateMember.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Telephone.png"))); // NOI18N
+        btnCreateMember.setForeground(new java.awt.Color(153, 153, 153));
+        btnCreateMember.setText("KH Mới");
         btnCreateMember.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
@@ -313,7 +318,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnCreateMember, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnPay, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnPay, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnExit, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -322,16 +327,17 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(txtPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3)
-                    .addComponent(btnPay)
-                    .addComponent(btnExit)
-                    .addComponent(jLabel4)
-                    .addComponent(lblPoint)
-                    .addComponent(lblTotalAmout)
-                    .addComponent(btnCreateMember))
+                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel2)
+                        .addComponent(txtPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel3)
+                        .addComponent(btnPay)
+                        .addComponent(jLabel4)
+                        .addComponent(lblPoint)
+                        .addComponent(lblTotalAmout)
+                        .addComponent(btnCreateMember, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 

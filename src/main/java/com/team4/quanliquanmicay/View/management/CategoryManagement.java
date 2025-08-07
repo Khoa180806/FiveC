@@ -94,33 +94,33 @@ public class CategoryManagement extends javax.swing.JFrame implements CategoryCo
 
         txtCateName.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        btnAdd.setBackground(new java.awt.Color(183, 239, 197));
-        btnAdd.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        btnAdd.setForeground(new java.awt.Color(51, 153, 0));
-        btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
-        btnAdd.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnAdd.setBackground(new java.awt.Color(183, 165, 147));
+        btnAdd.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        btnAdd.setForeground(new java.awt.Color(255, 255, 255));
+        btnAdd.setText("Thêm món");
+        btnAdd.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddActionPerformed(evt);
             }
         });
 
-        btnUpdate.setBackground(new java.awt.Color(255, 231, 153));
-        btnUpdate.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        btnUpdate.setForeground(new java.awt.Color(0, 102, 51));
-        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
-        btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnUpdate.setBackground(new java.awt.Color(185, 163, 147));
+        btnUpdate.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        btnUpdate.setForeground(new java.awt.Color(255, 255, 255));
+        btnUpdate.setText("Cập Nhật");
+        btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnUpdateActionPerformed(evt);
             }
         });
 
-        btnReset.setBackground(new java.awt.Color(164, 216, 255));
-        btnReset.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
-        btnReset.setForeground(new java.awt.Color(102, 102, 102));
-        btnReset.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
-        btnReset.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnReset.setBackground(new java.awt.Color(185, 163, 147));
+        btnReset.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        btnReset.setForeground(new java.awt.Color(255, 255, 255));
+        btnReset.setText("Làm mới");
+        btnReset.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
         btnReset.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnResetActionPerformed(evt);
@@ -133,13 +133,13 @@ public class CategoryManagement extends javax.swing.JFrame implements CategoryCo
 
         btnEnabled.add(radActive);
         radActive.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        radActive.setForeground(new java.awt.Color(255, 255, 255));
+        radActive.setForeground(new java.awt.Color(204, 204, 204));
         radActive.setText("Hoạt động");
 
         radInactive.setBackground(new java.awt.Color(204, 164, 133));
         btnEnabled.add(radInactive);
         radInactive.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        radInactive.setForeground(new java.awt.Color(255, 255, 255));
+        radInactive.setForeground(new java.awt.Color(204, 204, 204));
         radInactive.setText("Ngừng hoạt động");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -195,11 +195,11 @@ public class CategoryManagement extends javax.swing.JFrame implements CategoryCo
                 .addGap(78, 78, 78))
         );
 
-        btnExit.setBackground(new java.awt.Color(119, 50, 5));
+        btnExit.setBackground(new java.awt.Color(183, 165, 147));
         btnExit.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        btnExit.setForeground(new java.awt.Color(102, 102, 102));
-        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Log out.png"))); // NOI18N
-        btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnExit.setForeground(new java.awt.Color(204, 204, 204));
+        btnExit.setText("Thoát");
+        btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 3));
         btnExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnExitActionPerformed(evt);

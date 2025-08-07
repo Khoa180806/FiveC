@@ -809,10 +809,14 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         if (tbBill.getColumnModel().getColumnCount() > 0) {
             tbBill.getColumnModel().getColumn(0).setResizable(false);
             tbBill.getColumnModel().getColumn(1).setResizable(false);
-            tbBill.getColumnModel().getColumn(2).setResizable(false);
-            tbBill.getColumnModel().getColumn(3).setResizable(false);
-            tbBill.getColumnModel().getColumn(4).setResizable(false);
-            tbBill.getColumnModel().getColumn(5).setResizable(false);
+            tbBill.getColumnModel().getColumn(2).setMinWidth(80);
+            tbBill.getColumnModel().getColumn(2).setMaxWidth(100);
+            tbBill.getColumnModel().getColumn(3).setMinWidth(80);
+            tbBill.getColumnModel().getColumn(3).setMaxWidth(100);
+            tbBill.getColumnModel().getColumn(4).setMinWidth(120);
+            tbBill.getColumnModel().getColumn(4).setMaxWidth(140);
+            tbBill.getColumnModel().getColumn(5).setMinWidth(300);
+            tbBill.getColumnModel().getColumn(5).setMaxWidth(500);
         }
 
         jPanel1.setBackground(new java.awt.Color(134, 39, 43));
@@ -835,9 +839,10 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
         );
 
-        btnUnOrder.setBackground(new java.awt.Color(255, 179, 179));
+        btnUnOrder.setBackground(new java.awt.Color(204, 204, 204));
         btnUnOrder.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnUnOrder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
+        btnUnOrder.setForeground(new java.awt.Color(102, 102, 102));
+        btnUnOrder.setText("Xóa món");
         btnUnOrder.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnUnOrder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -847,24 +852,28 @@ public class BillUI extends javax.swing.JFrame implements BillController {
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
-        btnExit.setBackground(new java.awt.Color(119, 50, 5));
+        btnExit.setBackground(new java.awt.Color(204, 204, 204));
         btnExit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        btnExit.setForeground(new java.awt.Color(153, 0, 0));
+        btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
-        btnOrder.setBackground(new java.awt.Color(183, 239, 197));
+        btnOrder.setBackground(new java.awt.Color(204, 204, 204));
         btnOrder.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnOrder.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Add to basket.png"))); // NOI18N
+        btnOrder.setForeground(new java.awt.Color(0, 102, 51));
+        btnOrder.setText("Thêm món");
         btnOrder.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
-        btnUnBill.setBackground(new java.awt.Color(255, 211, 175));
+        btnUnBill.setBackground(new java.awt.Color(204, 204, 204));
         btnUnBill.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnUnBill.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/delete.png"))); // NOI18N
+        btnUnBill.setForeground(new java.awt.Color(102, 102, 102));
+        btnUnBill.setText("Hủy Hóa Đơn");
         btnUnBill.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
-        btnPayment.setBackground(new java.awt.Color(176, 250, 176));
+        btnPayment.setBackground(new java.awt.Color(204, 204, 204));
         btnPayment.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnPayment.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Price list.png"))); // NOI18N
+        btnPayment.setForeground(new java.awt.Color(0, 51, 51));
+        btnPayment.setText("Thanh Toán");
         btnPayment.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         jPanel2.setBackground(new java.awt.Color(204, 164, 133));
@@ -980,7 +989,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
                             .addComponent(btnUnBill, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(btnExit, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 6, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(

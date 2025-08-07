@@ -909,13 +909,13 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel2.setText("MÃ HÓA ĐƠN :");
+        jLabel2.setText("Mã Hóa Đơn:");
 
         txtBillId.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel3.setText("NHÂN VIÊN :");
+        jLabel3.setText("Nhân Viên:");
 
         txtUser.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
@@ -923,13 +923,13 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setText("BÀN SỐ :");
+        jLabel4.setText("Bàn Số:");
 
         txtAmount.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel5.setText("TỔNG TIỀN :");
+        jLabel5.setText("Tổng Tiền:");
 
         txtCheckin.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
@@ -937,25 +937,30 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel6.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel6.setText("GIỜ VÀO :");
+        jLabel6.setText("Giờ Vào:");
 
         jLabel7.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel7.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel7.setText("GIỜ RA :");
+        jLabel7.setText("Giờ Ra:");
 
         jLabel8.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel8.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel8.setText("TRẠNG THÁI :");
+        jLabel8.setText("Trạng Thái :");
 
-        cboStatus.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "ĐANG PHỤC VỤ", "ĐÃ THANH TOÁN", "HỦY" }));
+        cboStatus.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        cboStatus.setForeground(new java.awt.Color(204, 204, 204));
+        cboStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Đang Phục Vụ ", "Đã Thanh Toán", "Hủy" }));
 
-        btnUpdate.setBackground(new java.awt.Color(255, 231, 153));
-        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
+        btnUpdate.setBackground(new java.awt.Color(204, 204, 204));
+        btnUpdate.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnUpdate.setForeground(new java.awt.Color(153, 153, 153));
+        btnUpdate.setText("Cập Nhật");
         btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
-        btnRemove.setBackground(new java.awt.Color(255, 179, 179));
-        btnRemove.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
+        btnRemove.setBackground(new java.awt.Color(204, 204, 204));
+        btnRemove.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnRemove.setForeground(new java.awt.Color(102, 102, 102));
+        btnRemove.setText("Xóa");
         btnRemove.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -1022,9 +1027,9 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                     .addComponent(jLabel8)
                     .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnUpdate)
-                    .addComponent(btnRemove))
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnRemove, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnUpdate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1049,10 +1054,11 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         btnEnd.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         btnEnd.setText("...");
 
-        cboTime.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        cboTime.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        cboTime.setForeground(new java.awt.Color(102, 51, 0));
         cboTime.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm này" }));
 
-        btnFilter.setBackground(new java.awt.Color(129, 212, 250));
+        btnFilter.setBackground(new java.awt.Color(204, 204, 204));
         btnFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnFilter.setText("LỌC");
         btnFilter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
@@ -1133,7 +1139,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 694, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 710, Short.MAX_VALUE)
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1161,9 +1167,12 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         jScrollPane2.setViewportView(tblBillDetail);
         if (tblBillDetail.getColumnModel().getColumnCount() > 0) {
             tblBillDetail.getColumnModel().getColumn(0).setResizable(false);
-            tblBillDetail.getColumnModel().getColumn(1).setResizable(false);
-            tblBillDetail.getColumnModel().getColumn(2).setResizable(false);
-            tblBillDetail.getColumnModel().getColumn(3).setResizable(false);
+            tblBillDetail.getColumnModel().getColumn(1).setMinWidth(40);
+            tblBillDetail.getColumnModel().getColumn(1).setMaxWidth(60);
+            tblBillDetail.getColumnModel().getColumn(2).setMinWidth(40);
+            tblBillDetail.getColumnModel().getColumn(2).setMaxWidth(60);
+            tblBillDetail.getColumnModel().getColumn(3).setMinWidth(40);
+            tblBillDetail.getColumnModel().getColumn(3).setMaxWidth(60);
             tblBillDetail.getColumnModel().getColumn(4).setResizable(false);
         }
 
@@ -1171,7 +1180,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 694, Short.MAX_VALUE)
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 710, Short.MAX_VALUE)
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1180,8 +1189,10 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
 
         jTabbedPane1.addTab("Chi tiết", jPanel6);
 
-        btnExit.setBackground(new java.awt.Color(119, 50, 5));
-        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        btnExit.setBackground(new java.awt.Color(204, 204, 204));
+        btnExit.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btnExit.setForeground(new java.awt.Color(102, 102, 102));
+        btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);

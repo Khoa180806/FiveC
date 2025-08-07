@@ -240,9 +240,10 @@ public class CustomerUI extends javax.swing.JFrame {
             }
         });
 
-        btn_add.setBackground(new java.awt.Color(183, 239, 197));
-        btn_add.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btn_add.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
+        btn_add.setBackground(new java.awt.Color(204, 204, 204));
+        btn_add.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        btn_add.setForeground(new java.awt.Color(0, 102, 51));
+        btn_add.setText("Thêm");
         btn_add.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btn_add.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -250,9 +251,8 @@ public class CustomerUI extends javax.swing.JFrame {
             }
         });
 
-        btn_exit.setBackground(new java.awt.Color(119, 50, 5));
         btn_exit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btn_exit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        btn_exit.setText("Thoát");
         btn_exit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btn_exit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -280,8 +280,8 @@ public class CustomerUI extends javax.swing.JFrame {
                             .addComponent(txt_name, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txt_phone, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btn_add, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
-                        .addGap(6, 6, 6)))
+                        .addComponent(btn_add, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -301,7 +301,7 @@ public class CustomerUI extends javax.swing.JFrame {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btn_add, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
                 .addComponent(btn_exit)
                 .addContainerGap())
         );

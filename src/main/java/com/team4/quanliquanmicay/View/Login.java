@@ -76,6 +76,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
         jPanel1.setBackground(new java.awt.Color(134, 39, 43));
 
         jPanel3.setBackground(new java.awt.Color(204, 164, 133));
+        jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
@@ -115,10 +116,10 @@ public class Login extends javax.swing.JFrame implements LoginController{
         });
         jPanel4.add(lblShowPassword, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, -1, 30));
 
-        btnLogin.setBackground(new java.awt.Color(232, 176, 133));
+        btnLogin.setBackground(new java.awt.Color(204, 204, 204));
         btnLogin.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnLogin.setForeground(new java.awt.Color(255, 255, 255));
-        btnLogin.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Home.png"))); // NOI18N
+        btnLogin.setText("Đăng Nhập");
         btnLogin.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnLogin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -126,10 +127,10 @@ public class Login extends javax.swing.JFrame implements LoginController{
             }
         });
 
-        btnExit.setBackground(new java.awt.Color(119, 50, 5));
+        btnExit.setBackground(new java.awt.Color(204, 204, 204));
         btnExit.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnExit.setForeground(new java.awt.Color(255, 255, 255));
-        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Log out.png"))); // NOI18N
+        btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 3));
         btnExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

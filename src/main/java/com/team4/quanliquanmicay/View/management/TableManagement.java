@@ -161,14 +161,15 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
 
         cboTable_Status.setEditable(true);
         cboTable_Status.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        cboTable_Status.setForeground(new java.awt.Color(204, 204, 204));
         cboTable_Status.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Trống", "Đang Phục Vụ", "Không hoạt động" }));
 
         txtTable_Number.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        btnAdd.setBackground(new java.awt.Color(183, 239, 197));
+        btnAdd.setBackground(new java.awt.Color(185, 163, 147));
         btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnAdd.setForeground(new java.awt.Color(30, 122, 30));
-        btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/add.png"))); // NOI18N
+        btnAdd.setForeground(new java.awt.Color(255, 255, 255));
+        btnAdd.setText("Thêm");
         btnAdd.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -176,10 +177,10 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
             }
         });
 
-        btnUpdate.setBackground(new java.awt.Color(255, 231, 153));
+        btnUpdate.setBackground(new java.awt.Color(185, 163, 147));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnUpdate.setForeground(new java.awt.Color(122, 82, 0));
-        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/edit.png"))); // NOI18N
+        btnUpdate.setForeground(new java.awt.Color(255, 255, 255));
+        btnUpdate.setText("Cập nhật");
         btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -187,10 +188,10 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
             }
         });
 
-        btnClear.setBackground(new java.awt.Color(164, 216, 255));
+        btnClear.setBackground(new java.awt.Color(185, 163, 147));
         btnClear.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnClear.setForeground(new java.awt.Color(0, 102, 51));
-        btnClear.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
+        btnClear.setForeground(new java.awt.Color(255, 255, 255));
+        btnClear.setText("Làm mới");
         btnClear.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnClear.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -198,9 +199,10 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
             }
         });
 
-        btnDelete.setBackground(new java.awt.Color(255, 179, 179));
+        btnDelete.setBackground(new java.awt.Color(185, 163, 147));
         btnDelete.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/trash.png"))); // NOI18N
+        btnDelete.setForeground(new java.awt.Color(255, 255, 255));
+        btnDelete.setText("Xóa");
         btnDelete.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -208,8 +210,9 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
             }
         });
 
-        btnExit.setBackground(new java.awt.Color(119, 50, 5));
-        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        btnExit.setBackground(new java.awt.Color(185, 163, 147));
+        btnExit.setForeground(new java.awt.Color(255, 255, 255));
+        btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
