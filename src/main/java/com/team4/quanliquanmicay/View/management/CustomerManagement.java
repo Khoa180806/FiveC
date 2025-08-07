@@ -5,6 +5,8 @@
 package com.team4.quanliquanmicay.View.management;
 
 import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XValidation;
 import com.team4.quanliquanmicay.Controller.CustomerManagementController;
 import com.team4.quanliquanmicay.Entity.Customer;
 import java.util.List;
@@ -96,309 +98,241 @@ public class CustomerManagement extends javax.swing.JFrame {
         btn_delete.addActionListener(e -> deleteCustomerData());
         
         // Exit button functionality
-        btn_exit.addActionListener(e -> dispose());
+        btn_exit.addActionListener(e -> handleExit());
     }
     
     /**
-     * Load all customers into the table
+     * Load all customers from database
      */
     private void loadAllCustomers() {
-        List<Customer> customers = customerController.getAllCustomers();
-        if (customers != null) {
-            System.out.println("Loaded " + customers.size() + " customers from database");
+        try {
+            List<Customer> customers = customerController.getAllCustomers();
             updateTableData(customers);
-        } else {
-            System.out.println("No customers found in database");
-            javax.swing.JOptionPane.showMessageDialog(this, 
-                "Không có dữ liệu khách hàng trong database!", 
-                "Thông báo", 
-                javax.swing.JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi tải dữ liệu khách hàng: " + e.getMessage(), "Lỗi hệ thống");
         }
     }
     
-
-    
     /**
-     * Update table data with customer list
+     * Update table with customer data
      */
     private void updateTableData(List<Customer> customers) {
-        tableModel.setRowCount(0); // Clear existing data
-        
-        for (Customer customer : customers) {
-            Object[] row = {
-                customer.getPhone_number(),
-                customer.getCustomer_name(),
-                customer.getPoint_level(),
-                customer.getLevel_ranking()
-            };
-            tableModel.addRow(row);
+        tableModel.setRowCount(0);
+        if (customers != null) {
+            for (Customer customer : customers) {
+                Object[] row = {
+                    customer.getPhone_number(),
+                    customer.getCustomer_name(),
+                    customer.getPoint_level(),
+                    customer.getLevel_ranking()
+                };
+                tableModel.addRow(row);
+            }
         }
     }
     
     /**
-     * Display selected customer data in text fields
+     * Display selected customer data in form fields
      */
     private void displaySelectedCustomerData(int selectedRow) {
-        try {
-            // Validate row index
-            if (selectedRow < 0 || selectedRow >= tableModel.getRowCount()) {
-                return;
-            }
+        if (selectedRow >= 0 && selectedRow < tableModel.getRowCount()) {
+            String phoneNumber = (String) tableModel.getValueAt(selectedRow, 0);
+            String customerName = (String) tableModel.getValueAt(selectedRow, 1);
+            Integer pointLevel = (Integer) tableModel.getValueAt(selectedRow, 2);
+            String levelRanking = (String) tableModel.getValueAt(selectedRow, 3);
             
-            // Get data from the selected row with null checks
-            Object phoneNumberObj = tableModel.getValueAt(selectedRow, 0);
-            Object customerNameObj = tableModel.getValueAt(selectedRow, 1);
-            Object pointLevelObj = tableModel.getValueAt(selectedRow, 2);
-            Object levelRankingObj = tableModel.getValueAt(selectedRow, 3);
-            
-            // Validate data is not null
-            if (phoneNumberObj == null || customerNameObj == null || 
-                pointLevelObj == null || levelRankingObj == null) {
-                return;
-            }
-            
-            String phoneNumber = phoneNumberObj.toString();
-            String customerName = customerNameObj.toString();
-            Integer pointLevel = (Integer) pointLevelObj;
-            String levelRanking = levelRankingObj.toString();
-            
-            // Create customer object for the selected row
-            selectedCustomer = new Customer();
-            selectedCustomer.setPhone_number(phoneNumber);
-            selectedCustomer.setCustomer_name(customerName);
-            selectedCustomer.setPoint_level(pointLevel);
-            selectedCustomer.setLevel_ranking(levelRanking);
-            
-            // Display data in text fields
+            // Update form fields
             txt_phone_number.setText(phoneNumber);
             txt_customer_name.setText(customerName);
-            txt_point_level.setText(String.valueOf(pointLevel));
+            txt_point_level.setText(pointLevel != null ? pointLevel.toString() : "");
             txt_level_ranking.setText(levelRanking);
             
-        } catch (Exception e) {
-            // Log error and clear form
-            System.err.println("Error displaying customer data: " + e.getMessage());
-            clearForm();
+                         // Store selected customer for update/delete operations
+             selectedCustomer = customerController.findCustomerByPhone(phoneNumber);
         }
     }
     
     /**
-     * Clear form fields
+     * Clear all form fields
      */
     private void clearForm() {
-        selectedCustomer = null;
         txt_phone_number.setText("");
         txt_customer_name.setText("");
         txt_point_level.setText("");
         txt_level_ranking.setText("");
+        selectedCustomer = null;
     }
     
     /**
      * Validate phone number format
      */
     private boolean isValidPhoneNumber(String phoneNumber) {
-        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
-            return false;
-        }
-        // Vietnamese phone number format: 10-11 digits starting with 0
-        return phoneNumber.matches("^0[0-9]{9,10}$");
+        return phoneNumber != null && phoneNumber.matches("^0\\d{9}$");
     }
     
     /**
      * Debug method to show all customers in database
      */
     private void debugShowAllCustomers() {
-        List<Customer> customers = customerController.getAllCustomers();
-        if (customers != null && !customers.isEmpty()) {
-            System.out.println("=== DEBUG: All customers in database ===");
-            for (Customer customer : customers) {
-                System.out.println("Phone: " + customer.getPhone_number() + 
-                                 ", Name: " + customer.getCustomer_name() + 
-                                 ", Points: " + customer.getPoint_level() + 
-                                 ", Rank: " + customer.getLevel_ranking());
+        try {
+            List<Customer> allCustomers = customerController.getAllCustomers();
+            if (allCustomers.isEmpty()) {
+                XDialog.warning("Không có khách hàng nào trong cơ sở dữ liệu!", "Thông báo");
+            } else {
+                XDialog.success("Đã tải " + allCustomers.size() + " khách hàng từ cơ sở dữ liệu!", "Thành công");
             }
-            System.out.println("=== End DEBUG ===");
-        } else {
-            System.out.println("DEBUG: No customers found in database");
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi debug: " + e.getMessage(), "Lỗi debug");
         }
     }
     
     /**
-     * Update customer data from text fields
+     * Update customer data with validation
      */
     private void updateCustomerData() {
-        if (selectedCustomer == null) {
-            javax.swing.JOptionPane.showMessageDialog(this, 
-                "Vui lòng chọn một khách hàng để cập nhật!", 
-                "Thông báo", 
-                javax.swing.JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        
         try {
-            // Get updated data from text fields
-            String phoneNumber = txt_phone_number.getText().trim();
-            String customerName = txt_customer_name.getText().trim();
-            String pointLevelStr = txt_point_level.getText().trim();
-            String levelRanking = txt_level_ranking.getText().trim();
-            
-            // Validate input
-            if (phoneNumber.isEmpty() || customerName.isEmpty() || pointLevelStr.isEmpty() || levelRanking.isEmpty()) {
-                javax.swing.JOptionPane.showMessageDialog(this, 
-                    "Vui lòng điền đầy đủ thông tin!", 
-                    "Lỗi", 
-                    javax.swing.JOptionPane.ERROR_MESSAGE);
+            if (selectedCustomer == null) {
+                XDialog.warning("Vui lòng chọn một khách hàng để cập nhật!", "Thông báo");
                 return;
             }
             
-            // Validate phone number format
-            if (!isValidPhoneNumber(phoneNumber)) {
-                javax.swing.JOptionPane.showMessageDialog(this, 
-                    "Số điện thoại không hợp lệ! (Định dạng: 0xxxxxxxxx)", 
-                    "Lỗi", 
-                    javax.swing.JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            
-            // Validate point level is a number
-            int pointLevel;
-            try {
-                pointLevel = Integer.parseInt(pointLevelStr);
-                if (pointLevel < 0) {
-                    javax.swing.JOptionPane.showMessageDialog(this, 
-                        "Điểm phải là số không âm!", 
-                        "Lỗi", 
-                        javax.swing.JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-            } catch (NumberFormatException e) {
-                javax.swing.JOptionPane.showMessageDialog(this, 
-                    "Điểm phải là số!", 
-                    "Lỗi", 
-                    javax.swing.JOptionPane.ERROR_MESSAGE);
+            // Validate form data
+            if (!validateFormData()) {
                 return;
             }
             
             // Update customer object
-            selectedCustomer.setPhone_number(phoneNumber);
-            selectedCustomer.setCustomer_name(customerName);
-            selectedCustomer.setPoint_level(pointLevel);
-            selectedCustomer.setLevel_ranking(levelRanking);
+            selectedCustomer.setCustomer_name(txt_customer_name.getText().trim());
+            selectedCustomer.setPoint_level(Integer.parseInt(txt_point_level.getText().trim()));
+            selectedCustomer.setLevel_ranking(txt_level_ranking.getText().trim());
             
             // Update in database
             customerController.setForm(selectedCustomer);
             customerController.update();
             
-            // Refresh table data
-            refreshTableData();
-            
-            // Clear form
+            XDialog.success("Cập nhật thông tin khách hàng thành công!", "Thành công");
+            loadAllCustomers(); // Refresh table
             clearForm();
             
+        } catch (NumberFormatException e) {
+            XDialog.error("Điểm phải là số nguyên!", "Lỗi định dạng");
         } catch (Exception e) {
-            javax.swing.JOptionPane.showMessageDialog(this, 
-                "Lỗi khi cập nhật: " + e.getMessage(), 
-                "Lỗi", 
-                javax.swing.JOptionPane.ERROR_MESSAGE);
+            XDialog.error("Lỗi khi cập nhật khách hàng: " + e.getMessage(), "Lỗi hệ thống");
         }
     }
     
     /**
-     * Delete customer data
+     * Validate form data using XValidation
      */
-    private void deleteCustomerData() {
-        if (selectedCustomer == null) {
-            javax.swing.JOptionPane.showMessageDialog(this, 
-                "Vui lòng chọn một khách hàng để xóa!", 
-                "Thông báo", 
-                javax.swing.JOptionPane.WARNING_MESSAGE);
-            return;
+    private boolean validateFormData() {
+        // Validate customer name
+        if (XValidation.isEmpty(txt_customer_name.getText().trim())) {
+            XDialog.error("Tên khách hàng không được để trống!", "Lỗi validation");
+            txt_customer_name.requestFocus();
+            return false;
         }
         
+        // Validate point level
+        if (XValidation.isEmpty(txt_point_level.getText().trim())) {
+            XDialog.error("Điểm không được để trống!", "Lỗi validation");
+            txt_point_level.requestFocus();
+            return false;
+        }
+        
+        // Validate level ranking
+        if (XValidation.isEmpty(txt_level_ranking.getText().trim())) {
+            XDialog.error("Hạng không được để trống!", "Lỗi validation");
+            txt_level_ranking.requestFocus();
+            return false;
+        }
+        
+        // Validate point level is number
         try {
-            // Show confirmation dialog
-            int confirm = javax.swing.JOptionPane.showConfirmDialog(this, 
-                "Bạn có chắc chắn muốn xóa khách hàng: " + selectedCustomer.getCustomer_name() + "?", 
-                "Xác nhận xóa", 
-                javax.swing.JOptionPane.YES_NO_OPTION);
+            int pointLevel = Integer.parseInt(txt_point_level.getText().trim());
+            if (pointLevel < 0) {
+                XDialog.error("Điểm phải là số không âm!", "Lỗi validation");
+                txt_point_level.requestFocus();
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            XDialog.error("Điểm phải là số nguyên!", "Lỗi validation");
+            txt_point_level.requestFocus();
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Delete customer data with confirmation
+     */
+    private void deleteCustomerData() {
+        try {
+            if (selectedCustomer == null) {
+                XDialog.warning("Vui lòng chọn một khách hàng để xóa!", "Thông báo");
+                return;
+            }
             
-            if (confirm == javax.swing.JOptionPane.YES_OPTION) {
-                // Delete from database
+            // Show confirmation dialog
+            String message = "Bạn có chắc chắn muốn xóa khách hàng này?\n\n" +
+                           "Số điện thoại: " + selectedCustomer.getPhone_number() + "\n" +
+                           "Tên: " + selectedCustomer.getCustomer_name() + "\n" +
+                           "Điểm: " + selectedCustomer.getPoint_level() + "\n" +
+                           "Hạng: " + selectedCustomer.getLevel_ranking();
+            
+            if (XDialog.confirm(message, "Xác nhận xóa")) {
                 customerController.setForm(selectedCustomer);
                 customerController.delete();
                 
-                // Refresh table data
-                refreshTableData();
-                
-                // Clear form
+                XDialog.success("Xóa khách hàng thành công!", "Thành công");
+                loadAllCustomers(); // Refresh table
                 clearForm();
-                
-                // Show success message
-                javax.swing.JOptionPane.showMessageDialog(this, 
-                    "Dữ liệu đã được xóa thành công!", 
-                    "Thông báo", 
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE);
             }
             
         } catch (Exception e) {
-            javax.swing.JOptionPane.showMessageDialog(this, 
-                "Lỗi khi xóa: " + e.getMessage(), 
-                "Lỗi", 
-                javax.swing.JOptionPane.ERROR_MESSAGE);
+            XDialog.error("Lỗi khi xóa khách hàng: " + e.getMessage(), "Lỗi hệ thống");
         }
     }
     
     /**
-     * Refresh the table data based on current search and sort
+     * Refresh table data based on search and sort criteria
      */
     private void refreshTableData() {
         try {
-            String searchText = txt_search.getText().trim();
-            String selectedSort = (String) cbo_SortPoint.getSelectedItem();
+            String searchText = txt_search.getText().trim().toLowerCase();
+            String sortOption = (String) cbo_SortPoint.getSelectedItem();
             
-            List<Customer> results = null;
+            List<Customer> filteredCustomers;
             
-            // Get base data
-            if (searchText.isEmpty()) {
-                results = customerController.getAllCustomers();
-                System.out.println("Loading all customers: " + (results != null ? results.size() : 0) + " customers");
+            // Search by phone number
+            if (!searchText.isEmpty()) {
+                filteredCustomers = customerController.searchCustomersByPhone(searchText);
             } else {
-                // Search by phone number using partial match
-                System.out.println("Searching for phone number: " + searchText);
-                results = customerController.searchCustomersByPhone(searchText);
-                if (results == null) {
-                    results = new java.util.ArrayList<>();
-                }
-                System.out.println("Found " + results.size() + " customers matching: " + searchText);
-                
-                // Show message if no results found
-                if (results.isEmpty()) {
-                    javax.swing.SwingUtilities.invokeLater(() -> {
-                        javax.swing.JOptionPane.showMessageDialog(this, 
-                            "Không tìm thấy khách hàng nào với số điện thoại: " + searchText, 
-                            "Thông báo", 
-                            javax.swing.JOptionPane.INFORMATION_MESSAGE);
-                    });
-                }
+                filteredCustomers = customerController.getAllCustomers();
             }
             
             // Apply sorting
-            if (results != null && selectedSort != null) {
-                if ("Tăng dần".equals(selectedSort)) {
-                    results.sort((c1, c2) -> Integer.compare(c1.getPoint_level(), c2.getPoint_level()));
-                } else if ("Giảm dần".equals(selectedSort)) {
-                    results.sort((c1, c2) -> Integer.compare(c2.getPoint_level(), c1.getPoint_level()));
+            if (filteredCustomers != null && sortOption != null) {
+                if ("Tăng dần".equals(sortOption)) {
+                    filteredCustomers = customerController.sortCustomersByPointAsc();
+                } else if ("Giảm dần".equals(sortOption)) {
+                    filteredCustomers = customerController.sortCustomersByPointDesc();
                 }
             }
             
-            if (results != null) {
-                updateTableData(results);
-            }
+            updateTableData(filteredCustomers);
+            
         } catch (Exception e) {
-            System.err.println("Error refreshing table data: " + e.getMessage());
-            e.printStackTrace();
-            // Load all customers as fallback
-            loadAllCustomers();
+            XDialog.error("Lỗi khi lọc dữ liệu: " + e.getMessage(), "Lỗi hệ thống");
+        }
+    }
+    
+    /**
+     * Handle exit with confirmation
+     */
+    private void handleExit() {
+        if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi quản lý khách hàng?", "Xác nhận thoát")) {
+            this.dispose();
         }
     }
 
