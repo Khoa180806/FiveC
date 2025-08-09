@@ -10,6 +10,7 @@ import com.team4.quanliquanmicay.Entity.TableForCustomer;
 import com.team4.quanliquanmicay.Impl.TableForCustomerDAOImpl;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XValidation;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -794,130 +795,111 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
     // Cập nhật phương thức create để không kiểm tra trùng lặp nữa
     @Override
     public void create() {
-        // Lấy dữ liệu từ form
-        String tableNumberStr = txtTable_Number.getText().trim();
-        String amountStr = txtAmount.getText().trim();
-        String statusText = (String) cboTable_Status.getSelectedItem();
-
-        // Kiểm tra trống thông tin
-        if (tableNumberStr.isEmpty() || amountStr.isEmpty() || statusText == null || statusText.trim().isEmpty()) {
-            XDialog.alert("Vui lòng nhập đầy đủ thông tin bàn!");
-            return;
-        }
-
-        int tableNumber, amount;
         try {
-            tableNumber = Integer.parseInt(tableNumberStr);
-            amount = Integer.parseInt(amountStr);
-        } catch (NumberFormatException e) {
-            XDialog.alert("Số bàn và số chỗ ngồi phải là số nguyên!");
-            return;
-        }
-
-        // Kiểm tra trùng số bàn
-        if (tableDAO.findById(tableNumber) != null) {
-            XDialog.alert("Số bàn này đã tồn tại! Vui lòng nhập số bàn khác.");
-            return;
-        }
-
-        // Tạo mới bàn
-        TableForCustomer table = new TableForCustomer();
-        table.setTable_number(tableNumber);
-        table.setAmount(amount);
-        table.setStatus(convertStatusToInt(statusText));
-
-        try {
-            tableDAO.create(table);
-            XDialog.alert("Thêm bàn thành công!");
-            loadTable(); // Reload lại để hiển thị bàn mới
-            clear();
-        } catch (Exception ex) {
-            XDialog.alert("Có lỗi xảy ra khi thêm bàn: " + ex.getMessage());
+            // Validate form data
+            String validationError = validateFormData();
+            if (validationError != null) {
+                XDialog.error(validationError, "Lỗi dữ liệu");
+                return;
+            }
+            
+            TableForCustomer table = (TableForCustomer) getForm();
+            
+            // Kiểm tra số bàn đã tồn tại chưa
+            if (isTableExists(table.getTable_number())) {
+                XDialog.warning("Số bàn đã tồn tại!", "Cảnh báo");
+                return;
+            }
+            
+            // Hiển thị dialog xác nhận thêm
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn thêm bàn số " + table.getTable_number() + "?", 
+                "Xác nhận thêm"
+            );
+            
+            if (confirm) {
+                tableDAO.create(table);
+                XDialog.success("Thêm bàn thành công!", "Thành công");
+                fillToTable();
+                clear();
+            }
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi thêm bàn: " + e.getMessage(), "Lỗi");
         }
     }
 
     // Cập nhật phương thức update
     @Override
     public void update() {
-        // Lấy thông tin mới từ form
-        TableForCustomer newTable = (TableForCustomer) getForm();
-
-        // Lấy thông tin cũ từ DB
-        TableForCustomer oldTable = tableDAO.findById(newTable.getTable_number());
-        if (oldTable == null) {
-            XDialog.alert("Không tìm thấy bàn này trong hệ thống!");
-            return;
-        }
-
-        // So sánh và tạo thông tin hiển thị
-        StringBuilder message = new StringBuilder();
-        message.append("Bạn có chắc chắn muốn cập nhật bàn này không?\n\n");
-        message.append("THÔNG TIN CŨ:\n");
-        message.append("Số bàn: ").append(oldTable.getTable_number()).append("\n");
-        message.append("Số chỗ ngồi: ").append(oldTable.getAmount()).append("\n");
-        message.append("Trạng thái: ").append(convertIntToStatus(oldTable.getStatus())).append("\n\n");
-        message.append("THÔNG TIN MỚI:\n");
-        message.append("Số bàn: ").append(newTable.getTable_number()).append("\n");
-        message.append("Số chỗ ngồi: ").append(newTable.getAmount()).append("\n");
-        message.append("Trạng thái: ").append(convertIntToStatus(newTable.getStatus())).append("\n");
-
-        if (XDialog.confirm(message.toString(), "Xác nhận cập nhật")) {
-            try {
-                tableDAO.update(newTable);
-                XDialog.alert("Cập nhật bàn thành công!");
-                loadTable();
-                clear();
-            } catch (Exception ex) {
-                XDialog.alert("Cập nhật bàn thất bại!\n" + ex.getMessage());
+        try {
+            // Validate form data
+            String validationError = validateFormData();
+            if (validationError != null) {
+                XDialog.error(validationError, "Lỗi dữ liệu");
+                return;
             }
+            
+            TableForCustomer table = (TableForCustomer) getForm();
+            
+            // Kiểm tra số bàn đã tồn tại chưa (trừ chính nó)
+            List<TableForCustomer> existingTables = tableDAO.findAll();
+            boolean tableExists = existingTables.stream()
+                .anyMatch(t -> t.getTable_number() == table.getTable_number());
+            
+            if (tableExists) {
+                XDialog.warning("Số bàn đã tồn tại!", "Cảnh báo");
+                return;
+            }
+            
+            // Hiển thị dialog xác nhận cập nhật
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn cập nhật bàn số " + table.getTable_number() + "?", 
+                "Xác nhận cập nhật"
+            );
+            
+            if (confirm) {
+                tableDAO.update(table);
+                XDialog.success("Cập nhật bàn thành công!", "Thành công");
+                fillToTable();
+                clear();
+            }
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi cập nhật bàn: " + e.getMessage(), "Lỗi");
         }
-        // Nếu chọn "Không" thì không làm gì cả
     }
 
     // Cập nhật phương thức delete
     @Override
     public void delete() {
-        String tableNumberStr = txtTable_Number.getText().trim();
-
-        // 1. Kiểm tra đã nhập số bàn chưa
-        if (tableNumberStr.isEmpty()) {
-            XDialog.alert("Vui lòng nhập số bàn cần xóa!");
-            return;
-        }
-
-        int tableNumber;
         try {
-            tableNumber = Integer.parseInt(tableNumberStr);
-        } catch (NumberFormatException e) {
-            XDialog.alert("Số bàn phải là số nguyên!");
-            return;
-        }
-
-        // 2. Kiểm tra bàn có tồn tại không
-        TableForCustomer table = tableDAO.findById(tableNumber);
-        if (table == null) {
-            XDialog.alert("Không tìm thấy bàn số " + tableNumber + " trong hệ thống!");
-            return;
-        }
-
-        // 3. Hiển thị thông tin bàn và xác nhận xóa
-        StringBuilder message = new StringBuilder();
-        message.append("Bạn có chắc chắn muốn xóa bàn này không?\n\n");
-        message.append("Số bàn: ").append(table.getTable_number()).append("\n");
-        message.append("Số chỗ ngồi: ").append(table.getAmount()).append("\n");
-        message.append("Trạng thái: ").append(convertIntToStatus(table.getStatus())).append("\n");
-
-        if (XDialog.confirm(message.toString(), "Xác nhận xóa bàn")) {
-            try {
-                tableDAO.deleteById(tableNumber);
-                XDialog.alert("Xóa bàn thành công!");
-                loadTable();
-                clear();
-            } catch (Exception ex) {
-                XDialog.alert("Xóa bàn thất bại!\n" + ex.getMessage());
+            TableForCustomer table = (TableForCustomer) getForm();
+            if (table == null || table.getTable_number() == 0) {
+                XDialog.error("Vui lòng chọn bàn cần xóa!", "Lỗi");
+                return;
             }
+            
+            // Kiểm tra bàn có đang sử dụng không
+            if (table.getStatus() == 1) {
+                XDialog.warning("Không thể xóa bàn đang được sử dụng!", "Cảnh báo");
+                return;
+            }
+            
+            // Hiển thị dialog xác nhận xóa
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn xóa bàn số " + table.getTable_number() + "?\n" +
+                "Hành động này không thể hoàn tác!", 
+                "Xác nhận xóa"
+            );
+            
+            if (confirm) {
+                tableDAO.deleteById(table.getTable_number());
+                XDialog.success("Xóa bàn thành công!", "Thành công");
+                fillToTable();
+                clear();
+            }
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi xóa bàn: " + e.getMessage(), "Lỗi");
         }
-        // Nếu chọn "Không" thì không làm gì cả
     }
 
     // Cập nhật phương thức clear
@@ -1062,5 +1044,23 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         addMousePressEffect(btnClear);
         addMousePressEffect(btnDelete);
         addMousePressEffect(btnExit);
+    }
+
+    private String validateFormData() {
+        TableForCustomer table = (TableForCustomer) getForm();
+        
+        if (table.getTable_number() <= 0) {
+            return "Số bàn phải lớn hơn 0!";
+        }
+        
+        if (table.getAmount() <= 0) {
+            return "Số lượng chỗ ngồi phải lớn hơn 0!";
+        }
+        
+        if (table.getAmount() > 20) {
+            return "Số lượng chỗ ngồi không được quá 20!";
+        }
+        
+        return null; // Không có lỗi
     }
 }

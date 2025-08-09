@@ -12,6 +12,7 @@ import javax.swing.SwingUtilities;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XAuth;
+import com.team4.quanliquanmicay.util.XValidation;
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
@@ -352,17 +353,23 @@ public class Login extends javax.swing.JFrame implements LoginController{
             String username = txtUsername.getText().trim();
             String password = new String(txtPassword.getPassword());
             
-            // Kiểm tra username có rỗng không
-            if (username.isEmpty()) {
+            // Sử dụng XValidation để kiểm tra
+            if (XValidation.isEmpty(username)) {
                 XDialog.error("Vui lòng nhập tên đăng nhập!", "Lỗi đăng nhập");
                 txtUsername.requestFocus();
                 return;
             }
             
-            // Kiểm tra password có rỗng không
-            if (password.isEmpty()) {
+            if (XValidation.isEmpty(password)) {
                 XDialog.error("Vui lòng nhập mật khẩu!", "Lỗi đăng nhập");
                 txtPassword.requestFocus();
+                return;
+            }
+            
+            // Validate username format
+            if (!XValidation.isUsername(username)) {
+                XDialog.warning("Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới (3-20 ký tự)", "Cảnh báo");
+                txtUsername.requestFocus();
                 return;
             }
             
@@ -379,6 +386,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
                 XDialog.warning("Tài khoản của bạn đang tạm dừng!", "Cảnh báo");
             } else {
                 XAuth.user = user;
+                XDialog.success("Đăng nhập thành công! Chào mừng " + user.getUsername(), "Thành công");
                 this.dispose();
                 new MainUI().setVisible(true);
             }
@@ -386,12 +394,16 @@ public class Login extends javax.swing.JFrame implements LoginController{
             txtPassword.setText("");
         } catch (Exception e) {
             e.printStackTrace();
-            XDialog.error("Có lỗi xảy ra: " + e.getMessage(), "Lỗi");
+            XDialog.error("Có lỗi xảy ra: " + e.getMessage(), "Lỗi hệ thống");
         }
     }
 
     @Override
     public void exit() {
-        LoginController.super.exit();
+        // Sử dụng XDialog để xác nhận thoát
+        boolean confirm = XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng?", "Xác nhận thoát");
+        if (confirm) {
+            LoginController.super.exit();
+        }
     }
 }
