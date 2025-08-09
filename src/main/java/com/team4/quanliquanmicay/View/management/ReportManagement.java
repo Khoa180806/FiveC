@@ -4,6 +4,9 @@
  */
 package com.team4.quanliquanmicay.View.management;
 
+import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.util.XDialog;
+
 /**
  *
  * @author Asus
@@ -14,7 +17,22 @@ public class ReportManagement extends javax.swing.JFrame {
      * Creates new form ReportJDialog
      */
     public ReportManagement() {
+        this.setUndecorated(true);
+        XTheme.applyFullTheme();
         initComponents();
+        this.setLocationRelativeTo(null);
+        
+        // TODO: Thêm logic xử lý báo cáo và thống kê
+        XDialog.success("Chào mừng đến với hệ thống Thống kê & Báo cáo!", "Thông báo");
+    }
+    
+    /**
+     * Handle exit with confirmation
+     */
+    private void handleExit() {
+        if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi hệ thống báo cáo?", "Xác nhận thoát")) {
+            this.dispose();
+        }
     }
 
     /**

@@ -15,6 +15,9 @@ import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
 import static com.team4.quanliquanmicay.util.XValidation.isEmpty;
 import static com.team4.quanliquanmicay.util.XValidation.isNumber;
 import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XValidation;
+
+import java.util.List;
 
 /**
  *
@@ -838,102 +841,79 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     @Override
     public void create() {
         try {
+            // Validate form data
+            String validationError = validateFormData();
+            if (validationError != null) {
+                XDialog.error(validationError, "Lỗi dữ liệu");
+                return;
+            }
+            
             Product product = getForm();
-            invalidateProductCache();
-            if (!isProductCacheValid || productCache.isEmpty()) {
-                productCache = productDAO.findAll();
-                isProductCacheValid = true;
-            }
-            // Kiểm tra hợp lệ cơ bản
-            if (product.getProductId() == null || product.getProductId().trim().isEmpty()) {
-                XDialog.alert("Vui lòng nhập mã món!");
+            
+            // Kiểm tra tên sản phẩm đã tồn tại chưa
+            List<Product> existingProducts = productDAO.findAll();
+            boolean nameExists = existingProducts.stream()
+                .anyMatch(p -> p.getProductName().equalsIgnoreCase(product.getProductName()));
+            
+            if (nameExists) {
+                XDialog.warning("Tên sản phẩm đã tồn tại!", "Cảnh báo");
                 return;
             }
-            if (product.getProductName() == null || product.getProductName().trim().isEmpty()) {
-                XDialog.alert("Vui lòng nhập tên món!");
-                return;
+            
+            // Hiển thị dialog xác nhận thêm
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn thêm sản phẩm '" + product.getProductName() + "'?", 
+                "Xác nhận thêm"
+            );
+            
+            if (confirm) {
+                productDAO.create(product);
+                XDialog.success("Thêm sản phẩm thành công!", "Thành công");
+                fillToTable();
+                clear();
             }
-            // Kiểm tra trùng mã (chuẩn hóa)
-            if (getProductFromCache(product.getProductId().trim()) != null) {
-                XDialog.alert("Mã món đã tồn tại!");
-                return;
-            }
-            // Kiểm tra trùng tên món trong cùng loại
-            for (Product p : productCache) {
-                if (p.getProductName().trim().equalsIgnoreCase(product.getProductName().trim()) && p.getCategoryId().equals(product.getCategoryId())) {
-                    XDialog.alert("Tên món đã tồn tại trong cùng loại!");
-                    return;
-                }
-            }
-            // Kiểm tra đơn vị
-            if (product.getUnit() == null || product.getUnit().trim().isEmpty()) {
-                XDialog.alert("Vui lòng chọn đơn vị!");
-                return;
-            }
-            // Kiểm tra discount
-            if (product.getDiscount() < 0 || product.getDiscount() > 1) {
-                XDialog.alert("Giảm giá phải từ 0 đến 100!");
-                return;
-            }
-            productDAO.create(product);
-            invalidateProductCache();
-            fillToTable();
-            clear();
-            XDialog.alert("Thêm món thành công!");
-        } catch (RuntimeException e) {
-            return;
         } catch (Exception e) {
-            XDialog.alert("Lỗi khi thêm món: " + e.getMessage());
-            e.printStackTrace();
+            XDialog.error("Lỗi khi thêm sản phẩm: " + e.getMessage(), "Lỗi");
         }
     }
 
     @Override
     public void update() {
         try {
+            // Validate form data
+            String validationError = validateFormData();
+            if (validationError != null) {
+                XDialog.error(validationError, "Lỗi dữ liệu");
+                return;
+            }
+            
             Product product = getForm();
-            if (product.getProductId() == null || product.getProductId().trim().isEmpty()) {
-                XDialog.alert("Vui lòng nhập mã món!");
+            
+            // Kiểm tra tên sản phẩm đã tồn tại chưa (trừ chính nó)
+            List<Product> existingProducts = productDAO.findAll();
+            boolean nameExists = existingProducts.stream()
+                .anyMatch(p -> p.getProductName().equalsIgnoreCase(product.getProductName()) 
+                    && !p.getProductId().equals(product.getProductId()));
+            
+            if (nameExists) {
+                XDialog.warning("Tên sản phẩm đã tồn tại!", "Cảnh báo");
                 return;
             }
-            if (product.getProductName() == null || product.getProductName().trim().isEmpty()) {
-                XDialog.alert("Vui lòng nhập tên món!");
-                return;
+            
+            // Hiển thị dialog xác nhận cập nhật
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn cập nhật sản phẩm '" + product.getProductName() + "'?", 
+                "Xác nhận cập nhật"
+            );
+            
+            if (confirm) {
+                productDAO.update(product);
+                XDialog.success("Cập nhật sản phẩm thành công!", "Thành công");
+                fillToTable();
+                clear();
             }
-            if (product.getUnit() == null || product.getUnit().trim().isEmpty()) {
-                XDialog.alert("Vui lòng chọn đơn vị!");
-                return;
-            }
-            if (product.getDiscount() < 0 || product.getDiscount() > 1) {
-                XDialog.alert("Giảm giá phải từ 0 đến 100!");
-                return;
-            }
-            if (product.getPrice() <= 0) {
-                XDialog.alert("Vui lòng nhập giá lớn hơn 0!");
-                return;
-            }
-            // Kiểm tra tồn tại mã món
-            if (getProductFromCache(product.getProductId().trim()) == null) {
-                XDialog.alert("Mã món không tồn tại!");
-                return;
-            }
-            // Kiểm tra trùng tên món trong cùng loại (trừ chính nó)
-            for (Product p : productCache) {
-                if (!p.getProductId().equals(product.getProductId()) && p.getProductName().trim().equalsIgnoreCase(product.getProductName().trim()) && p.getCategoryId().equals(product.getCategoryId())) {
-                    XDialog.alert("Tên món đã tồn tại trong cùng loại!");
-                    return;
-                }
-            }
-            productDAO.update(product);
-            invalidateProductCache();
-            fillToTable();
-            clear();
-            XDialog.alert("Cập nhật món thành công!");
-        } catch (RuntimeException e) {
-            return;
         } catch (Exception e) {
-            XDialog.alert("Lỗi khi cập nhật món: " + e.getMessage());
-            e.printStackTrace();
+            XDialog.error("Lỗi khi cập nhật sản phẩm: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -972,7 +952,29 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
 
     @Override
     public void delete() {
-        // Để trống vì chức năng xóa đã loại bỏ khỏi giao diện
+        try {
+            Product product = getForm();
+            if (product == null || XValidation.isEmpty(product.getProductId())) {
+                XDialog.error("Vui lòng chọn sản phẩm cần xóa!", "Lỗi");
+                return;
+            }
+            
+            // Hiển thị dialog xác nhận xóa
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn xóa sản phẩm '" + product.getProductName() + "'?\n" +
+                "Hành động này không thể hoàn tác!", 
+                "Xác nhận xóa"
+            );
+            
+            if (confirm) {
+                productDAO.deleteById(product.getProductId());
+                XDialog.success("Xóa sản phẩm thành công!", "Thành công");
+                fillToTable();
+                clear();
+            }
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi xóa sản phẩm: " + e.getMessage(), "Lỗi");
+        }
     }
 
     private Product getProductFromCache(String productId) {
@@ -1694,5 +1696,35 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             // Nếu lỗi, dùng ảnh unknown
             setImageWithFixedSize("/icons_and_images/Unknown person.png");
         }
+    }
+
+    private String validateFormData() {
+        Product product = getForm();
+        
+        if (XValidation.isEmpty(product.getProductId())) {
+            return "Vui lòng nhập mã sản phẩm!";
+        }
+        
+        if (XValidation.isEmpty(product.getProductName())) {
+            return "Vui lòng nhập tên sản phẩm!";
+        }
+        
+        if (product.getProductName().length() < 2) {
+            return "Tên sản phẩm phải có ít nhất 2 ký tự!";
+        }
+        
+        if (product.getProductName().length() > 100) {
+            return "Tên sản phẩm không được quá 100 ký tự!";
+        }
+        
+        if (product.getPrice() <= 0) {
+            return "Giá sản phẩm phải lớn hơn 0!";
+        }
+        
+        if (XValidation.isEmpty(product.getCategoryId())) {
+            return "Vui lòng chọn danh mục sản phẩm!";
+        }
+        
+        return null; // Không có lỗi
     }
 }

@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.sql.ResultSet;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import com.team4.quanliquanmicay.util.XValidation;
 
 /**
  *
@@ -1052,12 +1053,12 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
      */
     private void processPayment() {
         if (currentBill == null) {
-            XDialog.alert("Vui lòng chọn bàn có hóa đơn để thanh toán!");
+            XDialog.error("Vui lòng chọn bàn có hóa đơn để thanh toán!", "Lỗi");
             return;
         }
         
         if (totalAmount <= 0) {
-            XDialog.alert("Hóa đơn không có món nào để thanh toán!");
+            XDialog.warning("Hóa đơn không có món nào để thanh toán!", "Cảnh báo");
             return;
         }
         
@@ -1066,7 +1067,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         Customer customerToUse = currentCustomer;
         
         // Nếu có nhập số điện thoại nhưng chưa tìm customer, thử tìm lại
-        if (!phoneNumber.isEmpty() && currentCustomer == null) {
+        if (!XValidation.isEmpty(phoneNumber) && currentCustomer == null) {
             Customer foundCustomer = this.searchCustomer(phoneNumber);
             if (foundCustomer != null) {
                 customerToUse = foundCustomer;
@@ -1205,15 +1206,15 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
      */
     private void searchCustomerByPhone() {
         String phoneNumber = txtPhoneNumber.getText().trim();
-        if (phoneNumber.isEmpty()) {
-            XDialog.alert("Vui lòng nhập số điện thoại để tìm kiếm!");
+        if (XValidation.isEmpty(phoneNumber)) {
+            XDialog.warning("Vui lòng nhập số điện thoại để tìm kiếm!", "Cảnh báo");
             txtPhoneNumber.requestFocus();
             return;
         }
         
         // Validate phone number format
-        if (!isValidPhoneNumber(phoneNumber)) {
-            XDialog.alert("Số điện thoại không hợp lệ! Vui lòng nhập 10-11 chữ số.");
+        if (!XValidation.isPhone(phoneNumber)) {
+            XDialog.warning("Số điện thoại không hợp lệ! Vui lòng nhập 10-11 chữ số.", "Cảnh báo");
             txtPhoneNumber.requestFocus();
             return;
         }
@@ -1533,18 +1534,18 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
     public boolean createMember(String phoneNumber, String customerName) {
         try {
             // Validate input
-            if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
-                XDialog.alert("Vui lòng nhập số điện thoại!");
+            if (XValidation.isEmpty(phoneNumber)) {
+                XDialog.warning("Vui lòng nhập số điện thoại!", "Cảnh báo");
                 return false;
             }
             
-            if (!phoneNumber.matches("\\d{10,11}")) {
-                XDialog.alert("Số điện thoại không hợp lệ! Vui lòng nhập 10-11 chữ số.");
+            if (!XValidation.isPhone(phoneNumber)) {
+                XDialog.warning("Số điện thoại không hợp lệ! Vui lòng nhập 10-11 chữ số.", "Cảnh báo");
                 return false;
             }
             
-            if (customerName == null || customerName.trim().isEmpty()) {
-                XDialog.alert("Vui lòng nhập tên khách hàng!");
+            if (XValidation.isEmpty(customerName)) {
+                XDialog.warning("Vui lòng nhập tên khách hàng!", "Cảnh báo");
                 return false;
             }
             
@@ -1576,7 +1577,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
     @Override
     public Customer searchCustomer(String phoneNumber) {
         try {
-            if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+            if (XValidation.isEmpty(phoneNumber)) {
                 return null;
             }
             
@@ -1650,11 +1651,11 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
      * Validate phone number format
      */
     private boolean isValidPhoneNumber(String phoneNumber) {
-        if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+        if (XValidation.isEmpty(phoneNumber)) {
             return false;
         }
         // Vietnamese phone number format: 10-11 digits
-        return phoneNumber.trim().matches("\\d{10,11}");
+        return XValidation.isPhone(phoneNumber);
     }
     
     /**

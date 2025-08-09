@@ -620,92 +620,75 @@ public class OrderUI extends javax.swing.JFrame {
      * Đặt món
      */
     private void placeOrder() {
-        if (cartItems.isEmpty()) {
-            XDialog.alert("Giỏ hàng trống! Vui lòng chọn món ăn.");
-            return;
-        }
-        
-        if (currentBill == null) {
-            XDialog.alert("Không tìm thấy hóa đơn!");
-            return;
-        }
-        
-        if (!currentBill.isValid()) {
-            XDialog.alert("Hóa đơn không hợp lệ!");
-            return;
-        }
-        
         try {
-            // Thêm từng món vào bill details
-            for (CartItem item : cartItems) {
-                // Validation cho Product
-                if (item.getProduct() == null) {
-                    XDialog.alert("Thông tin sản phẩm không hợp lệ!");
-                    return;
-                }
-                
-                // Validation cho quantity
-                if (item.getQuantity() <= 0) {
-                    XDialog.alert("Số lượng phải lớn hơn 0!");
-                    return;
-                }
-                
-                // Validation cho price và discount
-                if (item.getProduct().getPrice() <= 0) {
-                    XDialog.alert("Giá sản phẩm không hợp lệ!");
-                    return;
-                }
-                
-                if (item.getProduct().getDiscount() < 0 || item.getProduct().getDiscount() > 1) {
-                    XDialog.alert("Giảm giá không hợp lệ!");
-                    return;
-                }
-                
-                // Validation cho bill_id
-                if (currentBill.getBill_id() == null || currentBill.getBill_id() <= 0) {
-                    XDialog.alert("ID hóa đơn không hợp lệ!");
-                    return;
-                }
-                
-                // Validation cho product_id
-                if (XValidation.isEmpty(item.getProduct().getProductId())) {
-                    XDialog.alert("ID sản phẩm không hợp lệ!");
-                    return;
-                }
-                
-                BillDetails billDetail = new BillDetails();
-
-                billDetail.setBill_id(currentBill.getBill_id());
-                billDetail.setProduct_id(item.getProduct().getProductId());
-                billDetail.setAmount(item.getQuantity());
-                billDetail.setPrice(item.getProduct().getPrice());
-                billDetail.setDiscount(item.getProduct().getDiscount());
-                
-                // Validation trước khi tạo
-                if (billDetail.isValid()) {
-                    billDetailsDAO.create(billDetail);
-                } else {
-                    XDialog.alert("Dữ liệu bill detail không hợp lệ!");
-                    return;
-                }
+            // Validate cart không rỗng
+            if (cartItems.isEmpty()) {
+                XDialog.warning("Giỏ hàng trống! Vui lòng chọn món ăn.", "Cảnh báo");
+                return;
             }
             
-            XDialog.alert("Đặt món thành công!");
-            
-            // Refresh parent dialog
-            if (parentDialog != null) {
-
-                parentDialog.loadBillDetails(currentBill.getBill_id());
-
+            // Validate current bill
+            if (currentBill == null) {
+                XDialog.error("Không tìm thấy thông tin hóa đơn!", "Lỗi");
+                return;
             }
             
-            // Clear cart and close dialog
-            cartItems.clear();
-            updateCartDisplay();
-            dispose();
+            // Tính tổng tiền
+            final double totalAmount = cartItems.stream()
+                .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
+                .sum();
             
+            // Hiển thị dialog xác nhận đặt món
+            String[] options = {"Đặt món", "Hủy"};
+            Runnable[] actions = {
+                () -> {
+                    try {
+                        // Lưu bill details
+                        for (CartItem item : cartItems) {
+                            BillDetails detail = new BillDetails();
+                            detail.setBill_id(currentBill.getBill_id());
+                            detail.setProduct_id(item.getProduct().getProductId());
+                            detail.setAmount(item.getQuantity());
+                            detail.setPrice(item.getProduct().getPrice());
+                            detail.setDiscount(item.getProduct().getDiscount());
+                            
+                            billDetailsDAO.create(detail);
+                        }
+                        
+                        // Cập nhật tổng tiền cho bill
+                        currentBill.setTotal_amount(totalAmount);
+                        // TODO: Cập nhật bill trong database
+                        
+                        XDialog.success("Đặt món thành công! Tổng tiền: " + formatCurrency(totalAmount), "Thành công");
+                        
+                        // Clear cart và đóng dialog
+                        cartItems.clear();
+                        updateCartDisplay();
+                        this.dispose();
+                        
+                        // Refresh parent dialog nếu có
+                        if (parentDialog != null) {
+                            // TODO: Implement refresh method in BillUI
+                            // parentDialog.refreshBillDetails();
+                        }
+                        
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        XDialog.error("Lỗi khi lưu đơn hàng: " + e.getMessage(), "Lỗi hệ thống");
+                    }
+                },
+                () -> {
+                    // Hủy - không làm gì
+                }
+            };
+            
+            XDialog.showCustomDialog(this, "Xác nhận đặt món", 
+                "Bạn có chắc chắn muốn đặt " + cartItems.size() + " món với tổng tiền " + formatCurrency(totalAmount) + "?",
+                options, actions);
+                
         } catch (Exception e) {
-            XDialog.alert("Lỗi khi đặt món: " + e.getMessage());
+            e.printStackTrace();
+            XDialog.error("Lỗi khi đặt món: " + e.getMessage(), "Lỗi hệ thống");
         }
     }
     

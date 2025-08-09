@@ -151,36 +151,31 @@ public class BillUI extends javax.swing.JFrame implements BillController {
     public void deleteSelectedItem() {
         int selectedRow = tbBill.getSelectedRow();
         if (selectedRow == -1) {
-            XDialog.alert("Vui lòng chọn món cần xóa!");
+            XDialog.warning("Vui lòng chọn món cần xóa!", "Cảnh báo");
             return;
         }
-        
-        if (XDialog.confirm("Bạn có chắc muốn xóa món này?")) {
+        if (XDialog.confirm("Bạn có chắc muốn xóa món này?", "Xác nhận")) {
             try {
-                // Lấy dữ liệu từ table một cách an toàn
                 Object productNameObj = tbBill.getValueAt(selectedRow, 1);
                 Object amountObj = tbBill.getValueAt(selectedRow, 3);
-                
                 if (productNameObj == null || amountObj == null) {
-                    XDialog.alert("Dữ liệu không hợp lệ!");
+                    XDialog.error("Dữ liệu không hợp lệ!", "Lỗi");
                     return;
                 }
-                
                 String productName = XStr.valueOf(productNameObj);
                 if (XValidation.isEmpty(productName)) {
-                    XDialog.alert("Tên món không hợp lệ!");
+                    XDialog.error("Tên món không hợp lệ!", "Lỗi");
                     return;
                 }
-                
                 int amount;
                 try {
                     amount = Integer.parseInt(XStr.valueOf(amountObj));
                     if (amount <= 0) {
-                        XDialog.alert("Số lượng phải lớn hơn 0!");
+                        XDialog.warning("Số lượng phải lớn hơn 0!", "Cảnh báo");
                         return;
                     }
                 } catch (NumberFormatException e) {
-                    XDialog.alert("Số lượng không hợp lệ!");
+                    XDialog.error("Số lượng không hợp lệ!", "Lỗi");
                     return;
                 }
                 
@@ -204,7 +199,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
                 }
                 
             } catch (Exception e) {
-                XDialog.alert("Lỗi khi xóa món: " + e.getMessage());
+                XDialog.error("Lỗi khi xóa món: " + e.getMessage(), "Lỗi");
             }
         }
     }

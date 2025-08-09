@@ -20,6 +20,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import javax.swing.event.*;
+import com.team4.quanliquanmicay.util.XValidation;
 
 /**
  *
@@ -1662,7 +1663,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 
         try {
             if (isFormEmpty()) {
-                XDialog.alert("⚠️ Vui lòng nhập thông tin nhân viên!");
+                XDialog.warning("Vui lòng nhập thông tin nhân viên!", "Cảnh báo");
                 return;
             }
 
@@ -1680,12 +1681,12 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             fillToTableWithCache();
             clearForNewEntry();
 
-            XDialog.alert("✅ Tạo nhân viên thành công!\nMã: " + newEmployee.getUser_id());
+            XDialog.success("Tạo nhân viên thành công! Mã: " + newEmployee.getUser_id(), "Thành công");
 
         } catch (RuntimeException e) {
-            XDialog.alert("❌ " + e.getMessage());
+            XDialog.error(e.getMessage(), "Lỗi");
         } catch (Exception e) {
-            XDialog.alert("❌ Lỗi hệ thống: " + e.getMessage());
+            XDialog.error("Lỗi hệ thống: " + e.getMessage(), "Lỗi");
             e.printStackTrace();
         } finally {
             isProcessing = false;
@@ -1705,7 +1706,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 
             UserAccount existingEmployee = userDAO.findById(updatedEmployee.getUser_id());
             if (existingEmployee == null) {
-                XDialog.alert("Không tìm thấy nhân viên với mã: " + updatedEmployee.getUser_id());
+                XDialog.error("Không tìm thấy nhân viên với mã: " + updatedEmployee.getUser_id(), "Lỗi");
                 return;
             }
 
@@ -1729,12 +1730,12 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             fillToTableWithCache();
             clearFormButKeepImage();
 
-            XDialog.alert("✅ Cập nhật nhân viên thành công!");
+            XDialog.success("Cập nhật nhân viên thành công!", "Thành công");
 
         } catch (RuntimeException e) {
-            XDialog.alert("❌ " + e.getMessage());
+            XDialog.error(e.getMessage(), "Lỗi");
         } catch (Exception e) {
-            XDialog.alert("❌ Lỗi khi cập nhật: " + e.getMessage());
+            XDialog.error("Lỗi khi cập nhật: " + e.getMessage(), "Lỗi");
             e.printStackTrace();
         } finally {
             isProcessing = false;
