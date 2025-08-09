@@ -767,14 +767,8 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
 
         btnFilter.setBackground(new java.awt.Color(204, 204, 204));
         btnFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-<<<<<<< HEAD
-        btnFilter.setForeground(new java.awt.Color(153, 153, 153));
-        btnFilter.setText("LỌC");
-        btnFilter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
-=======
         btnFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/icons8-sort-24.png"))); // NOI18N
         btnFilter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
->>>>>>> 08553c4d2d2b350cb38e4ec534b83c8290f28256
 
         jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 

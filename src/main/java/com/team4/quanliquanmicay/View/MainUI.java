@@ -1,6 +1,8 @@
 package com.team4.quanliquanmicay.View;
 
 import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XValidation;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -90,10 +92,7 @@ public class MainUI extends javax.swing.JFrame {
                     System.out.println("✅ CategoryManagement đã được mở thành công!");
                 } catch (Exception ex) {
                     System.err.println("❌ Lỗi khi mở CategoryManagement: " + ex.getMessage());
-                    JOptionPane.showMessageDialog(null, 
-                        "Lỗi khi mở Quản lý Loại món: " + ex.getMessage(), 
-                        "Lỗi", 
-                        JOptionPane.ERROR_MESSAGE);
+                    XDialog.error("Lỗi khi mở Quản lý Loại món: " + ex.getMessage(), "Lỗi hệ thống");
                 }
             }
         });
@@ -104,14 +103,11 @@ public class MainUI extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     System.out.println("🔄 Đang mở ProductManagement...");
-                    new com.team4.quanliquanmicay.View.management.ProductManagement().setVisible(true);
-                    System.out.println("✅ ProductManagement đã được mở thành công!");
+                    // TODO: Mở ProductManagement khi có
+                    XDialog.alert("Tính năng Quản lý Sản phẩm đang được phát triển!", "Thông báo");
                 } catch (Exception ex) {
                     System.err.println("❌ Lỗi khi mở ProductManagement: " + ex.getMessage());
-                    JOptionPane.showMessageDialog(null, 
-                        "Lỗi khi mở Quản lý Sản phẩm: " + ex.getMessage(), 
-                        "Lỗi", 
-                        JOptionPane.ERROR_MESSAGE);
+                    XDialog.error("Lỗi khi mở Quản lý Sản phẩm: " + ex.getMessage(), "Lỗi hệ thống");
                 }
             }
         });
@@ -205,10 +201,7 @@ public class MainUI extends javax.swing.JFrame {
                     System.out.println("✅ BillManagement đã được mở thành công!");
                 } catch (Exception ex) {
                     System.err.println("❌ Lỗi khi mở BillManagement: " + ex.getMessage());
-                    JOptionPane.showMessageDialog(null, 
-                        "Lỗi khi mở Quản lý Hóa đơn: " + ex.getMessage(), 
-                        "Lỗi", 
-                        JOptionPane.ERROR_MESSAGE);
+                    XDialog.error("Lỗi khi mở Quản lý Hóa đơn: " + ex.getMessage(), "Lỗi hệ thống");
                 }
             }
         });
@@ -223,10 +216,7 @@ public class MainUI extends javax.swing.JFrame {
                     System.out.println("✅ PaymentMethodManagement đã được mở thành công!");
                 } catch (Exception ex) {
                     System.err.println("❌ Lỗi khi mở PaymentMethodManagement: " + ex.getMessage());
-                    JOptionPane.showMessageDialog(null, 
-                        "Lỗi khi mở Quản lý Phương thức thanh toán: " + ex.getMessage(), 
-                        "Lỗi", 
-                        JOptionPane.ERROR_MESSAGE);
+                    XDialog.error("Lỗi khi mở Quản lý Phương thức thanh toán: " + ex.getMessage(), "Lỗi hệ thống");
                 }
             }
         });
@@ -241,10 +231,7 @@ public class MainUI extends javax.swing.JFrame {
                     System.out.println("✅ HistoryManagement đã được mở thành công!");
                 } catch (Exception ex) {
                     System.err.println("❌ Lỗi khi mở HistoryManagement: " + ex.getMessage());
-                    JOptionPane.showMessageDialog(null, 
-                        "Lỗi khi mở Quản lý Lịch sử: " + ex.getMessage(), 
-                        "Lỗi", 
-                        JOptionPane.ERROR_MESSAGE);
+                    XDialog.error("Lỗi khi mở Quản lý Lịch sử: " + ex.getMessage(), "Lỗi hệ thống");
                 }
             }
         });
@@ -861,7 +848,6 @@ public class MainUI extends javax.swing.JFrame {
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(MainUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
         //</editor-fold>
         //</editor-fold>
         //</editor-fold>

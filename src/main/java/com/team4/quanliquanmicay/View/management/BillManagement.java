@@ -23,6 +23,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.toedter.calendar.JDateChooser;
 import com.team4.quanliquanmicay.Controller.BillManagementController;
+import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XValidation;
 
 /**
  *
@@ -85,10 +87,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             cboTime.setSelectedItem("Hôm nay");
             
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Lỗi khi thiết lập ngày mặc định: " + e.getMessage(), 
-                "Lỗi", 
-                JOptionPane.ERROR_MESSAGE);
+            XDialog.error("Lỗi khi thiết lập ngày mặc định: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -125,7 +124,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 model.addRow(row);
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tải dữ liệu hóa đơn: " + e.getMessage());
+            XDialog.error("Lỗi khi tải dữ liệu hóa đơn: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -153,7 +152,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 model.addRow(row);
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tải chi tiết hóa đơn: " + e.getMessage());
+            XDialog.error("Lỗi khi tải chi tiết hóa đơn: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -255,7 +254,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
     @Override
     public void updateBill() {
         if (currentBill == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn cần cập nhật!");
+            XDialog.warning("Vui lòng chọn hóa đơn cần cập nhật!", "Cảnh báo");
             return;
         }
 
@@ -279,11 +278,11 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             }
 
             billDAO.update(currentBill);
-            JOptionPane.showMessageDialog(this, "Cập nhật hóa đơn thành công!");
+            XDialog.success("Cập nhật hóa đơn thành công!", "Thành công");
             loadBillData();
             
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi cập nhật hóa đơn: " + e.getMessage());
+            XDialog.error("Lỗi khi cập nhật hóa đơn: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -293,16 +292,13 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
     @Override
     public void removeBill() {
         if (currentBill == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn cần xóa!");
+            XDialog.warning("Vui lòng chọn hóa đơn cần xóa!", "Cảnh báo");
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(this, 
-            "Bạn có chắc chắn muốn xóa hóa đơn này?", 
-            "Xác nhận xóa", 
-            JOptionPane.YES_NO_OPTION);
+        boolean confirm = XDialog.confirm("Bạn có chắc chắn muốn xóa hóa đơn này?", "Xác nhận xóa");
             
-        if (confirm == JOptionPane.YES_OPTION) {
+        if (confirm) {
             try {
                 // Xóa chi tiết hóa đơn trước
                 List<BillDetails> billDetails = billDetailsDAO.findByBillId(currentBill.getBill_id());
@@ -312,13 +308,13 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 
                 // Xóa hóa đơn
                 billDAO.deleteById(String.valueOf(currentBill.getBill_id()));
-                JOptionPane.showMessageDialog(this, "Xóa hóa đơn thành công!");
+                XDialog.success("Xóa hóa đơn thành công!", "Thành công");
                 
                 clearForm();
                 loadBillData();
                 
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Lỗi khi xóa hóa đơn: " + e.getMessage());
+                XDialog.error("Lỗi khi xóa hóa đơn: " + e.getMessage(), "Lỗi");
             }
         }
     }
@@ -399,10 +395,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                     java.util.Date endDate = sdf.parse(txtEnd.getText());
                     
                     if (selectedDate.after(endDate)) {
-                        JOptionPane.showMessageDialog(this, 
-                            "Ngày bắt đầu không được lớn hơn ngày kết thúc!", 
-                            "Lỗi Validation", 
-                            JOptionPane.ERROR_MESSAGE);
+                        XDialog.warning("Ngày bắt đầu không được lớn hơn ngày kết thúc!", "Lỗi Validation");
                         return false;
                     }
                 }
@@ -415,10 +408,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                     java.util.Date beginDate = sdf.parse(txtBegin.getText());
                     
                     if (selectedDate.before(beginDate)) {
-                        JOptionPane.showMessageDialog(this, 
-                            "Ngày kết thúc phải lớn hơn ngày bắt đầu!", 
-                            "Lỗi Validation", 
-                            JOptionPane.ERROR_MESSAGE);
+                        XDialog.warning("Ngày kết thúc phải lớn hơn ngày bắt đầu!", "Lỗi Validation");
                         return false;
                     }
                 }
@@ -426,10 +416,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             
             return true;
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Lỗi khi kiểm tra ngày: " + e.getMessage(), 
-                "Lỗi", 
-                JOptionPane.ERROR_MESSAGE);
+            XDialog.error("Lỗi khi kiểm tra ngày: " + e.getMessage(), "Lỗi");
             return false;
         }
     }
@@ -544,10 +531,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             }
             
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Lỗi khi cập nhật khoảng thời gian: " + e.getMessage(), 
-                "Lỗi", 
-                JOptionPane.ERROR_MESSAGE);
+            XDialog.error("Lỗi khi cập nhật khoảng thời gian: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -683,10 +667,10 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             } else {
                 message = "Đã lọc được " + filteredBills.size() + " hóa đơn cho " + selectedTime + "!";
             }
-            JOptionPane.showMessageDialog(this, message);
+            XDialog.success(message, "Thông báo");
             
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi lọc hóa đơn: " + e.getMessage());
+            XDialog.error("Lỗi khi lọc hóa đơn: " + e.getMessage(), "Lỗi");
         }
     }
     
@@ -699,7 +683,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         try {
             return billDAO.findAll();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi lấy danh sách hóa đơn: " + e.getMessage());
+            XDialog.error("Lỗi khi lấy danh sách hóa đơn: " + e.getMessage(), "Lỗi");
             return new java.util.ArrayList<>();
         }
     }
@@ -714,7 +698,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         try {
             return billDAO.findById(billId);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tìm hóa đơn: " + e.getMessage());
+            XDialog.error("Lỗi khi tìm hóa đơn: " + e.getMessage(), "Lỗi");
             return null;
         }
     }
@@ -748,7 +732,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             
             return filteredBills;
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi lọc hóa đơn theo ngày: " + e.getMessage());
+            XDialog.error("Lỗi khi lọc hóa đơn theo ngày: " + e.getMessage(), "Lỗi");
             return new java.util.ArrayList<>();
         }
     }
@@ -828,7 +812,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             
             return filteredBills;
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi lọc hóa đơn theo thời gian: " + e.getMessage());
+            XDialog.error("Lỗi khi lọc hóa đơn theo thời gian: " + e.getMessage(), "Lỗi");
             return new java.util.ArrayList<>();
         }
     }
