@@ -180,21 +180,33 @@ public class CustomerManagement extends javax.swing.JFrame {
      * Display selected customer data in form fields
      */
     private void displaySelectedCustomerData(int selectedRow) {
-        if (selectedRow >= 0 && selectedRow < tableModel.getRowCount()) {
-            String phoneNumber = (String) tableModel.getValueAt(selectedRow, 0);
-            String customerName = (String) tableModel.getValueAt(selectedRow, 1);
-            Integer pointLevel = (Integer) tableModel.getValueAt(selectedRow, 2);
-            String levelRanking = (String) tableModel.getValueAt(selectedRow, 3);
-            
-            // Update form fields
-            txt_phone_number.setText(phoneNumber);
-            txt_customer_name.setText(customerName);
-            txt_point_level.setText(pointLevel != null ? pointLevel.toString() : "");
-            txt_level_ranking.setText(levelRanking);
-            
-            // Highlight row được chọn
-            tbl_customer.setRowSelectionInterval(selectedRow, selectedRow);
-            
+        try {
+            if (selectedRow >= 0 && selectedRow < tableModel.getRowCount()) {
+                String phoneNumber = (String) tableModel.getValueAt(selectedRow, 0);
+                String customerName = (String) tableModel.getValueAt(selectedRow, 1);
+                Integer pointLevel = (Integer) tableModel.getValueAt(selectedRow, 2);
+                String levelRanking = (String) tableModel.getValueAt(selectedRow, 3);
+
+                // Update form fields
+                txt_phone_number.setText(phoneNumber);
+                txt_customer_name.setText(customerName);
+                txt_point_level.setText(pointLevel != null ? pointLevel.toString() : "");
+                txt_level_ranking.setText(levelRanking);
+
+                // Cập nhật đối tượng selectedCustomer để các thao tác Update/Delete hoạt động
+                if (selectedCustomer == null) {
+                    selectedCustomer = new Customer();
+                }
+                selectedCustomer.setPhone_number(phoneNumber);
+                selectedCustomer.setCustomer_name(customerName);
+                selectedCustomer.setPoint_level(pointLevel != null ? pointLevel : 0);
+                selectedCustomer.setLevel_ranking(levelRanking);
+
+                // Highlight row được chọn
+                tbl_customer.setRowSelectionInterval(selectedRow, selectedRow);
+            } else {
+                clearForm();
+            }
         } catch (Exception e) {
             // Log error and clear form
             System.err.println("Error displaying customer data: " + e.getMessage());
@@ -241,7 +253,7 @@ public class CustomerManagement extends javax.swing.JFrame {
             if (progressBar != null) {
                 progressBar.setIndeterminate(false);
                 progressBar.setVisible(false);
-        
+            }
         }
     }
 
@@ -313,10 +325,6 @@ public class CustomerManagement extends javax.swing.JFrame {
             XDialog.success("Cập nhật thông tin khách hàng thành công!", "Thành công");
             loadAllCustomers(); // Refresh table
             clearForm();
-            
-
-            // Hiển thị thông báo thành công
-            XDialog.success("Cập nhật khách hàng thành công!");
                 
         } catch (Exception e) {
             handleDatabaseError(e, "cập nhật khách hàng");
@@ -368,9 +376,6 @@ public class CustomerManagement extends javax.swing.JFrame {
                 XDialog.success("Xóa khách hàng thành công!", "Thành công");
                 loadAllCustomers(); // Refresh table
                 clearForm();
-                
-                // Show success message
-                XDialog.success("Dữ liệu đã được xóa thành công!");
             }
             
         } catch (Exception e) {
@@ -389,7 +394,7 @@ public class CustomerManagement extends javax.swing.JFrame {
             String searchText = XValidation.sanitizeInput(txt_search.getText());
             String selectedSort = (String) cbo_SortPoint.getSelectedItem();
             
-            List<Customer> filteredCustomers;
+            List<Customer> results;
             
             // Lấy dữ liệu cơ bản
             if (XValidation.isEmpty(searchText)) {
@@ -421,7 +426,7 @@ public class CustomerManagement extends javax.swing.JFrame {
                 }
             }
             
-            updateTableData(filteredCustomers);
+            updateTableData(results);
             
         } catch (Exception e) {
             handleDatabaseError(e, "tải dữ liệu");
