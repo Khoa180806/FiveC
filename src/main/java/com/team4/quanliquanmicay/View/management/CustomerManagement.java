@@ -7,6 +7,7 @@ package com.team4.quanliquanmicay.View.management;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XValidation;
 import com.team4.quanliquanmicay.util.XDialog;
+
 import com.team4.quanliquanmicay.Controller.CustomerManagementController;
 import com.team4.quanliquanmicay.Entity.Customer;
 import java.util.List;
@@ -137,7 +138,7 @@ public class CustomerManagement extends javax.swing.JFrame {
     }
     
     /**
-     * Load all customers into the table
+     * Load all customers from database
      */
     private void loadAllCustomers() {
         showLoadingIndicator(true);
@@ -158,60 +159,37 @@ public class CustomerManagement extends javax.swing.JFrame {
     }
     
     /**
-     * Update table data with customer list
+     * Update table with customer data
      */
     private void updateTableData(List<Customer> customers) {
-        tableModel.setRowCount(0); // Clear existing data
-        
-        for (Customer customer : customers) {
-            Object[] row = {
-                customer.getPhone_number(),
-                customer.getCustomer_name(),
-                customer.getPoint_level(),
-                customer.getLevel_ranking()
-            };
-            tableModel.addRow(row);
+        tableModel.setRowCount(0);
+        if (customers != null) {
+            for (Customer customer : customers) {
+                Object[] row = {
+                    customer.getPhone_number(),
+                    customer.getCustomer_name(),
+                    customer.getPoint_level(),
+                    customer.getLevel_ranking()
+                };
+                tableModel.addRow(row);
+            }
         }
     }
     
     /**
-     * Display selected customer data in text fields
+     * Display selected customer data in form fields
      */
     private void displaySelectedCustomerData(int selectedRow) {
-        try {
-            // Validate row index
-            if (selectedRow < 0 || selectedRow >= tableModel.getRowCount()) {
-                return;
-            }
+        if (selectedRow >= 0 && selectedRow < tableModel.getRowCount()) {
+            String phoneNumber = (String) tableModel.getValueAt(selectedRow, 0);
+            String customerName = (String) tableModel.getValueAt(selectedRow, 1);
+            Integer pointLevel = (Integer) tableModel.getValueAt(selectedRow, 2);
+            String levelRanking = (String) tableModel.getValueAt(selectedRow, 3);
             
-            // Get data from the selected row with null checks
-            Object phoneNumberObj = tableModel.getValueAt(selectedRow, 0);
-            Object customerNameObj = tableModel.getValueAt(selectedRow, 1);
-            Object pointLevelObj = tableModel.getValueAt(selectedRow, 2);
-            Object levelRankingObj = tableModel.getValueAt(selectedRow, 3);
-            
-            // Validate data is not null
-            if (phoneNumberObj == null || customerNameObj == null || 
-                pointLevelObj == null || levelRankingObj == null) {
-                return;
-            }
-            
-            String phoneNumber = phoneNumberObj.toString();
-            String customerName = customerNameObj.toString();
-            Integer pointLevel = (Integer) pointLevelObj;
-            String levelRanking = levelRankingObj.toString();
-            
-            // Create customer object for the selected row
-            selectedCustomer = new Customer();
-            selectedCustomer.setPhone_number(phoneNumber);
-            selectedCustomer.setCustomer_name(customerName);
-            selectedCustomer.setPoint_level(pointLevel);
-            selectedCustomer.setLevel_ranking(levelRanking);
-            
-            // Display data in text fields
+            // Update form fields
             txt_phone_number.setText(phoneNumber);
             txt_customer_name.setText(customerName);
-            txt_point_level.setText(String.valueOf(pointLevel));
+            txt_point_level.setText(pointLevel != null ? pointLevel.toString() : "");
             txt_level_ranking.setText(levelRanking);
             
             // Highlight row được chọn
@@ -227,14 +205,14 @@ public class CustomerManagement extends javax.swing.JFrame {
     }
     
     /**
-     * Clear form fields
+     * Clear all form fields
      */
     private void clearForm() {
-        selectedCustomer = null;
         txt_phone_number.setText("");
         txt_customer_name.setText("");
         txt_point_level.setText("");
         txt_level_ranking.setText("");
+        selectedCustomer = null;
     }
     
     /**
@@ -263,7 +241,7 @@ public class CustomerManagement extends javax.swing.JFrame {
             if (progressBar != null) {
                 progressBar.setIndeterminate(false);
                 progressBar.setVisible(false);
-            }
+        
         }
     }
 
@@ -332,12 +310,11 @@ public class CustomerManagement extends javax.swing.JFrame {
             customerController.setForm(selectedCustomer);
             customerController.update();
             
-            // Refresh table data
-            refreshTableData();
-            
-            // Clear form
+            XDialog.success("Cập nhật thông tin khách hàng thành công!", "Thành công");
+            loadAllCustomers(); // Refresh table
             clearForm();
             
+
             // Hiển thị thông báo thành công
             XDialog.success("Cập nhật khách hàng thành công!");
                 
@@ -355,8 +332,10 @@ public class CustomerManagement extends javax.swing.JFrame {
         if (selectedCustomer == null) {
             XDialog.warning("Vui lòng chọn một khách hàng để xóa!");
             return;
+
         }
         
+        // Validate point level is number
         try {
             // Kiểm tra xem khách hàng có đang được sử dụng không
             if (isCustomerInUse(selectedCustomer.getPhone_number())) {
@@ -386,10 +365,8 @@ public class CustomerManagement extends javax.swing.JFrame {
                 customerController.setForm(selectedCustomer);
                 customerController.delete();
                 
-                // Refresh table data
-                refreshTableData();
-                
-                // Clear form
+                XDialog.success("Xóa khách hàng thành công!", "Thành công");
+                loadAllCustomers(); // Refresh table
                 clearForm();
                 
                 // Show success message
@@ -412,7 +389,7 @@ public class CustomerManagement extends javax.swing.JFrame {
             String searchText = XValidation.sanitizeInput(txt_search.getText());
             String selectedSort = (String) cbo_SortPoint.getSelectedItem();
             
-            List<Customer> results = null;
+            List<Customer> filteredCustomers;
             
             // Lấy dữ liệu cơ bản
             if (XValidation.isEmpty(searchText)) {
@@ -444,9 +421,8 @@ public class CustomerManagement extends javax.swing.JFrame {
                 }
             }
             
-            if (results != null) {
-                updateTableData(results);
-            }
+            updateTableData(filteredCustomers);
+            
         } catch (Exception e) {
             handleDatabaseError(e, "tải dữ liệu");
             // Load tất cả khách hàng như fallback

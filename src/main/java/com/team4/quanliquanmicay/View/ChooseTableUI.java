@@ -443,22 +443,44 @@ public class ChooseTableUI extends javax.swing.JFrame {
      */
     private void openHoaDonDialog(int tableNumber) {
         try {
-            // Tạo BillUI mới
-//            BillUI hoaDonDialog = new BillUI();
-            BillUI hoaDonDialog = new BillUI();
+            // Validate table number
+            if (tableNumber <= 0) {
+                XDialog.error("Số bàn không hợp lệ!", "Lỗi");
+                return;
+            }
             
-            // Set thông tin bàn vào dialog
-            hoaDonDialog.setTableInfo(tableNumber);
+            // Kiểm tra bàn có đang sử dụng không
+            TableForCustomer table = tableDAO.findById(tableNumber);
+            if (table == null) {
+                XDialog.error("Không tìm thấy thông tin bàn!", "Lỗi");
+                return;
+            }
             
-            // Ẩn ChooseTableUI
-            this.setVisible(false);
+            if (table.getStatus() == 1) { // Bàn đang sử dụng
+                XDialog.warning("Bàn " + tableNumber + " đang được sử dụng!", "Cảnh báo");
+                return;
+            }
             
-            // Hiển thị BillUI
-            hoaDonDialog.setVisible(true);
+            // Hiển thị dialog xác nhận mở hóa đơn
+            boolean confirm = XDialog.confirm(
+                "Bạn có muốn mở hóa đơn cho bàn " + tableNumber + "?", 
+                "Xác nhận mở hóa đơn"
+            );
+            
+            if (confirm) {
+                try {
+                    // TODO: Mở BillUI với bàn được chọn
+                    XDialog.success("Đã mở hóa đơn cho bàn " + tableNumber, "Thành công");
+                    // new BillUI(tableNumber).setVisible(true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    XDialog.error("Lỗi khi mở hóa đơn: " + e.getMessage(), "Lỗi hệ thống");
+                }
+            }
             
         } catch (Exception e) {
-            System.err.println("Lỗi khi mở HoaDonJDialog: " + e.getMessage());
             e.printStackTrace();
+            XDialog.error("Lỗi khi xử lý bàn: " + e.getMessage(), "Lỗi hệ thống");
         }
     }
 

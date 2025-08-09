@@ -10,6 +10,7 @@ import com.team4.quanliquanmicay.Impl.CategoryDAOImpl;
 import com.team4.quanliquanmicay.DAO.CategoryDAO;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XValidation;
 import java.util.List;
 import javax.swing.JOptionPane;
 
@@ -517,159 +518,115 @@ public class CategoryManagement extends javax.swing.JFrame implements CategoryCo
             category.getIs_available() == 1 ? "Hoạt động" : "Ngừng hoạt động");
     }
     
-    /**
-     * Kiểm tra dữ liệu rỗng và trả về thông báo lỗi
-     */
-    private String validateFormData() {
-        StringBuilder errorMessage = new StringBuilder();
-        boolean hasError = false;
-        
-        // Kiểm tra mã loại
-        String categoryId = txtCateId.getText().trim();
-        if (categoryId.isEmpty()) {
-            errorMessage.append("• Mã loại không được để trống\n");
-            hasError = true;
-        }
-        
-        // Kiểm tra tên loại
-        String categoryName = txtCateName.getText().trim();
-        if (categoryName.isEmpty()) {
-            errorMessage.append("• Tên loại không được để trống\n");
-            hasError = true;
-        }
-        
-        // Kiểm tra trạng thái
-        if (!radActive.isSelected() && !radInactive.isSelected()) {
-            errorMessage.append("• Vui lòng chọn trạng thái\n");
-            hasError = true;
-        }
-        
-        if (hasError) {
-            return "Vui lòng kiểm tra và sửa các lỗi sau:\n\n" + errorMessage.toString();
-        }
-        
-        return null; // Không có lỗi
-    }
-
     @Override
     public void create() {
-        // Kiểm tra dữ liệu rỗng
-        String validationError = validateFormData();
-        if (validationError != null) {
-            XDialog.error(validationError, "Lỗi nhập liệu");
-            return;
-        }
-        
-        Category category = getForm();
-        
-        // Kiểm tra trùng mã loại
-        if (categoryDAO.findAll().stream().anyMatch(c -> c.getCategory_id().equals(category.getCategory_id()))) {
-            XDialog.error("Mã loại '" + category.getCategory_id() + "' đã tồn tại!\nVui lòng nhập mã khác.", "Dữ liệu đã tồn tại");
-            txtCateId.requestFocus();
-            return;
-        }
-        
-        // Hiển thị dialog xác nhận với thông tin chi tiết
-        String message = "Bạn có chắc chắn muốn thêm loại món mới?\n\n" +
-                        "THÔNG TIN SẼ THÊM:\n" + formatCategoryInfo(category);
-        
-        if (XDialog.confirm(message, "Xác nhận thêm mới")) {
-            try {
-                categoryDAO.create(category);
-                fillToTable();
-                clear();
-                XDialog.success("Thêm loại món thành công!");
-            } catch (Exception e) {
-                e.printStackTrace();
-                XDialog.error("Lỗi: " + e.getMessage(), "Thêm mới thất bại");
+        try {
+            // Validate form data
+            String validationError = validateFormData();
+            if (validationError != null) {
+                XDialog.error(validationError, "Lỗi dữ liệu");
+                return;
             }
+            
+            Category category = getForm();
+            
+            // Kiểm tra category name đã tồn tại chưa
+            List<Category> existingCategories = categoryDAO.findAll();
+            boolean nameExists = existingCategories.stream()
+                .anyMatch(c -> c.getCategory_name().equalsIgnoreCase(category.getCategory_name()));
+            
+            if (nameExists) {
+                XDialog.warning("Tên danh mục đã tồn tại!", "Cảnh báo");
+                return;
+            }
+            
+            // Hiển thị dialog xác nhận thêm
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn thêm danh mục '" + category.getCategory_name() + "'?", 
+                "Xác nhận thêm"
+            );
+            
+            if (confirm) {
+                categoryDAO.create(category);
+                XDialog.success("Thêm danh mục thành công!", "Thành công");
+                clear();
+                fillToTable();
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            XDialog.error("Lỗi khi thêm danh mục: " + e.getMessage(), "Lỗi hệ thống");
         }
     }
 
     @Override
     public void update() {
-        int selectedRow = tblCategories.getSelectedRow();
-        if (selectedRow < 0) {
-            XDialog.error("Vui lòng chọn một loại món để cập nhật!", "Chưa chọn dòng");
-            return;
-        }
-        
-        // Kiểm tra dữ liệu rỗng
-        String validationError = validateFormData();
-        if (validationError != null) {
-            XDialog.error(validationError, "Lỗi nhập liệu");
-            return;
-        }
-        
-        // Lấy thông tin cũ từ table
-        String oldCategoryId = tblCategories.getValueAt(selectedRow, 0).toString();
-        String oldCategoryName = tblCategories.getValueAt(selectedRow, 1).toString();
-        String oldStatus = tblCategories.getValueAt(selectedRow, 2).toString();
-        int oldIsAvailable = oldStatus.equals("Hoạt động") ? 1 : 0;
-        
-        Category oldCategory = new Category(oldCategoryId, oldCategoryName, oldIsAvailable);
-        Category newCategory = getForm();
-        
-        // Kiểm tra xem có thay đổi gì không
-        if (oldCategory.getCategory_name().equals(newCategory.getCategory_name()) && 
-            oldCategory.getIs_available() == newCategory.getIs_available()) {
-            XDialog.alert("Không có thay đổi nào được thực hiện.", "Không có thay đổi");
-            return;
-        }
-        
-        // Hiển thị dialog xác nhận với thông tin so sánh
-        String message = "Bạn có muốn cập nhật thông tin loại món?\n\n" +
-                        "THÔNG TIN HIỆN TẠI:\n" + formatCategoryInfo(oldCategory) + "\n\n" +
-                        "THÔNG TIN MỚI:\n" + formatCategoryInfo(newCategory);
-        
-        if (XDialog.confirm(message, "Xác nhận cập nhật")) {
-            try {
-                categoryDAO.update(newCategory);
-                fillToTable();
-                clear();
-                XDialog.success("Cập nhật loại món thành công!");
-            } catch (Exception e) {
-                e.printStackTrace();
-                XDialog.error("Lỗi: " + e.getMessage(), "Cập nhật thất bại");
+        try {
+            // Validate form data
+            String validationError = validateFormData();
+            if (validationError != null) {
+                XDialog.error(validationError, "Lỗi dữ liệu");
+                return;
             }
+            
+            Category category = getForm();
+            
+            // Kiểm tra category name đã tồn tại chưa (trừ chính nó)
+            List<Category> existingCategories = categoryDAO.findAll();
+            boolean nameExists = existingCategories.stream()
+                .anyMatch(c -> c.getCategory_name().equalsIgnoreCase(category.getCategory_name()) 
+                    && !c.getCategory_id().equals(category.getCategory_id()));
+            
+            if (nameExists) {
+                XDialog.warning("Tên danh mục đã tồn tại!", "Cảnh báo");
+                return;
+            }
+            
+            // Hiển thị dialog xác nhận cập nhật
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn cập nhật danh mục '" + category.getCategory_name() + "'?", 
+                "Xác nhận cập nhật"
+            );
+            
+            if (confirm) {
+                categoryDAO.update(category);
+                XDialog.success("Cập nhật danh mục thành công!", "Thành công");
+                clear();
+                fillToTable();
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            XDialog.error("Lỗi khi cập nhật danh mục: " + e.getMessage(), "Lỗi hệ thống");
         }
     }
 
     @Override
     public void delete() {
-        int selectedRow = tblCategories.getSelectedRow();
-        if (selectedRow < 0) {
-            XDialog.error("Vui lòng chọn một loại món để xóa!", "Chưa chọn dòng");
-            return;
-        }
-        
-        // Lấy thông tin để hiển thị
-        String categoryId = tblCategories.getValueAt(selectedRow, 0).toString();
-        String categoryName = tblCategories.getValueAt(selectedRow, 1).toString();
-        String status = tblCategories.getValueAt(selectedRow, 2).toString();
-        int isAvailable = status.equals("Hoạt động") ? 1 : 0;
-        
-        Category toDelete = new Category(categoryId, categoryName, isAvailable);
-        
-        // Hiển thị dialog xác nhận với thông tin chi tiết
-        String message = "Bạn có chắc chắn muốn xóa loại món này?\n\n" +
-                        "THÔNG TIN SẼ BỊ XÓA:\n" + formatCategoryInfo(toDelete);
-        
-        if (XDialog.confirm(message, "Xác nhận xóa")) {
-            try {
-                categoryDAO.deleteById(categoryId);
+        try {
+            Category category = getForm();
+            if (category == null || XValidation.isEmpty(category.getCategory_id())) {
+                XDialog.error("Vui lòng chọn danh mục cần xóa!", "Lỗi");
+                return;
+            }
+            
+            // Hiển thị dialog xác nhận xóa
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn xóa danh mục '" + category.getCategory_name() + "'?\n" +
+                "Hành động này không thể hoàn tác!", 
+                "Xác nhận xóa"
+            );
+            
+            if (confirm) {
+                categoryDAO.deleteById(category.getCategory_id());
+                XDialog.success("Xóa danh mục thành công!", "Thành công");
                 clear();
                 fillToTable();
-                XDialog.success("Xóa loại món thành công!");
-            } catch (Exception e) {
-                e.printStackTrace();
-                // Kiểm tra lỗi ràng buộc khóa ngoại
-                if (e.getMessage() != null && e.getMessage().contains("FK_PRODUCT_CATEGORY")) {
-                    XDialog.error("Không thể xóa loại món này vì liên quan đến nhiều thông tin khác!", "Lỗi ràng buộc");
-                } else {
-                    XDialog.error("Lỗi: " + e.getMessage(), "Xóa thất bại");
-                }
             }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            XDialog.error("Lỗi khi xóa danh mục: " + e.getMessage(), "Lỗi hệ thống");
         }
     }
 
@@ -732,5 +689,27 @@ public class CategoryManagement extends javax.swing.JFrame implements CategoryCo
     @Override
     public void deleteCheckedItems() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    private String validateFormData() {
+        Category category = getForm();
+        
+        if (XValidation.isEmpty(category.getCategory_id())) {
+            return "Vui lòng nhập mã danh mục!";
+        }
+        
+        if (XValidation.isEmpty(category.getCategory_name())) {
+            return "Vui lòng nhập tên danh mục!";
+        }
+        
+        if (category.getCategory_name().length() < 2) {
+            return "Tên danh mục phải có ít nhất 2 ký tự!";
+        }
+        
+        if (category.getCategory_name().length() > 50) {
+            return "Tên danh mục không được quá 50 ký tự!";
+        }
+        
+        return null; // Không có lỗi
     }
 }
