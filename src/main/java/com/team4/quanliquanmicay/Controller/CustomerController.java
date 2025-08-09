@@ -77,7 +77,8 @@ public class CustomerController implements CrudController<Customer> {
         try {
             if (currentCustomer != null) {
                 customerDAO.update(currentCustomer);
-                JOptionPane.showMessageDialog(null, "Cập nhật khách hàng thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                // Xóa thông báo thành công để tránh duplicate với CustomerManagement
+                // JOptionPane.showMessageDialog(null, "Cập nhật khách hàng thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Lỗi khi cập nhật khách hàng: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -88,15 +89,16 @@ public class CustomerController implements CrudController<Customer> {
     public void delete() {
         try {
             if (currentCustomer != null && currentCustomer.getPhone_number() != null) {
-                int confirm = JOptionPane.showConfirmDialog(null, 
-                    "Bạn có chắc chắn muốn xóa khách hàng này?", 
-                    "Xác nhận xóa", 
-                    JOptionPane.YES_NO_OPTION);
+                // Xóa dialog xác nhận và thông báo thành công để tránh duplicate với CustomerManagement
+                // int confirm = JOptionPane.showConfirmDialog(null, 
+                //     "Bạn có chắc chắn muốn xóa khách hàng này?", 
+                //     "Xác nhận xóa", 
+                //     JOptionPane.YES_NO_OPTION);
                 
-                if (confirm == JOptionPane.YES_OPTION) {
+                // if (confirm == JOptionPane.YES_OPTION) {
                     customerDAO.deleteById(currentCustomer.getPhone_number());
-                    JOptionPane.showMessageDialog(null, "Xóa khách hàng thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-                }
+                    // JOptionPane.showMessageDialog(null, "Xóa khách hàng thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                // }
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Lỗi khi xóa khách hàng: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -213,7 +215,8 @@ public class CustomerController implements CrudController<Customer> {
             // Update customer information
             existingCustomer.setCustomer_name(customerName);
             customerDAO.update(existingCustomer);
-            JOptionPane.showMessageDialog(null, "Cập nhật khách hàng thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            // Xóa thông báo thành công để tránh duplicate
+            // JOptionPane.showMessageDialog(null, "Cập nhật khách hàng thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Lỗi khi cập nhật khách hàng: " + e.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
