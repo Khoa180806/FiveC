@@ -153,12 +153,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         });
         
         // THÊM EVENT HANDLER CHO NÚT EXIT
-        btnExit.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleExit();
-            }
-        });
+
     }
     
     /**

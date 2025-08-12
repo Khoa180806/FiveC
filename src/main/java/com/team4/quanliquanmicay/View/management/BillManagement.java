@@ -243,7 +243,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         btnRemove.addActionListener(e -> removeBill());
 
         // Sự kiện nút Exit
-        btnExit.addActionListener(e -> dispose());
+
 
         // Sự kiện nút Filter
         btnFilter.addActionListener(e -> filterBills());
