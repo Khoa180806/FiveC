@@ -676,7 +676,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             
             if (XDialog.confirm(message, "Xác nhận thoát")) {
                 System.out.println("Đang thoát ứng dụng Quản lý Nhân viên...");
-                System.exit(0);
+                this.dispose();
             }
         } catch (Exception e) {
             XDialog.alert("Lỗi khi thoát ứng dụng: " + e.getMessage(), "Lỗi hệ thống");

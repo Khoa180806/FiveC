@@ -386,7 +386,7 @@ public class CustomerUI extends javax.swing.JFrame {
      * Event handler for btn_exit ActionListener
      */
     private void btn_exitActionPerformed(java.awt.event.ActionEvent evt) {
-        // Handle Exit button click - không làm gì vì đã xử lý trong setupEventHandlers
+        this.dispose();
     }
     
     /**

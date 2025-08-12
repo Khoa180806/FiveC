@@ -359,13 +359,13 @@ public class CategoryManagement extends javax.swing.JFrame implements CategoryCo
             String choice = XDialog.selection(message, "Xác nhận thoát", options);
             
             if ("Hủy bỏ và thoát".equals(choice)) {
-                System.exit(0);
+                this.dispose();
             }
             // Nếu chọn "Tiếp tục chỉnh sửa" thì không làm gì cả
         } else {
             // Không có dữ liệu, thoát bình thường
             if (XDialog.confirm("Bạn có chắc chắn muốn thoát?", "Xác nhận thoát")) {
-                System.exit(0);
+                this.dispose();
             }
         }
     }//GEN-LAST:event_btnExitActionPerformed
