@@ -212,7 +212,6 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         jPanel3.setBackground(new java.awt.Color(204, 164, 133));
 
         jPanel5.setBackground(new java.awt.Color(204, 164, 133));
-        jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
@@ -676,7 +675,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             
             if (XDialog.confirm(message, "Xác nhận thoát")) {
                 System.out.println("Đang thoát ứng dụng Quản lý Nhân viên...");
-                System.exit(0);
+                this.dispose();
             }
         } catch (Exception e) {
             XDialog.alert("Lỗi khi thoát ứng dụng: " + e.getMessage(), "Lỗi hệ thống");

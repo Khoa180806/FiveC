@@ -1075,7 +1075,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
      */
     private void handleExit() {
         if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng?", "Xác nhận thoát")) {
-            System.exit(0);
+            this.dispose();
         }
         // Nếu chọn NO thì không làm gì cả, tiếp tục sử dụng ứng dụng
     }

@@ -164,7 +164,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 351, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
@@ -186,17 +186,17 @@ public class ChooseTableUI extends javax.swing.JFrame {
         pnlTitleLayout.setHorizontalGroup(
             pnlTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlTitleLayout.createSequentialGroup()
-                .addContainerGap(258, Short.MAX_VALUE)
+            .addGroup(pnlTitleLayout.createSequentialGroup()
+                .addGap(236, 236, 236)
                 .addComponent(lblTitle)
-                .addGap(249, 249, 249))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pnlTitleLayout.setVerticalGroup(
             pnlTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlTitleLayout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
                 .addComponent(lblTitle)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -365,12 +365,12 @@ public class ChooseTableUI extends javax.swing.JFrame {
         return btnTable;
     }
 
-    // Thêm các hàm màu giống TableManagement
+    // Cập nhật các hàm màu theo yêu cầu cụ thể
     private Color getBaseColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#A8E6A1"); // Trống - xanh nhạt
-            case 1: return Color.decode("#FFB347"); // Đang phục vụ - cam
-            case 2: return Color.decode("#D3D3D3"); // Ngưng hoạt động - xám
+            case 0: return Color.decode("#CCCCCC"); // Trống - xám nhạt
+            case 1: return Color.decode("#D6F5D6"); // Đang hoạt động - xanh nhạt
+            case 2: return Color.decode("#FFCCCC"); // Ngưng hoạt động - đỏ nhạt
             default: return Color.GRAY;
         }
     }
@@ -389,22 +389,27 @@ public class ChooseTableUI extends javax.swing.JFrame {
         return new Color(r, g, b);
     }
     
-    // Hover: làm sáng 15%
+    // Hover: màu khi đưa chuột tới
     private Color getHoverColorByStatus(int status) {
-        return brightenColor(getBaseColorByStatus(status), 0.15f);
-    }
-    
-    // Chọn: làm tối 20%
-    private Color getSelectedColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#87D68B"); // Trống - xanh đậm hơn 20%
-            case 1: return Color.decode("#E69A3D"); // Đang phục vụ - cam đậm hơn 20%
-            case 2: return Color.decode("#A9A9A9"); // Ngưng hoạt động - xám đậm hơn 20%
+            case 0: return Color.decode("#999999"); // Trống - xám đậm hơn
+            case 1: return Color.decode("#ADEBAD"); // Đang hoạt động - xanh đậm hơn
+            case 2: return Color.decode("#990000"); // Ngưng hoạt động - đỏ đậm
             default: return Color.GRAY;
         }
     }
     
-    // Nhấn chuột: làm tối 30%
+    // Chọn: màu khi được nhấp vào
+    private Color getSelectedColorByStatus(int status) {
+        switch (status) {
+            case 0: return Color.decode("#666666"); // Trống - xám đậm nhất
+            case 1: return Color.decode("#85E085"); // Đang hoạt động - xanh đậm nhất
+            case 2: return Color.decode("#660000"); // Ngưng hoạt động - đỏ đậm pha nâu
+            default: return Color.GRAY;
+        }
+    }
+    
+    // Nhấn chuột: màu khi bấm giữ
     private Color getPressedColorByStatus(int status) {
         return darkenColor(getBaseColorByStatus(status), 0.30f);
     }
@@ -413,7 +418,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
     private void selectTable(int tableNumber, JButton btnTable) {
         // Đổi border và màu button cũ về mặc định
         if (selectedButton != null && selectedButton != btnTable) {
-            selectedButton.setBorder(javax.swing.BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
+            selectedButton.setBorder(javax.swing.BorderFactory.createLineBorder(Color.WHITE, 2));
             selectedButton.setBorderPainted(true);
             TableForCustomer oldTable = tableDAO.findById(selectedTableNumber);
             if (oldTable != null) {
@@ -428,7 +433,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
         ));
         btnTable.setBorderPainted(true);
 
-        // Đổi màu nền button được chọn thành màu đậm hơn theo status
+        // Đổi màu nền button được chọn thành màu đậm nhất theo status
         TableForCustomer table = tableDAO.findById(tableNumber);
         if (table != null) {
             btnTable.setBackground(getSelectedColorByStatus(table.getStatus()));
@@ -443,44 +448,22 @@ public class ChooseTableUI extends javax.swing.JFrame {
      */
     private void openHoaDonDialog(int tableNumber) {
         try {
-            // Validate table number
-            if (tableNumber <= 0) {
-                XDialog.error("Số bàn không hợp lệ!", "Lỗi");
-                return;
-            }
+            // Tạo BillUI mới
+//            BillUI hoaDonDialog = new BillUI();
+            BillUI hoaDonDialog = new BillUI();
             
-            // Kiểm tra bàn có đang sử dụng không
-            TableForCustomer table = tableDAO.findById(tableNumber);
-            if (table == null) {
-                XDialog.error("Không tìm thấy thông tin bàn!", "Lỗi");
-                return;
-            }
+            // Set thông tin bàn vào dialog
+            hoaDonDialog.setTableInfo(tableNumber);
             
-            if (table.getStatus() == 1) { // Bàn đang sử dụng
-                XDialog.warning("Bàn " + tableNumber + " đang được sử dụng!", "Cảnh báo");
-                return;
-            }
+            // Ẩn ChooseTableUI
+            this.setVisible(false);
             
-            // Hiển thị dialog xác nhận mở hóa đơn
-            boolean confirm = XDialog.confirm(
-                "Bạn có muốn mở hóa đơn cho bàn " + tableNumber + "?", 
-                "Xác nhận mở hóa đơn"
-            );
-            
-            if (confirm) {
-                try {
-                    // TODO: Mở BillUI với bàn được chọn
-                    XDialog.success("Đã mở hóa đơn cho bàn " + tableNumber, "Thành công");
-                    // new BillUI(tableNumber).setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    XDialog.error("Lỗi khi mở hóa đơn: " + e.getMessage(), "Lỗi hệ thống");
-                }
-            }
+            // Hiển thị BillUI
+            hoaDonDialog.setVisible(true);
             
         } catch (Exception e) {
+            System.err.println("Lỗi khi mở HoaDonJDialog: " + e.getMessage());
             e.printStackTrace();
-            XDialog.error("Lỗi khi xử lý bàn: " + e.getMessage(), "Lỗi hệ thống");
         }
     }
 
@@ -523,7 +506,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
         // Xử lý sự kiện cho button Exit với xác nhận
         if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng?", "Xác nhận thoát")) {
-            System.exit(0);
+            this.dispose();
         }
         // Nếu chọn NO thì không làm gì cả, tiếp tục sử dụng ứng dụng
     }

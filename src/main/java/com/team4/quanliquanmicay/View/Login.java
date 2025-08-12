@@ -382,7 +382,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
             } else if (!password.equals(user.getPass())) {
                 XDialog.error("Sai mật khẩu đăng nhập!", "Lỗi đăng nhập");
                 txtPassword.requestFocus();
-            } else if (!(user.getIs_enabled() == 0)) {
+            } else if ((user.getIs_enabled() == 0)) {
                 XDialog.warning("Tài khoản của bạn đang tạm dừng!", "Cảnh báo");
             } else {
                 XAuth.user = user;
@@ -400,10 +400,6 @@ public class Login extends javax.swing.JFrame implements LoginController{
 
     @Override
     public void exit() {
-        // Sử dụng XDialog để xác nhận thoát
-        boolean confirm = XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng?", "Xác nhận thoát");
-        if (confirm) {
-            LoginController.super.exit();
-        }
+        LoginController.super.exit();
     }
 }

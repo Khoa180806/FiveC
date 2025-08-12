@@ -594,26 +594,31 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
             btnTable.setEnabled(true);
             btnTable.setBorder(javax.swing.BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
             btnTable.setBorderPainted(true);
+            
             if (tableNumber == selectedTableNumber) {
+                // Sử dụng border giống TableManagement: màu xám đậm dày 2px + viền trắng 2px
                 btnTable.setBorder(new javax.swing.border.CompoundBorder(
-                    new javax.swing.border.LineBorder(Color.PINK, 4, true),
-                    new javax.swing.border.LineBorder(Color.LIGHT_GRAY, 2)
+                    new javax.swing.border.LineBorder(Color.decode("#424242"), 2, true),
+                    new javax.swing.border.LineBorder(Color.WHITE, 2)
                 ));
                 btnTable.setBorderPainted(true);
                 selectedButton = btnTable;
+                // Button đã chọn sẽ có màu đậm nhất theo status
+                btnTable.setBackground(getSelectedColorByStatus(buttonStatus));
             } else {
-                switch (buttonStatus) {
-                    case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
-                    case 1: btnTable.setBackground(Color.decode("#27ae60")); break; // Xanh lá
-                    case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
-                    default: btnTable.setBackground(new Color(55, 71, 79));
-                }
+                // Sử dụng màu cơ bản theo status
+                btnTable.setBackground(getBaseColorByStatus(buttonStatus));
             }
+            
             btnTable.setActionCommand(String.valueOf(tableNumber));
             btnTable.addActionListener((ActionEvent e) -> {
                 int num = Integer.parseInt(e.getActionCommand());
                 selectTable(num, btnTable);
             });
+
+            // Lưu màu gốc của button
+            final Color originalButtonColor = getBaseColorByStatus(buttonStatus);
+            final Color selectedButtonColor = getSelectedColorByStatus(buttonStatus);
 
             btnTable.addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override
@@ -623,40 +628,30 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
                         btnTable.repaint();
                     }
                 }
+                
                 @Override
                 public void mouseExited(java.awt.event.MouseEvent evt) {
                     if (btnTable != selectedButton && btnTable.isEnabled()) {
-                        switch (buttonStatus) {
-                            case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
-                            case 1: btnTable.setBackground(Color.decode("#27ae60")); break; // Xanh lá
-                            case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
-                            default: btnTable.setBackground(new Color(55, 71, 79));
-                        }
+                        btnTable.setBackground(originalButtonColor);
                         btnTable.repaint();
                     }
                 }
+                
                 @Override
                 public void mousePressed(java.awt.event.MouseEvent evt) {
                     if (btnTable.isEnabled()) {
-                        btnTable.setBackground(Color.decode("#ff69b4"));
+                        btnTable.setBackground(getPressedColorByStatus(buttonStatus));
                         btnTable.repaint();
                     }
                 }
+                
                 @Override
                 public void mouseReleased(java.awt.event.MouseEvent evt) {
                     if (btnTable.isEnabled()) {
                         if (btnTable == selectedButton) {
-                            TableForCustomer table = tableDAO.findById(Integer.parseInt(btnTable.getActionCommand()));
-                            if (table != null) {
-                                btnTable.setBackground(getSelectedColorByStatus(table.getStatus()));
-                            }
+                            btnTable.setBackground(selectedButtonColor);
                         } else {
-                            switch (buttonStatus) {
-                                case 0: btnTable.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
-                                case 1: btnTable.setBackground(Color.decode("#27ae60")); break; // Xanh lá
-                                case 2: btnTable.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
-                                default: btnTable.setBackground(new Color(55, 71, 79));
-                            }
+                            btnTable.setBackground(originalButtonColor);
                         }
                         btnTable.repaint();
                     }
@@ -1177,30 +1172,55 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         }
     }
     
-    /**
-     * Màu cho trạng thái bàn khi được chọn
-     */
-    private Color getSelectedColorByStatus(int status) {
+    // Cập nhật các hàm màu theo yêu cầu cụ thể
+    private Color getBaseColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#616161"); // Xám đậm hơn
-            case 1: return Color.decode("#186a3b"); // Xanh đậm hơn
-            case 2: return Color.decode("#757575"); // Xám đậm khi chọn
+            case 0: return Color.decode("#CCCCCC"); // Trống - xám nhạt
+            case 1: return Color.decode("#D6F5D6"); // Đang hoạt động - xanh nhạt
+            case 2: return Color.decode("#FFCCCC"); // Ngưng hoạt động - đỏ nhạt
             default: return Color.GRAY;
         }
     }
     
-    /**
-     * Màu hover cho trạng thái bàn
-     */
+    private Color brightenColor(Color color, float factor) {
+        int r = Math.min(255, (int)(color.getRed() + (255 - color.getRed()) * factor));
+        int g = Math.min(255, (int)(color.getGreen() + (255 - color.getGreen()) * factor));
+        int b = Math.min(255, (int)(color.getBlue() + (255 - color.getBlue()) * factor));
+        return new Color(r, g, b);
+    }
+    
+    private Color darkenColor(Color color, float factor) {
+        int r = Math.max(0, (int)(color.getRed() * (1 - factor)));
+        int g = Math.max(0, (int)(color.getGreen() * (1 - factor)));
+        int b = Math.max(0, (int)(color.getBlue() * (1 - factor)));
+        return new Color(r, g, b);
+    }
+    
+    // Hover: màu khi đưa chuột tới
     private Color getHoverColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#616161"); // Xám đậm
-            case 1: return Color.decode("#196f3d"); // Xanh đậm
-            case 2: return Color.decode("#bdbdbd"); // Xám đậm hơn xám trắng
+            case 0: return Color.decode("#999999"); // Trống - xám đậm hơn
+            case 1: return Color.decode("#ADEBAD"); // Đang hoạt động - xanh đậm hơn
+            case 2: return Color.decode("#990000"); // Ngưng hoạt động - đỏ đậm
             default: return Color.GRAY;
         }
     }
-
+    
+    // Chọn: màu khi được nhấp vào
+    private Color getSelectedColorByStatus(int status) {
+        switch (status) {
+            case 0: return Color.decode("#666666"); // Trống - xám đậm nhất
+            case 1: return Color.decode("#85E085"); // Đang hoạt động - xanh đậm nhất
+            case 2: return Color.decode("#660000"); // Ngưng hoạt động - đỏ đậm pha nâu
+            default: return Color.GRAY;
+        }
+    }
+    
+    // Nhấn chuột: màu khi bấm giữ
+    private Color getPressedColorByStatus(int status) {
+        return darkenColor(getBaseColorByStatus(status), 0.30f);
+    }
+    
     /**
      * Tìm kiếm khách hàng theo số điện thoại và tự động cập nhật điểm
      */

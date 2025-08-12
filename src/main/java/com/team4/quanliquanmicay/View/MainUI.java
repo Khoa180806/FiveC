@@ -20,6 +20,20 @@ import javax.swing.*;
  */
 public class MainUI extends javax.swing.JFrame {
 
+    // Thêm các biến để lưu trữ các UI con
+    private com.team4.quanliquanmicay.View.management.CategoryManagement categoryManagementUI;
+    private com.team4.quanliquanmicay.View.management.ProductManagement productManagementUI;
+    private com.team4.quanliquanmicay.View.management.BillManagement billManagementUI;
+    private com.team4.quanliquanmicay.View.management.PaymentMethodManagement paymentMethodManagementUI;
+    private com.team4.quanliquanmicay.View.management.HistoryManagement historyManagementUI;
+    private com.team4.quanliquanmicay.View.management.TableManagement tableManagementUI;
+    private com.team4.quanliquanmicay.View.management.UserManagement userManagementUI;
+    private com.team4.quanliquanmicay.View.management.CustomerManagement customerManagementUI;
+    private com.team4.quanliquanmicay.View.management.ReportManagement reportManagementUI;
+    private com.team4.quanliquanmicay.View.ChooseTableUI chooseTableUI;
+    private com.team4.quanliquanmicay.View.PayUI payUI;
+    private com.team4.quanliquanmicay.View.ChangePassword changePasswordUI;
+
     /**
      * Creates new form MainForm
      */
@@ -87,7 +101,13 @@ public class MainUI extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     System.out.println("🔄 Đang mở CategoryManagement...");
-                    new com.team4.quanliquanmicay.View.management.CategoryManagement().setVisible(true);
+                    if (categoryManagementUI == null || !categoryManagementUI.isVisible()) {
+                        categoryManagementUI = new com.team4.quanliquanmicay.View.management.CategoryManagement();
+                        categoryManagementUI.setVisible(true);
+                    } else {
+                        categoryManagementUI.toFront();
+                        categoryManagementUI.requestFocus();
+                    }
                     System.out.println("✅ CategoryManagement đã được mở thành công!");
                 } catch (Exception ex) {
                     System.err.println("❌ Lỗi khi mở CategoryManagement: " + ex.getMessage());
@@ -102,8 +122,14 @@ public class MainUI extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     System.out.println("🔄 Đang mở ProductManagement...");
-                    // TODO: Mở ProductManagement khi có
-                    XDialog.alert("Tính năng Quản lý Sản phẩm đang được phát triển!", "Thông báo");
+                    if (productManagementUI == null || !productManagementUI.isVisible()) {
+                        productManagementUI = new com.team4.quanliquanmicay.View.management.ProductManagement();
+                        productManagementUI.setVisible(true);
+                    } else {
+                        productManagementUI.toFront();
+                        productManagementUI.requestFocus();
+                    }
+                    System.out.println("✅ CategoryManagement đã được mở thành công!");
                 } catch (Exception ex) {
                     System.err.println("❌ Lỗi khi mở ProductManagement: " + ex.getMessage());
                     XDialog.error("Lỗi khi mở Quản lý Sản phẩm: " + ex.getMessage(), "Lỗi hệ thống");
@@ -196,7 +222,13 @@ public class MainUI extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     System.out.println("🔄 Đang mở BillManagement...");
-                    new com.team4.quanliquanmicay.View.management.BillManagement().setVisible(true);
+                    if (billManagementUI == null || !billManagementUI.isVisible()) {
+                        billManagementUI = new com.team4.quanliquanmicay.View.management.BillManagement();
+                        billManagementUI.setVisible(true);
+                    } else {
+                        billManagementUI.toFront();
+                        billManagementUI.requestFocus();
+                    }
                     System.out.println("✅ BillManagement đã được mở thành công!");
                 } catch (Exception ex) {
                     System.err.println("❌ Lỗi khi mở BillManagement: " + ex.getMessage());
@@ -211,7 +243,13 @@ public class MainUI extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     System.out.println("🔄 Đang mở PaymentMethodManagement...");
-                    new com.team4.quanliquanmicay.View.management.PaymentMethodManagement().setVisible(true);
+                    if (paymentMethodManagementUI == null || !paymentMethodManagementUI.isVisible()) {
+                        paymentMethodManagementUI = new com.team4.quanliquanmicay.View.management.PaymentMethodManagement();
+                        paymentMethodManagementUI.setVisible(true);
+                    } else {
+                        paymentMethodManagementUI.toFront();
+                        paymentMethodManagementUI.requestFocus();
+                    }
                     System.out.println("✅ PaymentMethodManagement đã được mở thành công!");
                 } catch (Exception ex) {
                     System.err.println("❌ Lỗi khi mở PaymentMethodManagement: " + ex.getMessage());
@@ -226,7 +264,13 @@ public class MainUI extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     System.out.println("🔄 Đang mở HistoryManagement...");
-                    new com.team4.quanliquanmicay.View.management.HistoryManagement().setVisible(true);
+                    if (historyManagementUI == null || !historyManagementUI.isVisible()) {
+                        historyManagementUI = new com.team4.quanliquanmicay.View.management.HistoryManagement();
+                        historyManagementUI.setVisible(true);
+                    } else {
+                        historyManagementUI.toFront();
+                        historyManagementUI.requestFocus();
+                    }
                     System.out.println("✅ HistoryManagement đã được mở thành công!");
                 } catch (Exception ex) {
                     System.err.println("❌ Lỗi khi mở HistoryManagement: " + ex.getMessage());
@@ -761,8 +805,18 @@ public class MainUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
-        // TODO add your handling code here:
-        new com.team4.quanliquanmicay.View.PayUI().setVisible(true);
+        try {
+            if (payUI == null || !payUI.isVisible()) {
+                payUI = new com.team4.quanliquanmicay.View.PayUI();
+                payUI.setVisible(true);
+            } else {
+                payUI.toFront();
+                payUI.requestFocus();
+            }
+        } catch (Exception ex) {
+            System.err.println("❌ Lỗi khi mở PayUI: " + ex.getMessage());
+            XDialog.error("Lỗi khi mở Thanh toán: " + ex.getMessage(), "Lỗi hệ thống");
+        }
     }//GEN-LAST:event_jButton9ActionPerformed
 
     private void btnCategoryManagementMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCategoryManagementMouseEntered
@@ -785,40 +839,101 @@ public class MainUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnCustomerManagementMouseEntered
 
-    private void btnTableManagementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTableManagementActionPerformed
-        // TODO add your handling code here:
-        new com.team4.quanliquanmicay.View.management.TableManagement().setVisible(true);
-    }//GEN-LAST:event_btnTableManagementActionPerformed
+    private void btnTableManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            if (tableManagementUI == null || !tableManagementUI.isVisible()) {
+                tableManagementUI = new com.team4.quanliquanmicay.View.management.TableManagement();
+                tableManagementUI.setVisible(true);
+            } else {
+                tableManagementUI.toFront();
+                tableManagementUI.requestFocus();
+            }
+        } catch (Exception ex) {
+            System.err.println("❌ Lỗi khi mở TableManagement: " + ex.getMessage());
+            XDialog.error("Lỗi khi mở Quản lý Bàn: " + ex.getMessage(), "Lỗi hệ thống");
+        }
+    }
 
-    private void btnUserManagementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUserManagementActionPerformed
-        // TODO add your handling code here:
-        new com.team4.quanliquanmicay.View.management.UserManagement().setVisible(true);
-    }//GEN-LAST:event_btnUserManagementActionPerformed
+    private void btnUserManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            if (userManagementUI == null || !userManagementUI.isVisible()) {
+                userManagementUI = new com.team4.quanliquanmicay.View.management.UserManagement();
+                userManagementUI.setVisible(true);
+            } else {
+                userManagementUI.toFront();
+                userManagementUI.requestFocus();
+            }
+        } catch (Exception ex) {
+            System.err.println("❌ Lỗi khi mở UserManagement: " + ex.getMessage());
+            XDialog.error("Lỗi khi mở Quản lý Người dùng: " + ex.getMessage(), "Lỗi hệ thống");
+        }
+    }
 
-    private void btnCustomerManagementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCustomerManagementActionPerformed
-        // TODO add your handling code here:
-        new com.team4.quanliquanmicay.View.management.CustomerManagement().setVisible(true);
-    }//GEN-LAST:event_btnCustomerManagementActionPerformed
+    private void btnCustomerManagementActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            if (customerManagementUI == null || !customerManagementUI.isVisible()) {
+                customerManagementUI = new com.team4.quanliquanmicay.View.management.CustomerManagement();
+                customerManagementUI.setVisible(true);
+            } else {
+                customerManagementUI.toFront();
+                customerManagementUI.requestFocus();
+            }
+        } catch (Exception ex) {
+            System.err.println("❌ Lỗi khi mở CustomerManagement: " + ex.getMessage());
+            XDialog.error("Lỗi khi mở Quản lý Khách hàng: " + ex.getMessage(), "Lỗi hệ thống");
+        }
+    }
 
-    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        // TODO add your handling code here:
-        new com.team4.quanliquanmicay.View.ChooseTableUI().setVisible(true);
-    }//GEN-LAST:event_jButton7ActionPerformed
+    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            if (chooseTableUI == null || !chooseTableUI.isVisible()) {
+                chooseTableUI = new com.team4.quanliquanmicay.View.ChooseTableUI();
+                chooseTableUI.setVisible(true);
+            } else {
+                chooseTableUI.toFront();
+                chooseTableUI.requestFocus();
+            }
+        } catch (Exception ex) {
+            System.err.println("❌ Lỗi khi mở ChooseTableUI: " + ex.getMessage());
+            XDialog.error("Lỗi khi mở Chọn bàn: " + ex.getMessage(), "Lỗi hệ thống");
+        }
+    }
 
     private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
-        // TODO add your handling code here:
-        System.exit(0);
+        // Thay thế System.exit(0) thành this.dispose() để chỉ tắt MainUI
+        // System.exit(0);
+        this.dispose();
     }//GEN-LAST:event_jButton12ActionPerformed
 
-    private void jButton14ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton14ActionPerformed
-        // TODO add your handling code here:
-        new com.team4.quanliquanmicay.View.ChangePassword().setVisible(true);
-    }//GEN-LAST:event_jButton14ActionPerformed
+    private void jButton14ActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            if (changePasswordUI == null || !changePasswordUI.isVisible()) {
+                changePasswordUI = new com.team4.quanliquanmicay.View.ChangePassword();
+                changePasswordUI.setVisible(true);
+            } else {
+                changePasswordUI.toFront();
+                changePasswordUI.requestFocus();
+            }
+        } catch (Exception ex) {
+            System.err.println("❌ Lỗi khi mở ChangePassword: " + ex.getMessage());
+            XDialog.error("Lỗi khi mở Đổi mật khẩu: " + ex.getMessage(), "Lỗi hệ thống");
+        }
+    }
 
-    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton13ActionPerformed
-        // TODO add your handling code here:
-        new com.team4.quanliquanmicay.View.management.ReportManagement().setVisible(true);
-    }//GEN-LAST:event_jButton13ActionPerformed
+    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            if (reportManagementUI == null || !reportManagementUI.isVisible()) {
+                reportManagementUI = new com.team4.quanliquanmicay.View.management.ReportManagement();
+                reportManagementUI.setVisible(true);
+            } else {
+                reportManagementUI.toFront();
+                reportManagementUI.requestFocus();
+            }
+        } catch (Exception ex) {
+            System.err.println("❌ Lỗi khi mở ReportManagement: " + ex.getMessage());
+            XDialog.error("Lỗi khi mở Báo cáo: " + ex.getMessage(), "Lỗi hệ thống");
+        }
+    }
 
 
 

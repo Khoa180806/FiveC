@@ -359,13 +359,13 @@ public class CategoryManagement extends javax.swing.JFrame implements CategoryCo
             String choice = XDialog.selection(message, "Xác nhận thoát", options);
             
             if ("Hủy bỏ và thoát".equals(choice)) {
-                System.exit(0);
+                this.dispose();
             }
             // Nếu chọn "Tiếp tục chỉnh sửa" thì không làm gì cả
         } else {
             // Không có dữ liệu, thoát bình thường
             if (XDialog.confirm("Bạn có chắc chắn muốn thoát?", "Xác nhận thoát")) {
-                System.exit(0);
+                this.dispose();
             }
         }
     }//GEN-LAST:event_btnExitActionPerformed
@@ -632,35 +632,12 @@ public class CategoryManagement extends javax.swing.JFrame implements CategoryCo
 
     @Override
     public void clear() {
-        // Kiểm tra xem có dữ liệu trên form không
-        String categoryId = txtCateId.getText().trim();
-        String categoryName = txtCateName.getText().trim();
-        
-        if (!categoryId.isEmpty() || !categoryName.isEmpty()) {
-            String message = "Bạn có chắc chắn muốn làm mới form?\n\n" +
-                           "Dữ liệu hiện tại trên form:\n" +
-                           "• Mã loại: " + (categoryId.isEmpty() ? "(trống)" : categoryId) + "\n" +
-                           "• Tên loại: " + (categoryName.isEmpty() ? "(trống)" : categoryName) + "\n" +
-                           "• Trạng thái: " + (radActive.isSelected() ? "Hoạt động" : 
-                                               radInactive.isSelected() ? "Ngừng hoạt động" : "(chưa chọn)") + "\n\n" +
-                           "Tất cả dữ liệu sẽ bị mất.";
-            
-            if (XDialog.confirm(message, "Xác nhận làm mới")) {
-                txtCateId.setText("");
-                txtCateName.setText("");
-                radActive.setSelected(true);
-                txtCateId.setEditable(true);
-                tblCategories.clearSelection();
-                XDialog.success("Đã làm mới form thành công!");
-            }
-        } else {
-            // Form đã trống, chỉ cần reset
-            txtCateId.setText("");
-            txtCateName.setText("");
-            radActive.setSelected(true);
-            txtCateId.setEditable(true);
-            tblCategories.clearSelection();
-        }
+        // Làm mới form mà không hiển thị thông báo
+        txtCateId.setText("");
+        txtCateName.setText("");
+        radActive.setSelected(true);
+        txtCateId.setEditable(true);
+        tblCategories.clearSelection();
     }
 
     @Override
