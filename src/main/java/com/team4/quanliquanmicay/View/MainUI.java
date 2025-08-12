@@ -2,7 +2,6 @@ package com.team4.quanliquanmicay.View;
 
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
-import com.team4.quanliquanmicay.util.XValidation;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
