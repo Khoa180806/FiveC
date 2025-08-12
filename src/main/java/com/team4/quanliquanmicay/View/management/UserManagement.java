@@ -41,112 +41,65 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         roleDAO = new RoleDAOImpl();
         roleMap = new HashMap<>();
         
-        // ✅ EARLY CAPTURE: Capture initial image size ngay sau initComponents
-        captureInitialImageSize();
-        
-        // Setup all functionality
+        // ✅ SIMPLIFIED: Basic setup without conflicting overrides
         loadRoles();
-        setupStatusComboBox(); // ✅ SAFE: Protected by disableComboBoxUpdates flag
-        setupRoleComboBox();   // ✅ SAFE: Protected by disableComboBoxUpdates flag
+        setupComboBoxes(); // ✅ CONSOLIDATED: Single method for both ComboBoxes
         fillToTable();
-        setColumnWidths();
+        setOptimalColumnWidths(); // ✅ RENAMED: Less aggressive column sizing
         setupEventListeners();
         setupPerformanceOptimizations();
-        preloadDefaultImages();
         setupImageSelection();
+        lockImageSize(); // ✅ LOCK: Set initial image size from .form
         setupSearchFunctionality();
         
-        // ✅ IMMEDIATE: Apply large table size only (constraints fixed in .form)
-        applyLargeTableSize();
-        
-        // ✅ FINAL: Capture and freeze initial layout size
+        // ✅ RESPECT .FORM: Let .form constraints handle sizing
         javax.swing.SwingUtilities.invokeLater(() -> {
             validate();
             repaint();
-            
-            // ✅ CAPTURE: Store initial table size to prevent expansion
-            if (frozenTableSize == null) {
-                frozenTableSize = new java.awt.Dimension(jScrollPane1.getSize());
-                System.out.println("📐 Captured initial table size: " + frozenTableSize);
-                
-                // ✅ VERIFY: Re-capture image size if needed
-                if (originalImageSize == null) {
-                    captureInitialImageSize();
-                }
-                
-                // ✅ SETUP: Periodic size enforcement timer
-                setupSizeEnforcementTimer();
-                
-                // ✅ FIX: Immediately enforce table size and column widths
-                enforceTableSize();
-                setColumnWidths();
-            }
+            System.out.println("✅ UserManagement initialized with .form constraints");
         });
     }
     
     /**
-     * ✅ NEW: Capture initial image label size immediately
+     * ✅ NEW: Lock image size to prevent expansion when loading images
      */
-    private void captureInitialImageSize() {
-        try {
-            // Force layout validation to get correct size
-            lblImage.validate();
-            java.awt.Dimension currentSize = lblImage.getSize();
-            
-            // Set default size if not properly initialized
-            if (currentSize.width <= 0 || currentSize.height <= 0) {
-                currentSize = new java.awt.Dimension(116, 167); // From layout manager
-            }
-            
-            originalImageSize = new java.awt.Dimension(currentSize);
-            System.out.println("🖼️ Captured initial image size: " + originalImageSize);
-            
-            // Set border to indicate clickable area với size cố định
-            lblImage.setBorder(javax.swing.BorderFactory.createTitledBorder(
-                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(100, 149, 237), 2),
-                "Click để chọn ảnh",
-                javax.swing.border.TitledBorder.CENTER,
-                javax.swing.border.TitledBorder.BOTTOM,
-                new java.awt.Font("Arial", java.awt.Font.ITALIC, 10),
-                new java.awt.Color(100, 149, 237)
-            ));
-            
-        } catch (Exception e) {
-            // Fallback to default size
-            originalImageSize = new java.awt.Dimension(116, 167);
-            System.out.println("⚠️ Using fallback image size: " + originalImageSize);
-        }
+    private void lockImageSize() {
+        // Get current size from .form layout (114x153 from .form file)
+        java.awt.Dimension formSize = new java.awt.Dimension(114, 153);
+        
+        // Lock all size properties
+        lblImage.setSize(formSize);
+        lblImage.setPreferredSize(formSize);
+        lblImage.setMinimumSize(formSize);
+        lblImage.setMaximumSize(formSize);
+        
+        System.out.println("🔒 Image size locked to: " + formSize);
     }
     
     /**
-     * ✅ OPTIMIZED: Setup all event listeners với debouncing
+     * ✅ NEW: Load employee image with size protection
+     */
+    private void loadEmployeeImageWithSizeProtection(String imageName) {
+        // Lock size before loading
+        lockImageSize();
+        
+        // Load image using existing method
+        loadEmployeeImage(imageName);
+        
+        // Lock size again after loading to ensure it stays fixed
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            lockImageSize();
+        });
+    }
+    
+    /**
+     * ✅ SIMPLIFIED: Basic event listeners without complex protection
      */
     private void setupEventListeners() {
         tableInfo.addMouseListener(new java.awt.event.MouseAdapter() {
-            private long lastClickTime = 0;
-            
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                long currentTime = System.currentTimeMillis();
-                // Debounce clicks - chỉ cho phép 1 click mỗi 300ms
-                if (evt.getClickCount() == 1 && (currentTime - lastClickTime) > 300) {
-                    lastClickTime = currentTime;
-                    
-                    // ✅ PROTECT: Enforce table size before edit
-                    enforceTableSize();
-                    
+                if (evt.getClickCount() == 1) {
                     edit();
-                    
-                    // ✅ PROTECT: Enforce table size after edit with multiple attempts
-                    javax.swing.SwingUtilities.invokeLater(() -> {
-                        enforceTableSize();
-                        // Double-check after a short delay
-                        javax.swing.Timer delayTimer = new javax.swing.Timer(100, e -> {
-                            enforceTableSize();
-                            ((javax.swing.Timer)e.getSource()).stop();
-                        });
-                        delayTimer.setRepeats(false);
-                        delayTimer.start();
-                    });
                 }
             }
         });
@@ -682,7 +635,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         try {
             boolean hasData = hasUnsavedChanges();
             String message = hasData ? 
-                "⚠️ Còn dữ liệu trong form!\n\nBạn có muốn thoát không?\n(Dữ liệu sẽ bị mất nếu chưa lưu)" :
+                "Còn dữ liệu trong form!\n\nBạn có muốn thoát không?\n(Dữ liệu sẽ bị mất nếu chưa lưu)" :
                 "Bạn có muốn thoát ứng dụng không?";
             
             if (XDialog.confirm(message, "Xác nhận thoát")) {
@@ -842,8 +795,9 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 
             System.out.println("Đã load " + employees.size() + " nhân viên lên bảng");
             
-            // ✅ OPTIMIZED: Use new refresh method for better email display
-            refreshTableWithOptimizedColumns();
+            // ✅ SIMPLIFIED: Basic table refresh
+            tableInfo.revalidate();
+            tableInfo.repaint();
 
         } catch (Exception e) {
             XDialog.alert("Lỗi khi load dữ liệu: " + e.getMessage());
@@ -916,41 +870,26 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
 
     /**
-     * Set độ rộng cột cho bảng - ✅ FIXED: Email column overflow
+     * ✅ OPTIMIZED: Set column widths respecting .form constraints
      */
-    private void setColumnWidths() {
+    private void setOptimalColumnWidths() {
         try {
-            // ✅ LARGE TABLE: Tối ưu cho bảng lớn 1400px - hiển thị tốt tất cả các cột
-            tableInfo.getColumnModel().getColumn(0).setPreferredWidth(120);  // Mã NV 
+            // ✅ RESPECT .FORM: Use reasonable widths that work with .form table size (1450px)
+            tableInfo.getColumnModel().getColumn(0).setPreferredWidth(100);  // Mã NV 
             tableInfo.getColumnModel().getColumn(1).setPreferredWidth(120);  // Tài khoản 
-            tableInfo.getColumnModel().getColumn(2).setPreferredWidth(100);  // Mật khẩu 
+            tableInfo.getColumnModel().getColumn(2).setPreferredWidth(90);   // Mật khẩu 
             tableInfo.getColumnModel().getColumn(3).setPreferredWidth(180);  // Họ tên 
-            tableInfo.getColumnModel().getColumn(4).setPreferredWidth(80);   // Giới tính 
+            tableInfo.getColumnModel().getColumn(4).setPreferredWidth(70);   // Giới tính 
             tableInfo.getColumnModel().getColumn(5).setPreferredWidth(110);  // SĐT 
-            tableInfo.getColumnModel().getColumn(6).setPreferredWidth(320);  // Email - TĂNG MẠNH để hiển thị đầy đủ
-            tableInfo.getColumnModel().getColumn(7).setPreferredWidth(110);  // Trạng thái 
-            tableInfo.getColumnModel().getColumn(8).setPreferredWidth(90);   // Vai trò 
-            tableInfo.getColumnModel().getColumn(9).setPreferredWidth(140);  // Ngày tạo
+            tableInfo.getColumnModel().getColumn(6).setPreferredWidth(250);  // Email - Hợp lý cho .form size
+            tableInfo.getColumnModel().getColumn(7).setPreferredWidth(120);  // Trạng thái 
+            tableInfo.getColumnModel().getColumn(8).setPreferredWidth(80);   // Vai trò 
+            tableInfo.getColumnModel().getColumn(9).setPreferredWidth(130);  // Ngày tạo
             
-            // ✅ LARGE TABLE: Set minimum widths phù hợp với bảng lớn 1400px
-            tableInfo.getColumnModel().getColumn(0).setMinWidth(100);  // Mã NV
-            tableInfo.getColumnModel().getColumn(1).setMinWidth(100);  // Tài khoản
-            tableInfo.getColumnModel().getColumn(2).setMinWidth(80);   // Mật khẩu
-            tableInfo.getColumnModel().getColumn(3).setMinWidth(150);  // Họ tên
-            tableInfo.getColumnModel().getColumn(4).setMinWidth(80);   // Giới tính
-            tableInfo.getColumnModel().getColumn(5).setMinWidth(100);  // SĐT
-            tableInfo.getColumnModel().getColumn(6).setMinWidth(280);  // Email - MIN rộng hơn để chứa email dài
-            tableInfo.getColumnModel().getColumn(7).setMinWidth(90);   // Trạng thái
-            tableInfo.getColumnModel().getColumn(8).setMinWidth(90);   // Vai trò
-            tableInfo.getColumnModel().getColumn(9).setMinWidth(120);  // Ngày tạo
+            // ✅ MINIMAL: Only set auto resize mode - let .form handle the rest
+            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_LAST_COLUMN);
             
-            // ✅ EMAIL SPECIFIC: Increase max width for larger table
-            tableInfo.getColumnModel().getColumn(6).setMaxWidth(400);  // Email max width - tăng lên
-            
-            // ✅ FIX: Đảm bảo table không tự động resize
-            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-            
-            System.out.println("✅ Column widths optimized - Email column expanded to prevent overflow");
+            System.out.println("✅ Column widths set optimally for .form constraints");
         } catch (Exception e) {
             System.err.println("❌ Lỗi set column width: " + e.getMessage());
         }
@@ -1122,40 +1061,26 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
     
     /**
-     * ✅ ENHANCED: Set default image but keep clickable với size cố định
+     * ✅ FIXED: Set default image with size protection
      */
     private void setDefaultImageWithClickable() {
+        // Lock size first
+        lockImageSize();
+        
         try {
-            // ✅ ENFORCE SIZE: Sử dụng phương thức với size cố định
-            if (originalImageSize != null) {
-                setImageWithFixedSize("/icons_and_images/User.png");
-            } else {
-                // Fallback nếu originalImageSize chưa sẵn sàng
-                XImage.setImageToLabel(lblImage, "/icons_and_images/User.png");
-                // Force capture size ngay sau khi set image
-                captureInitialImageSize();
-                // Set lại image với size cố định
-                setImageWithFixedSize("/icons_and_images/User.png");
-            }
-            
+            XImage.setImageToLabel(lblImage, "/icons_and_images/User.png");
             lblImage.setText("");
-            
-            // Ensure tooltip is set
             lblImage.setToolTipText("Click để chọn ảnh nhân viên");
-            
         } catch (Exception e) {
             lblImage.setIcon(null);
             lblImage.setText("Click để chọn ảnh");
             lblImage.setToolTipText("Click để chọn ảnh nhân viên");
-            
-            // ✅ ENFORCE: Keep size even on error
-            if (originalImageSize != null) {
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-            }
         }
+        
+        // Lock size again after setting image
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            lockImageSize();
+        });
     }
 
     /**
@@ -1209,9 +1134,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         // Reset gender selection
         groupGioiTinh.clearSelection();
 
-        // Clear table selection và reset tracking
+        // Clear table selection
         tableInfo.clearSelection();
-        lastSelectedRow = -1; // ✅ RESET: Clear row tracking
         
         // Enable ID field for next create
         txtIdEmployee.setEditable(true);
@@ -1291,7 +1215,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                     "Bạn có chắc chắn muốn xóa nhân viên:\n"
                     + "Mã: " + userId + "\n"
                     + "Tên: " + fullName + "\n\n"
-                    + "⚠️ Hành động này không thể hoàn tác!",
+                    + "Hành động này không thể hoàn tác!",
                     "Xác nhận xóa"
             );
 
@@ -1326,7 +1250,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             userDAO.deleteById(userId);
 
             // 7. Refresh bảng
-            invalidateCache(); // Invalidate cache after deletion
+            // Cache invalidation removed - using direct database calls
             fillToTableWithCache();
 
             // 8. Clear form
@@ -1334,7 +1258,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 
             // 9. Thông báo thành công
             XDialog.alert(
-                    "✅ Đã xóa nhân viên thành công!\n"
+                    "Đã xóa nhân viên thành công!\n"
                     + "Mã: " + userId + "\n"
                     + "Tên: " + fullName,
                     "Xóa thành công"
@@ -1343,7 +1267,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         } catch (Exception e) {
             // 10. Xử lý lỗi
             XDialog.alert(
-                    "❌ Lỗi khi xóa nhân viên: " + e.getMessage(),
+                    "Lỗi khi xóa nhân viên: " + e.getMessage(),
                     "Lỗi hệ thống"
             );
             e.printStackTrace();
@@ -1414,90 +1338,21 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 // PERFORMANCE OPTIMIZATION - THÊM VÀO CUỐI FILE (KHÔNG ĐỘNG VÀO CODE CŨ)
 // =============================================================================
 
-    // ✅ CACHE: Performance variables
-    private List<UserAccount> employeeCache = new ArrayList<>();
-    private boolean isCacheValid = false;
+    // ✅ SIMPLIFIED: Basic variables only
     private javax.swing.Timer debounceTimer;
-    private boolean isProcessingEdit = false; // ✅ PROTECT: Prevent multiple edit calls
-    private int lastSelectedRow = -1; // ✅ TRACK: Last selected row to avoid redundant calls
-    private boolean layoutFrozen = false; // ✅ FREEZE: Layout protection flag
-    private java.awt.Dimension frozenTableSize = null; // ✅ STORE: Original table size
-    private javax.swing.Timer sizeEnforcementTimer; // ✅ PERIODIC: Size enforcement timer
-    private java.awt.Dimension originalImageSize = null; // ✅ STORE: Original image label size
+
+
+
+
 
     /**
-     * ✅ OPTIMIZED: Initialize performance cache
-     */
-    private void initializePerformanceCache() {
-        // Setup debounce timer for filtering
-        debounceTimer = new javax.swing.Timer(300, e -> performFilterAndFill());
-        debounceTimer.setRepeats(false);
-        
-        // Pre-size cache
-        employeeCache = new ArrayList<>(100);
-    }
-
-    /**
-     * ✅ FAST: Enhanced loadRoles với caching
-     */
-    private void loadRolesWithCache() {
-        if (roleMap.isEmpty()) {
-            try {
-                List<UserRole> roles = roleDAO.findAll();
-                for (UserRole role : roles) {
-                    roleMap.put(role.getRole_id(), role.getName_role());
-                }
-            } catch (Exception e) {
-                System.err.println("Load roles error: " + e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * ✅ FAST: Enhanced fillToTable với smart caching và search support
+     * ✅ SIMPLIFIED: Basic fillToTable without caching complexity
      */
     private void fillToTableWithCache() {
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            try {
-                // Use cache if valid
-                if (!isCacheValid || employeeCache.isEmpty()) {
-                    employeeCache = userDAO.findAll();
-                    isCacheValid = true;
-                    System.out.println("✅ Loaded " + employeeCache.size() + " employees to cache");
-                }
-                
-                // Check if there's an active search
-                String currentSearch = getCurrentSearchKeyword();
-                if (!currentSearch.isEmpty()) {
-                    // Apply current search filter
-                    filterEmployeesByName(currentSearch);
-                } else {
-                    // Fast table population (show all)
-                    populateTableFromCache();
-                }
-                
-            } catch (Exception e) {
-                System.err.println("Fill table error: " + e.getMessage());
-                XDialog.alert("Lỗi load dữ liệu: " + e.getMessage());
-            }
-        });
+        fillToTable(); // Delegate to original method
     }
 
-    /**
-     * ✅ FAST: Populate table from cache
-     */
-    private void populateTableFromCache() {
-        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
-        model.setRowCount(0);
 
-        // Không filter nữa, hiển thị tất cả
-        for (UserAccount emp : employeeCache) {
-            model.addRow(createRowData(emp));
-        }
-        
-        // ✅ OPTIMIZED: Use new refresh method for better email display
-        refreshTableWithOptimizedColumns();
-    }
 
     /**
      * ✅ FAST: Filter matching logic
@@ -1550,56 +1405,24 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
 
     /**
-     * ✅ OPTIMIZED: Enhanced edit với cache lookup và protection
+     * ✅ SIMPLIFIED: Basic edit without complex caching
      */
     private void editWithCache() {
-        if (isProcessingEdit) return; // ✅ PROTECT: Tránh multiple calls
-        
         int selectedRow = tableInfo.getSelectedRow();
         if (selectedRow < 0) {
             XDialog.alert("Vui lòng chọn một dòng để chỉnh sửa!");
             return;
         }
-        
-        // ✅ OPTIMIZE: Skip nếu click cùng row liên tục
-        if (selectedRow == lastSelectedRow) {
-            return;
-        }
-        
-        isProcessingEdit = true; // ✅ LOCK: Set flag
-        lastSelectedRow = selectedRow; // ✅ TRACK: Remember selected row
 
         String userId = (String) tableInfo.getValueAt(selectedRow, 0);
-
-        // Try cache first (much faster)
-        UserAccount entity = null;
-        for (UserAccount emp : employeeCache) {
-            if (userId.equals(emp.getUser_id())) {
-                entity = emp;
-                break;
-            }
-        }
-
-        // Fallback to database if not in cache
-        if (entity == null) {
-            entity = userDAO.findById(userId);
-        }
+        UserAccount entity = userDAO.findById(userId);
 
         if (entity != null) {
-            final UserAccount finalEntity = entity; // ✅ FIX: Make final for lambda
-            // ✅ SAFE: Run on EDT để tránh layout issues
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                try {
-                    setForm(finalEntity);
-                    txtIdEmployee.setEditable(false);
-                    setAllFieldsEditable(true);
-                } finally {
-                    isProcessingEdit = false; // ✅ UNLOCK: Release flag
-                }
-            });
+            setForm(entity);
+            txtIdEmployee.setEditable(false);
+            setAllFieldsEditable(true);
         } else {
             XDialog.alert("Không tìm thấy thông tin nhân viên!");
-            isProcessingEdit = false; // ✅ UNLOCK: Release flag
         }
     }
 
@@ -1657,13 +1480,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         }
     }
 
-    /**
-     * ✅ CACHE: Invalidate cache after CRUD operations
-     */
-    private void invalidateCache() {
-        isCacheValid = false;
-        employeeCache.clear();
-    }
+
 
     /**
      * ✅ OPTIMIZED: Enhanced create với cache management
@@ -1687,9 +1504,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             // Create in database
             userDAO.create(newEmployee);
 
-            // Invalidate cache and refresh
-            invalidateCache();
-            fillToTableWithCache();
+            // Refresh table
+            fillToTable();
             clearForNewEntry();
 
             XDialog.success("Tạo nhân viên thành công! Mã: " + newEmployee.getUser_id(), "Thành công");
@@ -1736,9 +1552,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             // Update in database
             userDAO.update(updatedEmployee);
 
-            // Invalidate cache and refresh
-            invalidateCache();
-            fillToTableWithCache();
+            // Refresh table
+            fillToTable();
             clearFormButKeepImage();
 
             XDialog.success("Cập nhật nhân viên thành công!", "Thành công");
@@ -1771,32 +1586,21 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             if (debounceTimer != null && debounceTimer.isRunning()) {
                 debounceTimer.restart();
             } else {
-                populateTableFromCache();
+                                    fillToTable();
             }
         }
     }
 
     /**
-     * ✅ INITIALIZE: Call this in constructor to setup performance
+     * ✅ SIMPLIFIED: Basic performance setup
      */
     private void setupPerformanceOptimizations() {
-        initializePerformanceCache();
-        loadRolesWithCache();
-        
-        // Không cần filtering nữa vì txtStatus và txtRole chỉ để hiển thị
-        // txtStatus.addActionListener(e -> debounceTimer.restart());
-        // txtRole.addActionListener(e -> debounceTimer.restart());
+        // Basic debounce timer for search
+        debounceTimer = new javax.swing.Timer(300, e -> performFilterAndFill());
+        debounceTimer.setRepeats(false);
     }
 
-    /**
-     * ✅ PRODUCTION: Load image instantly (thay thế testLoadImage)
-     */
-    private void preloadDefaultImages() {
-        // Preload các ảnh mặc định để performance tốt hơn
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            setDefaultImageFast();
-        });
-    }
+
 
     /**
      * ✅ OPTIMIZED: Validate employee (required by EmployeeController)
@@ -1992,11 +1796,10 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
 
     /**
-     * ✅ OPTIMIZED: Get employees from cache hoặc DB nếu cache empty
+     * ✅ SIMPLIFIED: Get employees from database
      */
     private List<UserAccount> getEmployeesFromCacheOrDB() {
-        return (employeeCache != null && !employeeCache.isEmpty() && isCacheValid) ? 
-            employeeCache : userDAO.findAll();
+        return userDAO.findAll();
     }
 
     /**
@@ -2073,15 +1876,17 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             }
         });
         
-        // Set border to indicate clickable area
-        lblImage.setBorder(javax.swing.BorderFactory.createTitledBorder(
-            javax.swing.BorderFactory.createLineBorder(new java.awt.Color(100, 149, 237), 2),
-            "Click để chọn ảnh",
-            javax.swing.border.TitledBorder.CENTER,
-            javax.swing.border.TitledBorder.BOTTOM,
-            new java.awt.Font("Arial", java.awt.Font.ITALIC, 10),
-            new java.awt.Color(100, 149, 237)
-        ));
+        // Set border to indicate clickable area (after size is locked)
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            lblImage.setBorder(javax.swing.BorderFactory.createTitledBorder(
+                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(100, 149, 237), 2),
+                "Click để chọn ảnh",
+                javax.swing.border.TitledBorder.CENTER,
+                javax.swing.border.TitledBorder.BOTTOM,
+                new java.awt.Font("Arial", java.awt.Font.ITALIC, 10),
+                new java.awt.Color(100, 149, 237)
+            ));
+        });
     }
     
     /**
@@ -2137,7 +1942,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                         
                         // Show success message
                         XDialog.alert(
-                            "✅ Đã chọn ảnh thành công!\n" +
+                            "Đã chọn ảnh thành công!\n" +
                             "File: " + savedImageName,
                             "Thông báo"
                         );
@@ -2147,7 +1952,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             
         } catch (Exception e) {
             XDialog.alert(
-                "❌ Lỗi khi chọn ảnh: " + e.getMessage(),
+                "Lỗi khi chọn ảnh: " + e.getMessage(),
                 "Lỗi"
             );
             e.printStackTrace();
@@ -2244,7 +2049,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             return newFileName;
             
         } catch (Exception e) {
-            XDialog.alert("❌ Lỗi lưu ảnh: " + e.getMessage(), "Lỗi");
+            XDialog.alert("Lỗi lưu ảnh: " + e.getMessage(), "Lỗi");
             e.printStackTrace();
             return null;
         }
@@ -2299,430 +2104,39 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
     
     /**
-     * ✅ FROZEN LAYOUT: Enhanced setForm to preserve size and prevent layout changes
+     * ✅ FIXED: setForm with image size protection
      */
     @Override
     public void setForm(UserAccount entity) {
         if (entity == null) return;
         
-        try {
-            // ✅ FREEZE: Prevent any layout changes during form update
-            freezeLayout();
-            setIgnoreRepaint(true);
-            
-            // ✅ DISABLE: ComboBox repaint to prevent layout triggers
-            cboStatus.setIgnoreRepaint(true);
-            cboRole.setIgnoreRepaint(true);
-            
-            // Basic info - lightweight operations only
-            txtIdEmployee.setText(entity.getUser_id());
-            txtNameAccount.setText(entity.getUsername());
-            txtPassword.setText(entity.getPass());
-            txtNameEmployee.setText(entity.getFullName());
-            txtPhoneNumber.setText(entity.getPhone_number());
-            txtEmail.setText(entity.getEmail());
-
-            // Gender handling - optimized
-            if (entity.getGender() != null) {
-                if (entity.getGender() == 1) {
-                    chkMale.setSelected(true);
-                    chkFemale.setSelected(false);
-                } else if (entity.getGender() == 0) {
-                    chkMale.setSelected(false);
-                    chkFemale.setSelected(true);
-                } else {
-                    groupGioiTinh.clearSelection();
-                }
-            } else {
-                groupGioiTinh.clearSelection();
-            }
-
-            // Status và role - silent updates
-            setStatusComboBoxSilent(entity.getIs_enabled());
-            setRoleComboBoxSilent(entity.getRole_id());
-
-            // Image handling - defer to later
-            if (entity.getImage() != null && !entity.getImage().trim().isEmpty()) {
-                loadEmployeeImageSilent(entity.getImage());
-            } else {
-                setDefaultImageSilent();
-            }
-
-            // Skip displayRoleInfo to avoid console spam
-            
-        } finally {
-            // ✅ RESTORE: Re-enable layout and maintain frozen size
-            setIgnoreRepaint(false);
-            
-            // ✅ RESTORE: ComboBox repaint
-            cboStatus.setIgnoreRepaint(false);
-            cboRole.setIgnoreRepaint(false);
-            
-            // ✅ ENFORCE: Keep table at frozen size
-            if (frozenTableSize != null) {
-                jScrollPane1.setSize(frozenTableSize);
-                jScrollPane1.setPreferredSize(frozenTableSize);
-            }
-            
-            // Keep layout frozen after form update
-            repaint();
-        }
-    }
-    
-    /**
-     * ✅ SILENT: Load image without affecting layout - FIXED SIZE
-     */
-    private void loadEmployeeImageSilent(String imageName) {
-        try {
-            if (imageName != null && !imageName.trim().isEmpty()) {
-                String imagePath = "/icons_and_images/imageEmployee/" + imageName;
-                if (getClass().getResource(imagePath) != null) {
-                    // Only update if different
-                    if (!imageName.equals(lblImage.getToolTipText())) {
-                        setImageWithFixedSize(imagePath);
-                        lblImage.setToolTipText(imageName); // Store for comparison
-                    }
-                } else {
-                    setDefaultImageSilent();
-                }
-            } else {
-                setDefaultImageSilent();
-            }
-        } catch (Exception e) {
-            // Silent fail
-        }
-    }
-    
-    /**
-     * ✅ SILENT: Set default image without layout changes - FIXED SIZE
-     */
-    private void setDefaultImageSilent() {
-        try {
-            if (!"default".equals(lblImage.getToolTipText())) {
-                setImageWithFixedSize("/icons_and_images/User.png");
-                lblImage.setToolTipText("default"); // Mark as default
-            }
-        } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText("No Image");
-            lblImage.setToolTipText("error");
-            
-            // ✅ ENFORCE: Keep size even on error
-            if (originalImageSize != null) {
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-            }
-        }
-    }
-    
-    /**
-     * ✅ FIXED SIZE: Set image to label without changing label dimensions
-     */
-    private void setImageWithFixedSize(String imagePath) {
-        try {
-            // ✅ SAFETY: Ensure originalImageSize is available
-            if (originalImageSize == null) {
-                captureInitialImageSize();
-                if (originalImageSize == null) {
-                    // Ultimate fallback
-                    originalImageSize = new java.awt.Dimension(116, 167);
-                    System.out.println("⚠️ Using ultimate fallback image size: " + originalImageSize);
-                }
-            }
-            
-            // Load and scale image to fit the fixed label size
-            java.net.URL imageURL = getClass().getResource(imagePath);
-            if (imageURL != null) {
-                javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
-                
-                // ✅ VALIDATION: Check if image loaded successfully
-                if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
-                    // Scale image to fit the original label size
-                    java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
-                        originalImageSize.width, 
-                        originalImageSize.height, 
-                        java.awt.Image.SCALE_SMOOTH
-                    );
-                    
-                    javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
-                    
-                    // Set the scaled icon
-                    lblImage.setIcon(scaledIcon);
-                    lblImage.setText("");
-                } else {
-                    // Image không load được
-                    lblImage.setIcon(null);
-                    lblImage.setText("No Image");
-                }
-                
-                // ✅ ENFORCE: Keep the original size regardless of image content
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-                
-                System.out.println("🖼️ Set image with fixed size: " + originalImageSize + " for path: " + imagePath);
-                
-            } else {
-                // Fallback to text if image not found
-                lblImage.setIcon(null);
-                lblImage.setText("No Image");
-                
-                // ✅ STILL ENFORCE: Keep size even when no image
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-            }
-        } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText("Error");
-            
-            // ✅ ENFORCE: Keep size even on error
-            if (originalImageSize != null) {
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-            }
-            
-            System.err.println("❌ Error setting image: " + e.getMessage());
-        }
-    }
-    
-    // =============================================================================
-    // LAYOUT FREEZE PROTECTION
-    // =============================================================================
-    
-    /**
-     * ✅ FREEZE: Prevent any layout changes
-     */
-    private void freezeLayout() {
-        if (layoutFrozen) return;
+        // ✅ LOCK: Fix image size BEFORE loading new image
+        lockImageSize();
         
-        try {
-            layoutFrozen = true;
-            
-            // ✅ INITIALIZE: Set frozen table size if not already set
-            if (frozenTableSize == null) {
-                frozenTableSize = new java.awt.Dimension(jScrollPane1.getSize());
-                System.out.println("📐 Captured table size for freezing: " + frozenTableSize);
-            }
-            
-            // ✅ DISABLE: Auto-resize capabilities
-            jScrollPane1.setPreferredSize(frozenTableSize);
-            jScrollPane1.setMinimumSize(frozenTableSize);
-            jScrollPane1.setMaximumSize(frozenTableSize);
-            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-            
-            // ✅ LOCK: Window resize
-            setResizable(false);
-            
-        } catch (Exception e) {
-            System.err.println("Error freezing layout: " + e.getMessage());
-        }
+        // Basic info
+        txtIdEmployee.setText(entity.getUser_id());
+        txtNameAccount.setText(entity.getUsername());
+        txtPassword.setText(entity.getPass());
+        txtNameEmployee.setText(entity.getFullName());
+        txtPhoneNumber.setText(entity.getPhone_number());
+        txtEmail.setText(entity.getEmail());
+
+        // Gender handling
+        setGenderCheckboxes(entity.getGender());
+
+        // Status and role
+        setStatusComboBox(entity.getIs_enabled());
+        setRoleComboBox(entity.getRole_id());
+
+        // Image handling with size protection
+        loadEmployeeImageWithSizeProtection(entity.getImage());
     }
     
-    /**
-     * ✅ ENFORCE: Force table to stay at frozen size
-     */
-    private void enforceTableSize() {
-        if (frozenTableSize != null) {
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                try {
-                    java.awt.Dimension currentSize = jScrollPane1.getSize();
-                    if (!currentSize.equals(frozenTableSize)) {
-                        // ✅ FIX: Enforce table size more aggressively
-                        jScrollPane1.setSize(frozenTableSize);
-                        jScrollPane1.setPreferredSize(frozenTableSize);
-                        jScrollPane1.setMinimumSize(frozenTableSize);
-                        jScrollPane1.setMaximumSize(frozenTableSize);
-                        
-                        // ✅ FIX: Ensure table itself maintains size
-                        tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-                        tableInfo.setPreferredSize(new java.awt.Dimension(frozenTableSize.width - 20, frozenTableSize.height - 20));
-                        
-                        // ✅ FIX: Re-apply column widths to ensure they don't get reset
-                        setColumnWidths();
-                        
-                        // ✅ FIX: Force layout update
-                        jScrollPane1.validate();
-                        jScrollPane1.repaint();
-                        
-                        System.out.println("🔒 Enforced table size: " + frozenTableSize + " (was: " + currentSize + ")");
-                    } else {
-                        // ✅ MAINTENANCE: Even if size is correct, ensure column widths are applied
-                        setColumnWidths();
-                    }
-                } catch (Exception e) {
-                    System.err.println("❌ Error enforcing table size: " + e.getMessage());
-                }
-            });
-        }
-    }
+
     
-    /**
-     * ✅ IMMEDIATE: Apply large table size right away to prevent small table issue
-     */
-    private void applyLargeTableSize() {
-        try {
-            // ✅ OPTIMAL SIZE: Set large table size matching .form (1450px width)
-            java.awt.Dimension optimalSize = new java.awt.Dimension(1450, 350);
-            
-            // ✅ APPLY: Set size immediately
-            jScrollPane1.setSize(optimalSize);
-            jScrollPane1.setPreferredSize(optimalSize);
-            jScrollPane1.setMinimumSize(optimalSize);
-            jScrollPane1.setMaximumSize(optimalSize);
-            
-            // ✅ TABLE: Set auto resize off and apply column widths
-            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-            setColumnWidths();
-            
-            // ✅ FORCE: Validate layout
-            jScrollPane1.validate();
-            jScrollPane1.repaint();
-            
-            System.out.println("🔧 Applied large table size immediately: " + optimalSize);
-            
-        } catch (Exception e) {
-            System.err.println("❌ Error applying large table size: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * ✅ OVERRIDE: Override .form file constraints that cause layout issues
-     */
-    private void overrideFormConstraints() {
-        try {
-            // ✅ TEXT FIELDS: Override maxWidth=200 constraint from .form file
-            java.awt.Dimension textFieldSize = new java.awt.Dimension(200, 25);
-            
-            txtIdEmployee.setPreferredSize(textFieldSize);
-            txtIdEmployee.setMinimumSize(textFieldSize);
-            txtIdEmployee.setMaximumSize(new java.awt.Dimension(250, 25)); // Allow expansion
-            
-            txtNameEmployee.setPreferredSize(textFieldSize);
-            txtNameEmployee.setMinimumSize(textFieldSize);
-            txtNameEmployee.setMaximumSize(new java.awt.Dimension(250, 25));
-            
-            txtNameAccount.setPreferredSize(new java.awt.Dimension(150, 25)); // Match form
-            txtNameAccount.setMinimumSize(new java.awt.Dimension(150, 25));
-            txtNameAccount.setMaximumSize(new java.awt.Dimension(200, 25));
-            
-            txtPassword.setPreferredSize(new java.awt.Dimension(150, 26)); // Match form height
-            txtPassword.setMinimumSize(new java.awt.Dimension(150, 26));
-            txtPassword.setMaximumSize(new java.awt.Dimension(200, 26));
-            
-            txtPhoneNumber.setPreferredSize(textFieldSize);
-            txtPhoneNumber.setMinimumSize(textFieldSize);
-            txtPhoneNumber.setMaximumSize(new java.awt.Dimension(250, 25));
-            
-            txtEmail.setPreferredSize(textFieldSize);
-            txtEmail.setMinimumSize(textFieldSize);
-            txtEmail.setMaximumSize(new java.awt.Dimension(250, 25));
-            
-            // ✅ SEARCH FIELD: Match .form specification
-            txtSearch.setPreferredSize(new java.awt.Dimension(183, 25));
-            txtSearch.setMinimumSize(new java.awt.Dimension(183, 25));
-            txtSearch.setMaximumSize(new java.awt.Dimension(183, 25));
-            
-            // ✅ COMBO BOXES: Match .form specification
-            cboStatus.setPreferredSize(new java.awt.Dimension(151, 25));
-            cboStatus.setMinimumSize(new java.awt.Dimension(151, 25));
-            cboStatus.setMaximumSize(new java.awt.Dimension(151, 25));
-            
-            cboRole.setPreferredSize(new java.awt.Dimension(151, 25));
-            cboRole.setMinimumSize(new java.awt.Dimension(151, 25));
-            cboRole.setMaximumSize(new java.awt.Dimension(151, 25));
-            
-            // ✅ BUTTONS: Match .form specification
-            btnSave.setPreferredSize(new java.awt.Dimension(100, 50));
-            btnUpdate.setPreferredSize(new java.awt.Dimension(100, 50));
-            btnClear.setPreferredSize(new java.awt.Dimension(100, 50));
-            btnDelete.setPreferredSize(new java.awt.Dimension(100, 50));
-            btnExit.setPreferredSize(new java.awt.Dimension(50, 50));
-            
-            // ✅ MAIN PANELS: Override panel size constraints
-            if (jPanel5 != null) {
-                // Override .form fixed sizes
-                jPanel5.setPreferredSize(new java.awt.Dimension(1400, 171)); // Match .form height but wider
-                jPanel5.setMinimumSize(new java.awt.Dimension(1400, 171));
-            }
-            
-            if (jPanel3 != null) {
-                // Ensure main content panel is large enough
-                jPanel3.setPreferredSize(new java.awt.Dimension(1450, 550));
-            }
-            
-            // ✅ WINDOW: Override window size
-            this.setPreferredSize(new java.awt.Dimension(1450, 650));
-            this.setMinimumSize(new java.awt.Dimension(1400, 600));
-            
-            // ✅ FORCE: Validate all layouts
-            this.validate();
-            this.repaint();
-            
-            System.out.println("🔧 Overrode .form constraints - layout should be stable now");
-            
-        } catch (Exception e) {
-            System.err.println("❌ Error overriding form constraints: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * ✅ REFRESH: Refresh table with proper column widths - specifically for email overflow fix
-     */
-    private void refreshTableWithOptimizedColumns() {
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            try {
-                // ✅ STEP 1: Apply optimized column widths first
-                setColumnWidths();
-                
-                // ✅ STEP 2: Ensure table size is maintained
-                if (frozenTableSize != null) {
-                    enforceTableSize();
-                }
-                
-                // ✅ STEP 3: Force repaint to show changes
-                tableInfo.revalidate();
-                tableInfo.repaint();
-                jScrollPane1.revalidate();
-                jScrollPane1.repaint();
-                
-                System.out.println("🔄 Table refreshed with optimized columns for email display");
-                
-            } catch (Exception e) {
-                System.err.println("❌ Error refreshing table: " + e.getMessage());
-            }
-        });
-    }
-    
-    /**
-     * ✅ SETUP: Periodic size enforcement to prevent table expansion
-     */
-    private void setupSizeEnforcementTimer() {
-        try {
-            // Create timer that runs every 500ms to check and enforce table size
-            sizeEnforcementTimer = new javax.swing.Timer(500, e -> {
-                if (frozenTableSize != null) {
-                    java.awt.Dimension currentSize = jScrollPane1.getSize();
-                    if (!currentSize.equals(frozenTableSize)) {
-                        System.out.println("⚠️ Table size drift detected: " + currentSize + " -> " + frozenTableSize);
-                        enforceTableSize();
-                    }
-                }
-            });
-            
-            sizeEnforcementTimer.setRepeats(true);
-            sizeEnforcementTimer.start();
-            
-            System.out.println("✅ Size enforcement timer started - will prevent table expansion");
-            
-        } catch (Exception e) {
-            System.err.println("Error setting up size enforcement timer: " + e.getMessage());
-        }
-    }
+    // =============================================================================
+// SIMPLIFIED LAYOUT MANAGEMENT - RESPECT .FORM CONSTRAINTS
+// =============================================================================
     
 
     // =============================================================================
@@ -2730,25 +2144,16 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     // =============================================================================
     
     /**
-     * ✅ SETUP: Initialize Status ComboBox với các tùy chọn
+     * ✅ CONSOLIDATED: Setup both ComboBoxes without size overrides
      */
-    private void setupStatusComboBox() {
+    private void setupComboBoxes() {
+        // Status ComboBox - replace .form dummy data
         cboStatus.removeAllItems();
         cboStatus.addItem("Hoạt động");
         cboStatus.addItem("Không hoạt động");
         cboStatus.setSelectedIndex(0); // Default: Hoạt động
         
-        // ✅ FIX: Set fixed size để không bị tràn layout
-        java.awt.Dimension fixedSize = new java.awt.Dimension(150, 25);
-        cboStatus.setPreferredSize(fixedSize);
-        cboStatus.setMinimumSize(fixedSize);
-        cboStatus.setMaximumSize(fixedSize);
-    }
-    
-    /**
-     * ✅ SETUP: Initialize Role ComboBox với data từ database
-     */
-    private void setupRoleComboBox() {
+        // Role ComboBox - replace .form dummy data with real data
         cboRole.removeAllItems();
         try {
             List<UserRole> roles = roleDAO.findAll();
@@ -2763,11 +2168,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             cboRole.setSelectedIndex(1); // Default: Staff
         }
         
-        // ✅ FIX: Set fixed size để không bị tràn layout
-        java.awt.Dimension fixedSize = new java.awt.Dimension(150, 25);
-        cboRole.setPreferredSize(fixedSize);
-        cboRole.setMinimumSize(fixedSize);
-        cboRole.setMaximumSize(fixedSize);
+        // ✅ RESPECT .FORM: Let .form handle sizing (width=180px from .form)
+        System.out.println("✅ ComboBoxes setup with real data, respecting .form constraints");
     }
     
     /**
@@ -2884,8 +2286,9 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                     }
                 }
                 
-                // ✅ OPTIMIZED: Use new refresh method for better email display
-                refreshTableWithOptimizedColumns();
+                // ✅ SIMPLIFIED: Basic table refresh
+                tableInfo.revalidate();
+                tableInfo.repaint();
                 
             } catch (Exception e) {
                 System.err.println("❌ Search error: " + e.getMessage());
@@ -2908,89 +2311,31 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
     
     /**
-     * ✅ ULTRA SILENT: Set Status ComboBox without ANY layout changes
+     * ✅ SIMPLE: Set Status ComboBox value
      */
-    private void setStatusComboBoxSilent(Integer isEnabled) {
-        try {
-            // ✅ DISABLE: All events and repaints
-            java.awt.event.ActionListener[] listeners = cboStatus.getActionListeners();
-            for (java.awt.event.ActionListener listener : listeners) {
-                cboStatus.removeActionListener(listener);
-            }
-            
-            // ✅ FREEZE: Current size before change
-            java.awt.Dimension currentSize = cboStatus.getSize();
-            cboStatus.setIgnoreRepaint(true);
-            
-            if (isEnabled != null) {
-                String targetValue = isEnabled == 1 ? "Hoạt động" : "Không hoạt động";
-                if (!targetValue.equals(cboStatus.getSelectedItem())) {
-                    cboStatus.setSelectedItem(targetValue);
-                }
-            } else {
-                if (cboStatus.getSelectedIndex() != 0) {
-                    cboStatus.setSelectedIndex(0);
-                }
-            }
-            
-            // ✅ ENFORCE: Restore exact size
-            cboStatus.setSize(currentSize);
-            cboStatus.setPreferredSize(currentSize);
-            
-            // ✅ RESTORE: Events and repaint
-            cboStatus.setIgnoreRepaint(false);
-            for (java.awt.event.ActionListener listener : listeners) {
-                cboStatus.addActionListener(listener);
-            }
-        } catch (Exception e) {
-            // Silent fail - restore repaint anyway
-            cboStatus.setIgnoreRepaint(false);
+    private void setStatusComboBox(Integer isEnabled) {
+        if (isEnabled != null) {
+            String targetValue = isEnabled == 1 ? "Hoạt động" : "Không hoạt động";
+            cboStatus.setSelectedItem(targetValue);
+        } else {
+            cboStatus.setSelectedIndex(0);
         }
     }
     
     /**
-     * ✅ ULTRA SILENT: Set Role ComboBox without ANY layout changes
+     * ✅ SIMPLE: Set Role ComboBox value
      */
-    private void setRoleComboBoxSilent(String roleId) {
-        try {
-            // ✅ DISABLE: All events and repaints
-            java.awt.event.ActionListener[] listeners = cboRole.getActionListeners();
-            for (java.awt.event.ActionListener listener : listeners) {
-                cboRole.removeActionListener(listener);
-            }
-            
-            // ✅ FREEZE: Current size before change
-            java.awt.Dimension currentSize = cboRole.getSize();
-            cboRole.setIgnoreRepaint(true);
-            
-            if (roleId != null) {
-                for (int i = 0; i < cboRole.getItemCount(); i++) {
-                    String item = cboRole.getItemAt(i);
-                    if (item.startsWith(roleId + " - ")) {
-                        if (cboRole.getSelectedIndex() != i) {
-                            cboRole.setSelectedIndex(i);
-                        }
-                        break;
-                    }
-                }
-            } else {
-                if (cboRole.getItemCount() > 0 && cboRole.getSelectedIndex() != 0) {
-                    cboRole.setSelectedIndex(0);
+    private void setRoleComboBox(String roleId) {
+        if (roleId != null) {
+            for (int i = 0; i < cboRole.getItemCount(); i++) {
+                String item = cboRole.getItemAt(i);
+                if (item.startsWith(roleId + " - ")) {
+                    cboRole.setSelectedIndex(i);
+                    break;
                 }
             }
-            
-            // ✅ ENFORCE: Restore exact size
-            cboRole.setSize(currentSize);
-            cboRole.setPreferredSize(currentSize);
-            
-            // ✅ RESTORE: Events and repaint
-            cboRole.setIgnoreRepaint(false);
-            for (java.awt.event.ActionListener listener : listeners) {
-                cboRole.addActionListener(listener);
-            }
-        } catch (Exception e) {
-            // Silent fail - restore repaint anyway
-            cboRole.setIgnoreRepaint(false);
+        } else if (cboRole.getItemCount() > 0) {
+            cboRole.setSelectedIndex(0);
         }
     }
 
