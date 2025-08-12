@@ -1144,20 +1144,31 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
             
             XDialog.alert(successMessage);
             
-            // Reload bàn
+            // Clear cache của bàn vừa thanh toán
+            removeBillFromCache(selectedTableNumber);
+            
+            // Reset selection trước khi reload
+            if (selectedButton != null) {
+                selectedButton.setBorder(javax.swing.BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
+                selectedButton = null;
+            }
+            selectedTableNumber = -1;
+            
+            // Force refresh giao diện
+            try {
+                Thread.sleep(100); // Delay nhỏ để đảm bảo database đã commit
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+            
+            // Reload bàn để cập nhật trạng thái
             loadTables();
             
-            // Clear display nhưng giữ lại txtPhoneNumber
-            currentBill = null;
-            currentCustomer = null;
-            billDetails = null;
-            totalAmount = 0.0;
-            customerPoints = 0;
+            // Clear display hoàn toàn
+            clearDisplay();
             
-            tableModel.setRowCount(0);
-            // Không clear txtPhoneNumber - để user tự nhập
-            lblPoint.setText("0");
-            lblTotalAmout.setText("0");
+            // Force repaint để đảm bảo giao diện cập nhật
+            this.repaint();
         }
     }
     
@@ -1438,12 +1449,15 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
     @Override
     public Bill getBillByTableNumber(int tableNumber) {
         try {
-            // Kiểm tra cache trước
+            // Kiểm tra cache trước (bỏ qua cache nếu đã thanh toán)
             if (tableBillCache.containsKey(tableNumber)) {
                 Bill cachedBill = tableBillCache.get(tableNumber);
-                // Nếu bill trong cache vẫn đang hoạt động, trả về
+                // Chỉ trả về bill từ cache nếu đang hoạt động (status = 0), không phải đã thanh toán (status = 1)
                 if (cachedBill != null && cachedBill.getStatus() != null && cachedBill.getStatus() == 0) {
                     return cachedBill;
+                } else {
+                    // Nếu bill đã thanh toán, xóa khỏi cache
+                    tableBillCache.remove(tableNumber);
                 }
             }
             
@@ -1460,17 +1474,9 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
                 return activeBill;
             }
             
-            // Nếu không có bill đang hoạt động, tìm bill cuối cùng
-            Bill lastBill = allBills.stream()
-                .filter(bill -> bill.getTable_number() == tableNumber)
-                .max((b1, b2) -> Integer.compare(b1.getBill_id(), b2.getBill_id()))
-                .orElse(null);
-            
-            if (lastBill != null) {
-                tableBillCache.put(tableNumber, lastBill);
-            }
-            
-            return lastBill;
+            // Nếu không có bill đang hoạt động, trả về null (bàn trống)
+            // Không tìm bill cuối cùng vì có thể đã thanh toán
+            return null;
             
         } catch (Exception e) {
             XDialog.alert("Lỗi khi load hóa đơn: " + e.getMessage());
@@ -1582,12 +1588,17 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
             // Cập nhật trạng thái bàn
             TableForCustomer table = tableDAO.findById(tableNumber);
             if (table != null) {
+                LOGGER.log(Level.INFO, "Cập nhật trạng thái bàn " + tableNumber + " từ " + table.getStatus() + " thành 0 (trống)");
                 table.setStatus(0); // Trống
                 tableDAO.update(table);
+                LOGGER.log(Level.INFO, "Đã cập nhật trạng thái bàn " + tableNumber + " thành công");
+            } else {
+                LOGGER.log(Level.WARNING, "Không tìm thấy bàn " + tableNumber + " để cập nhật trạng thái");
             }
             
             // Xóa bill khỏi cache khi thanh toán xong
             removeBillFromCache(tableNumber);
+            LOGGER.log(Level.INFO, "Đã xóa bill của bàn " + tableNumber + " khỏi cache");
             
             return true;
             
