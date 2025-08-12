@@ -710,6 +710,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         jspPayment = new javax.swing.JScrollPane();
         tblPayment = new javax.swing.JTable();
         jSeparator1 = new javax.swing.JSeparator();
+        btnStatistics = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
 
         jLabel3.setText("jLabel3");
@@ -767,8 +768,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
 
         btnFilter.setBackground(new java.awt.Color(204, 204, 204));
         btnFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnFilter.setForeground(new java.awt.Color(153, 153, 153));
-        btnFilter.setText("LỌC");
+        btnFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/icons8-sort-24.png"))); // NOI18N
         btnFilter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
 
         jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -789,6 +789,8 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                 return canEdit [columnIndex];
             }
         });
+        tblBills.getTableHeader().setResizingAllowed(false);
+        tblBills.getTableHeader().setReorderingAllowed(false);
         jpsBIlls.setViewportView(tblBills);
         if (tblBills.getColumnModel().getColumnCount() > 0) {
             tblBills.getColumnModel().getColumn(0).setResizable(false);
@@ -859,6 +861,12 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
+        btnStatistics.setBackground(new java.awt.Color(115, 197, 82));
+        btnStatistics.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnStatistics.setForeground(new java.awt.Color(255, 255, 255));
+        btnStatistics.setText("Thống kê");
+        btnStatistics.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
+
         jButton1.setBackground(new java.awt.Color(185, 163, 147));
         jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jButton1.setForeground(new java.awt.Color(255, 255, 255));
@@ -891,7 +899,9 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                         .addComponent(btnFilter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(jTabbedPane1)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(pnlUiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(btnStatistics, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         pnlUiLayout.setVerticalGroup(
@@ -913,7 +923,9 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
+                .addGroup(pnlUiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnStatistics)
+                    .addComponent(jButton1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -971,6 +983,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
     private javax.swing.JButton btnCheckin;
     private javax.swing.JButton btnCheckout;
     private javax.swing.JButton btnFilter;
+    private javax.swing.JButton btnStatistics;
     private javax.swing.JComboBox<String> cboFilter;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton3;

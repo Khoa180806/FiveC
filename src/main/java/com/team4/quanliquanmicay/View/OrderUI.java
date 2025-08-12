@@ -1088,6 +1088,8 @@ public class OrderUI extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        tblOrder.getTableHeader().setResizingAllowed(false);
+        tblOrder.getTableHeader().setReorderingAllowed(false);
         jScrollPane3.setViewportView(tblOrder);
         if (tblOrder.getColumnModel().getColumnCount() > 0) {
             tblOrder.getColumnModel().getColumn(0).setResizable(false);
@@ -1211,7 +1213,7 @@ public class OrderUI extends javax.swing.JFrame {
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 494, Short.MAX_VALUE))
+                .addGap(0, 498, Short.MAX_VALUE))
             .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                     .addGap(0, 58, Short.MAX_VALUE)

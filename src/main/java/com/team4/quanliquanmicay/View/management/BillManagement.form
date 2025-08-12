@@ -460,11 +460,8 @@
                               <Component id="jLabel9" alignment="0" max="32767" attributes="0"/>
                               <Component id="txtBegin" alignment="0" max="32767" attributes="0"/>
                           </Group>
-                          <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                              <Component id="btnFilter" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="btnFilter" alignment="3" max="-2" attributes="0"/>
-                              <Component id="cboTime" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="btnFilter" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cboTime" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
@@ -666,7 +663,7 @@
                           </TableColumnModel>
                         </Property>
                         <Property name="tableHeader" type="javax.swing.table.JTableHeader" editor="org.netbeans.modules.form.editors2.JTableHeaderEditor">
-                          <TableHeader reorderingAllowed="true" resizingAllowed="true"/>
+                          <TableHeader reorderingAllowed="false" resizingAllowed="false"/>
                         </Property>
                       </Properties>
                     </Component>

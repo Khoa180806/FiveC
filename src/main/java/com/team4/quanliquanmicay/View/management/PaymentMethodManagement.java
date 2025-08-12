@@ -319,9 +319,11 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return false; // Không cho phép edit bất kỳ cột nào
+                return canEdit [columnIndex];
             }
         });
+        tblPaymentMethod.getTableHeader().setResizingAllowed(false);
+        tblPaymentMethod.getTableHeader().setReorderingAllowed(false);
         jspPaymentMethod.setViewportView(tblPaymentMethod);
         if (tblPaymentMethod.getColumnModel().getColumnCount() > 0) {
             tblPaymentMethod.getColumnModel().getColumn(0).setResizable(false);
@@ -363,31 +365,18 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
         btnCreate.setForeground(new java.awt.Color(255, 255, 255));
         btnCreate.setText("Thêm");
         btnCreate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
-        // THÊM ACTION LISTENER CHO BUTTON CREATE
-        btnCreate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnCreateActionPerformed(evt);
-            }
-        });
 
         btnUpdate.setBackground(new java.awt.Color(185, 163, 147));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnUpdate.setForeground(new java.awt.Color(255, 255, 255));
         btnUpdate.setText("Cập Nhật");
         btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
-        // THÊM ACTION LISTENER CHO BUTTON UPDATE
-        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUpdateActionPerformed(evt);
-            }
-        });
 
         btnRemove.setBackground(new java.awt.Color(185, 163, 147));
         btnRemove.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnRemove.setForeground(new java.awt.Color(255, 255, 255));
         btnRemove.setText("Xóa");
         btnRemove.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
-        // THÊM ACTION LISTENER CHO BUTTON REMOVE
         btnRemove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRemoveActionPerformed(evt);
@@ -399,24 +388,6 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
         btnClear.setForeground(new java.awt.Color(255, 255, 255));
         btnClear.setText("Làm mới");
         btnClear.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
-        // THÊM ACTION LISTENER CHO BUTTON CLEAR
-        btnClear.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnClearActionPerformed(evt);
-            }
-        });
-
-        btnExit.setBackground(new java.awt.Color(185, 163, 147));
-        btnExit.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnExit.setForeground(new java.awt.Color(255, 255, 255));
-        btnExit.setText("Thoát");
-        btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-        // THÊM ACTION LISTENER CHO BUTTON EXIT
-        btnExit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnExitActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout pnlFeatureLayout = new javax.swing.GroupLayout(pnlFeature);
         pnlFeature.setLayout(pnlFeatureLayout);
@@ -475,6 +446,12 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        btnExit.setBackground(new java.awt.Color(185, 163, 147));
+        btnExit.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnExit.setForeground(new java.awt.Color(255, 255, 255));
+        btnExit.setText("Thoát");
+        btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -498,7 +475,7 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jspPaymentMethod, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE))
+                        .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(pnlFeature, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );

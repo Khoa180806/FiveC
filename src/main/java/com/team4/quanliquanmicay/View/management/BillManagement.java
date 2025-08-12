@@ -1087,9 +1087,8 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                         .addComponent(btnBegin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(txtBegin, javax.swing.GroupLayout.Alignment.LEADING))
-                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btnFilter)
-                        .addComponent(cboTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(btnFilter)
+                    .addComponent(cboTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1113,6 +1112,8 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 return canEdit [columnIndex];
             }
         });
+        tblBill.getTableHeader().setResizingAllowed(false);
+        tblBill.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tblBill);
         if (tblBill.getColumnModel().getColumnCount() > 0) {
             tblBill.getColumnModel().getColumn(0).setResizable(false);
