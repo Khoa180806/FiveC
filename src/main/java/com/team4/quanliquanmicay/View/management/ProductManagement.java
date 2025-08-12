@@ -60,6 +60,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 fillToTable();
                 fillUnitsByCategory();
                 if (cboUnit.getItemCount() > 0) cboUnit.setSelectedIndex(0);
+                // Lock layout sau khi thay đổi category
+                lockEntireLayout();
             }
         });
         fillUnitsByCategory();
@@ -67,7 +69,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         fillToTable();
         setupSearchFunctionality();
         setupImageSelection(); // Thêm setup cho chọn ảnh
-        captureInitialImageSize(); // Capture kích thước ban đầu của ảnh
+        initializeImageLabel(); // Khởi tạo label ảnh với kích thước cố định
+        lockEntireLayout(); // Lock toàn bộ layout để tránh shift
         // Disable button update ban đầu
         btnUpdate.setEnabled(false);
         // Đảm bảo khi đổi trạng thái thì có thể cập nhật
@@ -615,6 +618,13 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     @Override
     public void setForm(Product entity) {
         if (entity == null) return;
+        
+        // ABSOLUTE LOCK SIZE NGAY LẬP TỨC để tránh tràn
+        absoluteLockImageSize();
+        
+        // Lock toàn bộ layout để tránh components bị đẩy
+        lockEntireLayout();
+        
         fillStatus();
         txtProduct_Id.setText(entity.getProductId());
         txtProduct_Id.setEditable(false);
@@ -656,11 +666,22 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         try { imageName = entity.getImage(); } catch (Exception ex) { imageName = ""; }
         setCurrentImageName(imageName); // Lưu tên ảnh hiện tại
         
-        // Force refresh image display
+        // Force refresh image display với size cố định
         final String finalImageName = imageName; // Make final for lambda
+        
+        // LOCK SIZE NGAY LẬP TỨC trước khi queue
+        final java.awt.Dimension ABSOLUTE_LOCK_SIZE = new java.awt.Dimension(200, 200);
+        lblImage.setSize(ABSOLUTE_LOCK_SIZE);
+        lblImage.setPreferredSize(ABSOLUTE_LOCK_SIZE);
+        lblImage.setMinimumSize(ABSOLUTE_LOCK_SIZE);
+        lblImage.setMaximumSize(ABSOLUTE_LOCK_SIZE);
+        
         java.awt.EventQueue.invokeLater(() -> {
+            // TRIPLE LOCK SIZE trong event queue
+            absoluteLockImageSize();
+            
             fillProductImage(finalImageName);
-            enforceFixedImageSize();
+            absoluteLockImageSize(); // Lock again after image load
         });
     }
 
@@ -942,6 +963,9 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
         setCurrentImageName(""); // Reset tên ảnh
         fillProductImage(""); // Clear image
+        
+        // Lock layout sau khi clear
+        lockEntireLayout();
     }
 
     @Override
@@ -1084,7 +1108,13 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                         if (row >= 0) {
                             String productId = (String) categoryTable.getValueAt(row, 0);
                             Product product = getProductFromCache(productId);
-                            setForm(product);
+                            
+                            // Đảm bảo ảnh không tràn TRƯỚC khi setForm
+                            absoluteLockImageSize();
+                            java.awt.EventQueue.invokeLater(() -> {
+                                absoluteLockImageSize();
+                                setForm(product);
+                            });
                         }
                     }
                 });
@@ -1101,6 +1131,9 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         
         // Set kích thước cố định cho tabbed pane
         jTabbedPane1.setPreferredSize(new java.awt.Dimension(700, 250));
+        
+        // Lock layout sau khi tạo tabs
+        lockEntireLayout();
     }
 
     private void setupSearchFunctionality() {
@@ -1598,32 +1631,51 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     }
     
     /**
-     * ✅ CAPTURE: Capture initial image label size
+     * ✅ INITIALIZE: Khởi tạo label ảnh với kích thước cố định ngay từ đầu
      */
-    private void captureInitialImageSize() {
+    private void initializeImageLabel() {
         try {
-            // Wait for the component to be properly laid out
-            java.awt.EventQueue.invokeLater(() -> {
-                if (lblImage != null) {
-                    originalImageSize = lblImage.getSize();
-                    if (originalImageSize.width <= 0 || originalImageSize.height <= 0) {
-                        // Fallback size if not properly initialized
-                        originalImageSize = new java.awt.Dimension(204, 200);
-                    }
-                }
-            });
+            final java.awt.Dimension FIXED_SIZE = new java.awt.Dimension(200, 200);
+            
+            // Đặt size cố định ngay từ đầu
+            lblImage.setSize(FIXED_SIZE);
+            lblImage.setPreferredSize(FIXED_SIZE);
+            lblImage.setMinimumSize(FIXED_SIZE);
+            lblImage.setMaximumSize(FIXED_SIZE);
+            
+            // Set layout properties
+            lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+            
+            // Set default placeholder
+            setNoImagePlaceholder();
+            
+            // Force layout update
+            lblImage.revalidate();
+            lblImage.repaint();
+            
+            // Apply overflow prevention
+            preventImageOverflow();
+            
+            // Store original size
+            originalImageSize = FIXED_SIZE;
+            
         } catch (Exception e) {
-            originalImageSize = new java.awt.Dimension(204, 200);
+            System.out.println("❌ Error initializing image label: " + e.getMessage());
+            originalImageSize = new java.awt.Dimension(200, 200);
         }
     }
     
     /**
-     * ✅ SET IMAGE WITH FIXED SIZE: Set image with controlled size
+     * ✅ SET IMAGE WITH FIXED SIZE: Set image with controlled size and strict layout
      */
     private void setImageWithFixedSize(String imagePath) {
         try {
-            // Sử dụng kích thước cố định 200x200
-            java.awt.Dimension fixedSize = new java.awt.Dimension(200, 200);
+            // Kích thước cố định TUYỆT ĐỐI 200x200
+            final java.awt.Dimension FIXED_SIZE = new java.awt.Dimension(200, 200);
+            
+            // ABSOLUTE LOCK SIZE trước khi làm bất cứ gì
+            absoluteLockImageSize();
             
             // Load and scale image to fit the fixed label size
             java.net.URL imageURL = getClass().getResource(imagePath);
@@ -1632,55 +1684,70 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 
                 // ✅ VALIDATION: Check if image loaded successfully
                 if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
-                    // Scale image to fit the fixed size
+                    // Scale image to EXACT fixed size với giới hạn nghiêm ngặt
                     java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
-                        fixedSize.width, 
-                        fixedSize.height, 
+                        196, // Slightly smaller than container để tránh overflow
+                        196, 
                         java.awt.Image.SCALE_SMOOTH
                     );
                     
                     javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
                     
+                    // LOCK SIZE lại trước khi set icon
+                    absoluteLockImageSize();
+                    
                     // Set the scaled icon
                     lblImage.setIcon(scaledIcon);
                     lblImage.setText("");
+                    lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                    lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+                    
+                    // FINAL ABSOLUTE LOCK sau khi set icon
+                    absoluteLockImageSize();
                 } else {
                     // Image không load được
-                    lblImage.setIcon(null);
-                    lblImage.setText("No Image");
+                    setNoImagePlaceholder();
                 }
             } else {
                 // Fallback to text if image not found
-                lblImage.setIcon(null);
-                lblImage.setText("No Image");
+                setNoImagePlaceholder();
             }
             
-            // ✅ ENFORCE: Luôn áp dụng kích thước cố định
-            lblImage.setSize(fixedSize);
-            lblImage.setPreferredSize(fixedSize);
-            lblImage.setMinimumSize(fixedSize);
-            lblImage.setMaximumSize(fixedSize);
+            // ✅ ENFORCE FINAL: Đảm bảo size không thay đổi
+            absoluteLockImageSize();
             
         } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText("Error");
-            
-            // ✅ ENFORCE: Keep size even on error
-            java.awt.Dimension fixedSize = new java.awt.Dimension(200, 200);
-            lblImage.setSize(fixedSize);
-            lblImage.setPreferredSize(fixedSize);
-            lblImage.setMinimumSize(fixedSize);
-            lblImage.setMaximumSize(fixedSize);
+            setNoImagePlaceholder();
+            absoluteLockImageSize();
         }
+    }
+    
+    /**
+     * ✅ NO IMAGE PLACEHOLDER: Set placeholder when no image available
+     */
+    private void setNoImagePlaceholder() {
+        // ABSOLUTE LOCK trước khi set placeholder
+        absoluteLockImageSize();
+        
+        lblImage.setIcon(null);
+        lblImage.setText("<html><center>Chưa có ảnh<br/>Click để chọn</center></html>");
+        lblImage.setFont(new java.awt.Font("Arial", java.awt.Font.ITALIC, 12));
+        lblImage.setForeground(java.awt.Color.GRAY);
+        lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+        
+        // FINAL LOCK sau khi set placeholder
+        absoluteLockImageSize();
     }
     
     // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
     private void fillProductImage(String imageName) {
         try {
+            System.out.println("🔍 fillProductImage called with: " + imageName);
+            System.out.println("📏 Current lblImage size BEFORE: " + lblImage.getSize());
+            
             // Đảm bảo kích thước cố định trước khi load ảnh
             enforceFixedImageSize();
-            
-            System.out.println("🔍 fillProductImage called with: " + imageName);
             
             if (imageName != null && !imageName.trim().isEmpty()) {
                 // Thử tìm ảnh trong các thư mục khác nhau
@@ -1710,24 +1777,25 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                     if (tryLoadExternalImage(imageName)) {
                         found = true;
                     } else {
-                        System.out.println("❌ External image not found, using default");
-                        setImageWithFixedSize("/icons_and_images/Best.png");
+                        System.out.println("❌ External image not found, using placeholder");
+                        setNoImagePlaceholder();
                     }
                 }
             } else {
-                // Không có tên ảnh - dùng ảnh mặc định
-                System.out.println("ℹ️ No image name provided, using default");
-                setImageWithFixedSize("/icons_and_images/Best.png");
+                // Không có tên ảnh - dùng placeholder
+                System.out.println("ℹ️ No image name provided, using placeholder");
+                setNoImagePlaceholder();
             }
             
             // Đảm bảo kích thước cố định sau khi load ảnh
             enforceFixedImageSize();
+            System.out.println("📏 Final lblImage size AFTER: " + lblImage.getSize());
             
         } catch (Exception e) {
             System.out.println("❌ Error in fillProductImage: " + e.getMessage());
             e.printStackTrace();
-            // Nếu lỗi, dùng ảnh unknown và vẫn giữ kích thước cố định
-            setImageWithFixedSize("/icons_and_images/Unknown person.png");
+            // Nếu lỗi, dùng placeholder và vẫn giữ kích thước cố định
+            setNoImagePlaceholder();
             enforceFixedImageSize();
         }
     }
@@ -1752,15 +1820,28 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 if (imageFile.exists() && imageFile.canRead()) {
                     System.out.println("✅ Found external image: " + path);
                     
-                    // Load image từ file system
+                    // Load image từ file system với size cố định
                     java.awt.image.BufferedImage bufferedImage = javax.imageio.ImageIO.read(imageFile);
                     if (bufferedImage != null) {
-                        // Scale và set image
-                        java.awt.Image scaledImage = bufferedImage.getScaledInstance(200, 200, java.awt.Image.SCALE_SMOOTH);
+                        
+                        // ABSOLUTE LOCK trước khi load ảnh
+                        absoluteLockImageSize();
+                        
+                        // Scale image nhỏ hơn để tránh overflow
+                        java.awt.Image scaledImage = bufferedImage.getScaledInstance(
+                            196, 196, java.awt.Image.SCALE_SMOOTH);
                         javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
+                        
+                        // LOCK lại trước khi set icon
+                        absoluteLockImageSize();
                         
                         lblImage.setIcon(scaledIcon);
                         lblImage.setText("");
+                        lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                        lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+                        
+                        // FINAL LOCK sau khi set icon
+                        absoluteLockImageSize();
                         
                         return true;
                     }
@@ -1776,17 +1857,181 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     }
     
     /**
-     * ✅ ENFORCE: Đảm bảo kích thước cố định cho lblImage
+     * ✅ ENFORCE: Đảm bảo kích thước cố định cho lblImage (MẠNH MẼ)
      */
     private void enforceFixedImageSize() {
-        java.awt.Dimension fixedSize = new java.awt.Dimension(200, 200);
-        lblImage.setSize(fixedSize);
-        lblImage.setPreferredSize(fixedSize);
-        lblImage.setMinimumSize(fixedSize);
-        lblImage.setMaximumSize(fixedSize);
-        lblImage.revalidate();
-        lblImage.repaint();
+        final java.awt.Dimension FIXED_SIZE = new java.awt.Dimension(200, 200);
+        
+        // Set tất cả size properties
+        lblImage.setSize(FIXED_SIZE);
+        lblImage.setPreferredSize(FIXED_SIZE);
+        lblImage.setMinimumSize(FIXED_SIZE);
+        lblImage.setMaximumSize(FIXED_SIZE);
+        
+        // Set alignment để ảnh luôn ở giữa
+        lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+        
+        // Force layout update nhưng không làm thay đổi size
+        lblImage.invalidate();
+        
+        // Get parent container and force its layout
+        java.awt.Container parent = lblImage.getParent();
+        if (parent != null) {
+            parent.revalidate();
+        }
+        
+        System.out.println("🔧 Enforced image size: " + lblImage.getSize());
     }
+    
+    /**
+     * ✅ PREVENT OVERFLOW: Ngăn chặn hoàn toàn việc ảnh tràn layout
+     */
+    private void preventImageOverflow() {
+        try {
+            final java.awt.Dimension ABSOLUTE_FIXED_SIZE = new java.awt.Dimension(200, 200);
+            
+            // TUYỆT ĐỐI không cho phép thay đổi size
+            lblImage.setSize(ABSOLUTE_FIXED_SIZE);
+            lblImage.setPreferredSize(ABSOLUTE_FIXED_SIZE);
+            lblImage.setMinimumSize(ABSOLUTE_FIXED_SIZE);
+            lblImage.setMaximumSize(ABSOLUTE_FIXED_SIZE);
+            
+            // Lock layout của parent container
+            java.awt.Container parent = lblImage.getParent();
+            if (parent != null && parent instanceof javax.swing.JPanel) {
+                javax.swing.JPanel parentPanel = (javax.swing.JPanel) parent;
+                parentPanel.setPreferredSize(parentPanel.getSize());
+            }
+            
+            // Set border để giới hạn vùng hiển thị
+            lblImage.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(100, 149, 237), 2),
+                javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2)
+            ));
+            
+                    System.out.println("🔒 Prevented image overflow - Absolute size: " + ABSOLUTE_FIXED_SIZE);
+        
+    } catch (Exception e) {
+        System.out.println("❌ Error preventing image overflow: " + e.getMessage());
+    }
+}
+
+/**
+ * ✅ ABSOLUTE LOCK: Khóa hoàn toàn layout để không bao giờ tràn
+ */
+private void absoluteLockImageSize() {
+    try {
+        final java.awt.Dimension ABSOLUTE_SIZE = new java.awt.Dimension(200, 200);
+        
+        // Set tất cả size properties với priority cao nhất
+        lblImage.setSize(ABSOLUTE_SIZE);
+        lblImage.setPreferredSize(ABSOLUTE_SIZE);
+        lblImage.setMinimumSize(ABSOLUTE_SIZE);
+        lblImage.setMaximumSize(ABSOLUTE_SIZE);
+        
+        // Set alignment
+        lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+        
+        // Disable any auto-resizing
+        lblImage.setOpaque(true);
+        lblImage.setAutoscrolls(false);
+        
+        // Lock parent layout if possible
+        java.awt.Container parent = lblImage.getParent();
+        if (parent != null) {
+            if (parent.getLayout() instanceof javax.swing.GroupLayout) {
+                // For GroupLayout, we need to be more careful
+                parent.invalidate();
+            } else {
+                parent.setPreferredSize(parent.getSize());
+            }
+        }
+        
+        System.out.println("🔐 ABSOLUTE LOCK applied - Size: " + ABSOLUTE_SIZE);
+        
+    } catch (Exception e) {
+        System.out.println("❌ Error in absolute lock: " + e.getMessage());
+    }
+}
+
+/**
+ * ✅ LOCK ENTIRE LAYOUT: Lock toàn bộ layout để tránh components bị đẩy
+ */
+private void lockEntireLayout() {
+    try {
+        // Lock tất cả text fields với preferred size
+        java.awt.Dimension fieldSize = new java.awt.Dimension(150, 22);
+        txtProduct_Id.setPreferredSize(fieldSize);
+        txtProduct_Id.setMinimumSize(fieldSize);
+        txtProduct_Id.setMaximumSize(fieldSize);
+        
+        txtNameProduct.setPreferredSize(fieldSize);
+        txtNameProduct.setMinimumSize(fieldSize);
+        txtNameProduct.setMaximumSize(fieldSize);
+        
+        txtPrice.setPreferredSize(fieldSize);
+        txtPrice.setMinimumSize(fieldSize);
+        txtPrice.setMaximumSize(fieldSize);
+        
+        txtDiscount.setPreferredSize(fieldSize);
+        txtDiscount.setMinimumSize(fieldSize);
+        txtDiscount.setMaximumSize(fieldSize);
+        
+        // Lock comboboxes
+        java.awt.Dimension comboSize = new java.awt.Dimension(150, 22);
+        cboCate.setPreferredSize(comboSize);
+        cboCate.setMinimumSize(comboSize);
+        cboCate.setMaximumSize(comboSize);
+        
+        cboUnit.setPreferredSize(comboSize);
+        cboUnit.setMinimumSize(comboSize);
+        cboUnit.setMaximumSize(comboSize);
+        
+        cboStatus.setPreferredSize(comboSize);
+        cboStatus.setMinimumSize(comboSize);
+        cboStatus.setMaximumSize(comboSize);
+        
+        // Lock text area
+        java.awt.Dimension textAreaSize = new java.awt.Dimension(150, 50);
+        txtAreNote.setPreferredSize(textAreaSize);
+        txtAreNote.setMinimumSize(textAreaSize);
+        txtAreNote.setMaximumSize(textAreaSize);
+        
+        // Lock buttons
+        java.awt.Dimension buttonSize = new java.awt.Dimension(100, 50);
+        btnSave.setPreferredSize(buttonSize);
+        btnSave.setMinimumSize(buttonSize);
+        btnSave.setMaximumSize(buttonSize);
+        
+        btnUpdate.setPreferredSize(buttonSize);
+        btnUpdate.setMinimumSize(buttonSize);
+        btnUpdate.setMaximumSize(buttonSize);
+        
+        btnClear.setPreferredSize(buttonSize);
+        btnClear.setMinimumSize(buttonSize);
+        btnClear.setMaximumSize(buttonSize);
+        
+        // Lock main panels
+        if (jPanel5 != null) {
+            java.awt.Dimension panelSize = jPanel5.getPreferredSize();
+            if (panelSize.width > 0 && panelSize.height > 0) {
+                jPanel5.setPreferredSize(panelSize);
+                jPanel5.setMinimumSize(panelSize);
+                jPanel5.setMaximumSize(panelSize);
+            }
+        }
+        
+        // Force layout validation
+        this.revalidate();
+        
+        System.out.println("🔒 Entire layout locked successfully");
+        
+    } catch (Exception e) {
+        System.out.println("❌ Error locking entire layout: " + e.getMessage());
+    }
+}
 
 
 }
