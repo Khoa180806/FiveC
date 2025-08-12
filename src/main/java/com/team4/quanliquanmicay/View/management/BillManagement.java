@@ -103,15 +103,8 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             model.setRowCount(0);
             
             for (Bill bill : bills) {
-                // Chuyển đổi Boolean status sang String để hiển thị
-                String statusText = "Đang phục vụ";
-                if (bill.getStatus() != null) {
-                    if (bill.getStatus()) {
-                        statusText = "Đã thanh toán";
-                    } else {
-                        statusText = "Đang phục vụ";
-                    }
-                }
+                // Chuyển đổi Integer status sang String để hiển thị
+                String statusText = bill.getStatusText();
                 
                 // Debug: In ra status của từng bill khi load
                 if (bill.getBill_id() == 10000) {
@@ -182,13 +175,22 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         txtCheckin.setText(bill.getCheckin() != null ? dateFormat.format(bill.getCheckin()) : "");
         txtCheckout.setText(bill.getCheckout() != null ? dateFormat.format(bill.getCheckout()) : "");
         
-        // Set status trong combobox - chuyển đổi Boolean sang String
-        Boolean status = bill.getStatus();
+        // Set status trong combobox - chuyển đổi Integer sang String
+        Integer status = bill.getStatus();
         if (status != null) {
-            if (status) {
-                cboStatus.setSelectedIndex(1); // "Đã thanh toán"
-            } else {
-                cboStatus.setSelectedIndex(0); // "Đang phục vụ"
+            switch (status) {
+                case 0:
+                    cboStatus.setSelectedIndex(0); // "Đang phục vụ"
+                    break;
+                case 1:
+                    cboStatus.setSelectedIndex(1); // "Đã thanh toán"
+                    break;
+                case 2:
+                    cboStatus.setSelectedIndex(2); // "Hủy"
+                    break;
+                default:
+                    cboStatus.setSelectedIndex(0); // Mặc định "Đang phục vụ"
+                    break;
             }
         } else {
             cboStatus.setSelectedIndex(0); // Mặc định "Đang phục vụ"
@@ -267,9 +269,9 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         }
         
         try {
-            // Cập nhật trạng thái - chuyển đổi String sang Boolean
+            // Cập nhật trạng thái - chuyển đổi String sang Integer
             String selectedStatus = (String) cboStatus.getSelectedItem();
-            Boolean status = false; // Mặc định "Đang phục vụ"
+            Integer status = 0; // Mặc định "Đang phục vụ"
             
             // Debug: In ra trạng thái được chọn
             System.out.println("DEBUG: Selected status from combo: '" + selectedStatus + "'");
@@ -289,14 +291,14 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                     XDialog.warning("Chỉ Manager mới được phép hủy đơn!", "Không có quyền");
                     return;
                 }
-                status = null; // Trạng thái hủy
+                status = 2; // Trạng thái hủy
             } else if ("Đã Thanh Toán".equalsIgnoreCase(trimmedStatus)) {
-                status = true;
+                status = 1; // Đã thanh toán
             } else {
-                status = false; // Đang phục vụ
+                status = 0; // Đang phục vụ
             }
             
-            System.out.println("DEBUG: Final status Boolean: " + status);
+            System.out.println("DEBUG: Final status Integer: " + status);
             
             currentBill.setStatus(status);
             
@@ -680,15 +682,8 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             model.setRowCount(0);
             
             for (Bill bill : filteredBills) {
-                // Chuyển đổi Boolean status sang String để hiển thị
-                String statusText = "Đang phục vụ";
-                if (bill.getStatus() != null) {
-                    if (bill.getStatus()) {
-                        statusText = "Đã thanh toán";
-                    } else {
-                        statusText = "Đang phục vụ";
-                    }
-                }
+                // Chuyển đổi Integer status sang String để hiển thị
+                String statusText = bill.getStatusText();
                 
                 Object[] row = {
                     bill.getBill_id(),
