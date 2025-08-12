@@ -568,7 +568,7 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
             if (confirm) {
                 paymentMethodDAO.create(paymentMethod);
                 XDialog.success("Thêm phương thức thanh toán thành công!", "Thành công");
-                refreshData();
+                loadPaymentMethods();
                 clearForm();
             }
         } catch (Exception e) {
@@ -603,7 +603,7 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
             if (confirm) {
                 paymentMethodDAO.update(paymentMethod);
                 XDialog.success("Cập nhật phương thức thanh toán thành công!", "Thành công");
-                refreshData();
+                loadPaymentMethods();
                 clearForm();
             }
         } catch (Exception e) {
@@ -632,7 +632,7 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
             if (confirm) {
                 paymentMethodDAO.deleteById(paymentMethod.getPayment_method_id());
                 XDialog.success("Xóa phương thức thanh toán thành công!", "Thành công");
-                refreshData();
+                loadPaymentMethods();
                 clearForm();
             }
         } catch (Exception e) {
@@ -672,15 +672,27 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
     private void handleExit() {
         try {
             if (hasUnsavedChanges) {
+                String message = "Bạn có thay đổi chưa lưu trên form.\n\n" +
+                               "Các thay đổi có thể bao gồm:\n" +
+                               "• Thay đổi mã phương thức\n" +
+                               "• Thay đổi tên phương thức\n" +
+                               "• Thay đổi trạng thái\n\n" +
+                               "Bạn có chắc chắn muốn thoát?\n" +
+                               "Tất cả thay đổi sẽ bị mất.";
+                
+                boolean confirm = XDialog.confirm(message, "Xác nhận thoát");
+                if (confirm) {
+                    dispose();
+                }
+            } else {
+                // Hiển thị thông báo xác nhận thoát ngay cả khi không có thay đổi
                 boolean confirm = XDialog.confirm(
-                    "Bạn có thay đổi chưa lưu. Bạn có chắc chắn muốn thoát?", 
+                    "Bạn có chắc chắn muốn thoát khỏi quản lý phương thức thanh toán?", 
                     "Xác nhận thoát"
                 );
                 if (confirm) {
                     dispose();
                 }
-            } else {
-                dispose();
             }
         } catch (Exception e) {
             XDialog.error("Lỗi khi thoát: " + e.getMessage(), "Lỗi");
