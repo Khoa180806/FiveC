@@ -14,6 +14,8 @@ import com.team4.quanliquanmicay.DAO.ProductDAO;
 import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
 import com.team4.quanliquanmicay.DAO.BillDetailsDAO;
 import com.team4.quanliquanmicay.Impl.BillDetailsDAOImpl;
+import com.team4.quanliquanmicay.DAO.BillDAO;
+import com.team4.quanliquanmicay.Impl.BillDAOImpl;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.*;
 import java.awt.*;
@@ -36,6 +38,7 @@ public class OrderUI extends javax.swing.JFrame {
     // DAO objects
     private ProductDAO productDAO = new ProductDAOImpl();
     private BillDetailsDAO billDetailsDAO = new BillDetailsDAOImpl();
+    private BillDAO billDAO = new BillDAOImpl();
     private CategoryDAO categoryDAO = new CategoryDAOImpl();
     
     // Current bill
@@ -653,8 +656,8 @@ public class OrderUI extends javax.swing.JFrame {
                         }
                         
                         // Cập nhật tổng tiền cho bill
-                        currentBill.setTotal_amount(totalAmount);
-                        // TODO: Cập nhật bill trong database
+                        currentBill.setTotal_amount(currentBill.getTotal_amount() + totalAmount);
+                        billDAO.update(currentBill);
                         
                         XDialog.success("Đặt món thành công! Tổng tiền: " + formatCurrency(totalAmount), "Thành công");
                         
@@ -665,8 +668,7 @@ public class OrderUI extends javax.swing.JFrame {
                         
                         // Refresh parent dialog nếu có
                         if (parentDialog != null) {
-                            // TODO: Implement refresh method in BillUI
-                            // parentDialog.refreshBillDetails();
+                            parentDialog.refreshBillDetails();
                         }
                         
                     } catch (Exception e) {

@@ -141,6 +141,15 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         }
         
         OrderUI datMonDialog = new OrderUI(this, currentBill);
+        
+        // Thêm window listener để refresh khi dialog đóng
+        datMonDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                refreshBillDetails();
+            }
+        });
+        
         datMonDialog.setVisible(true);
     }
     
@@ -294,6 +303,15 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             fillTableWithBillDetails(currentBillDetails);
         } catch (Exception e) {
             XDialog.alert("Lỗi khi tải chi tiết hóa đơn: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Refresh bill details - reload lại chi tiết hóa đơn hiện tại
+     */
+    public void refreshBillDetails() {
+        if (currentBill != null) {
+            loadBillDetails(currentBill.getBill_id());
         }
     }
     
