@@ -3,6 +3,7 @@ package com.team4.quanliquanmicay.Controller;
 import com.team4.quanliquanmicay.Entity.Bill;
 import com.team4.quanliquanmicay.Entity.Customer;
 import com.team4.quanliquanmicay.Entity.BillDetails;
+import com.team4.quanliquanmicay.Entity.PaymentMethod;
 import com.team4.quanliquanmicay.Entity.TableForCustomer;
 import java.util.List;
 
@@ -39,9 +40,15 @@ public interface PaymentController extends CrudController<Bill> {
     double calculateTotalAmount(List<BillDetails> billDetails);
     
     /**
-     * Xử lý thanh toán
+     * Xử lý thanh toán (phiên bản cũ - deprecated)
      */
+    @Deprecated
     boolean processPayment(Bill bill, Customer customer, double totalAmount, int tableNumber);
+    
+    /**
+     * Xử lý thanh toán với phương thức thanh toán và ghi chú
+     */
+    boolean processPayment(Bill bill, Customer customer, double totalAmount, int tableNumber, PaymentMethod paymentMethod, String note);
     
     /**
      * Tạo hội viên mới
