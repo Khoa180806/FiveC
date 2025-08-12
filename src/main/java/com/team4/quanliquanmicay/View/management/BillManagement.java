@@ -1184,6 +1184,11 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         btnExit.setForeground(new java.awt.Color(102, 102, 102));
         btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -1239,6 +1244,11 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
     private void btnFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilterActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnFilterActionPerformed
+
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+   if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) 
+          this.dispose(); // Đóng cửa sổ hiện tại
+    }//GEN-LAST:event_btnExitActionPerformed
 
     /**
      * @param args the command line arguments

@@ -1109,6 +1109,11 @@ public class OrderUI extends javax.swing.JFrame {
         btnExit.setForeground(new java.awt.Color(153, 153, 153));
         btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         btnAdd.setBackground(new java.awt.Color(204, 204, 204));
         btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -1245,6 +1250,13 @@ public class OrderUI extends javax.swing.JFrame {
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnAddActionPerformed
+
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+      if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) 
+          this.dispose(); // Đóng cửa sổ hiện tại
+
+
+    }//GEN-LAST:event_btnExitActionPerformed
 
     /**
      * @param args the command line arguments

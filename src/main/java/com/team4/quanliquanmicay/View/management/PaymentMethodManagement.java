@@ -451,6 +451,11 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
         btnExit.setForeground(new java.awt.Color(255, 255, 255));
         btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);

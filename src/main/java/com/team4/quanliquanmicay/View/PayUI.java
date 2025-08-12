@@ -282,6 +282,11 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         btnExit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
@@ -385,6 +390,13 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+        // Hiển thị dialog xác nhận trước khi thoát
+        if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi giao diện thanh toán không?", "Xác nhận thoát")) {  
+            this.dispose(); // Chỉ đóng cửa sổ khi người dùng xác nhận
+        }
+    }//GEN-LAST:event_btnExitActionPerformed
 
     /**
      * @param args the command line arguments
@@ -490,7 +502,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
      */
     private void setupEventHandlers() {
         btnPay.addActionListener(e -> processPayment());
-        btnExit.addActionListener(e -> dispose());
+    
         btnCreateMember.addActionListener(e -> createMember());
         
         // Thêm event cho txtPhoneNumber - tự động tìm kiếm khi Enter

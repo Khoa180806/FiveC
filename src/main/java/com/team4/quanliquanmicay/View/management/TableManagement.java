@@ -353,7 +353,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
         // Hỏi xác nhận trước khi thoát
         if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) {
-            System.exit(0);
+          this.dispose();
         }
         // Nếu chọn "Không" thì không làm gì cả
     }//GEN-LAST:event_btnExitActionPerformed

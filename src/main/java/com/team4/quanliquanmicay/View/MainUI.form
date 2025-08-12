@@ -24,17 +24,17 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+          <Component id="pnlTitle" min="-2" max="-2" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
+          <Component id="pnlTitle" min="-2" max="-2" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="javax.swing.JPanel" name="jPanel1">
+    <Container class="javax.swing.JPanel" name="pnlTitle">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="2b" green="27" red="86" type="rgb"/>
@@ -46,25 +46,25 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" pref="442" max="-2" attributes="0"/>
-                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblTitle" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
-              <Component id="jPanel4" alignment="0" max="32767" attributes="0"/>
+              <Component id="pnlMainTitle" alignment="0" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="32767" attributes="0"/>
-                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblTitle" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jPanel4" min="-2" max="-2" attributes="0"/>
+                  <Component id="pnlMainTitle" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="javax.swing.JLabel" name="jLabel1">
+        <Component class="javax.swing.JLabel" name="lblTitle">
           <Properties>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
               <Font name="Segoe UI" size="36" style="1"/>
@@ -75,7 +75,7 @@
             <Property name="text" type="java.lang.String" value="H&#x1ec6; TH&#x1ed0;NG QU&#x1ea2;N L&#xcd; M&#x1ef2; CAY  FIVE C"/>
           </Properties>
         </Component>
-        <Container class="javax.swing.JPanel" name="jPanel4">
+        <Container class="javax.swing.JPanel" name="pnlMainTitle">
           <Properties>
             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
               <Color blue="85" green="a4" red="cc" type="rgb"/>
@@ -89,15 +89,15 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="jPanel9" min="-2" max="-2" attributes="0"/>
+                              <Component id="pnSlogan" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jPanel8" min="-2" max="-2" attributes="0"/>
+                              <Component id="pnlFeature" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                  <Component id="jPanel3" max="32767" attributes="0"/>
-                                  <Component id="jScrollPane2" max="32767" attributes="0"/>
+                                  <Component id="pnlAdminFeature" max="32767" attributes="0"/>
+                                  <Component id="jspInfor" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jPanel6" max="32767" attributes="0"/>
@@ -112,25 +112,27 @@
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="jPanel8" max="32767" attributes="0"/>
-                          <Component id="jPanel9" max="32767" attributes="0"/>
+                          <Component id="pnlFeature" max="32767" attributes="0"/>
+                          <Component id="pnSlogan" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Group type="102" attributes="0">
-                              <Component id="jPanel3" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jScrollPane2" min="-2" pref="500" max="-2" attributes="0"/>
+                              <Component id="jPanel6" max="32767" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jPanel6" max="32767" attributes="0"/>
+                          <Group type="102" attributes="0">
+                              <Component id="pnlAdminFeature" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="12" max="32767" attributes="0"/>
+                              <Component id="jspInfor" min="-2" pref="500" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Container class="javax.swing.JPanel" name="jPanel9">
+            <Container class="javax.swing.JPanel" name="pnSlogan">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
@@ -181,7 +183,7 @@
                 </Component>
               </SubComponents>
             </Container>
-            <Container class="javax.swing.JPanel" name="jPanel8">
+            <Container class="javax.swing.JPanel" name="pnlFeature">
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.LineBorderInfo">
@@ -407,7 +409,7 @@
                 </Container>
               </SubComponents>
             </Container>
-            <Container class="javax.swing.JPanel" name="jPanel3">
+            <Container class="javax.swing.JPanel" name="pnlAdminFeature">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="62" green="8b" red="bf" type="rgb"/>
@@ -481,6 +483,7 @@
                   </Properties>
                   <Events>
                     <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="btnCategoryManagementMouseEntered"/>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCategoryManagementActionPerformed"/>
                   </Events>
                 </Component>
                 <Component class="javax.swing.JButton" name="btnBillManagement">
@@ -587,14 +590,14 @@
                 </Component>
               </SubComponents>
             </Container>
-            <Container class="javax.swing.JScrollPane" name="jScrollPane2">
+            <Container class="javax.swing.JScrollPane" name="jspInfor">
               <AuxValues>
                 <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
               </AuxValues>
 
               <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
               <SubComponents>
-                <Component class="javax.swing.JTextArea" name="jTextArea2">
+                <Component class="javax.swing.JTextArea" name="txtInfor">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="                                                                                                                 FIVE C &#x2013; V&#x1ecb; cay &#x111;&#x1ead;m ch&#x1ea5;t, h&#x1b0;&#x1a1;ng v&#x1ecb; &#x111;&#x1ead;m &#x111;&#xe0;!&#xa;&#xa;                                                        Ch&#xe0;o m&#x1eeb;ng b&#x1ea1;n &#x111;&#x1ebf;n v&#x1edb;i FIVE C, qu&#xe1;n m&#xec; cay mang &#x111;&#x1ead;m phong c&#xe1;ch H&#xe0;n Qu&#x1ed1;c, n&#x1a1;i m&#x1ed7;i t&#xf4; m&#xec; l&#xe0; m&#x1ed9;t tr&#x1ea3;i nghi&#x1ec7;m kh&#xf3; qu&#xea;n!&#xa;&#xa;&#xa;                  Ch&#xfa;ng t&#xf4;i kh&#xf4;ng ch&#x1ec9; mang &#x111;&#x1ebf;n m&#xf3;n &#x103;n ngon m&#xe0; c&#xf2;n mang &#x111;&#x1ebf;n c&#x1ea3;m x&#xfa;c &#x2013; t&#x1eeb; m&#x1ee9;c cay nh&#x1eb9; nh&#xe0;ng &#x111;&#x1ebf;n cay x&#xe9; l&#x1b0;&#x1ee1;i, m&#x1ed7;i kh&#xe1;ch h&#xe0;ng &#x111;&#x1ec1;u c&#xf3; th&#x1ec3; t&#xec;m th&#x1ea5;y c&#x1ea5;p &#x111;&#x1ed9; d&#xe0;nh ri&#xea;ng cho m&#xec;nh.&#xa;&#xa; V&#xec; sao ch&#x1ecd;n FIVE C ?&#xa;&#xa;             \ud83d\udd25 M&#xec; cay 7 c&#x1ea5;p &#x111;&#x1ed9; &#x2013; Th&#x1eed; th&#xe1;ch v&#x1ecb; gi&#xe1;c, chinh ph&#x1ee5;c &#x111;&#x1ec9;nh cay&#xa;             \ud83e\udd69 Nguy&#xea;n li&#x1ec7;u t&#x1b0;&#x1a1;i s&#x1ea1;ch &#x2013; &#x110;&#x1ea3;m b&#x1ea3;o v&#x1ec7; sinh, an to&#xe0;n s&#x1ee9;c kh&#x1ecf;e&#xa;             \ud83d\udc68&#x200d; Kh&#xf4;ng gian &#x1ea5;m c&#xfa;ng, hi&#x1ec7;n &#x111;&#x1ea1;i &#x2013; Ph&#xf9; h&#x1ee3;p nh&#xf3;m b&#x1ea1;n, gia &#x111;&#xec;nh, c&#x1eb7;p &#x111;&#xf4;i&#xa;             \ud83d\udcf1 Ph&#x1ee5;c v&#x1ee5; nhanh &#x2013; &#x110;&#x1eb7;t b&#xe0;n ti&#x1ec7;n l&#x1ee3;i &#x2013; Qu&#x1ea3;n l&#xfd; chuy&#xea;n nghi&#x1ec7;p&#xa;&#xa; TH&#x1ef0;C &#x110;&#x1a0;N &#x110;A D&#x1ea0;NG&#xa;&#xa;               M&#xec; cay b&#xf2; M&#x1ef9;, h&#x1ea3;i s&#x1ea3;n, kimchi, ph&#xf4; mai&#xa;               Tr&#xe0; s&#x1eef;a, soda H&#xe0;n, n&#x1b0;&#x1edb;c &#xe9;p tr&#xe1;i cay &#xa;                                                                                                                                   Th&#xf4;ng &#x111;i&#x1ec7;p t&#x1eeb; FIVE C&#xa;&#xa;                                                                                                                                 &#x201c;Spicy code. Hotter bowl.&#x201d;&#xa;&#xa;                                                                                              M&#x1ed7;i ng&#xe0;y l&#xe0; m&#x1ed9;t t&#xf4; cay m&#x1edb;i &#x2013; b&#xf9;ng n&#x1ed5; v&#x1ecb; gi&#xe1;c, ti&#x1ebf;p n&#x103;ng l&#x1b0;&#x1ee3;ng cho t&#xe2;m h&#x1ed3;n " containsInvalidXMLChars="true"/>
                   </Properties>
@@ -622,16 +625,16 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="jSeparator1" alignment="1" max="32767" attributes="0"/>
-                              <Component id="jButton12" alignment="1" max="32767" attributes="0"/>
-                              <Component id="jPanel7" alignment="0" max="32767" attributes="0"/>
+                              <Component id="btnExit" alignment="1" max="32767" attributes="0"/>
+                              <Component id="pnlLogo" alignment="0" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <EmptySpace max="32767" attributes="0"/>
                           <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="jButton9" max="32767" attributes="0"/>
-                              <Component id="jButton7" max="32767" attributes="0"/>
+                              <Component id="btnPayUi" max="32767" attributes="0"/>
+                              <Component id="btnChooseTable" max="32767" attributes="0"/>
                               <Component id="btnHelp" min="-2" pref="132" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="120" max="-2" attributes="0"/>
@@ -642,24 +645,24 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jPanel7" min="-2" max="-2" attributes="0"/>
+                          <Component id="pnlLogo" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="87" max="-2" attributes="0"/>
-                          <Component id="jButton7" min="-2" pref="75" max="-2" attributes="0"/>
+                          <Component id="btnChooseTable" min="-2" pref="75" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
-                          <Component id="jButton9" min="-2" pref="75" max="-2" attributes="0"/>
+                          <Component id="btnPayUi" min="-2" pref="75" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="btnHelp" min="-2" pref="75" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                           <Component id="jSeparator1" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jButton12" min="-2" pref="42" max="-2" attributes="0"/>
+                          <Component id="btnExit" min="-2" pref="42" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
               </Layout>
               <SubComponents>
-                <Component class="javax.swing.JButton" name="jButton7">
+                <Component class="javax.swing.JButton" name="btnChooseTable">
                   <Properties>
                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                       <Color blue="cc" green="cc" red="cc" type="rgb"/>
@@ -683,10 +686,10 @@
                     </Property>
                   </Properties>
                   <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton7ActionPerformed"/>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnChooseTableActionPerformed"/>
                   </Events>
                 </Component>
-                <Component class="javax.swing.JButton" name="jButton9">
+                <Component class="javax.swing.JButton" name="btnPayUi">
                   <Properties>
                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                       <Color blue="cc" green="cc" red="cc" type="rgb"/>
@@ -710,10 +713,10 @@
                     </Property>
                   </Properties>
                   <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton9ActionPerformed"/>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnPayUiActionPerformed"/>
                   </Events>
                 </Component>
-                <Container class="javax.swing.JPanel" name="jPanel7">
+                <Container class="javax.swing.JPanel" name="pnlLogo">
                   <Properties>
                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                       <Color blue="ff" green="ff" red="ff" type="rgb"/>
@@ -732,19 +735,19 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="99" max="-2" attributes="0"/>
-                              <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
+                              <Component id="lblLogo" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jLabel5" alignment="1" max="32767" attributes="0"/>
+                          <Component id="lblLogo" alignment="1" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                   </Layout>
                   <SubComponents>
-                    <Component class="javax.swing.JLabel" name="jLabel5">
+                    <Component class="javax.swing.JLabel" name="lblLogo">
                       <Properties>
                         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
                           <Font name="Segoe UI" size="24" style="1"/>
@@ -787,7 +790,7 @@
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnHelpActionPerformed"/>
                   </Events>
                 </Component>
-                <Component class="javax.swing.JButton" name="jButton12">
+                <Component class="javax.swing.JButton" name="btnExit">
                   <Properties>
                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                       <Color blue="5" green="32" red="77" type="rgb"/>
@@ -809,7 +812,7 @@
                     </Property>
                   </Properties>
                   <Events>
-                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton12ActionPerformed"/>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnExitActionPerformed"/>
                   </Events>
                 </Component>
                 <Component class="javax.swing.JSeparator" name="jSeparator1">
