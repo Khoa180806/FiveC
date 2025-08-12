@@ -22,6 +22,7 @@ public class MainUI extends javax.swing.JFrame {
 
     // Thêm các biến để lưu trữ các UI con
     private com.team4.quanliquanmicay.View.management.CategoryManagement categoryManagementUI;
+    private com.team4.quanliquanmicay.View.management.ProductManagement productManagementUI;
     private com.team4.quanliquanmicay.View.management.BillManagement billManagementUI;
     private com.team4.quanliquanmicay.View.management.PaymentMethodManagement paymentMethodManagementUI;
     private com.team4.quanliquanmicay.View.management.HistoryManagement historyManagementUI;
@@ -121,8 +122,14 @@ public class MainUI extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     System.out.println("🔄 Đang mở ProductManagement...");
-                    // TODO: Mở ProductManagement khi có
-                    XDialog.alert("Tính năng Quản lý Sản phẩm đang được phát triển!", "Thông báo");
+                    if (productManagementUI == null || !productManagementUI.isVisible()) {
+                        productManagementUI = new com.team4.quanliquanmicay.View.management.ProductManagement();
+                        productManagementUI.setVisible(true);
+                    } else {
+                        productManagementUI.toFront();
+                        productManagementUI.requestFocus();
+                    }
+                    System.out.println("✅ CategoryManagement đã được mở thành công!");
                 } catch (Exception ex) {
                     System.err.println("❌ Lỗi khi mở ProductManagement: " + ex.getMessage());
                     XDialog.error("Lỗi khi mở Quản lý Sản phẩm: " + ex.getMessage(), "Lỗi hệ thống");
