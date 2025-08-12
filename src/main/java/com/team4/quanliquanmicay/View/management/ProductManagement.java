@@ -68,10 +68,14 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         setupSearchFunctionality();
         setupImageSelection(); // Thêm setup cho chọn ảnh
         captureInitialImageSize(); // Capture kích thước ban đầu của ảnh
+        // Disable button update ban đầu
+        btnUpdate.setEnabled(false);
         // Đảm bảo khi đổi trạng thái thì có thể cập nhật
         cboStatus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUpdate.setEnabled(true);
+                if (btnUpdate.isEnabled()) { // Chỉ enable nếu đã có product được chọn
+                    btnUpdate.setEnabled(true);
+                }
             }
         });
         
@@ -151,6 +155,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jLabel6.setToolTipText("");
 
         txtSearch.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtSearch.setPreferredSize(new java.awt.Dimension(150, 25));
+        txtSearch.setMaximumSize(new java.awt.Dimension(150, 25));
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -221,12 +227,16 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jLabel2.setText("Mã món :");
 
         txtProduct_Id.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtProduct_Id.setPreferredSize(new java.awt.Dimension(150, 25));
+        txtProduct_Id.setMaximumSize(new java.awt.Dimension(150, 25));
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
         jLabel3.setText("Tên món :");
 
         txtNameProduct.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtNameProduct.setPreferredSize(new java.awt.Dimension(150, 25));
+        txtNameProduct.setMaximumSize(new java.awt.Dimension(150, 25));
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
@@ -241,6 +251,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jLabel5.setText("Giá :");
 
         txtPrice.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtPrice.setPreferredSize(new java.awt.Dimension(150, 25));
+        txtPrice.setMaximumSize(new java.awt.Dimension(150, 25));
         txtPrice.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtPriceActionPerformed(evt);
@@ -252,6 +264,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jLabel9.setText("Giảm Giá:");
 
         txtDiscount.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtDiscount.setPreferredSize(new java.awt.Dimension(150, 25));
+        txtDiscount.setMaximumSize(new java.awt.Dimension(150, 25));
 
         jLabel12.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(255, 255, 255));
@@ -281,6 +295,10 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         lblImage.setFont(new java.awt.Font("Segoe UI Light", 1, 14)); // NOI18N
         lblImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
         lblImage.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        // Cố định kích thước cho lblImage để tránh tràn UI
+        lblImage.setPreferredSize(new java.awt.Dimension(200, 200));
+        lblImage.setMinimumSize(new java.awt.Dimension(200, 200));
+        lblImage.setMaximumSize(new java.awt.Dimension(200, 200));
 
         btnSave.setBackground(new java.awt.Color(185, 163, 147));
         btnSave.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
@@ -493,8 +511,6 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
         System.out.println("Button Update clicked!");
-        // Thêm xác nhận khi cập nhật
-        if (!XDialog.confirm("Bạn có chắc chắn muốn cập nhật sản phẩm này?", "Xác nhận cập nhật")) return;
         update();
     }//GEN-LAST:event_btnUpdateActionPerformed
 
@@ -645,6 +661,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         } else {
             txtDiscount.setText("0");
         }
+        // Enable button update khi có dữ liệu sản phẩm
+        btnUpdate.setEnabled(true);
         // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
         String imageName = "";
         try { imageName = entity.getImage(); } catch (Exception ex) { imageName = ""; }
@@ -841,13 +859,6 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     @Override
     public void create() {
         try {
-            // Validate form data
-            String validationError = validateFormData();
-            if (validationError != null) {
-                XDialog.error(validationError, "Lỗi dữ liệu");
-                return;
-            }
-            
             Product product = getForm();
             
             // Kiểm tra tên sản phẩm đã tồn tại chưa
@@ -869,9 +880,14 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             if (confirm) {
                 productDAO.create(product);
                 XDialog.success("Thêm sản phẩm thành công!", "Thành công");
+                // Invalidate cache để load dữ liệu mới từ database
+                invalidateProductCache();
                 fillToTable();
                 clear();
             }
+        } catch (RuntimeException e) {
+            // Validation errors từ getForm() được handle ở đây
+            // Error dialog đã được hiển thị trong getForm()
         } catch (Exception e) {
             XDialog.error("Lỗi khi thêm sản phẩm: " + e.getMessage(), "Lỗi");
         }
@@ -880,13 +896,6 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     @Override
     public void update() {
         try {
-            // Validate form data
-            String validationError = validateFormData();
-            if (validationError != null) {
-                XDialog.error(validationError, "Lỗi dữ liệu");
-                return;
-            }
-            
             Product product = getForm();
             
             // Kiểm tra tên sản phẩm đã tồn tại chưa (trừ chính nó)
@@ -909,9 +918,14 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             if (confirm) {
                 productDAO.update(product);
                 XDialog.success("Cập nhật sản phẩm thành công!", "Thành công");
+                // Invalidate cache để load dữ liệu mới từ database
+                invalidateProductCache();
                 fillToTable();
                 clear();
             }
+        } catch (RuntimeException e) {
+            // Validation errors từ getForm() được handle ở đây
+            // Error dialog đã được hiển thị trong getForm()
         } catch (Exception e) {
             XDialog.error("Lỗi khi cập nhật sản phẩm: " + e.getMessage(), "Lỗi");
         }
@@ -929,6 +943,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         // Giữ cboCate như cũ, chỉ fill lại đơn vị
         fillUnitsByCategory();
         if (cboUnit.getItemCount() > 0) cboUnit.setSelectedIndex(0);
+        // Disable button update khi clear form
+        btnUpdate.setEnabled(false);
         // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
         setCurrentImageName(""); // Reset tên ảnh
         fillProductImage(""); // Clear image
@@ -969,6 +985,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             if (confirm) {
                 productDAO.deleteById(product.getProductId());
                 XDialog.success("Xóa sản phẩm thành công!", "Thành công");
+                // Invalidate cache để load dữ liệu mới từ database
+                invalidateProductCache();
                 fillToTable();
                 clear();
             }
@@ -1595,14 +1613,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
      */
     private void setImageWithFixedSize(String imagePath) {
         try {
-            // ✅ SAFETY: Ensure originalImageSize is available
-            if (originalImageSize == null) {
-                captureInitialImageSize();
-                if (originalImageSize == null) {
-                    // Ultimate fallback
-                    originalImageSize = new java.awt.Dimension(204, 200);
-                }
-            }
+            // Sử dụng kích thước cố định 200x200
+            java.awt.Dimension fixedSize = new java.awt.Dimension(200, 200);
             
             // Load and scale image to fit the fixed label size
             java.net.URL imageURL = getClass().getResource(imagePath);
@@ -1611,10 +1623,10 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 
                 // ✅ VALIDATION: Check if image loaded successfully
                 if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
-                    // Scale image to fit the original label size
+                    // Scale image to fit the fixed size
                     java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
-                        originalImageSize.width, 
-                        originalImageSize.height, 
+                        fixedSize.width, 
+                        fixedSize.height, 
                         java.awt.Image.SCALE_SMOOTH
                     );
                     
@@ -1628,43 +1640,37 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                     lblImage.setIcon(null);
                     lblImage.setText("No Image");
                 }
-                
-                // ✅ ENFORCE: Keep the original size regardless of image content
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-                
             } else {
                 // Fallback to text if image not found
                 lblImage.setIcon(null);
                 lblImage.setText("No Image");
-                
-                            // ✅ STILL ENFORCE: Keep size even when no image
-            if (originalImageSize != null) {
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
             }
-            }
+            
+            // ✅ ENFORCE: Luôn áp dụng kích thước cố định
+            lblImage.setSize(fixedSize);
+            lblImage.setPreferredSize(fixedSize);
+            lblImage.setMinimumSize(fixedSize);
+            lblImage.setMaximumSize(fixedSize);
+            
         } catch (Exception e) {
             lblImage.setIcon(null);
             lblImage.setText("Error");
             
             // ✅ ENFORCE: Keep size even on error
-            if (originalImageSize != null) {
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-            }
+            java.awt.Dimension fixedSize = new java.awt.Dimension(200, 200);
+            lblImage.setSize(fixedSize);
+            lblImage.setPreferredSize(fixedSize);
+            lblImage.setMinimumSize(fixedSize);
+            lblImage.setMaximumSize(fixedSize);
         }
     }
     
     // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
     private void fillProductImage(String imageName) {
         try {
+            // Đảm bảo kích thước cố định trước khi load ảnh
+            enforceFixedImageSize();
+            
             if (imageName != null && !imageName.trim().isEmpty()) {
                 // Thử tìm ảnh trong các thư mục khác nhau
                 String[] paths = {
@@ -1692,39 +1698,29 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 // Không có tên ảnh - dùng ảnh mặc định
                 setImageWithFixedSize("/icons_and_images/Best.png");
             }
+            
+            // Đảm bảo kích thước cố định sau khi load ảnh
+            enforceFixedImageSize();
+            
         } catch (Exception e) {
-            // Nếu lỗi, dùng ảnh unknown
+            // Nếu lỗi, dùng ảnh unknown và vẫn giữ kích thước cố định
             setImageWithFixedSize("/icons_and_images/Unknown person.png");
+            enforceFixedImageSize();
         }
+    }
+    
+    /**
+     * ✅ ENFORCE: Đảm bảo kích thước cố định cho lblImage
+     */
+    private void enforceFixedImageSize() {
+        java.awt.Dimension fixedSize = new java.awt.Dimension(200, 200);
+        lblImage.setSize(fixedSize);
+        lblImage.setPreferredSize(fixedSize);
+        lblImage.setMinimumSize(fixedSize);
+        lblImage.setMaximumSize(fixedSize);
+        lblImage.revalidate();
+        lblImage.repaint();
     }
 
-    private String validateFormData() {
-        Product product = getForm();
-        
-        if (XValidation.isEmpty(product.getProductId())) {
-            return "Vui lòng nhập mã sản phẩm!";
-        }
-        
-        if (XValidation.isEmpty(product.getProductName())) {
-            return "Vui lòng nhập tên sản phẩm!";
-        }
-        
-        if (product.getProductName().length() < 2) {
-            return "Tên sản phẩm phải có ít nhất 2 ký tự!";
-        }
-        
-        if (product.getProductName().length() > 100) {
-            return "Tên sản phẩm không được quá 100 ký tự!";
-        }
-        
-        if (product.getPrice() <= 0) {
-            return "Giá sản phẩm phải lớn hơn 0!";
-        }
-        
-        if (XValidation.isEmpty(product.getCategoryId())) {
-            return "Vui lòng chọn danh mục sản phẩm!";
-        }
-        
-        return null; // Không có lỗi
-    }
+
 }
