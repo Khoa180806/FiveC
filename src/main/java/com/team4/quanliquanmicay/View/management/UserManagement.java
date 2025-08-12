@@ -56,6 +56,9 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         setupImageSelection();
         setupSearchFunctionality();
         
+        // ✅ IMMEDIATE: Apply large table size only (constraints fixed in .form)
+        applyLargeTableSize();
+        
         // ✅ FINAL: Capture and freeze initial layout size
         javax.swing.SwingUtilities.invokeLater(() -> {
             validate();
@@ -180,7 +183,6 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         jLabel11 = new javax.swing.JLabel();
         txtPassword = new javax.swing.JTextField();
         jLabel12 = new javax.swing.JLabel();
-        txtEmail = new javax.swing.JTextField();
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
         cboStatus = new javax.swing.JComboBox<>();
@@ -192,6 +194,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         txtSearch = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         btnExit = new javax.swing.JButton();
+        txtEmail = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         tableInfo = new javax.swing.JTable();
 
@@ -276,8 +279,6 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         jLabel12.setForeground(new java.awt.Color(255, 255, 255));
         jLabel12.setText("Email :");
 
-        txtEmail.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-
         jLabel13.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel13.setForeground(new java.awt.Color(255, 255, 255));
         jLabel13.setText("Trạng thái :");
@@ -350,6 +351,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             }
         });
 
+        txtEmail.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
         jPanel5Layout.setHorizontalGroup(
@@ -374,10 +377,10 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                         .addComponent(chkMale)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(chkFemale))
-                    .addComponent(txtPhoneNumber)
-                    .addComponent(txtIdEmployee)
+                    .addComponent(txtIdEmployee, javax.swing.GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
                     .addComponent(txtNameEmployee)
-                    .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtPhoneNumber)
+                    .addComponent(txtEmail))
                 .addGap(72, 72, 72)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel5Layout.createSequentialGroup()
@@ -419,66 +422,65 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(9, 9, 9)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel3)
-                                    .addComponent(txtNameAccount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel11)
-                                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel14))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(cboRole, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(txtIdEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel10))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel4)
-                                    .addComponent(txtNameEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(chkMale)
-                                    .addComponent(chkFemale)
-                                    .addComponent(jLabel5))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel7)
-                                    .addComponent(txtPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(btnSave, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(btnExit, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(18, 18, 18)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel6)
-                                    .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel12)
-                            .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap()
+                .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(182, 182, 182)
                 .addComponent(jLabel8))
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(9, 9, 9)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel3)
+                            .addComponent(txtNameAccount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel11)
+                            .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel14))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cboRole, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtIdEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel10))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(txtNameEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(chkMale)
+                            .addComponent(chkFemale)
+                            .addComponent(jLabel5))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel7)
+                            .addComponent(txtPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(btnSave, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnExit, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel6)
+                            .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel12)
+                    .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(180, 180, 180))
         );
 
         tableInfo.setModel(new javax.swing.table.DefaultTableModel(
@@ -827,13 +829,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 
             System.out.println("Đã load " + employees.size() + " nhân viên lên bảng");
             
-            // ✅ FIX: Re-apply column widths after filling data
-            setColumnWidths();
-            
-            // ✅ FIX: Ensure table size is maintained
-            if (frozenTableSize != null) {
-                enforceTableSize();
-            }
+            // ✅ OPTIMIZED: Use new refresh method for better email display
+            refreshTableWithOptimizedColumns();
 
         } catch (Exception e) {
             XDialog.alert("Lỗi khi load dữ liệu: " + e.getMessage());
@@ -906,33 +903,43 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
 
     /**
-     * Set độ rộng cột cho bảng
+     * Set độ rộng cột cho bảng - ✅ FIXED: Email column overflow
      */
     private void setColumnWidths() {
         try {
-            // ✅ FIX: Tăng độ rộng tất cả các cột để đảm bảo hiển thị đầy đủ
-            tableInfo.getColumnModel().getColumn(0).setPreferredWidth(150);  // Mã NV
-            tableInfo.getColumnModel().getColumn(1).setPreferredWidth(120);  // Tài khoản
-            tableInfo.getColumnModel().getColumn(2).setPreferredWidth(100);  // Mật khẩu
-            tableInfo.getColumnModel().getColumn(3).setPreferredWidth(180);  // Họ tên
-            tableInfo.getColumnModel().getColumn(4).setPreferredWidth(120);  // Giới tính
-            tableInfo.getColumnModel().getColumn(5).setPreferredWidth(120);  // SĐT
-            tableInfo.getColumnModel().getColumn(6).setPreferredWidth(250);  // Email - Tăng độ rộng lớn hơn
-            tableInfo.getColumnModel().getColumn(7).setPreferredWidth(120);  // Trạng thái
-            tableInfo.getColumnModel().getColumn(8).setPreferredWidth(80);  // Vai trò
-            tableInfo.getColumnModel().getColumn(9).setPreferredWidth(120);  // Ngày tạo
+            // ✅ LARGE TABLE: Tối ưu cho bảng lớn 1400px - hiển thị tốt tất cả các cột
+            tableInfo.getColumnModel().getColumn(0).setPreferredWidth(120);  // Mã NV 
+            tableInfo.getColumnModel().getColumn(1).setPreferredWidth(120);  // Tài khoản 
+            tableInfo.getColumnModel().getColumn(2).setPreferredWidth(100);  // Mật khẩu 
+            tableInfo.getColumnModel().getColumn(3).setPreferredWidth(180);  // Họ tên 
+            tableInfo.getColumnModel().getColumn(4).setPreferredWidth(80);   // Giới tính 
+            tableInfo.getColumnModel().getColumn(5).setPreferredWidth(110);  // SĐT 
+            tableInfo.getColumnModel().getColumn(6).setPreferredWidth(320);  // Email - TĂNG MẠNH để hiển thị đầy đủ
+            tableInfo.getColumnModel().getColumn(7).setPreferredWidth(110);  // Trạng thái 
+            tableInfo.getColumnModel().getColumn(8).setPreferredWidth(90);   // Vai trò 
+            tableInfo.getColumnModel().getColumn(9).setPreferredWidth(140);  // Ngày tạo
+            
+            // ✅ LARGE TABLE: Set minimum widths phù hợp với bảng lớn 1400px
+            tableInfo.getColumnModel().getColumn(0).setMinWidth(100);  // Mã NV
+            tableInfo.getColumnModel().getColumn(1).setMinWidth(100);  // Tài khoản
+            tableInfo.getColumnModel().getColumn(2).setMinWidth(80);   // Mật khẩu
+            tableInfo.getColumnModel().getColumn(3).setMinWidth(150);  // Họ tên
+            tableInfo.getColumnModel().getColumn(4).setMinWidth(80);   // Giới tính
+            tableInfo.getColumnModel().getColumn(5).setMinWidth(100);  // SĐT
+            tableInfo.getColumnModel().getColumn(6).setMinWidth(280);  // Email - MIN rộng hơn để chứa email dài
+            tableInfo.getColumnModel().getColumn(7).setMinWidth(90);   // Trạng thái
+            tableInfo.getColumnModel().getColumn(8).setMinWidth(90);   // Vai trò
+            tableInfo.getColumnModel().getColumn(9).setMinWidth(120);  // Ngày tạo
+            
+            // ✅ EMAIL SPECIFIC: Increase max width for larger table
+            tableInfo.getColumnModel().getColumn(6).setMaxWidth(400);  // Email max width - tăng lên
             
             // ✅ FIX: Đảm bảo table không tự động resize
             tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
             
-            // ✅ FIX: Set minimum width cho từng cột để tránh bị cắt
-            for (int i = 0; i < tableInfo.getColumnCount(); i++) {
-                tableInfo.getColumnModel().getColumn(i).setMinWidth(80);
-            }
-            
-            System.out.println("✅ Column widths set successfully");
+            System.out.println("✅ Column widths optimized - Email column expanded to prevent overflow");
         } catch (Exception e) {
-            System.err.println("Lỗi set column width: " + e.getMessage());
+            System.err.println("❌ Lỗi set column width: " + e.getMessage());
         }
     }
 
@@ -1475,13 +1482,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             model.addRow(createRowData(emp));
         }
         
-        // ✅ FIX: Re-apply column widths after populating data
-        setColumnWidths();
-        
-        // ✅ FIX: Ensure table size is maintained
-        if (frozenTableSize != null) {
-            enforceTableSize();
-        }
+        // ✅ OPTIMIZED: Use new refresh method for better email display
+        refreshTableWithOptimizedColumns();
     }
 
     /**
@@ -2535,12 +2537,152 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                         jScrollPane1.repaint();
                         
                         System.out.println("🔒 Enforced table size: " + frozenTableSize + " (was: " + currentSize + ")");
+                    } else {
+                        // ✅ MAINTENANCE: Even if size is correct, ensure column widths are applied
+                        setColumnWidths();
                     }
                 } catch (Exception e) {
-                    System.err.println("Error enforcing table size: " + e.getMessage());
+                    System.err.println("❌ Error enforcing table size: " + e.getMessage());
                 }
             });
         }
+    }
+    
+    /**
+     * ✅ IMMEDIATE: Apply large table size right away to prevent small table issue
+     */
+    private void applyLargeTableSize() {
+        try {
+            // ✅ OPTIMAL SIZE: Set large table size matching .form (1450px width)
+            java.awt.Dimension optimalSize = new java.awt.Dimension(1450, 350);
+            
+            // ✅ APPLY: Set size immediately
+            jScrollPane1.setSize(optimalSize);
+            jScrollPane1.setPreferredSize(optimalSize);
+            jScrollPane1.setMinimumSize(optimalSize);
+            jScrollPane1.setMaximumSize(optimalSize);
+            
+            // ✅ TABLE: Set auto resize off and apply column widths
+            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+            setColumnWidths();
+            
+            // ✅ FORCE: Validate layout
+            jScrollPane1.validate();
+            jScrollPane1.repaint();
+            
+            System.out.println("🔧 Applied large table size immediately: " + optimalSize);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error applying large table size: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * ✅ OVERRIDE: Override .form file constraints that cause layout issues
+     */
+    private void overrideFormConstraints() {
+        try {
+            // ✅ TEXT FIELDS: Override maxWidth=200 constraint from .form file
+            java.awt.Dimension textFieldSize = new java.awt.Dimension(200, 25);
+            
+            txtIdEmployee.setPreferredSize(textFieldSize);
+            txtIdEmployee.setMinimumSize(textFieldSize);
+            txtIdEmployee.setMaximumSize(new java.awt.Dimension(250, 25)); // Allow expansion
+            
+            txtNameEmployee.setPreferredSize(textFieldSize);
+            txtNameEmployee.setMinimumSize(textFieldSize);
+            txtNameEmployee.setMaximumSize(new java.awt.Dimension(250, 25));
+            
+            txtNameAccount.setPreferredSize(new java.awt.Dimension(150, 25)); // Match form
+            txtNameAccount.setMinimumSize(new java.awt.Dimension(150, 25));
+            txtNameAccount.setMaximumSize(new java.awt.Dimension(200, 25));
+            
+            txtPassword.setPreferredSize(new java.awt.Dimension(150, 26)); // Match form height
+            txtPassword.setMinimumSize(new java.awt.Dimension(150, 26));
+            txtPassword.setMaximumSize(new java.awt.Dimension(200, 26));
+            
+            txtPhoneNumber.setPreferredSize(textFieldSize);
+            txtPhoneNumber.setMinimumSize(textFieldSize);
+            txtPhoneNumber.setMaximumSize(new java.awt.Dimension(250, 25));
+            
+            txtEmail.setPreferredSize(textFieldSize);
+            txtEmail.setMinimumSize(textFieldSize);
+            txtEmail.setMaximumSize(new java.awt.Dimension(250, 25));
+            
+            // ✅ SEARCH FIELD: Match .form specification
+            txtSearch.setPreferredSize(new java.awt.Dimension(183, 25));
+            txtSearch.setMinimumSize(new java.awt.Dimension(183, 25));
+            txtSearch.setMaximumSize(new java.awt.Dimension(183, 25));
+            
+            // ✅ COMBO BOXES: Match .form specification
+            cboStatus.setPreferredSize(new java.awt.Dimension(151, 25));
+            cboStatus.setMinimumSize(new java.awt.Dimension(151, 25));
+            cboStatus.setMaximumSize(new java.awt.Dimension(151, 25));
+            
+            cboRole.setPreferredSize(new java.awt.Dimension(151, 25));
+            cboRole.setMinimumSize(new java.awt.Dimension(151, 25));
+            cboRole.setMaximumSize(new java.awt.Dimension(151, 25));
+            
+            // ✅ BUTTONS: Match .form specification
+            btnSave.setPreferredSize(new java.awt.Dimension(100, 50));
+            btnUpdate.setPreferredSize(new java.awt.Dimension(100, 50));
+            btnClear.setPreferredSize(new java.awt.Dimension(100, 50));
+            btnDelete.setPreferredSize(new java.awt.Dimension(100, 50));
+            btnExit.setPreferredSize(new java.awt.Dimension(50, 50));
+            
+            // ✅ MAIN PANELS: Override panel size constraints
+            if (jPanel5 != null) {
+                // Override .form fixed sizes
+                jPanel5.setPreferredSize(new java.awt.Dimension(1400, 171)); // Match .form height but wider
+                jPanel5.setMinimumSize(new java.awt.Dimension(1400, 171));
+            }
+            
+            if (jPanel3 != null) {
+                // Ensure main content panel is large enough
+                jPanel3.setPreferredSize(new java.awt.Dimension(1450, 550));
+            }
+            
+            // ✅ WINDOW: Override window size
+            this.setPreferredSize(new java.awt.Dimension(1450, 650));
+            this.setMinimumSize(new java.awt.Dimension(1400, 600));
+            
+            // ✅ FORCE: Validate all layouts
+            this.validate();
+            this.repaint();
+            
+            System.out.println("🔧 Overrode .form constraints - layout should be stable now");
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error overriding form constraints: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * ✅ REFRESH: Refresh table with proper column widths - specifically for email overflow fix
+     */
+    private void refreshTableWithOptimizedColumns() {
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            try {
+                // ✅ STEP 1: Apply optimized column widths first
+                setColumnWidths();
+                
+                // ✅ STEP 2: Ensure table size is maintained
+                if (frozenTableSize != null) {
+                    enforceTableSize();
+                }
+                
+                // ✅ STEP 3: Force repaint to show changes
+                tableInfo.revalidate();
+                tableInfo.repaint();
+                jScrollPane1.revalidate();
+                jScrollPane1.repaint();
+                
+                System.out.println("🔄 Table refreshed with optimized columns for email display");
+                
+            } catch (Exception e) {
+                System.err.println("❌ Error refreshing table: " + e.getMessage());
+            }
+        });
     }
     
     /**
@@ -2729,13 +2871,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                     }
                 }
                 
-                // ✅ FIX: Re-apply column widths after search filtering
-                setColumnWidths();
-                
-                // ✅ FIX: Ensure table size is maintained
-                if (frozenTableSize != null) {
-                    enforceTableSize();
-                }
+                // ✅ OPTIMIZED: Use new refresh method for better email display
+                refreshTableWithOptimizedColumns();
                 
             } catch (Exception e) {
                 System.err.println("❌ Search error: " + e.getMessage());

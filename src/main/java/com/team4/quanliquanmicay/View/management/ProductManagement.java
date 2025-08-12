@@ -1113,7 +1113,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                             absoluteLockImageSize();
                             java.awt.EventQueue.invokeLater(() -> {
                                 absoluteLockImageSize();
-                                setForm(product);
+                            setForm(product);
                             });
                         }
                     }
@@ -1441,7 +1441,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                         
                         // Force refresh the image display
                         java.awt.EventQueue.invokeLater(() -> {
-                            fillProductImage(savedImageName);
+                        fillProductImage(savedImageName);
                             lblImage.revalidate();
                             lblImage.repaint();
                         });
@@ -1729,7 +1729,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         // ABSOLUTE LOCK trước khi set placeholder
         absoluteLockImageSize();
         
-        lblImage.setIcon(null);
+            lblImage.setIcon(null);
         lblImage.setText("<html><center>Chưa có ảnh<br/>Click để chọn</center></html>");
         lblImage.setFont(new java.awt.Font("Arial", java.awt.Font.ITALIC, 12));
         lblImage.setForeground(java.awt.Color.GRAY);
