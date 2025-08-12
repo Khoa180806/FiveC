@@ -13,7 +13,6 @@ import com.team4.quanliquanmicay.Impl.TableForCustomerDAOImpl;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.border.LineBorder;

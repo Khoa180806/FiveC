@@ -14,9 +14,12 @@ import com.team4.quanliquanmicay.Entity.Product;
 import com.team4.quanliquanmicay.DAO.BillDAO;
 import com.team4.quanliquanmicay.DAO.BillDetailsDAO;
 import com.team4.quanliquanmicay.DAO.ProductDAO;
+import com.team4.quanliquanmicay.DAO.PaymentHistoryDAO;
 import com.team4.quanliquanmicay.Impl.BillDAOImpl;
 import com.team4.quanliquanmicay.Impl.BillDetailsDAOImpl;
 import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
+import com.team4.quanliquanmicay.Impl.PaymentHistoryDAOImpl;
+
 import com.team4.quanliquanmicay.util.XAuth;
 import com.team4.quanliquanmicay.Controller.BillController;
 import javax.swing.table.DefaultTableModel;
@@ -36,6 +39,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
     private final BillDAO billDAO = new BillDAOImpl();
     private final BillDetailsDAO billDetailsDAO = new BillDetailsDAOImpl();
     private final ProductDAO productDAO = new ProductDAOImpl();
+
     
     // Current bill data
     private Bill currentBill;
@@ -733,14 +737,29 @@ public class BillUI extends javax.swing.JFrame implements BillController {
      */
     public void createNewBillForTable(int tableNumber, String userId) {
         try {
+            // Tạo PaymentHistory tạm thời để có payment_history_id hợp lệ
+            String createPaymentSql = "INSERT INTO PAYMENT_HISTORY(payment_method_id, total_amount, status, note) VALUES(?, ?, ?, ?)";
+            Object[] paymentValues = {
+                1, // Tiền mặt (default)
+                0.0,
+                "Chưa thanh toán",
+                "Hóa đơn bàn " + tableNumber + " - Chưa thanh toán"
+            };
+            XJdbc.executeUpdate(createPaymentSql, paymentValues);
+            
+            // Lấy payment_history_id vừa tạo (ID cao nhất)
+            String getLastIdSql = "SELECT MAX(payment_history_id) FROM PAYMENT_HISTORY";
+            Integer lastPaymentId = XJdbc.getValue(getLastIdSql, Integer.class);
+            
+            // Tạo Bill mới với payment_history_id vừa tạo
             Bill newBill = new Bill();
             newBill.setUser_id(userId);
             newBill.setTable_number(tableNumber);
             newBill.setStatus(0); // Đang phục vụ
             newBill.setCheckin(new Date());
-            newBill.setTotal_amount(0);
-            newBill.setPayment_history_id(null);
+            newBill.setTotal_amount(0.0);
             newBill.setPhone_number(null);
+            newBill.setPayment_history_id(lastPaymentId);
             
             billDAO.create(newBill);
             loadBillFromDatabase(tableNumber, userId);
@@ -750,6 +769,8 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             XDialog.alert("Lỗi khi tạo hóa đơn mới: " + e.getMessage());
         }
     }
+    
+
     
     /**
      * Load hóa đơn từ database sau khi tạo

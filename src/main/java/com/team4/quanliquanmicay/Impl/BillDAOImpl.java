@@ -11,6 +11,7 @@ public class BillDAOImpl implements BillDAO {
 
     // SQL queries - static final để tối ưu performance
     private static final String CREATE_SQL = "INSERT INTO BILL(user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String CREATE_SQL_NO_PAYMENT = "INSERT INTO BILL(user_id, phone_number, table_number, total_amount, checkin, checkout, status) VALUES(?, ?, ?, ?, ?, ?, ?)";
     private static final String UPDATE_SQL = "UPDATE BILL SET user_id=?, phone_number=?, payment_history_id=?, table_number=?, total_amount=?, checkin=?, checkout=?, status=? WHERE bill_id=?";
     private static final String DELETE_SQL = "DELETE FROM BILL WHERE bill_id=?";
     private static final String FIND_ALL_SQL = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL";
@@ -36,18 +37,31 @@ public class BillDAOImpl implements BillDAO {
             }
         }
         
-        Object[] values = {
-            entity.getUser_id(),
-            entity.getPhone_number(),
-            entity.getPayment_history_id(),
-            entity.getTable_number(),
-            entity.getTotal_amount(),
-            convertToTimestamp(entity.getCheckin()),
-            convertToTimestamp(entity.getCheckout()),
-            statusString // Sử dụng String với database
-        };
-        
-        XJdbc.executeUpdate(CREATE_SQL, values);
+        // Sử dụng SQL phù hợp tùy theo có payment_history_id hay không
+        if (entity.getPayment_history_id() != null) {
+            Object[] values = {
+                entity.getUser_id(),
+                entity.getPhone_number(),
+                entity.getPayment_history_id(),
+                entity.getTable_number(),
+                entity.getTotal_amount(),
+                convertToTimestamp(entity.getCheckin()),
+                convertToTimestamp(entity.getCheckout()),
+                statusString // Sử dụng String với database
+            };
+            XJdbc.executeUpdate(CREATE_SQL, values);
+        } else {
+            Object[] values = {
+                entity.getUser_id(),
+                entity.getPhone_number(),
+                entity.getTable_number(),
+                entity.getTotal_amount(),
+                convertToTimestamp(entity.getCheckin()),
+                convertToTimestamp(entity.getCheckout()),
+                statusString // Sử dụng String với database
+            };
+            XJdbc.executeUpdate(CREATE_SQL_NO_PAYMENT, values);
+        }
         return entity;
     }
 
