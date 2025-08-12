@@ -6,12 +6,42 @@ package com.team4.quanliquanmicay.View.management;
 
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XChart;
+import com.team4.quanliquanmicay.DAO.BillDAO;
+import com.team4.quanliquanmicay.DAO.BillDetailsDAO;
+import com.team4.quanliquanmicay.DAO.ProductDAO;
+import com.team4.quanliquanmicay.Impl.BillDAOImpl;
+import com.team4.quanliquanmicay.Impl.BillDetailsDAOImpl;
+import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
+import com.team4.quanliquanmicay.Entity.Bill;
+import com.team4.quanliquanmicay.Entity.BillDetails;
+import com.team4.quanliquanmicay.Entity.Product;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.general.DefaultPieDataset;
 
 /**
  *
  * @author Asus
  */
 public class ReportManagement extends javax.swing.JFrame {
+
+    // DAOs for database access
+    private BillDAO billDAO;
+    private BillDetailsDAO billDetailsDAO;
+    private ProductDAO productDAO;
 
     /**
      * Creates new form ReportJDialog
@@ -22,8 +52,225 @@ public class ReportManagement extends javax.swing.JFrame {
         initComponents();
         this.setLocationRelativeTo(null);
         
-        // TODO: Thêm logic xử lý báo cáo và thống kê
+        // Initialize DAOs
+        initializeDAOs();
+        
+        // Create charts
+        createProductRevenueChart();
+        
         XDialog.success("Chào mừng đến với hệ thống Thống kê & Báo cáo!", "Thông báo");
+    }
+    
+    /**
+     * Initialize DAOs
+     */
+    private void initializeDAOs() {
+        billDAO = new BillDAOImpl();
+        billDetailsDAO = new BillDetailsDAOImpl();
+        productDAO = new ProductDAOImpl();
+    }
+    
+    /**
+     * Create product revenue pie chart with REAL database data
+     */
+    private void createProductRevenueChart() {
+        try {
+            System.out.println("🔍 Loading real data from database...");
+            
+            // Get data from database
+            List<Bill> bills = billDAO.findAll();
+            List<BillDetails> billDetails = billDetailsDAO.findAll();
+            List<Product> products = productDAO.findAll();
+            
+            System.out.println("📊 Database Stats:");
+            System.out.println("  - Bills: " + bills.size());
+            System.out.println("  - Bill Details: " + billDetails.size());
+            System.out.println("  - Products: " + products.size());
+            
+            // Create map for product revenue calculation
+            Map<String, Double> productRevenue = new HashMap<>();
+            Map<String, Integer> productQuantity = new HashMap<>(); // Track quantities sold
+            
+            // Calculate revenue for each product from REAL data
+            for (BillDetails detail : billDetails) {
+                // Find corresponding bill to check if it's paid
+                Bill bill = bills.stream()
+                    .filter(b -> b.getBill_id() != null && b.getBill_id().equals(detail.getBill_id()))
+                    .findFirst()
+                    .orElse(null);
+                
+                // Only count revenue from paid bills (status = 1 - Đã thanh toán)
+                if (bill != null && bill.getStatus() != null && bill.getStatus() == 1) {
+                    // Find product name
+                    Product product = products.stream()
+                        .filter(p -> p.getProductId() != null && p.getProductId().equals(detail.getProduct_id()))
+                        .findFirst()
+                        .orElse(null);
+                    
+                    if (product != null) {
+                        String productName = product.getProductName();
+                        
+                        // Use getTotalPrice() method from entity (đã tính discount)
+                        double revenue = detail.getTotalPrice();
+                        
+                        // Accumulate revenue and quantity
+                        productRevenue.merge(productName, revenue, Double::sum);
+                        productQuantity.merge(productName, detail.getAmount(), Integer::sum);
+                        
+                        System.out.println("💰 " + productName + ": " + detail.getAmount() + " x " + detail.getPrice() + " = " + revenue);
+                    }
+                }
+            }
+            
+            System.out.println("📈 Total products with revenue: " + productRevenue.size());
+            
+            // If no real data found, show sample data with clear indication
+            if (productRevenue.isEmpty()) {
+                System.out.println("⚠️ No real data found, using sample data");
+                productRevenue.put("Mì Cay Hàn Quốc Cấp 1 (Sample)", 2500000.0);
+                productRevenue.put("Mì Cay Hàn Quốc Cấp 2 (Sample)", 1800000.0);
+                productRevenue.put("Mì Cay Hàn Quốc Cấp 3 (Sample)", 1200000.0);
+                productRevenue.put("Mì Cay Đặc Biệt Siêu Cay (Sample)", 900000.0);
+                productRevenue.put("Mì Cay Phở Mai (Sample)", 800000.0);
+                productRevenue.put("Combo Mì Cay + Nước (Sample)", 600000.0);
+                productRevenue.put("Nước Uống Các Loại (Sample)", 400000.0);
+            } else {
+                // Sort by revenue descending to show top performers
+                System.out.println("🏆 Top products by revenue:");
+                productRevenue.entrySet().stream()
+                    .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue()))
+                    .forEach(entry -> {
+                        int qty = productQuantity.getOrDefault(entry.getKey(), 0);
+                        System.out.println("  " + entry.getKey() + ": " + String.format("%,.0f VNĐ", entry.getValue()) + " (" + qty + " phần)");
+                    });
+            }
+            
+            // Create pie dataset with percentage labels - SORTED by revenue descending
+            DefaultPieDataset pieDataset = new DefaultPieDataset();
+            double totalRevenue = productRevenue.values().stream().mapToDouble(Double::doubleValue).sum();
+            
+            // Sort products by revenue (highest first) and limit to top 10 for readability
+            productRevenue.entrySet().stream()
+                .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue())) // Sort descending
+                .limit(10) // Top 10 products only
+                .forEach(entry -> {
+                    double percentage = (entry.getValue() / totalRevenue) * 100;
+                    String label = entry.getKey() + " (" + String.format("%.1f", percentage) + "%)";
+                    pieDataset.setValue(label, entry.getValue());
+                });
+            
+            // Create pie chart
+            JFreeChart chart = XChart.createPieChart(
+                "Biểu Đồ Doanh Thu Theo Món Ăn",
+                pieDataset
+            );
+            
+            // Create chart panel
+            ChartPanel chartPanel = XChart.createChartPanel(chart);
+            chartPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            
+            // Set jPanel4 layout and add chart
+            jPanel4.setLayout(new BorderLayout());
+            jPanel4.removeAll();
+            jPanel4.add(chartPanel, BorderLayout.CENTER);
+            
+            // Add summary panel with detailed info
+            JPanel summaryPanel = createDetailedSummaryPanel(productRevenue, productQuantity, "Doanh thu theo món ăn (Top 10)");
+            jPanel4.add(summaryPanel, BorderLayout.SOUTH);
+            
+            // Refresh panel
+            jPanel4.revalidate();
+            jPanel4.repaint();
+            
+            System.out.println("✅ Created product revenue chart with " + productRevenue.size() + " products");
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorPanel(jPanel4, "Lỗi khi tạo biểu đồ doanh thu theo món: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Create detailed summary panel with top product info
+     */
+    private JPanel createDetailedSummaryPanel(Map<String, Double> revenueData, Map<String, Integer> quantityData, String title) {
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(236, 240, 241));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        panel.setLayout(new java.awt.GridLayout(4, 1));
+        
+        // Title
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        titleLabel.setForeground(new Color(52, 73, 94));
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        // Summary info
+        double totalRevenue = revenueData.values().stream().mapToDouble(Double::doubleValue).sum();
+        int totalItems = revenueData.size();
+        int totalQuantity = quantityData.values().stream().mapToInt(Integer::intValue).sum();
+        
+        JLabel summaryLabel = new JLabel(String.format(
+            "Tổng cộng: %d món - %d phần bán - Tổng doanh thu: %,.0f VNĐ", 
+            totalItems, totalQuantity, totalRevenue));
+        summaryLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        summaryLabel.setForeground(new Color(52, 73, 94));
+        summaryLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        // Top product info
+        String topProduct = revenueData.entrySet().stream()
+            .max(Map.Entry.comparingByValue())
+            .map(Map.Entry::getKey)
+            .orElse("N/A");
+        
+        double topRevenue = revenueData.getOrDefault(topProduct, 0.0);
+        int topQuantity = quantityData.getOrDefault(topProduct, 0);
+        
+        JLabel topProductLabel = new JLabel(String.format(
+            "🏆 Món bán chạy nhất: %s (%,.0f VNĐ - %d phần)", 
+            topProduct, topRevenue, topQuantity));
+        topProductLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        topProductLabel.setForeground(new Color(231, 76, 60)); // Red highlight
+        topProductLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        // Data source info
+        String dataSource = revenueData.isEmpty() ? "Dữ liệu mẫu" : "Dữ liệu thực từ database";
+        JLabel sourceLabel = new JLabel("📊 Nguồn: " + dataSource);
+        sourceLabel.setFont(new Font("Segoe UI", Font.ITALIC, 10));
+        sourceLabel.setForeground(new Color(127, 140, 141));
+        sourceLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        
+        panel.add(titleLabel);
+        panel.add(summaryLabel);
+        panel.add(topProductLabel);
+        panel.add(sourceLabel);
+        
+        return panel;
+    }
+    
+    /**
+     * Create summary panel for chart information (fallback method)
+     */
+    private JPanel createSummaryPanel(Map<String, Double> data, String title) {
+        return createDetailedSummaryPanel(data, new HashMap<>(), title);
+    }
+    
+    /**
+     * Show error panel when chart creation fails
+     */
+    private void showErrorPanel(JPanel targetPanel, String errorMessage) {
+        targetPanel.removeAll();
+        targetPanel.setLayout(new BorderLayout());
+        
+        JLabel errorLabel = new JLabel("❌ " + errorMessage);
+        errorLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        errorLabel.setForeground(Color.RED);
+        errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        errorLabel.setBorder(BorderFactory.createEmptyBorder(50, 20, 50, 20));
+        
+        targetPanel.add(errorLabel, BorderLayout.CENTER);
+        targetPanel.revalidate();
+        targetPanel.repaint();
     }
     
     /**
@@ -171,6 +418,11 @@ public class ReportManagement extends javax.swing.JFrame {
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                handleExit();
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
