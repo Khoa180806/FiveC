@@ -25,6 +25,7 @@ import com.toedter.calendar.JDateChooser;
 import com.team4.quanliquanmicay.Controller.BillManagementController;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XValidation;
+import com.team4.quanliquanmicay.util.XAuth;
 
 /**
  *
@@ -110,6 +111,13 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                     } else {
                         statusText = "Đang phục vụ";
                     }
+                }
+                
+                // Debug: In ra status của từng bill khi load
+                if (bill.getBill_id() == 10000) {
+                    System.out.println("DEBUG loadBillData - Bill 10000:");
+                    System.out.println("  Status Boolean: " + bill.getStatus());
+                    System.out.println("  Status Text: " + statusText);
                 }
                 
                 Object[] row = {
@@ -257,29 +265,62 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             XDialog.warning("Vui lòng chọn hóa đơn cần cập nhật!", "Cảnh báo");
             return;
         }
-
+        
         try {
             // Cập nhật trạng thái - chuyển đổi String sang Boolean
             String selectedStatus = (String) cboStatus.getSelectedItem();
             Boolean status = false; // Mặc định "Đang phục vụ"
             
-            if (selectedStatus.equals("Đã thanh toán")) {
-                status = true;
-            } else if (selectedStatus.equals("Hủy")) {
-                status = null; // Hoặc có thể set một giá trị khác tùy logic
+            // Debug: In ra trạng thái được chọn
+            System.out.println("DEBUG: Selected status from combo: '" + selectedStatus + "'");
+            
+            // Debug: In ra tất cả items trong combo
+            System.out.println("DEBUG: All combo items:");
+            for (int i = 0; i < cboStatus.getItemCount(); i++) {
+                System.out.println("  [" + i + "] '" + cboStatus.getItemAt(i) + "'");
             }
+            
+            // Trim và so sánh ignore case để tránh lỗi do space và chữ hoa/thường
+            String trimmedStatus = selectedStatus.trim();
+            
+            // Kiểm tra quyền hủy đơn - chỉ Manager mới được hủy
+            if ("Hủy".equalsIgnoreCase(trimmedStatus)) {
+                if (!"R001".equals(XAuth.user.getRole_id())) {
+                    XDialog.warning("Chỉ Manager mới được phép hủy đơn!", "Không có quyền");
+                    return;
+                }
+                status = null; // Trạng thái hủy
+            } else if ("Đã Thanh Toán".equalsIgnoreCase(trimmedStatus)) {
+                status = true;
+            } else {
+                status = false; // Đang phục vụ
+            }
+            
+            System.out.println("DEBUG: Final status Boolean: " + status);
             
             currentBill.setStatus(status);
             
             // Nếu trạng thái là "Đã thanh toán" thì set checkout time
-            if (selectedStatus.equals("Đã thanh toán") && currentBill.getCheckout() == null) {
+            if ("Đã Thanh Toán".equalsIgnoreCase(trimmedStatus) && currentBill.getCheckout() == null) {
                 currentBill.setCheckout(new java.util.Date());
                 txtCheckout.setText(dateFormat.format(currentBill.getCheckout()));
             }
 
             billDAO.update(currentBill);
+            
+            // Debug: In ra thông tin bill sau khi update
+            System.out.println("DEBUG: Updated bill status: " + currentBill.getStatus());
+            
             XDialog.success("Cập nhật hóa đơn thành công!", "Thành công");
+            
+            // Force refresh table
             loadBillData();
+            
+            // Debug: Verify bill đã được update trong database
+            Bill verifyBill = billDAO.findById(String.valueOf(currentBill.getBill_id()));
+            if (verifyBill != null) {
+                System.out.println("DEBUG: Bill from DB after update - Status: " + verifyBill.getStatus());
+            }
             
         } catch (Exception e) {
             XDialog.error("Lỗi khi cập nhật hóa đơn: " + e.getMessage(), "Lỗi");
@@ -1087,9 +1128,8 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                         .addComponent(btnBegin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(txtBegin, javax.swing.GroupLayout.Alignment.LEADING))
-                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btnFilter)
-                        .addComponent(cboTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(btnFilter)
+                    .addComponent(cboTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 

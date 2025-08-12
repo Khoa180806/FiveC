@@ -3,7 +3,6 @@ package com.team4.quanliquanmicay.Impl;
 import com.team4.quanliquanmicay.DAO.BillDAO;
 import com.team4.quanliquanmicay.Entity.Bill;
 import com.team4.quanliquanmicay.util.XJdbc;
-import com.team4.quanliquanmicay.util.XQuery;
 import java.util.List;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -23,6 +22,12 @@ public class BillDAOImpl implements BillDAO {
     public Bill create(Bill entity) {
         if (entity == null || !entity.isValid()) return null;
         
+        // Convert Boolean status to String for database storage
+        String statusString = null;
+        if (entity.getStatus() != null) {
+            statusString = entity.getStatus() ? "Đã thanh toán" : "Đang phục vụ";
+        }
+        
         Object[] values = {
             entity.getUser_id(),
             entity.getPhone_number(),
@@ -31,7 +36,7 @@ public class BillDAOImpl implements BillDAO {
             entity.getTotal_amount(),
             convertToTimestamp(entity.getCheckin()),
             convertToTimestamp(entity.getCheckout()),
-            entity.getStatus()
+            statusString // Sử dụng String thay vì Boolean
         };
         
         XJdbc.executeUpdate(CREATE_SQL, values);
@@ -42,6 +47,12 @@ public class BillDAOImpl implements BillDAO {
     public void update(Bill entity) {
         if (entity == null || entity.getBill_id() == null || !entity.isValid()) return;
         
+        // Convert Boolean status to String for database storage
+        String statusString = null;
+        if (entity.getStatus() != null) {
+            statusString = entity.getStatus() ? "Đã thanh toán" : "Đang phục vụ";
+        }
+        
         Object[] values = {
             entity.getUser_id(),
             entity.getPhone_number(),
@@ -50,11 +61,21 @@ public class BillDAOImpl implements BillDAO {
             entity.getTotal_amount(),
             convertToTimestamp(entity.getCheckin()),
             convertToTimestamp(entity.getCheckout()),
-            entity.getStatus(),
+            statusString, // Sử dụng String thay vì Boolean
             entity.getBill_id()
         };
         
-        XJdbc.executeUpdate(UPDATE_SQL, values);
+        // Debug: In ra thông tin trước khi update
+        System.out.println("DEBUG BillDAO Update:");
+        System.out.println("  Bill ID: " + entity.getBill_id());
+        System.out.println("  Status Boolean: " + entity.getStatus());
+        System.out.println("  Status String: " + statusString);
+        System.out.println("  SQL: " + UPDATE_SQL);
+        
+        int rowsAffected = XJdbc.executeUpdate(UPDATE_SQL, values);
+        
+        System.out.println("DEBUG: Update executed successfully");
+        System.out.println("DEBUG: Rows affected: " + rowsAffected);
     }
 
     @Override
@@ -65,13 +86,71 @@ public class BillDAOImpl implements BillDAO {
 
     @Override
     public List<Bill> findAll() {
-        return XQuery.getBeanList(Bill.class, FIND_ALL_SQL);
+        try {
+            return XJdbc.executeQuery(FIND_ALL_SQL, rs -> {
+                List<Bill> bills = new ArrayList<>();
+                while (rs.next()) {
+                    Bill bill = new Bill();
+                    bill.setBill_id(rs.getInt("bill_id"));
+                    bill.setUser_id(rs.getString("user_id"));
+                    bill.setPhone_number(rs.getString("phone_number"));
+                    bill.setPayment_history_id(rs.getInt("payment_history_id"));
+                    bill.setTable_number(rs.getInt("table_number"));
+                    bill.setTotal_amount(rs.getDouble("total_amount"));
+                    bill.setCheckin(rs.getDate("checkin"));
+                    bill.setCheckout(rs.getDate("checkout"));
+                    
+                    // Convert String status from database to Boolean
+                    String statusString = rs.getString("status");
+                    Boolean status = null;
+                    if (statusString != null) {
+                        status = "Đã thanh toán".equals(statusString);
+                    }
+                    bill.setStatus(status);
+                    
+                    bills.add(bill);
+                }
+                return bills;
+            });
+        } catch (Exception e) {
+            System.err.println("Error in findAll: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 
     @Override
     public Bill findById(String billId) {
         if (billId == null || billId.trim().isEmpty()) return null;
-        return XQuery.getSingleBean(Bill.class, FIND_BY_ID_SQL, billId);
+        
+        try {
+            return XJdbc.executeQuery(FIND_BY_ID_SQL, rs -> {
+                if (rs.next()) {
+                    Bill bill = new Bill();
+                    bill.setBill_id(rs.getInt("bill_id"));
+                    bill.setUser_id(rs.getString("user_id"));
+                    bill.setPhone_number(rs.getString("phone_number"));
+                    bill.setPayment_history_id(rs.getInt("payment_history_id"));
+                    bill.setTable_number(rs.getInt("table_number"));
+                    bill.setTotal_amount(rs.getDouble("total_amount"));
+                    bill.setCheckin(rs.getDate("checkin"));
+                    bill.setCheckout(rs.getDate("checkout"));
+                    
+                    // Convert String status from database to Boolean
+                    String statusString = rs.getString("status");
+                    Boolean status = null;
+                    if (statusString != null) {
+                        status = "Đã thanh toán".equals(statusString);
+                    }
+                    bill.setStatus(status);
+                    
+                    return bill;
+                }
+                return null;
+            }, billId);
+        } catch (Exception e) {
+            System.err.println("Error in findById for billId " + billId + ": " + e.getMessage());
+            return null;
+        }
     }
     
     @Override
