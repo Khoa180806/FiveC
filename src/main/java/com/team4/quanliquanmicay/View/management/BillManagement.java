@@ -25,6 +25,7 @@ import com.toedter.calendar.JDateChooser;
 import com.team4.quanliquanmicay.Controller.BillManagementController;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XValidation;
+import com.team4.quanliquanmicay.util.XAuth;
 
 /**
  *
@@ -102,14 +103,14 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             model.setRowCount(0);
             
             for (Bill bill : bills) {
-                // Chuyển đổi Boolean status sang String để hiển thị
-                String statusText = "Đang phục vụ";
-                if (bill.getStatus() != null) {
-                    if (bill.getStatus()) {
-                        statusText = "Đã thanh toán";
-                    } else {
-                        statusText = "Đang phục vụ";
-                    }
+                // Chuyển đổi Integer status sang String để hiển thị
+                String statusText = bill.getStatusText();
+                
+                // Debug: In ra status của từng bill khi load
+                if (bill.getBill_id() == 10000) {
+                    System.out.println("DEBUG loadBillData - Bill 10000:");
+                    System.out.println("  Status Boolean: " + bill.getStatus());
+                    System.out.println("  Status Text: " + statusText);
                 }
                 
                 Object[] row = {
@@ -174,13 +175,22 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         txtCheckin.setText(bill.getCheckin() != null ? dateFormat.format(bill.getCheckin()) : "");
         txtCheckout.setText(bill.getCheckout() != null ? dateFormat.format(bill.getCheckout()) : "");
         
-        // Set status trong combobox - chuyển đổi Boolean sang String
-        Boolean status = bill.getStatus();
+        // Set status trong combobox - chuyển đổi Integer sang String
+        Integer status = bill.getStatus();
         if (status != null) {
-            if (status) {
-                cboStatus.setSelectedIndex(1); // "Đã thanh toán"
-            } else {
-                cboStatus.setSelectedIndex(0); // "Đang phục vụ"
+            switch (status) {
+                case 0:
+                    cboStatus.setSelectedIndex(0); // "Đang phục vụ"
+                    break;
+                case 1:
+                    cboStatus.setSelectedIndex(1); // "Đã thanh toán"
+                    break;
+                case 2:
+                    cboStatus.setSelectedIndex(2); // "Hủy"
+                    break;
+                default:
+                    cboStatus.setSelectedIndex(0); // Mặc định "Đang phục vụ"
+                    break;
             }
         } else {
             cboStatus.setSelectedIndex(0); // Mặc định "Đang phục vụ"
@@ -257,29 +267,62 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             XDialog.warning("Vui lòng chọn hóa đơn cần cập nhật!", "Cảnh báo");
             return;
         }
-
+        
         try {
-            // Cập nhật trạng thái - chuyển đổi String sang Boolean
+            // Cập nhật trạng thái - chuyển đổi String sang Integer
             String selectedStatus = (String) cboStatus.getSelectedItem();
-            Boolean status = false; // Mặc định "Đang phục vụ"
+            Integer status = 0; // Mặc định "Đang phục vụ"
             
-            if (selectedStatus.equals("Đã thanh toán")) {
-                status = true;
-            } else if (selectedStatus.equals("Hủy")) {
-                status = null; // Hoặc có thể set một giá trị khác tùy logic
+            // Debug: In ra trạng thái được chọn
+            System.out.println("DEBUG: Selected status from combo: '" + selectedStatus + "'");
+            
+            // Debug: In ra tất cả items trong combo
+            System.out.println("DEBUG: All combo items:");
+            for (int i = 0; i < cboStatus.getItemCount(); i++) {
+                System.out.println("  [" + i + "] '" + cboStatus.getItemAt(i) + "'");
             }
+            
+            // Trim và so sánh ignore case để tránh lỗi do space và chữ hoa/thường
+            String trimmedStatus = selectedStatus.trim();
+            
+            // Kiểm tra quyền hủy đơn - chỉ Manager mới được hủy
+            if ("Hủy".equalsIgnoreCase(trimmedStatus)) {
+                if (!"R001".equals(XAuth.user.getRole_id())) {
+                    XDialog.warning("Chỉ Manager mới được phép hủy đơn!", "Không có quyền");
+                    return;
+                }
+                status = 2; // Trạng thái hủy
+            } else if ("Đã Thanh Toán".equalsIgnoreCase(trimmedStatus)) {
+                status = 1; // Đã thanh toán
+            } else {
+                status = 0; // Đang phục vụ
+            }
+            
+            System.out.println("DEBUG: Final status Integer: " + status);
             
             currentBill.setStatus(status);
             
             // Nếu trạng thái là "Đã thanh toán" thì set checkout time
-            if (selectedStatus.equals("Đã thanh toán") && currentBill.getCheckout() == null) {
+            if ("Đã Thanh Toán".equalsIgnoreCase(trimmedStatus) && currentBill.getCheckout() == null) {
                 currentBill.setCheckout(new java.util.Date());
                 txtCheckout.setText(dateFormat.format(currentBill.getCheckout()));
             }
 
             billDAO.update(currentBill);
+            
+            // Debug: In ra thông tin bill sau khi update
+            System.out.println("DEBUG: Updated bill status: " + currentBill.getStatus());
+            
             XDialog.success("Cập nhật hóa đơn thành công!", "Thành công");
+            
+            // Force refresh table
             loadBillData();
+            
+            // Debug: Verify bill đã được update trong database
+            Bill verifyBill = billDAO.findById(String.valueOf(currentBill.getBill_id()));
+            if (verifyBill != null) {
+                System.out.println("DEBUG: Bill from DB after update - Status: " + verifyBill.getStatus());
+            }
             
         } catch (Exception e) {
             XDialog.error("Lỗi khi cập nhật hóa đơn: " + e.getMessage(), "Lỗi");
@@ -639,15 +682,8 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             model.setRowCount(0);
             
             for (Bill bill : filteredBills) {
-                // Chuyển đổi Boolean status sang String để hiển thị
-                String statusText = "Đang phục vụ";
-                if (bill.getStatus() != null) {
-                    if (bill.getStatus()) {
-                        statusText = "Đã thanh toán";
-                    } else {
-                        statusText = "Đang phục vụ";
-                    }
-                }
+                // Chuyển đổi Integer status sang String để hiển thị
+                String statusText = bill.getStatusText();
                 
                 Object[] row = {
                     bill.getBill_id(),

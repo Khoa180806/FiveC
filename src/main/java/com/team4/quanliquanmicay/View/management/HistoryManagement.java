@@ -418,11 +418,8 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                 String checkinTime = bill.getCheckin() != null ? dateFormat.format(bill.getCheckin()) : "N/A";
                 String checkoutTime = bill.getCheckout() != null ? dateFormat.format(bill.getCheckout()) : "N/A";
                 
-                // Sửa lại logic xử lý status - status là Boolean, cần convert sang String
-                String status = "N/A";
-                if (bill.getStatus() != null) {
-                    status = bill.getStatus() ? "Đã thanh toán" : "Đang phục vụ";
-                }
+                // Sửa lại logic xử lý status - status là Integer, cần convert sang String
+                String status = bill.getStatusText();
                 
                 String employeeName = getEmployeeName(bill.getUser_id()); // Lấy tên nhân viên
                 

@@ -10,7 +10,6 @@ import com.team4.quanliquanmicay.Entity.TableForCustomer;
 import com.team4.quanliquanmicay.Impl.TableForCustomerDAOImpl;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
-import com.team4.quanliquanmicay.util.XValidation;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -19,7 +18,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.border.LineBorder;
 import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
 import javax.swing.ButtonModel;
 
 /**

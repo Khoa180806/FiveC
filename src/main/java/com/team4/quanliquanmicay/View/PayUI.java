@@ -1425,7 +1425,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
             if (tableBillCache.containsKey(tableNumber)) {
                 Bill cachedBill = tableBillCache.get(tableNumber);
                 // Nếu bill trong cache vẫn đang hoạt động, trả về
-                if (cachedBill != null && cachedBill.getStatus()) {
+                if (cachedBill != null && cachedBill.getStatus() != null && cachedBill.getStatus() == 0) {
                     return cachedBill;
                 }
             }
@@ -1433,7 +1433,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
             // Tìm bill đang hoạt động của bàn này
             List<Bill> allBills = billDAO.findAll();
             Bill activeBill = allBills.stream()
-                .filter(bill -> bill.getTable_number() == tableNumber && bill.getStatus())
+                .filter(bill -> bill.getTable_number() == tableNumber && bill.getStatus() != null && bill.getStatus() == 0)
                 .findFirst()
                 .orElse(null);
             
@@ -1518,7 +1518,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
 
             // Cập nhật bill với số điện thoại khách hàng
             bill.setPayment_history_id(payment.getPayment_history_id()); // Sửa lại, không cần parseInt
-            bill.setStatus(false); // Đã thanh toán
+            bill.setStatus(1); // Đã thanh toán
             bill.setCheckout(new Date());
             bill.setTotal_amount(totalAmount);
             

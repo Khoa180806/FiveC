@@ -655,7 +655,13 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         String imageName = "";
         try { imageName = entity.getImage(); } catch (Exception ex) { imageName = ""; }
         setCurrentImageName(imageName); // Lưu tên ảnh hiện tại
-        fillProductImage(imageName);
+        
+        // Force refresh image display
+        final String finalImageName = imageName; // Make final for lambda
+        java.awt.EventQueue.invokeLater(() -> {
+            fillProductImage(finalImageName);
+            enforceFixedImageSize();
+        });
     }
 
     @Override
@@ -1397,8 +1403,15 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                     String savedImageName = processSelectedImage(selectedFile);
                     
                     if (savedImageName != null) {
-                        // Load and display the new image
-                        fillProductImage(savedImageName);
+                        // Set current image name first
+                        setCurrentImageName(savedImageName);
+                        
+                        // Force refresh the image display
+                        java.awt.EventQueue.invokeLater(() -> {
+                            fillProductImage(savedImageName);
+                            lblImage.revalidate();
+                            lblImage.repaint();
+                        });
                         
                         // Show success message
                         XDialog.alert(
@@ -1503,10 +1516,18 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             java.awt.image.BufferedImage processedImage = resizeImageIfNeeded(originalImage);
             
             // Save processed image
-            javax.imageio.ImageIO.write(processedImage, fileExtension, targetFile);
+            boolean saved = javax.imageio.ImageIO.write(processedImage, fileExtension, targetFile);
             
-            // Lưu tên ảnh mới
-            setCurrentImageName(newFileName);
+            if (!saved) {
+                throw new Exception("Không thể lưu file ảnh");
+            }
+            
+            // Verify file was created
+            if (!targetFile.exists() || targetFile.length() == 0) {
+                throw new Exception("File ảnh không được tạo thành công");
+            }
+            
+            System.out.println("✅ Image saved successfully: " + targetFile.getAbsolutePath());
             
             return newFileName;
             
@@ -1659,6 +1680,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             // Đảm bảo kích thước cố định trước khi load ảnh
             enforceFixedImageSize();
             
+            System.out.println("🔍 fillProductImage called with: " + imageName);
+            
             if (imageName != null && !imageName.trim().isEmpty()) {
                 // Thử tìm ảnh trong các thư mục khác nhau
                 String[] paths = {
@@ -1671,7 +1694,10 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 
                 boolean found = false;
                 for (String path : paths) {
-                    if (getClass().getResource(path) != null) {
+                    System.out.println("🔍 Trying path: " + path);
+                    java.net.URL imageURL = getClass().getResource(path);
+                    if (imageURL != null) {
+                        System.out.println("✅ Found image at: " + path);
                         setImageWithFixedSize(path);
                         found = true;
                         break;
@@ -1679,11 +1705,18 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 }
                 
                 if (!found) {
-                    // Nếu không tìm thấy, dùng ảnh mặc định
-                    setImageWithFixedSize("/icons_and_images/Best.png");
+                    System.out.println("❌ Image not found in resources, trying external file");
+                    // Thử tìm file trong thư mục resources external
+                    if (tryLoadExternalImage(imageName)) {
+                        found = true;
+                    } else {
+                        System.out.println("❌ External image not found, using default");
+                        setImageWithFixedSize("/icons_and_images/Best.png");
+                    }
                 }
             } else {
                 // Không có tên ảnh - dùng ảnh mặc định
+                System.out.println("ℹ️ No image name provided, using default");
                 setImageWithFixedSize("/icons_and_images/Best.png");
             }
             
@@ -1691,9 +1724,54 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             enforceFixedImageSize();
             
         } catch (Exception e) {
+            System.out.println("❌ Error in fillProductImage: " + e.getMessage());
+            e.printStackTrace();
             // Nếu lỗi, dùng ảnh unknown và vẫn giữ kích thước cố định
             setImageWithFixedSize("/icons_and_images/Unknown person.png");
             enforceFixedImageSize();
+        }
+    }
+    
+    /**
+     * ✅ TRY LOAD EXTERNAL: Thử load ảnh từ file system
+     */
+    private boolean tryLoadExternalImage(String imageName) {
+        try {
+            // Thử các đường dẫn có thể có của file ảnh vừa lưu
+            String[] externalPaths = {
+                "src/main/resources/icons_and_images/product/" + imageName,
+                "resources/icons_and_images/product/" + imageName,
+                "src/main/resources/icons_and_images/" + imageName,
+                "resources/icons_and_images/" + imageName
+            };
+            
+            for (String path : externalPaths) {
+                java.io.File imageFile = new java.io.File(path);
+                System.out.println("🔍 Trying external path: " + imageFile.getAbsolutePath());
+                
+                if (imageFile.exists() && imageFile.canRead()) {
+                    System.out.println("✅ Found external image: " + path);
+                    
+                    // Load image từ file system
+                    java.awt.image.BufferedImage bufferedImage = javax.imageio.ImageIO.read(imageFile);
+                    if (bufferedImage != null) {
+                        // Scale và set image
+                        java.awt.Image scaledImage = bufferedImage.getScaledInstance(200, 200, java.awt.Image.SCALE_SMOOTH);
+                        javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
+                        
+                        lblImage.setIcon(scaledIcon);
+                        lblImage.setText("");
+                        
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+            
+        } catch (Exception e) {
+            System.out.println("❌ Error loading external image: " + e.getMessage());
+            return false;
         }
     }
     
