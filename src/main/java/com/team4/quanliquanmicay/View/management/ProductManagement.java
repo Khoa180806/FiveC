@@ -68,10 +68,14 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         setupSearchFunctionality();
         setupImageSelection(); // Thêm setup cho chọn ảnh
         captureInitialImageSize(); // Capture kích thước ban đầu của ảnh
+        // Disable button update ban đầu
+        btnUpdate.setEnabled(false);
         // Đảm bảo khi đổi trạng thái thì có thể cập nhật
         cboStatus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUpdate.setEnabled(true);
+                if (btnUpdate.isEnabled()) { // Chỉ enable nếu đã có product được chọn
+                    btnUpdate.setEnabled(true);
+                }
             }
         });
         
@@ -507,8 +511,6 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
         System.out.println("Button Update clicked!");
-        // Thêm xác nhận khi cập nhật
-        if (!XDialog.confirm("Bạn có chắc chắn muốn cập nhật sản phẩm này?", "Xác nhận cập nhật")) return;
         update();
     }//GEN-LAST:event_btnUpdateActionPerformed
 
@@ -659,6 +661,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         } else {
             txtDiscount.setText("0");
         }
+        // Enable button update khi có dữ liệu sản phẩm
+        btnUpdate.setEnabled(true);
         // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
         String imageName = "";
         try { imageName = entity.getImage(); } catch (Exception ex) { imageName = ""; }
@@ -855,13 +859,6 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     @Override
     public void create() {
         try {
-            // Validate form data
-            String validationError = validateFormData();
-            if (validationError != null) {
-                XDialog.error(validationError, "Lỗi dữ liệu");
-                return;
-            }
-            
             Product product = getForm();
             
             // Kiểm tra tên sản phẩm đã tồn tại chưa
@@ -883,9 +880,14 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             if (confirm) {
                 productDAO.create(product);
                 XDialog.success("Thêm sản phẩm thành công!", "Thành công");
+                // Invalidate cache để load dữ liệu mới từ database
+                invalidateProductCache();
                 fillToTable();
                 clear();
             }
+        } catch (RuntimeException e) {
+            // Validation errors từ getForm() được handle ở đây
+            // Error dialog đã được hiển thị trong getForm()
         } catch (Exception e) {
             XDialog.error("Lỗi khi thêm sản phẩm: " + e.getMessage(), "Lỗi");
         }
@@ -894,13 +896,6 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     @Override
     public void update() {
         try {
-            // Validate form data
-            String validationError = validateFormData();
-            if (validationError != null) {
-                XDialog.error(validationError, "Lỗi dữ liệu");
-                return;
-            }
-            
             Product product = getForm();
             
             // Kiểm tra tên sản phẩm đã tồn tại chưa (trừ chính nó)
@@ -923,9 +918,14 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             if (confirm) {
                 productDAO.update(product);
                 XDialog.success("Cập nhật sản phẩm thành công!", "Thành công");
+                // Invalidate cache để load dữ liệu mới từ database
+                invalidateProductCache();
                 fillToTable();
                 clear();
             }
+        } catch (RuntimeException e) {
+            // Validation errors từ getForm() được handle ở đây
+            // Error dialog đã được hiển thị trong getForm()
         } catch (Exception e) {
             XDialog.error("Lỗi khi cập nhật sản phẩm: " + e.getMessage(), "Lỗi");
         }
@@ -943,6 +943,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         // Giữ cboCate như cũ, chỉ fill lại đơn vị
         fillUnitsByCategory();
         if (cboUnit.getItemCount() > 0) cboUnit.setSelectedIndex(0);
+        // Disable button update khi clear form
+        btnUpdate.setEnabled(false);
         // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
         setCurrentImageName(""); // Reset tên ảnh
         fillProductImage(""); // Clear image
@@ -983,6 +985,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             if (confirm) {
                 productDAO.deleteById(product.getProductId());
                 XDialog.success("Xóa sản phẩm thành công!", "Thành công");
+                // Invalidate cache để load dữ liệu mới từ database
+                invalidateProductCache();
                 fillToTable();
                 clear();
             }
@@ -1718,33 +1722,5 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         lblImage.repaint();
     }
 
-    private String validateFormData() {
-        Product product = getForm();
-        
-        if (XValidation.isEmpty(product.getProductId())) {
-            return "Vui lòng nhập mã sản phẩm!";
-        }
-        
-        if (XValidation.isEmpty(product.getProductName())) {
-            return "Vui lòng nhập tên sản phẩm!";
-        }
-        
-        if (product.getProductName().length() < 2) {
-            return "Tên sản phẩm phải có ít nhất 2 ký tự!";
-        }
-        
-        if (product.getProductName().length() > 100) {
-            return "Tên sản phẩm không được quá 100 ký tự!";
-        }
-        
-        if (product.getPrice() <= 0) {
-            return "Giá sản phẩm phải lớn hơn 0!";
-        }
-        
-        if (XValidation.isEmpty(product.getCategoryId())) {
-            return "Vui lòng chọn danh mục sản phẩm!";
-        }
-        
-        return null; // Không có lỗi
-    }
+
 }

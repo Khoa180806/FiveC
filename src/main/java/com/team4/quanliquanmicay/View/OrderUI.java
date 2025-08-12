@@ -7,8 +7,6 @@ package com.team4.quanliquanmicay.View;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XJdbc;
-import com.team4.quanliquanmicay.util.XValidation;
-import com.team4.quanliquanmicay.util.XStr;
 import com.team4.quanliquanmicay.Entity.Product;
 import com.team4.quanliquanmicay.Entity.Bill;
 import com.team4.quanliquanmicay.Entity.BillDetails;
@@ -26,7 +24,6 @@ import javax.swing.BoxLayout;
 import com.team4.quanliquanmicay.Entity.Category;
 import com.team4.quanliquanmicay.DAO.CategoryDAO;
 import com.team4.quanliquanmicay.Impl.CategoryDAOImpl;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.SwingConstants;
 
 
