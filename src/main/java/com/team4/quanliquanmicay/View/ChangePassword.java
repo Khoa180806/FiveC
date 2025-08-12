@@ -202,7 +202,9 @@ this.save();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-this.close();        // TODO add your handling code here:
+      if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) {
+         this.dispose();
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     /**

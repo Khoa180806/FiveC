@@ -97,7 +97,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         btnOrder.addActionListener(e -> openDatMonDialog());
         btnUnOrder.addActionListener(e -> deleteSelectedItem());
         btnUnBill.addActionListener(e -> cancelBill());
-        btnExit.addActionListener(e -> dispose());
+
         btnPayment.addActionListener(e -> openPaymentDialog());
         
         // Double click để xem chi tiết
@@ -854,6 +854,11 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         btnExit.setForeground(new java.awt.Color(153, 0, 0));
         btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         btnOrder.setBackground(new java.awt.Color(204, 204, 204));
         btnOrder.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -1031,6 +1036,13 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         // Gọi method deleteSelectedItem() thay vì để trống
         deleteSelectedItem();
     }//GEN-LAST:event_btnUnOrderActionPerformed
+
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+      if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) {
+          this.dispose(); // Đóng cửa sổ hiện tại
+
+        }
+    }//GEN-LAST:event_btnExitActionPerformed
 
     /**
      * @param args the command line arguments

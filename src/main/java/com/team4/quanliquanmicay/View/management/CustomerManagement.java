@@ -131,7 +131,7 @@ public class CustomerManagement extends javax.swing.JFrame {
         btn_delete.addActionListener(e -> deleteCustomerData());
         
         // Exit button functionality
-        btn_exit.addActionListener(e -> dispose());
+
         
         // Keyboard shortcuts
         setupKeyboardShortcuts();
@@ -612,6 +612,11 @@ public class CustomerManagement extends javax.swing.JFrame {
         btn_exit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btn_exit.setText("Thoát");
         btn_exit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
+        btn_exit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_exitActionPerformed(evt);
+            }
+        });
 
         jLabel5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel5.setForeground(new java.awt.Color(255, 255, 255));
@@ -781,6 +786,13 @@ public class CustomerManagement extends javax.swing.JFrame {
     private void txt_searchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txt_searchActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txt_searchActionPerformed
+
+    private void btn_exitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_exitActionPerformed
+        // Hiển thị dialog xác nhận trước khi thoát
+        if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi quản lý khách hàng không?", "Xác nhận thoát")) {
+            this.dispose(); // Chỉ đóng cửa sổ khi người dùng xác nhận
+        }
+    }//GEN-LAST:event_btn_exitActionPerformed
 
     /**
      * @param args the command line arguments

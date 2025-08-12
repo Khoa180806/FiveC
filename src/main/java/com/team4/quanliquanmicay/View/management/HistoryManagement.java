@@ -153,7 +153,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         });
         
         // THÊM EVENT HANDLER CHO NÚT EXIT
-        jButton1.addActionListener(new ActionListener() {
+        btnExit.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 handleExit();
@@ -707,8 +707,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         jspPayment = new javax.swing.JScrollPane();
         tblPayment = new javax.swing.JTable();
         jSeparator1 = new javax.swing.JSeparator();
-        btnStatistics = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        btnExit = new javax.swing.JButton();
 
         jLabel3.setText("jLabel3");
 
@@ -858,17 +857,16 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
-        btnStatistics.setBackground(new java.awt.Color(115, 197, 82));
-        btnStatistics.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnStatistics.setForeground(new java.awt.Color(255, 255, 255));
-        btnStatistics.setText("Thống kê");
-        btnStatistics.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
-
-        jButton1.setBackground(new java.awt.Color(185, 163, 147));
-        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton1.setForeground(new java.awt.Color(255, 255, 255));
-        jButton1.setText("Thoát");
-        jButton1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
+        btnExit.setBackground(new java.awt.Color(185, 163, 147));
+        btnExit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnExit.setForeground(new java.awt.Color(255, 255, 255));
+        btnExit.setText("Thoát");
+        btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout pnlUiLayout = new javax.swing.GroupLayout(pnlUi);
         pnlUi.setLayout(pnlUiLayout);
@@ -896,9 +894,9 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                         .addComponent(btnFilter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(jTabbedPane1)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(pnlUiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(btnStatistics, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(pnlUiLayout.createSequentialGroup()
+                        .addComponent(btnExit, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         pnlUiLayout.setVerticalGroup(
@@ -920,9 +918,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlUiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnStatistics)
-                    .addComponent(jButton1))
+                .addComponent(btnExit)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -940,9 +936,11 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnStatisticsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStatisticsActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btnStatisticsActionPerformed
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+       if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) 
+          this.dispose(); // Đóng cửa sổ hiện tại
+
+    }//GEN-LAST:event_btnExitActionPerformed
 
     /**
      * @param args the command line arguments
@@ -983,10 +981,9 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCheckin;
     private javax.swing.JButton btnCheckout;
+    private javax.swing.JButton btnExit;
     private javax.swing.JButton btnFilter;
-    private javax.swing.JButton btnStatistics;
     private javax.swing.JComboBox<String> cboFilter;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JSeparator jSeparator1;
