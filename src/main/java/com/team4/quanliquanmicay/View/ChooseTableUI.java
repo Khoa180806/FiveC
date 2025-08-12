@@ -365,12 +365,12 @@ public class ChooseTableUI extends javax.swing.JFrame {
         return btnTable;
     }
 
-    // Thêm các hàm màu giống TableManagement
+    // Cập nhật các hàm màu theo yêu cầu cụ thể
     private Color getBaseColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#A8E6A1"); // Trống - xanh nhạt
-            case 1: return Color.decode("#FFB347"); // Đang phục vụ - cam
-            case 2: return Color.decode("#D3D3D3"); // Ngưng hoạt động - xám
+            case 0: return Color.decode("#CCCCCC"); // Trống - xám nhạt
+            case 1: return Color.decode("#D6F5D6"); // Đang hoạt động - xanh nhạt
+            case 2: return Color.decode("#FFCCCC"); // Ngưng hoạt động - đỏ nhạt
             default: return Color.GRAY;
         }
     }
@@ -389,22 +389,27 @@ public class ChooseTableUI extends javax.swing.JFrame {
         return new Color(r, g, b);
     }
     
-    // Hover: làm sáng 15%
+    // Hover: màu khi đưa chuột tới
     private Color getHoverColorByStatus(int status) {
-        return brightenColor(getBaseColorByStatus(status), 0.15f);
-    }
-    
-    // Chọn: làm tối 20%
-    private Color getSelectedColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#87D68B"); // Trống - xanh đậm hơn 20%
-            case 1: return Color.decode("#E69A3D"); // Đang phục vụ - cam đậm hơn 20%
-            case 2: return Color.decode("#A9A9A9"); // Ngưng hoạt động - xám đậm hơn 20%
+            case 0: return Color.decode("#999999"); // Trống - xám đậm hơn
+            case 1: return Color.decode("#ADEBAD"); // Đang hoạt động - xanh đậm hơn
+            case 2: return Color.decode("#990000"); // Ngưng hoạt động - đỏ đậm
             default: return Color.GRAY;
         }
     }
     
-    // Nhấn chuột: làm tối 30%
+    // Chọn: màu khi được nhấp vào
+    private Color getSelectedColorByStatus(int status) {
+        switch (status) {
+            case 0: return Color.decode("#666666"); // Trống - xám đậm nhất
+            case 1: return Color.decode("#85E085"); // Đang hoạt động - xanh đậm nhất
+            case 2: return Color.decode("#660000"); // Ngưng hoạt động - đỏ đậm pha nâu
+            default: return Color.GRAY;
+        }
+    }
+    
+    // Nhấn chuột: màu khi bấm giữ
     private Color getPressedColorByStatus(int status) {
         return darkenColor(getBaseColorByStatus(status), 0.30f);
     }
@@ -413,7 +418,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
     private void selectTable(int tableNumber, JButton btnTable) {
         // Đổi border và màu button cũ về mặc định
         if (selectedButton != null && selectedButton != btnTable) {
-            selectedButton.setBorder(javax.swing.BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
+            selectedButton.setBorder(javax.swing.BorderFactory.createLineBorder(Color.WHITE, 2));
             selectedButton.setBorderPainted(true);
             TableForCustomer oldTable = tableDAO.findById(selectedTableNumber);
             if (oldTable != null) {
@@ -428,7 +433,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
         ));
         btnTable.setBorderPainted(true);
 
-        // Đổi màu nền button được chọn thành màu đậm hơn theo status
+        // Đổi màu nền button được chọn thành màu đậm nhất theo status
         TableForCustomer table = tableDAO.findById(tableNumber);
         if (table != null) {
             btnTable.setBackground(getSelectedColorByStatus(table.getStatus()));
