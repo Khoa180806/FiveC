@@ -1148,6 +1148,8 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 return canEdit [columnIndex];
             }
         });
+        tblBill.getTableHeader().setResizingAllowed(false);
+        tblBill.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tblBill);
         if (tblBill.getColumnModel().getColumnCount() > 0) {
             tblBill.getColumnModel().getColumn(0).setResizable(false);

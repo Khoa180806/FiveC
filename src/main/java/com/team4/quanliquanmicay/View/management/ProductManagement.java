@@ -155,8 +155,6 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jLabel6.setToolTipText("");
 
         txtSearch.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtSearch.setPreferredSize(new java.awt.Dimension(150, 25));
-        txtSearch.setMaximumSize(new java.awt.Dimension(150, 25));
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -201,6 +199,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 return canEdit [columnIndex];
             }
         });
+        tableInfo.getTableHeader().setResizingAllowed(false);
+        tableInfo.getTableHeader().setReorderingAllowed(false);
         tableInfo.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tableInfoMouseClicked(evt);
@@ -227,16 +227,12 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jLabel2.setText("Mã món :");
 
         txtProduct_Id.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtProduct_Id.setPreferredSize(new java.awt.Dimension(150, 25));
-        txtProduct_Id.setMaximumSize(new java.awt.Dimension(150, 25));
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
         jLabel3.setText("Tên món :");
 
         txtNameProduct.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtNameProduct.setPreferredSize(new java.awt.Dimension(150, 25));
-        txtNameProduct.setMaximumSize(new java.awt.Dimension(150, 25));
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
@@ -251,8 +247,6 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jLabel5.setText("Giá :");
 
         txtPrice.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtPrice.setPreferredSize(new java.awt.Dimension(150, 25));
-        txtPrice.setMaximumSize(new java.awt.Dimension(150, 25));
         txtPrice.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtPriceActionPerformed(evt);
@@ -264,8 +258,6 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jLabel9.setText("Giảm Giá:");
 
         txtDiscount.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
-        txtDiscount.setPreferredSize(new java.awt.Dimension(150, 25));
-        txtDiscount.setMaximumSize(new java.awt.Dimension(150, 25));
 
         jLabel12.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(255, 255, 255));
@@ -295,10 +287,6 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         lblImage.setFont(new java.awt.Font("Segoe UI Light", 1, 14)); // NOI18N
         lblImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
         lblImage.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-        // Cố định kích thước cho lblImage để tránh tràn UI
-        lblImage.setPreferredSize(new java.awt.Dimension(200, 200));
-        lblImage.setMinimumSize(new java.awt.Dimension(200, 200));
-        lblImage.setMaximumSize(new java.awt.Dimension(200, 200));
 
         btnSave.setBackground(new java.awt.Color(185, 163, 147));
         btnSave.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N

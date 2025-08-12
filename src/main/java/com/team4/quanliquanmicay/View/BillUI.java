@@ -800,6 +800,8 @@ public class BillUI extends javax.swing.JFrame implements BillController {
                 return canEdit [columnIndex];
             }
         });
+        tbBill.getTableHeader().setResizingAllowed(false);
+        tbBill.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tbBill);
         if (tbBill.getColumnModel().getColumnCount() > 0) {
             tbBill.getColumnModel().getColumn(0).setResizable(false);
@@ -839,7 +841,11 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         btnUnOrder.setForeground(new java.awt.Color(102, 102, 102));
         btnUnOrder.setText("Xóa món");
         btnUnOrder.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-
+        btnUnOrder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUnOrderActionPerformed(evt);
+            }
+        });
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 

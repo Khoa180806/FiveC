@@ -244,6 +244,8 @@ public class CategoryManagement extends javax.swing.JFrame implements CategoryCo
                 return canEdit [columnIndex];
             }
         });
+        tblCategories.getTableHeader().setResizingAllowed(false);
+        tblCategories.getTableHeader().setReorderingAllowed(false);
         tblCategories.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tblCategoriesMouseClicked(evt);

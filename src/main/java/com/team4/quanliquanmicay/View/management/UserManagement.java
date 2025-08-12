@@ -500,6 +500,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                 return canEdit [columnIndex];
             }
         });
+        tableInfo.getTableHeader().setResizingAllowed(false);
+        tableInfo.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tableInfo);
         if (tableInfo.getColumnModel().getColumnCount() > 0) {
             tableInfo.getColumnModel().getColumn(0).setResizable(false);

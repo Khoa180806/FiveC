@@ -361,7 +361,7 @@ public class MainUI extends javax.swing.JFrame {
         jButton9 = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
-        jButton11 = new javax.swing.JButton();
+        btnHelp = new javax.swing.JButton();
         jButton12 = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
 
@@ -676,12 +676,17 @@ public class MainUI extends javax.swing.JFrame {
             .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
-        jButton11.setBackground(new java.awt.Color(204, 204, 204));
-        jButton11.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton11.setForeground(new java.awt.Color(102, 102, 102));
-        jButton11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Help.png"))); // NOI18N
-        jButton11.setText("Hỗ trợ");
-        jButton11.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnHelp.setBackground(new java.awt.Color(204, 204, 204));
+        btnHelp.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnHelp.setForeground(new java.awt.Color(102, 102, 102));
+        btnHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Help.png"))); // NOI18N
+        btnHelp.setText("Hỗ trợ");
+        btnHelp.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnHelpActionPerformed(evt);
+            }
+        });
 
         jButton12.setBackground(new java.awt.Color(119, 50, 5));
         jButton12.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -713,7 +718,7 @@ public class MainUI extends javax.swing.JFrame {
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(jButton9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jButton7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton11, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(btnHelp, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(120, 120, 120))
         );
         jPanel6Layout.setVerticalGroup(
@@ -726,7 +731,7 @@ public class MainUI extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addComponent(jButton9, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jButton11, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnHelp, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -905,6 +910,29 @@ public class MainUI extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_jButton12ActionPerformed
 
+    private void btnHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHelpActionPerformed
+        // TODO add your handling code here:
+        String helpMessage = "=== THÔNG TIN LIÊN HỆ HỖ TRỢ PHẦN MỀM ===\n\n" +
+                           "[KỸ THUẬT] Bộ phận Kỹ thuật & Hỗ trợ\n" +
+                           "[CÔNG TY] Công ty TNHH FiveC\n" +
+                           "[ĐỊA CHỈ] 123 Đường ABC, Quận XYZ, TP.HCM\n\n" +
+                           "[ĐIỆN THOẠI] Hotline: 1900-1234\n" +
+                           "[DI ĐỘNG] Di động: 0909-123-456\n" +
+                           "[EMAIL] Email: support@fivec.com.vn\n" +
+                           "[WEBSITE] Website: www.fivec.com.vn\n\n" +
+                           "[GIỜ LÀM VIỆC]\n" +
+                           "   • Thứ 2 - Thứ 6: 8:00 - 17:30\n" +
+                           "   • Thứ 7: 8:00 - 12:00\n" +
+                           "   • Chủ nhật: Nghỉ\n\n" +
+                           "[HƯỚNG DẪN] Khi gặp sự cố, vui lòng cung cấp:\n" +
+                           "   • Mô tả chi tiết lỗi\n" +
+                           "   • Thời gian xảy ra lỗi\n" +
+                           "   • Tên người dùng đang sử dụng\n" +
+                           "   • Phiên bản phần mềm hiện tại";
+        
+        XDialog.alert(helpMessage, "Hỗ trợ kỹ thuật");
+    }//GEN-LAST:event_btnHelpActionPerformed
+
     private void jButton14ActionPerformed(java.awt.event.ActionEvent evt) {
         try {
             if (changePasswordUI == null || !changePasswordUI.isVisible()) {
@@ -921,18 +949,8 @@ public class MainUI extends javax.swing.JFrame {
     }
 
     private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {
-        try {
-            if (reportManagementUI == null || !reportManagementUI.isVisible()) {
-                reportManagementUI = new com.team4.quanliquanmicay.View.management.ReportManagement();
-                reportManagementUI.setVisible(true);
-            } else {
-                reportManagementUI.toFront();
-                reportManagementUI.requestFocus();
-            }
-        } catch (Exception ex) {
-            System.err.println("❌ Lỗi khi mở ReportManagement: " + ex.getMessage());
-            XDialog.error("Lỗi khi mở Báo cáo: " + ex.getMessage(), "Lỗi hệ thống");
-        }
+        XDialog.alert("Chức năng này đang được phát triển!\n\n" +
+                     "Vui lòng chờ phiên bản cập nhật.", "Thông báo");
     }
 
 
@@ -982,9 +1000,9 @@ public class MainUI extends javax.swing.JFrame {
     private javax.swing.JButton btnBillManagement;
     private javax.swing.JButton btnCategoryManagement;
     private javax.swing.JButton btnCustomerManagement;
+    private javax.swing.JButton btnHelp;
     private javax.swing.JButton btnTableManagement;
     private javax.swing.JButton btnUserManagement;
-    private javax.swing.JButton jButton11;
     private javax.swing.JButton jButton12;
     private javax.swing.JButton jButton13;
     private javax.swing.JButton jButton14;

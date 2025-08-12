@@ -786,6 +786,8 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                 return canEdit [columnIndex];
             }
         });
+        tblBills.getTableHeader().setResizingAllowed(false);
+        tblBills.getTableHeader().setReorderingAllowed(false);
         jpsBIlls.setViewportView(tblBills);
         if (tblBills.getColumnModel().getColumnCount() > 0) {
             tblBills.getColumnModel().getColumn(0).setResizable(false);
@@ -861,11 +863,6 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         btnStatistics.setForeground(new java.awt.Color(255, 255, 255));
         btnStatistics.setText("Thống kê");
         btnStatistics.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
-        btnStatistics.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnStatisticsActionPerformed(evt);
-            }
-        });
 
         jButton1.setBackground(new java.awt.Color(185, 163, 147));
         jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N

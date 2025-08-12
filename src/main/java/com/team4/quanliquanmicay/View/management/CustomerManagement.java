@@ -564,11 +564,6 @@ public class CustomerManagement extends javax.swing.JFrame {
         btn_update = new javax.swing.JButton();
         btn_delete = new javax.swing.JButton();
 
-        // Thêm progress bar
-        progressBar = new javax.swing.JProgressBar();
-        progressBar.setVisible(false);
-        progressBar.setIndeterminate(true);
-        
         jLabel3.setText("jLabel3");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -603,6 +598,8 @@ public class CustomerManagement extends javax.swing.JFrame {
                 "Số điện thoại", "Tên", "Điểm", "Hạng"
             }
         ));
+        tbl_customer.getTableHeader().setResizingAllowed(false);
+        tbl_customer.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tbl_customer);
         if (tbl_customer.getColumnModel().getColumnCount() > 0) {
             tbl_customer.getColumnModel().getColumn(2).setMinWidth(100);
@@ -698,9 +695,6 @@ public class CustomerManagement extends javax.swing.JFrame {
         btn_delete.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         btn_delete.setText("Xóa");
         btn_delete.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
-
-        // Thêm progress bar vào layout
-        jPanel1.add(progressBar);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);

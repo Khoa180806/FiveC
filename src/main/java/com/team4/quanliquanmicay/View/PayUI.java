@@ -232,6 +232,8 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
                 return canEdit [columnIndex];
             }
         });
+        tbBillDetail.getTableHeader().setResizingAllowed(false);
+        tbBillDetail.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tbBillDetail);
         if (tbBillDetail.getColumnModel().getColumnCount() > 0) {
             tbBillDetail.getColumnModel().getColumn(0).setResizable(false);
