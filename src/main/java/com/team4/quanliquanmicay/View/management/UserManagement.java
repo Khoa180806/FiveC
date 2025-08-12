@@ -16,11 +16,6 @@ import java.util.List;
 import javax.swing.table.DefaultTableModel;
 import java.util.*;
 import com.team4.quanliquanmicay.util.*;
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import javax.swing.event.*;
-import com.team4.quanliquanmicay.util.XValidation;
 
 /**
  *
