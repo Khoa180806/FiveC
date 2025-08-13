@@ -109,7 +109,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 // Debug: In ra status của từng bill khi load
                 if (bill.getBill_id() == 10000) {
                     System.out.println("DEBUG loadBillData - Bill 10000:");
-                    System.out.println("  Status Boolean: " + bill.getStatus());
+                    System.out.println("  Status String: " + bill.getStatus());
                     System.out.println("  Status Text: " + statusText);
                 }
                 
@@ -291,11 +291,11 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                     XDialog.warning("Chỉ Manager mới được phép hủy đơn!", "Không có quyền");
                     return;
                 }
-                status = 2; // Trạng thái hủy
+                status = 2;
             } else if ("Đã Thanh Toán".equalsIgnoreCase(trimmedStatus)) {
-                status = 1; // Đã thanh toán
+                status = 1;
             } else {
-                status = 0; // Đang phục vụ
+                status = 0;
             }
             
             System.out.println("DEBUG: Final status Integer: " + status);

@@ -1452,7 +1452,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
             // Kiểm tra cache trước (bỏ qua cache nếu đã thanh toán)
             if (tableBillCache.containsKey(tableNumber)) {
                 Bill cachedBill = tableBillCache.get(tableNumber);
-                // Chỉ trả về bill từ cache nếu đang hoạt động (status = 0), không phải đã thanh toán (status = 1)
+                // Chỉ trả về bill từ cache nếu đang hoạt động, không phải đã thanh toán
                 if (cachedBill != null && cachedBill.getStatus() != null && cachedBill.getStatus() == 0) {
                     return cachedBill;
                 } else {

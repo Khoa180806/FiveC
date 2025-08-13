@@ -19,7 +19,7 @@ public class Bill {
     private double total_amount;
     private Date checkin;
     private Date checkout;
-    private String status; // "Đang phục vụ", "Đã thanh toán", "Hủy"
+    private Integer status; // 0: Đang phục vụ, 1: Đã thanh toán, 2: Hủy
     
     /**
      * Validation cho Bill entity
@@ -34,35 +34,55 @@ public class Bill {
      * Kiểm tra hóa đơn có thể thanh toán
      */
     public boolean canBePaid() {
-        return "Đã thanh toán".equals(status) && total_amount > 0;
+        return status != null && status == 1 && total_amount > 0;
     }
     
     /**
      * Kiểm tra hóa đơn đang phục vụ
      */
     public boolean isServing() {
-        return "Đang phục vụ".equals(status);
+        return status != null && status == 0;
     }
     
     /**
      * Kiểm tra hóa đơn đã thanh toán
      */
     public boolean isPaid() {
-        return "Đã thanh toán".equals(status);
+        return status != null && status == 1;
     }
     
     /**
      * Kiểm tra hóa đơn đã hủy
      */
     public boolean isCancelled() {
-        return "Hủy".equals(status);
+        return status != null && status == 2;
+    }
+    
+    /**
+     * Getter cho status
+     */
+    public Integer getStatus() {
+        return status;
+    }
+    
+    /**
+     * Setter cho status  
+     */
+    public void setStatus(Integer status) {
+        this.status = status;
     }
     
     /**
      * Lấy text trạng thái
      */
     public String getStatusText() {
-        return status != null ? status : "Không xác định";
+        if (status == null) return "Không xác định";
+        switch (status) {
+            case 0: return "Đang phục vụ";
+            case 1: return "Đã thanh toán";
+            case 2: return "Hủy";
+            default: return "Không xác định";
+        }
     }
 
 }

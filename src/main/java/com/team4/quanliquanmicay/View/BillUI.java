@@ -229,7 +229,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         
         if (XDialog.confirm("Bạn có chắc muốn hủy hóa đơn này?")) {
             try {
-                currentBill.setStatus("Hủy");
+                currentBill.setStatus(2); // Hủy
                 currentBill.setCheckout(new Date());
                 billDAO.update(currentBill);
                 
@@ -538,7 +538,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
                     .collect(java.util.stream.Collectors.toList());
             } else if ("Đã thanh toán".equals(status)) {
                 bills = billDAO.findAll().stream()
-                    .filter(bill -> "Đã thanh toán".equals(bill.getStatus()))
+                    .filter(bill -> bill.getStatus() != null && bill.getStatus() == 1)
                     .collect(java.util.stream.Collectors.toList());
             } else {
                 bills = billDAO.findAll();
@@ -704,15 +704,31 @@ public class BillUI extends javax.swing.JFrame implements BillController {
      */
     public void setTableInfo(int tableNumber) {
         try {
+            System.out.println("DEBUG: setTableInfo called for table " + tableNumber);
             txtTable_Name.setText("Bàn " + tableNumber);
+            
+            System.out.println("DEBUG: Finding current bill for table...");
             Bill currentBillForTable = findCurrentBillByTable(tableNumber);
+            
             if (currentBillForTable != null) {
+                System.out.println("DEBUG: Found existing bill: " + currentBillForTable.getBill_id());
                 loadBill(String.valueOf(currentBillForTable.getBill_id()));
             } else {
+                System.out.println("DEBUG: No active bill found for table " + tableNumber);
+                System.out.println("DEBUG: Checking if table has any bills (paid or cancelled)...");
+                
+                // Kiểm tra xem bàn có bills đã thanh toán không
+                Bill lastBillForTable = findLastBillByTable(tableNumber);
+                if (lastBillForTable != null) {
+                    System.out.println("DEBUG: Found last bill " + lastBillForTable.getBill_id() + " with status " + lastBillForTable.getStatus());
+                    System.out.println("DEBUG: Creating new bill for table " + tableNumber);
+                }
+                
                 createNewBillForTable(tableNumber, XAuth.user.getUser_id());
             }
         } catch (Exception e) {
             System.err.println("Lỗi khi set thông tin bàn: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -721,13 +737,54 @@ public class BillUI extends javax.swing.JFrame implements BillController {
      */
     private Bill findCurrentBillByTable(int tableNumber) {
         try {
+            System.out.println("DEBUG: Finding bills from database...");
             List<Bill> allBills = billDAO.findAll();
-            return allBills.stream()
-                .filter(bill -> bill.getTable_number() == tableNumber && "Đang phục vụ".equals(bill.getStatus()))
+            System.out.println("DEBUG: Found " + allBills.size() + " bills in database");
+            
+            // Debug: Print all bills for this table
+            for (Bill bill : allBills) {
+                if (bill.getTable_number() == tableNumber) {
+                    System.out.println("DEBUG: Bill for table " + tableNumber + " - ID: " + bill.getBill_id() + ", Status: '" + bill.getStatus() + "'");
+                }
+            }
+            
+            Bill result = allBills.stream()
+                .filter(bill -> {
+                    boolean tableMatch = bill.getTable_number() == tableNumber;
+                    // Xử lý cả status string và số cũ để tương thích  
+                    // Kiểm tra status = 0 (Đang phục vụ)
+                    boolean statusMatch = bill.getStatus() != null && bill.getStatus() == 0;
+                    System.out.println("DEBUG: Bill " + bill.getBill_id() + 
+                        " - Table: " + bill.getTable_number() + 
+                        " (match: " + tableMatch + "), Status: '" + bill.getStatus() + 
+                        "' (type: " + (bill.getStatus() != null ? bill.getStatus().getClass().getSimpleName() : "null") + ") " +
+                        "(match: " + statusMatch + ")");
+                    return tableMatch && statusMatch;
+                })
                 .findFirst()
                 .orElse(null);
+                
+            System.out.println("DEBUG: Filter result: " + (result != null ? "Found bill " + result.getBill_id() : "No bill found"));
+            return result;
         } catch (Exception e) {
             System.err.println("Lỗi khi tìm hóa đơn của bàn: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * Tìm hóa đơn cuối cùng của bàn (bất kể status)
+     */
+    private Bill findLastBillByTable(int tableNumber) {
+        try {
+            List<Bill> allBills = billDAO.findAll();
+            return allBills.stream()
+                .filter(bill -> bill.getTable_number() == tableNumber)
+                .max((b1, b2) -> b1.getBill_id().compareTo(b2.getBill_id()))
+                .orElse(null);
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tìm hóa đơn cuối cùng của bàn: " + e.getMessage());
             return null;
         }
     }
@@ -737,6 +794,8 @@ public class BillUI extends javax.swing.JFrame implements BillController {
      */
     public void createNewBillForTable(int tableNumber, String userId) {
         try {
+            System.out.println("DEBUG: Starting createNewBillForTable for table " + tableNumber);
+            
             // Tạo PaymentHistory tạm thời để có payment_history_id hợp lệ
             String createPaymentSql = "INSERT INTO PAYMENT_HISTORY(payment_method_id, total_amount, status, note) VALUES(?, ?, ?, ?)";
             Object[] paymentValues = {
@@ -745,27 +804,38 @@ public class BillUI extends javax.swing.JFrame implements BillController {
                 "Chưa thanh toán",
                 "Hóa đơn bàn " + tableNumber + " - Chưa thanh toán"
             };
+            
+            System.out.println("DEBUG: Inserting payment history...");
             XJdbc.executeUpdate(createPaymentSql, paymentValues);
             
             // Lấy payment_history_id vừa tạo (ID cao nhất)
+            System.out.println("DEBUG: Getting last payment_history_id...");
             String getLastIdSql = "SELECT MAX(payment_history_id) FROM PAYMENT_HISTORY";
+            
+            // Use the new safe type conversion method
             Integer lastPaymentId = XJdbc.getValue(getLastIdSql, Integer.class);
+            System.out.println("DEBUG: Got payment_history_id: " + lastPaymentId);
             
             // Tạo Bill mới với payment_history_id vừa tạo
             Bill newBill = new Bill();
             newBill.setUser_id(userId);
             newBill.setTable_number(tableNumber);
-            newBill.setStatus("Đang phục vụ");
+            newBill.setStatus(0); // Đang phục vụ
             newBill.setCheckin(new Date());
             newBill.setTotal_amount(0.0);
             newBill.setPhone_number(null);
-            newBill.setPayment_history_id(lastPaymentId);
+            // Use fallback if lastPaymentId is null
+            newBill.setPayment_history_id(lastPaymentId != null ? lastPaymentId : 1);
+            
+            System.out.println("DEBUG: Creating bill with status: " + newBill.getStatus() + " (type: " + newBill.getStatus().getClass().getSimpleName() + ")");
             
             billDAO.create(newBill);
             loadBillFromDatabase(tableNumber, userId);
             updateTableStatus(tableNumber, TABLE_SERVING);
             
         } catch (Exception e) {
+            System.err.println("DEBUG: Exception in createNewBillForTable: " + e.getMessage());
+            e.printStackTrace();
             XDialog.alert("Lỗi khi tạo hóa đơn mới: " + e.getMessage());
         }
     }
