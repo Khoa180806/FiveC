@@ -386,9 +386,14 @@ public class Login extends javax.swing.JFrame implements LoginController{
                 XDialog.warning("Tài khoản của bạn đang tạm dừng!", "Cảnh báo");
             } else {
                 XAuth.user = user;
-                XDialog.success("Đăng nhập thành công! Chào mừng " + user.getUsername(), "Thành công");
+                String roleMessage = "R001".equals(user.getRole_id()) ? 
+                    "Quản trị viên" : "Nhân viên";
+                XDialog.success("Đăng nhập thành công! Chào mừng " + roleMessage + " " + user.getUsername(), "Thành công");
                 this.dispose();
-                new MainUI().setVisible(true);
+                MainUI mainUI = new MainUI();
+                // Kiểm tra role và cập nhật giao diện
+                mainUI.updateUIByRole(user.getRole_id());
+                mainUI.setVisible(true);
             }
             password = null;
             txtPassword.setText("");

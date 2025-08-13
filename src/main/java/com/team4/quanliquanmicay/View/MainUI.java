@@ -29,7 +29,7 @@ public class MainUI extends javax.swing.JFrame {
     private com.team4.quanliquanmicay.View.management.TableManagement tableManagementUI;
     private com.team4.quanliquanmicay.View.management.UserManagement userManagementUI;
     private com.team4.quanliquanmicay.View.management.CustomerManagement customerManagementUI;
-    private com.team4.quanliquanmicay.View.management.ReportManagement reportManagementUI;
+
     private com.team4.quanliquanmicay.View.ChooseTableUI chooseTableUI;
     private com.team4.quanliquanmicay.View.PayUI payUI;
     private com.team4.quanliquanmicay.View.ChangePassword changePasswordUI;
@@ -910,20 +910,7 @@ public class MainUI extends javax.swing.JFrame {
         }
     }
 
-    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {
-        try {
-            if (chooseTableUI == null || !chooseTableUI.isVisible()) {
-                chooseTableUI = new com.team4.quanliquanmicay.View.ChooseTableUI();
-                chooseTableUI.setVisible(true);
-            } else {
-                chooseTableUI.toFront();
-                chooseTableUI.requestFocus();
-            }
-        } catch (Exception ex) {
-            System.err.println("❌ Lỗi khi mở ChooseTableUI: " + ex.getMessage());
-            XDialog.error("Lỗi khi mở Chọn bàn: " + ex.getMessage(), "Lỗi hệ thống");
-        }
-    }
+
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
          if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) 
@@ -975,6 +962,35 @@ public class MainUI extends javax.swing.JFrame {
     private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {
         XDialog.alert("Chức năng này đang được phát triển!\n\n" +
                      "Vui lòng chờ phiên bản cập nhật.", "Thông báo");
+    }
+    
+    /**
+     * Cập nhật giao diện dựa trên role của người dùng
+     * @param roleId ADMIN hoặc STAFF
+     */
+    /**
+     * Cập nhật giao diện dựa trên role của người dùng
+     * @param roleId R001 (Admin) hoặc R002 (Staff)
+     */
+    public void updateUIByRole(String roleId) {
+        boolean isAdmin = "R001".equals(roleId);
+        
+        // Ẩn/hiện panel chức năng admin
+        pnlAdminFeature.setVisible(isAdmin);
+        
+        // Cập nhật lại layout để điều chỉnh khoảng trống
+        pnlMainTitle.revalidate();
+        pnlMainTitle.repaint();
+        
+        // Nếu là admin, khôi phục màu sắc gốc cho các nút
+        if (isAdmin) {
+            java.awt.Color adminColor = new java.awt.Color(134, 39, 43);
+            btnCategoryManagement.setBackground(adminColor);
+            btnBillManagement.setBackground(adminColor);
+            btnTableManagement.setBackground(adminColor);
+            btnUserManagement.setBackground(adminColor);
+            btnCustomerManagement.setBackground(adminColor);
+        }
     }
 
 
