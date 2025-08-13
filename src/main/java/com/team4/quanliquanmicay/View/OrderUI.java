@@ -129,7 +129,7 @@ public class OrderUI extends javax.swing.JFrame {
      */
     private void setupEventHandlers() {
         // Nút Exit
-        btnExit.addActionListener(e -> dispose());
+
         
         // Nút Xóa món
         btnRemove.addActionListener(e -> removeSelectedItem());

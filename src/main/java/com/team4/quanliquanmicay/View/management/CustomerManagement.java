@@ -128,7 +128,7 @@ public class CustomerManagement extends javax.swing.JFrame {
         btn_update.addActionListener(e -> updateCustomerData());
         
         // Delete button functionality
-        btn_delete.addActionListener(e -> deleteCustomerData());
+//        btn_delete.addActionListener(e -> deleteCustomerData());
         
         // Exit button functionality
 
@@ -517,7 +517,7 @@ public class CustomerManagement extends javax.swing.JFrame {
         btn_delete.getActionMap().put("delete", new javax.swing.AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                deleteCustomerData();
+//                deleteCustomerData();
             }
         });
         
@@ -700,6 +700,11 @@ public class CustomerManagement extends javax.swing.JFrame {
         btn_delete.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         btn_delete.setText("Xóa");
         btn_delete.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
+        btn_delete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btn_deleteActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -793,6 +798,10 @@ public class CustomerManagement extends javax.swing.JFrame {
             this.dispose(); // Chỉ đóng cửa sổ khi người dùng xác nhận
         }
     }//GEN-LAST:event_btn_exitActionPerformed
+
+    private void btn_deleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_deleteActionPerformed
+        XDialog.alert("Tính năng đang được phát triển!", "Thông báo");
+    }//GEN-LAST:event_btn_deleteActionPerformed
 
     /**
      * @param args the command line arguments

@@ -13,11 +13,13 @@ import com.team4.quanliquanmicay.Impl.TableForCustomerDAOImpl;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.border.LineBorder;
 import javax.swing.border.CompoundBorder;
 import java.awt.GridLayout;
+import com.team4.quanliquanmicay.View.BillUI;
 
 
 /**
@@ -218,6 +220,238 @@ public class ChooseTableUI extends javax.swing.JFrame {
     private JButton lastClickedButton = null;
     private static final long DOUBLE_CLICK_TIME = 300; // milliseconds
     
+    // Thêm biến để theo dõi BillUI
+    private BillUI currentBillUI = null;
+
+    // XÓA HOÀN TOÀN hàm openHoaDonDialog cũ ở dòng 559-572
+    // CHỈ GIỮ LẠI hàm này
+    /**
+     * Mở BillUI với thông tin bàn đã chọn
+     */
+    private void openHoaDonDialog(int tableNumber) {
+        try {
+            // Kiểm tra trạng thái bàn trước khi mở
+            TableForCustomer table = tableDAO.findById(tableNumber);
+            if (table == null) {
+                XDialog.alert("Không tìm thấy thông tin bàn!", "Lỗi");
+                return;
+            }
+            
+            // Tạo BillUI mới
+            currentBillUI = new BillUI();
+            
+            // Set thông tin bàn vào dialog
+            currentBillUI.setTableInfo(tableNumber);
+            
+            // COMMENT DÒNG NÀY VÌ BillUI CHƯA CÓ METHOD setTableStatusCallback
+            // TODO: Cần thêm method này vào BillUI để callback hoạt động
+            // currentBillUI.setTableStatusCallback(new TableStatusCallback() {
+            //     @Override
+            //     public void onItemAdded(int tableNum) {
+            //         // Khi có món được thêm, cập nhật trạng thái bàn thành "đang hoạt động"
+            //         updateTableStatusToActive(tableNum);
+            //     }
+            //     
+            //     @Override
+            //     public void onBillPaid(int tableNum) {
+            //         // Khi thanh toán xong, cập nhật trạng thái bàn thành "trống"
+            //         updateTableStatusToEmpty(tableNum);
+            //     }
+            // });
+            
+            // Thêm listener để xử lý khi BillUI đóng
+            currentBillUI.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosed(java.awt.event.WindowEvent evt) {
+                    handleBillUIClosed(tableNumber, table);
+                }
+            });
+            
+            // Ẩn ChooseTableUI
+            this.setVisible(false);
+            
+            // Hiển thị BillUI
+            currentBillUI.setVisible(true);
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi khi mở HoaDonJDialog: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // THÊM MỚI: Interface callback để BillUI có thể thông báo về thay đổi
+    public interface TableStatusCallback {
+        void onItemAdded(int tableNumber);
+        void onBillPaid(int tableNumber);
+    }
+
+    // THÊM MỚI: Cập nhật trạng thái bàn thành "đang hoạt động" khi có món được thêm
+    public void updateTableStatusToActive(int tableNumber) {
+        try {
+            TableForCustomer table = tableDAO.findById(tableNumber);
+            if (table != null && table.getStatus() != 1) {
+                table.setStatus(1); // Đang hoạt động
+                tableDAO.update(table);
+                System.out.println("✅ Cập nhật trạng thái bàn " + tableNumber + " thành ĐANG HOẠT ĐỘNG (có món được thêm)");
+                
+                // Cập nhật giao diện nếu ChooseTableUI đang hiển thị
+                if (this.isVisible()) {
+                    loadTable();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cập nhật trạng thái bàn thành đang hoạt động: " + e.getMessage());
+        }
+    }
+
+    // THÊM MỚI: Cập nhật trạng thái bàn thành "trống" khi thanh toán xong
+    public void updateTableStatusToEmpty(int tableNumber) {
+        try {
+            TableForCustomer table = tableDAO.findById(tableNumber);
+            if (table != null && table.getStatus() != 0) {
+                table.setStatus(0); // Trống
+                tableDAO.update(table);
+                System.out.println("✅ Cập nhật trạng thái bàn " + tableNumber + " thành TRỐNG (đã thanh toán)");
+                
+                // Cập nhật giao diện nếu ChooseTableUI đang hiển thị
+                if (this.isVisible()) {
+                    loadTable();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cập nhật trạng thái bàn thành trống: " + e.getMessage());
+        }
+    }
+
+    // Sửa lại hàm handleBillUIClosed để chỉ cập nhật khi thực sự cần thiết
+    private void handleBillUIClosed(int tableNumber, TableForCustomer originalTable) {
+        try {
+            // Kiểm tra lại trạng thái bàn sau khi BillUI đóng
+            TableForCustomer currentTable = tableDAO.findById(tableNumber);
+            if (currentTable == null) {
+                System.err.println("Không tìm thấy bàn sau khi BillUI đóng");
+                return;
+            }
+            
+            // Kiểm tra xem có bill nào đang hoạt động VÀ có đồ ăn/đồ uống không
+            boolean hasActiveBillWithItems = checkIfTableHasActiveBillWithItems(tableNumber);
+            
+            if (hasActiveBillWithItems) {
+                // Có bill đang hoạt động VÀ có đồ ăn/đồ uống - đảm bảo trạng thái bàn là "đang hoạt động"
+                if (currentTable.getStatus() != 1) {
+                    currentTable.setStatus(1);
+                    tableDAO.update(currentTable);
+                    System.out.println("🔄 Sync: Cập nhật trạng thái bàn " + tableNumber + " thành đang hoạt động");
+                }
+            } else {
+                // Không có bill hoặc bill không có đồ ăn/đồ uống - đảm bảo trạng thái bàn là "trống"
+                if (currentTable.getStatus() != 0) {
+                    currentTable.setStatus(0);
+                    tableDAO.update(currentTable);
+                    System.out.println("🔄 Sync: Cập nhật trạng thái bàn " + tableNumber + " thành trống");
+                }
+            }
+            
+            // Cập nhật giao diện bàn
+            loadTable();
+            
+            // Hiển thị lại ChooseTableUI
+            this.setVisible(true);
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi khi xử lý BillUI đóng: " + e.getMessage());
+            // Hiển thị lại ChooseTableUI ngay cả khi có lỗi
+            this.setVisible(true);
+        }
+    }
+
+    // Sửa lại hàm checkIfTableHasActiveBillWithItems để xử lý lỗi ORA-01722
+    private boolean checkIfTableHasActiveBillWithItems(int tableNumber) {
+        try {
+            // Thử với status dưới dạng string trước
+            String billSql = "SELECT bill_id FROM BILL WHERE table_number = ? AND status = '0'";
+            String billIdStr = com.team4.quanliquanmicay.util.XJdbc.executeQuery(billSql, rs -> {
+                if (rs.next()) {
+                    return rs.getString("bill_id");
+                }
+                return null;
+            }, tableNumber);
+            
+            if (billIdStr == null || billIdStr.trim().isEmpty()) {
+                // Không có bill đang hoạt động
+                System.out.println("Bàn " + tableNumber + " - Không có bill đang hoạt động");
+                return false;
+            }
+            
+            // Chuyển đổi bill_id từ String sang Integer một cách an toàn
+            Integer billId;
+            try {
+                billId = Integer.parseInt(billIdStr.trim());
+            } catch (NumberFormatException e) {
+                System.err.println("Lỗi chuyển đổi bill_id: " + billIdStr + " - " + e.getMessage());
+                return false;
+            }
+            
+            // Kiểm tra xem bill này có đồ ăn/đồ uống không
+            Integer itemCount = null;
+            try {
+                final String ITEMS_TABLE = "BILL_DETAIL"; // Tên bảng đúng theo DAO
+                String itemsSql = "SELECT COUNT(*) FROM " + ITEMS_TABLE + " WHERE bill_id = ?";
+                itemCount = com.team4.quanliquanmicay.util.XJdbc.executeQuery(itemsSql, rs -> {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                    return 0;
+                }, billId);
+            } catch (Exception ex) {
+                String msg = ex.getMessage();
+                if (msg != null && msg.contains("ORA-00942")) {
+                    // Bảng chi tiết không tồn tại trong schema hiện tại → coi như 0 món để tránh crash
+                    System.err.println("[WARN] Thiếu bảng BILL_DETAIL. Bỏ qua đếm món và xem như 0 món.");
+                    itemCount = 0;
+                } else {
+                    throw ex;
+                }
+            }
+
+            // Chỉ trả về true nếu có bill đang hoạt động VÀ có ít nhất 1 món
+            boolean hasItems = itemCount != null && itemCount > 0;
+            System.out.println("Bàn " + tableNumber + " - Bill ID: " + billId + " - Số món: " + itemCount + " - Có đồ ăn: " + hasItems);
+
+            return hasItems;
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi khi kiểm tra bill: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Fallback: kiểm tra đơn giản hơn
+            return checkIfTableHasActiveBillSimple(tableNumber);
+        }
+    }
+
+    // THÊM MỚI: Hàm fallback để kiểm tra đơn giản hơn
+    private boolean checkIfTableHasActiveBillSimple(int tableNumber) {
+        try {
+            // Kiểm tra đơn giản: chỉ xem có bill nào của bàn này không
+            String simpleSql = "SELECT COUNT(*) FROM BILL WHERE table_number = ?";
+            Integer billCount = com.team4.quanliquanmicay.util.XJdbc.executeQuery(simpleSql, rs -> {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+                return 0;
+            }, tableNumber);
+             
+            boolean hasBill = billCount != null && billCount > 0;
+            System.out.println("Bàn " + tableNumber + " - Fallback check: Có " + billCount + " bill");
+            
+            return hasBill;
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi fallback check: " + e.getMessage());
+            return false;
+        }
+    }
+
     // Hàm fill dữ liệu bàn lên 2 panel
     public void loadTable() {
         List<TableForCustomer> tables = tableDAO.findAll();
@@ -334,7 +568,17 @@ public class ChooseTableUI extends javax.swing.JFrame {
                                 lastClickedButton == btnTable) {
                                 // Double click vào cùng button - mở BillUI
                                 int num = Integer.parseInt(btnTable.getActionCommand());
-                                openHoaDonDialog(num);
+                                 
+                                // Kiểm tra trạng thái bàn trước khi mở
+                                TableForCustomer table = tableDAO.findById(num);
+                                if (table != null) {
+                                    // Chỉ cho phép mở BillUI nếu bàn không ngưng hoạt động
+                                    if (table.getStatus() != 2) {
+                                        openHoaDonDialog(num);
+                                    } else {
+                                        XDialog.alert("Bàn này tạm ngưng hoạt động!", "Thông báo");
+                                    }
+                                }
                             } else {
                                 // Single click hoặc click vào button khác - chỉ chọn bàn
                                 int num = Integer.parseInt(btnTable.getActionCommand());
@@ -441,26 +685,6 @@ public class ChooseTableUI extends javax.swing.JFrame {
     /**
      * Mở BillUI với thông tin bàn đã chọn
      */
-    private void openHoaDonDialog(int tableNumber) {
-        try {
-            // Tạo BillUI mới
-//            BillUI hoaDonDialog = new BillUI();
-            BillUI hoaDonDialog = new BillUI();
-            
-            // Set thông tin bàn vào dialog
-            hoaDonDialog.setTableInfo(tableNumber);
-            
-            // Ẩn ChooseTableUI
-            this.setVisible(false);
-            
-            // Hiển thị BillUI
-            hoaDonDialog.setVisible(true);
-            
-        } catch (Exception e) {
-            System.err.println("Lỗi khi mở HoaDonJDialog: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
     // Event handlers cho các button
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
@@ -478,7 +702,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
                 XDialog.alert("Bàn này tạm ngưng hoạt động!", "Thông báo");
                 return;
             }
-            
+
             // Kiểm tra xem bàn có phải bàn trống không
             if (selectedTable.getStatus() == 0) {
                 XDialog.alert("Chỉ có thể chuyển bàn đang hoạt động!", "Thông báo");
