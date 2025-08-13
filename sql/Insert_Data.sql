@@ -75,63 +75,18 @@ INSERT INTO CATE (category_id, category_name, is_available) VALUES ('C002', N'Đ
 INSERT INTO CATE (category_id, category_name, is_available) VALUES ('C003', N'Nước Uống', 1);
 INSERT INTO CATE (category_id, category_name, is_available) VALUES ('C004', N'Tráng Miệng', 1);
 INSERT INTO CATE (category_id, category_name, is_available) VALUES ('C005', N'Combo', 1);
+INSERT INTO CATE (category_id, category_name, is_available) VALUES ('C006', N'Đồ Ăn Vặt', 1);
+INSERT INTO CATE (category_id, category_name, is_available) VALUES ('C007', N'Cơm', 1);
+INSERT INTO CATE (category_id, category_name, is_available) VALUES ('C008', N'Lẩu', 1);
+INSERT INTO CATE (category_id, category_name, is_available) VALUES ('C009', N'Khai Vị', 1);
 
 -- ========================================
--- 5. INSERT PRODUCT - SẢN PHẨM
+-- 5. INSERT PRODUCT - SẢN PHẨM (BỎ QUA - SẼ INSERT TỪ HÌNH ẢNH)
 -- ========================================
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('Bước 5: Insert dữ liệu PRODUCT...');
+    DBMS_OUTPUT.PUT_LINE('Bước 5: Bỏ qua insert sản phẩm mẫu - sẽ insert từ hình ảnh chính thức...');
 END;
 /
-
--- Mì Cay
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P001', N'Mì Cay Hàn Quốc Cấp 1', 45000, 0.00, N'phần', 'mi_cay_1.jpg', 1, N'Độ cay nhẹ, phù hợp người mới ăn', 'C001');
-
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P002', N'Mì Cay Hàn Quốc Cấp 2', 50000, 0.00, N'phần', 'mi_cay_2.jpg', 1, N'Độ cay vừa phải', 'C001');
-
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P003', N'Mì Cay Hàn Quốc Cấp 3', 55000, 0.05, N'phần', 'mi_cay_3.jpg', 1, N'Độ cay cao, cho người đã quen', 'C001');
-
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P004', N'Mì Cay Đặc Biệt Siêu Cay', 65000, 0.00, N'phần', 'mi_cay_db.jpg', 1, N'Độ cay cực cao, thử thách bản thân', 'C001');
-
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P005', N'Mì Cay Phô Mai', 60000, 0.00, N'phần', 'mi_cay_phomai.jpg', 1, N'Mì cay kết hợp với phô mai thơm ngon', 'C001');
-
--- Đồ Ăn Kèm
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P006', N'Chả Cá Hàn Quốc', 25000, 0.00, N'phần', 'cha_ca.jpg', 1, N'Chả cá tươi ngon, ăn kèm mì cay', 'C002');
-
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P007', N'Kim Chi', 20000, 0.00, N'phần', 'kimchi.jpg', 1, N'Kim chi chua cay truyền thống', 'C002');
-
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P008', N'Trứng Rán', 15000, 0.00, N'quả', 'trung_ran.jpg', 1, N'Trứng rán giòn, ăn kèm mì cay', 'C002');
-
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P009', N'Xúc Xích Hàn Quốc', 30000, 0.00, N'phần', 'xuc_xich.jpg', 1, N'Xúc xích cay nồng đậm đà', 'C002');
-
--- Nước Uống
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P010', N'Trà Đá', 5000, 0.00, N'ly', 'tra_da.jpg', 1, N'Trà đá mát lạnh', 'C003');
-
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P011', N'Coca Cola', 15000, 0.00, N'lon', 'coca.jpg', 1, N'Nước ngọt có gas', 'C003');
-
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P012', N'Nước Suối', 10000, 0.00, N'chai', 'nuoc_suoi.jpg', 1, N'Nước suối tinh khiết', 'C003');
-
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P013', N'Trà Sữa Trân Châu', 25000, 0.00, N'ly', 'tra_sua.jpg', 1, N'Trà sữa ngọt ngào với trân châu', 'C003');
-
--- Combo
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P014', N'Combo Mì Cay + Nước', 55000, 0.10, N'combo', 'combo1.jpg', 1, N'Mì cay cấp 2 + Coca Cola', 'C005');
-
-INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id) 
-VALUES ('P015', N'Combo Đôi Bạn Thân', 120000, 0.15, N'combo', 'combo2.jpg', 1, N'2 mì cay + 2 nước + kim chi', 'C005');
 
 -- ========================================
 -- 6. INSERT TABLE_FOR_CUSTOMER - BÀN ĂN
@@ -357,46 +312,12 @@ INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total
 VALUES ('U004', '0821234567', 25, 24, 245000, SYSDATE - 150, SYSDATE - 150 + 3.5/24, N'Đã thanh toán');
 
 -- ========================================
--- 10. INSERT BILL_DETAIL - CHI TIẾT HÓA ĐƠN
+-- 10. INSERT BILL_DETAIL - CHI TIẾT HÓA ĐƠN (BỎ QUA - SẼ INSERT SAU KHI CÓ SẢN PHẨM)
 -- ========================================
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('Bước 10: Insert dữ liệu BILL_DETAIL...');
+    DBMS_OUTPUT.PUT_LINE('Bước 10: Bỏ qua insert BILL_DETAIL - sẽ insert sau khi có sản phẩm chính thức...');
 END;
 /
-
--- Chi tiết hóa đơn 10000 (đã thanh toán)
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10000, 'P002', 2, 50000, 0.00);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10000, 'P006', 1, 25000, 0.00);
-
--- Chi tiết hóa đơn 10001 (đã thanh toán)
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10001, 'P001', 1, 45000, 0.00);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10001, 'P007', 1, 20000, 0.00);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10001, 'P011', 2, 15000, 0.00);
-
--- Chi tiết hóa đơn 10002 (đã thanh toán)
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10002, 'P015', 1, 120000, 0.15);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10002, 'P008', 2, 15000, 0.00);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10002, 'P013', 2, 25000, 0.00);
-
--- Chi tiết hóa đơn 10003 (đã thanh toán)
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10003, 'P003', 1, 55000, 0.05);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10003, 'P010', 2, 5000, 0.00);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10003, 'P009', 1, 30000, 0.00);
-
--- Chi tiết hóa đơn 10004 (đã thanh toán)
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10004, 'P014', 3, 55000, 0.10);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10004, 'P012', 2, 10000, 0.00);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10004, 'P007', 2, 20000, 0.00);
-
--- Chi tiết hóa đơn 10005 (đang phục vụ)
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10005, 'P004', 1, 65000, 0.00);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10005, 'P005', 1, 60000, 0.00);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10005, 'P011', 2, 15000, 0.00);
-
--- Chi tiết hóa đơn 10006 (đang phục vụ)
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10006, 'P002', 1, 50000, 0.00);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10006, 'P008', 1, 15000, 0.00);
-INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount) VALUES (10006, 'P012', 2, 10000, 0.00);
 
 -- ========================================
 -- COMMIT DỮ LIỆU
