@@ -1,0 +1,6 @@
+d624f07 ThienlocTran 2025-08-12 change status boolean become Interger at Entity/Bill.java,BillDAOImpl,                    .filter(bill -> bill.getStatus() != null && bill.getStatus() == 0) ,PayUI,BillManagement,HistoryManagement
+d4eaa9f ThienlocTran 2025-08-12 change update
+581d7df ThienlocTran 2025-07-31 code optimization and imrpove performance
+3122f53 ThienlocTran 2025-07-31 fix ORA-01722: invalid number
+328f7ed ThienlocTran 2025-07-31 Fix covert Number oracle to int become Interger(can null)
+7cb9d17 v12581234 2025-07-09 Finish Bill And BillDetails And PaymentHistory

@@ -229,7 +229,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         
         if (XDialog.confirm("Bạn có chắc muốn hủy hóa đơn này?")) {
             try {
-                currentBill.setStatus(2); // Hủy
+                currentBill.setStatus("Hủy");
                 currentBill.setCheckout(new Date());
                 billDAO.update(currentBill);
                 
@@ -534,11 +534,11 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             List<Bill> bills;
             if ("Đang phục vụ".equals(status)) {
                 bills = billDAO.findAll().stream()
-                    .filter(bill -> bill.getStatus() != null && bill.getStatus() == 0)
+                    .filter(bill -> "Đang phục vụ".equals(bill.getStatus()))
                     .collect(java.util.stream.Collectors.toList());
             } else if ("Đã thanh toán".equals(status)) {
                 bills = billDAO.findAll().stream()
-                    .filter(bill -> bill.getStatus() != null && bill.getStatus() == 1)
+                    .filter(bill -> "Đã thanh toán".equals(bill.getStatus()))
                     .collect(java.util.stream.Collectors.toList());
             } else {
                 bills = billDAO.findAll();
@@ -723,7 +723,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         try {
             List<Bill> allBills = billDAO.findAll();
             return allBills.stream()
-                .filter(bill -> bill.getTable_number() == tableNumber && bill.getStatus() != null && bill.getStatus() == 0)
+                .filter(bill -> bill.getTable_number() == tableNumber && "Đang phục vụ".equals(bill.getStatus()))
                 .findFirst()
                 .orElse(null);
         } catch (Exception e) {
@@ -755,7 +755,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             Bill newBill = new Bill();
             newBill.setUser_id(userId);
             newBill.setTable_number(tableNumber);
-            newBill.setStatus(0); // Đang phục vụ
+            newBill.setStatus("Đang phục vụ");
             newBill.setCheckin(new Date());
             newBill.setTotal_amount(0.0);
             newBill.setPhone_number(null);

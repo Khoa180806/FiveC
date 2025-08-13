@@ -16,25 +16,17 @@ public class BillDAOImpl implements BillDAO {
     private static final String DELETE_SQL = "DELETE FROM BILL WHERE bill_id=?";
     private static final String FIND_ALL_SQL = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL";
     private static final String FIND_BY_ID_SQL = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL WHERE bill_id=?";
-    private static final String FIND_BY_TABLE_NUMBER_SQL = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL WHERE table_number = ? AND status = N'Đang phục vụ'";
+    private static final String FIND_BY_TABLE_NUMBER_SQL = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL WHERE table_number = ? AND status = ?";
     private static final String FIND_ALL_BY_TABLE_NUMBER_SQL = "SELECT bill_id, user_id, phone_number, payment_history_id, table_number, total_amount, checkin, checkout, status FROM BILL WHERE table_number = ?";
 
     @Override
     public Bill create(Bill entity) {
         if (entity == null || !entity.isValid()) return null;
         
-        // Use Integer status directly for database storage
-        Integer statusValue = entity.getStatus();
-        
-        // Convert Integer status to String for database storage
-        String statusString = null;
-        if (statusValue != null) {
-            switch (statusValue) {
-                case 0: statusString = "Đang phục vụ"; break;
-                case 1: statusString = "Đã thanh toán"; break;
-                case 2: statusString = "Hủy"; break;
-                default: statusString = "Đang phục vụ";
-            }
+        // Use String status directly - no conversion needed
+        String statusValue = entity.getStatus();
+        if (statusValue == null) {
+            statusValue = "Đang phục vụ"; // Default value
         }
         
         // Sử dụng SQL phù hợp tùy theo có payment_history_id hay không
@@ -47,7 +39,7 @@ public class BillDAOImpl implements BillDAO {
                 entity.getTotal_amount(),
                 convertToTimestamp(entity.getCheckin()),
                 convertToTimestamp(entity.getCheckout()),
-                statusString // Sử dụng String với database
+                statusValue
             };
             XJdbc.executeUpdate(CREATE_SQL, values);
         } else {
@@ -58,7 +50,7 @@ public class BillDAOImpl implements BillDAO {
                 entity.getTotal_amount(),
                 convertToTimestamp(entity.getCheckin()),
                 convertToTimestamp(entity.getCheckout()),
-                statusString // Sử dụng String với database
+                statusValue
             };
             XJdbc.executeUpdate(CREATE_SQL_NO_PAYMENT, values);
         }
@@ -69,18 +61,10 @@ public class BillDAOImpl implements BillDAO {
     public void update(Bill entity) {
         if (entity == null || entity.getBill_id() == null || !entity.isValid()) return;
         
-        // Use Integer status directly for database storage
-        Integer statusValue = entity.getStatus();
-        
-        // Convert Integer status to String for database storage
-        String statusString = null;
-        if (statusValue != null) {
-            switch (statusValue) {
-                case 0: statusString = "Đang phục vụ"; break;
-                case 1: statusString = "Đã thanh toán"; break;
-                case 2: statusString = "Hủy"; break;
-                default: statusString = "Đang phục vụ";
-            }
+        // Use String status directly - no conversion needed
+        String statusValue = entity.getStatus();
+        if (statusValue == null) {
+            statusValue = "Đang phục vụ"; // Default value
         }
         
         Object[] values = {
@@ -91,14 +75,14 @@ public class BillDAOImpl implements BillDAO {
             entity.getTotal_amount(),
             convertToTimestamp(entity.getCheckin()),
             convertToTimestamp(entity.getCheckout()),
-            statusString, // Sử dụng String với database
+            statusValue,
             entity.getBill_id()
         };
         
         // Debug: In ra thông tin trước khi update
         System.out.println("DEBUG BillDAO Update:");
         System.out.println("  Bill ID: " + entity.getBill_id());
-        System.out.println("  Status Integer: " + entity.getStatus());
+        System.out.println("  Status: " + entity.getStatus());
         System.out.println("  Status Text: " + entity.getStatusText());
         System.out.println("  SQL: " + UPDATE_SQL);
         
@@ -130,19 +114,8 @@ public class BillDAOImpl implements BillDAO {
                     bill.setCheckin(rs.getDate("checkin"));
                     bill.setCheckout(rs.getDate("checkout"));
                     
-                    // Get Integer status from database directly
-                    // Convert String status from database to Integer
-                    String statusString = rs.getString("status");
-                    Integer status = null;
-                    if (statusString != null) {
-                        switch (statusString) {
-                            case "Đang phục vụ": status = 0; break;
-                            case "Đã thanh toán": status = 1; break;
-                            case "Hủy": status = 2; break;
-                            default: status = 0; // Default to serving
-                        }
-                    }
-                    bill.setStatus(status);
+                    // Get String status from database directly
+                    bill.setStatus(rs.getString("status"));
                     
                     bills.add(bill);
                 }
@@ -171,19 +144,8 @@ public class BillDAOImpl implements BillDAO {
                     bill.setCheckin(rs.getDate("checkin"));
                     bill.setCheckout(rs.getDate("checkout"));
                     
-                    // Get Integer status from database directly
-                    // Convert String status from database to Integer
-                    String statusString = rs.getString("status");
-                    Integer status = null;
-                    if (statusString != null) {
-                        switch (statusString) {
-                            case "Đang phục vụ": status = 0; break;
-                            case "Đã thanh toán": status = 1; break;
-                            case "Hủy": status = 2; break;
-                            default: status = 0; // Default to serving
-                        }
-                    }
-                    bill.setStatus(status);
+                    // Get String status from database directly
+                    bill.setStatus(rs.getString("status"));
                     
                     return bill;
                 }
@@ -210,22 +172,12 @@ public class BillDAOImpl implements BillDAO {
                     b.setCheckin(rs.getDate("checkin"));
                     b.setCheckout(rs.getDate("checkout"));
                     // Get Integer status from database directly
-                    // Convert String status from database to Integer
-                    String statusString = rs.getString("status");
-                    Integer status = null;
-                    if (statusString != null) {
-                        switch (statusString) {
-                            case "Đang phục vụ": status = 0; break;
-                            case "Đã thanh toán": status = 1; break;
-                            case "Hủy": status = 2; break;
-                            default: status = 0; // Default to serving
-                        }
-                    }
-                    b.setStatus(status);
+                    // Get String status from database directly
+                    b.setStatus(rs.getString("status"));
                     return b;
                 }
                 return null;
-            }, tableNumber);
+            }, tableNumber, "Đang phục vụ");
         } catch (Exception e) {
             System.err.println("Error in findByTableNumber for table " + tableNumber + ": " + e.getMessage());
             return null;
@@ -247,18 +199,8 @@ public class BillDAOImpl implements BillDAO {
                     b.setTotal_amount(rs.getDouble("total_amount"));
                     b.setCheckin(rs.getDate("checkin"));
                     b.setCheckout(rs.getDate("checkout"));
-                    // Convert String status from database to Integer
-                    String statusString = rs.getString("status");
-                    Integer status = null;
-                    if (statusString != null) {
-                        switch (statusString) {
-                            case "Đang phục vụ": status = 0; break;
-                            case "Đã thanh toán": status = 1; break;
-                            case "Hủy": status = 2; break;
-                            default: status = 0; // Default to serving
-                        }
-                    }
-                    b.setStatus(status);
+                    // Get String status from database directly
+                    b.setStatus(rs.getString("status"));
                     bills.add(b);
                 }
                 return bills;

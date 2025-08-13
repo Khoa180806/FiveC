@@ -1,0 +1,14 @@
+[33mcommit d624f07e27636a6b843f2f9e21c68d48c9427fd5[m
+Author: ThienlocTran <tranthienloc21102005@gmail.com>
+Date:   Tue Aug 12 21:06:52 2025 +0700
+
+    change status boolean become Interger at Entity/Bill.java,BillDAOImpl,                    .filter(bill -> bill.getStatus() != null && bill.getStatus() == 0)
+    ,PayUI,BillManagement,HistoryManagement
+
+src/main/java/com/team4/quanliquanmicay/Entity/Bill.java
+src/main/java/com/team4/quanliquanmicay/Impl/BillDAOImpl.java
+src/main/java/com/team4/quanliquanmicay/View/BillUI.java
+src/main/java/com/team4/quanliquanmicay/View/PayUI.java
+src/main/java/com/team4/quanliquanmicay/View/management/BillManagement.java
+src/main/java/com/team4/quanliquanmicay/View/management/HistoryManagement.form
+src/main/java/com/team4/quanliquanmicay/View/management/HistoryManagement.java
