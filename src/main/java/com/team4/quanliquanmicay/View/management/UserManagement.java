@@ -295,7 +295,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             }
         });
 
-        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Search.png"))); // NOI18N
+        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Search.png"))); // NOI18N
         jLabel6.setText("jLabel6");
 
         btnExit.setBackground(new java.awt.Color(185, 163, 147));

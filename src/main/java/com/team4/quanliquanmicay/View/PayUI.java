@@ -272,7 +272,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         btnPay.setBackground(new java.awt.Color(204, 204, 204));
         btnPay.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnPay.setForeground(new java.awt.Color(0, 102, 0));
-        btnPay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Price list.png"))); // NOI18N
+        btnPay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Price list.png"))); // NOI18N
         btnPay.setText("Thanh Toán");
         btnPay.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 51, 51), 3));
 

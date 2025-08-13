@@ -748,7 +748,7 @@ public class OrderUI extends javax.swing.JFrame {
      */
     private ImageIcon getDefaultImage(int size) {
         try {
-            ImageIcon defaultIcon = new ImageIcon(getClass().getResource("/icons_and_images/icons8-plate-50.png"));
+            ImageIcon defaultIcon = new ImageIcon(getClass().getResource("/icons_and_images/icon/icons8-plate-50.png"));
             if (defaultIcon.getImage() != null) {
                 Image img = defaultIcon.getImage().getScaledInstance(size, size, Image.SCALE_SMOOTH);
                 return new ImageIcon(img);
@@ -1018,7 +1018,7 @@ public class OrderUI extends javax.swing.JFrame {
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Search.png"))); // NOI18N
+        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Search.png"))); // NOI18N
 
         jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 

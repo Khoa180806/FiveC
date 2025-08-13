@@ -75,7 +75,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         btnExit = new javax.swing.JButton();
 
         jButton5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
+        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/refresh.png"))); // NOI18N
         jButton5.setText("THÊM");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);

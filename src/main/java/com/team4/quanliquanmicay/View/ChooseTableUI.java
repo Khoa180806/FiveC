@@ -132,7 +132,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
         jTabbedPane1.addTab("13-24", jPanel3);
 
         jButton2.setBackground(new java.awt.Color(119, 50, 5));
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Exit.png"))); // NOI18N
         jButton2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
