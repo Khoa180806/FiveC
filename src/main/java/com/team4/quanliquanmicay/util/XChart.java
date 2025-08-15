@@ -159,12 +159,8 @@ public class XChart {
             PlotOrientation.VERTICAL, true, true, false
         );
         
-        // Thêm dữ liệu đường
-        if (lineData != null) {
-            XYPlot plot = (XYPlot) chart.getPlot();
-            XYLineAndShapeRenderer lineRenderer = new XYLineAndShapeRenderer(true, false);
-            // Thêm line data vào plot
-        }
+        // Ghi chú: Overlay line trên bar với CategoryPlot yêu cầu cấu hình nâng cao.
+        // Ở phiên bản hiện tại, ta giữ biểu đồ cột. Nếu cần overlay, sẽ nâng cấp ở bước sau.
         
         customizeChart(chart);
         return chart;

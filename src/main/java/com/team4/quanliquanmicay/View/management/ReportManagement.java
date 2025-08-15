@@ -7,6 +7,7 @@ package com.team4.quanliquanmicay.View.management;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XChart;
+import com.team4.quanliquanmicay.util.TimeRange;
 import com.team4.quanliquanmicay.DAO.BillDAO;
 import com.team4.quanliquanmicay.DAO.BillDetailsDAO;
 import com.team4.quanliquanmicay.DAO.ProductDAO;
@@ -20,17 +21,29 @@ import com.team4.quanliquanmicay.Entity.Product;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.JComboBox;
+import javax.swing.JButton;
+import java.io.File;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.general.DefaultPieDataset;
+import org.jfree.data.category.DefaultCategoryDataset;
+
+import com.team4.quanliquanmicay.util.XPDF;
+import com.team4.quanliquanmicay.util.XExcel;
 
 /**
  *
@@ -55,8 +68,24 @@ public class ReportManagement extends javax.swing.JFrame {
         // Initialize DAOs
         initializeDAOs();
         
+        // Safe-load exit icon after components are created
+        try {
+            java.net.URL exitUrl = getClass().getResource("/icons_and_images/icon/Exit.png");
+            if (exitUrl != null) {
+                jButton1.setIcon(new javax.swing.ImageIcon(exitUrl));
+            } else {
+                System.err.println("⚠️ Missing resource: /icons_and_images/icon/Exit.png");
+            }
+        } catch (Exception ignore) { }
+        
+        // Build General Revenue Dashboard
+        initGeneralDashboard();
+        
         // Create charts
         createProductRevenueChart();
+        
+        // Exit action
+        jButton1.addActionListener(e -> handleExit());
         
         XDialog.success("Chào mừng đến với hệ thống Thống kê & Báo cáo!", "Thông báo");
     }
@@ -69,6 +98,259 @@ public class ReportManagement extends javax.swing.JFrame {
         billDetailsDAO = new BillDetailsDAOImpl();
         productDAO = new ProductDAOImpl();
     }
+    
+    // ========================================
+    // TAB 1: DOANH THU TỔNG QUÁT (pnlGeneral)
+    // ========================================
+    
+    private JComboBox<String> cboRange;
+    private JPanel kpiContainer;
+    private JPanel generalChartContainer;
+    private JPanel actionsContainer;
+    
+    private void initGeneralDashboard() {
+        try {
+            pnlGeneral.setLayout(new BorderLayout());
+            
+            // Header with filters + actions
+            JPanel header = new JPanel(new BorderLayout());
+            header.setBackground(Color.WHITE);
+            header.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            
+            JLabel title = new JLabel("Tổng quan doanh thu");
+            title.setFont(new Font("Tahoma", Font.BOLD, 20));
+            title.setForeground(new Color(134, 39, 43));
+            title.setHorizontalAlignment(SwingConstants.LEFT);
+            header.add(title, BorderLayout.WEST);
+            
+            JPanel rightHeader = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 0));
+            rightHeader.setOpaque(false);
+            cboRange = new JComboBox<>(new String[] { "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm nay" });
+            JButton btnRefresh = XTheme.createBeButton("Làm mới", e -> refreshGeneralData());
+            JButton btnExportPDF = XTheme.createMiyCayButton("Xuất PDF", e -> exportPdfReport());
+            JButton btnExportExcel = XTheme.createBeButton("Xuất Excel", e -> exportExcelReport());
+            cboRange.addActionListener(e -> refreshGeneralData());
+            rightHeader.add(cboRange);
+            rightHeader.add(btnRefresh);
+            rightHeader.add(btnExportPDF);
+            rightHeader.add(btnExportExcel);
+            header.add(rightHeader, BorderLayout.EAST);
+            
+            pnlGeneral.add(header, BorderLayout.NORTH);
+            
+            // Center section
+            JPanel center = new JPanel(new BorderLayout());
+            center.setBackground(Color.WHITE);
+            
+            // KPI cards row
+            kpiContainer = new JPanel(new GridLayout(1, 4, 12, 12));
+            kpiContainer.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 6));
+            kpiContainer.setBackground(Color.WHITE);
+            center.add(kpiContainer, BorderLayout.NORTH);
+            
+            // Chart container
+            generalChartContainer = new JPanel(new BorderLayout());
+            generalChartContainer.setBorder(BorderFactory.createEmptyBorder(6, 12, 12, 12));
+            generalChartContainer.setBackground(Color.WHITE);
+            center.add(generalChartContainer, BorderLayout.CENTER);
+            
+            // Footer spacing only
+            actionsContainer = new JPanel();
+            actionsContainer.setOpaque(false);
+            actionsContainer.setBorder(BorderFactory.createEmptyBorder(0, 0, 8, 0));
+            center.add(actionsContainer, BorderLayout.SOUTH);
+            
+            pnlGeneral.add(center, BorderLayout.CENTER);
+            
+            refreshGeneralData();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void refreshGeneralData() {
+        try {
+            TimeRange range = getSelectedRange();
+            
+            // Load data
+            List<Bill> bills = billDAO.findAll();
+            List<Bill> paidBillsInRange = new ArrayList<>();
+            double totalRevenue = 0;
+            int totalOrders = 0;
+            int servingOrders = 0;
+            double avgOrderValue = 0;
+            
+            for (Bill b : bills) {
+                if (b == null) continue;
+                if (b.getStatus() != null && b.getStatus() == 0) servingOrders++;
+                if (b.getStatus() != null && b.getStatus() == 1 && withinRange(b.getCheckout(), range)) {
+                    paidBillsInRange.add(b);
+                    totalRevenue += b.getTotal_amount();
+                    totalOrders++;
+                }
+            }
+            if (totalOrders > 0) {
+                avgOrderValue = totalRevenue / totalOrders;
+            }
+            
+            // Update KPI cards
+            kpiContainer.removeAll();
+            kpiContainer.add(createIconKpiCard("/icons_and_images/icon/Price list.png", "Doanh thu", String.format("%,.0f VNĐ", totalRevenue), new Color(134,39,43)));
+            kpiContainer.add(createIconKpiCard("/icons_and_images/icon/Notes.png", "Số hóa đơn", String.valueOf(totalOrders), new Color(204,164,133)));
+            kpiContainer.add(createIconKpiCard("/icons_and_images/icon/Task list.png", "HĐ đang phục vụ", String.valueOf(servingOrders), new Color(52,73,94)));
+            kpiContainer.add(createIconKpiCard("/icons_and_images/icon/Statistics.png", "Giá trị TB/HĐ", String.format("%,.0f VNĐ", avgOrderValue), new Color(40,167,69)));
+            kpiContainer.revalidate();
+            kpiContainer.repaint();
+            
+            // Build chart: only daily
+            DefaultCategoryDataset dayDataset = buildRevenueByDayDataset(paidBillsInRange);
+            String title = "Doanh thu theo ngày (" + (String) cboRange.getSelectedItem() + ")";
+            JFreeChart dayChart = XChart.createBarChart(title, "Ngày", "VNĐ", dayDataset);
+            ChartPanel dayPanel = XChart.createChartPanel(dayChart);
+
+            generalChartContainer.removeAll();
+            generalChartContainer.add(dayPanel, BorderLayout.CENTER);
+            generalChartContainer.revalidate();
+            generalChartContainer.repaint();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private JPanel createKpiCard(String label, String value, Color color) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(230, 230, 230), 1),
+            BorderFactory.createEmptyBorder(16, 16, 16, 16)
+        ));
+        
+        JLabel lbTitle = new JLabel(label);
+        lbTitle.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        lbTitle.setForeground(new Color(108, 117, 125));
+        
+        JLabel lbValue = new JLabel(value);
+        lbValue.setFont(new Font("Tahoma", Font.BOLD, 18));
+        lbValue.setForeground(color);
+        lbValue.setHorizontalAlignment(SwingConstants.RIGHT);
+        
+        card.add(lbTitle, BorderLayout.NORTH);
+        card.add(lbValue, BorderLayout.CENTER);
+        return card;
+    }
+
+    private JPanel createIconKpiCard(String iconPath, String label, String value, Color valueColor) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(230, 230, 230), 1),
+            BorderFactory.createEmptyBorder(12, 12, 12, 12)
+        ));
+
+        JPanel top = new JPanel(new BorderLayout());
+        top.setOpaque(false);
+
+        JLabel lbTitle = new JLabel(label);
+        lbTitle.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        lbTitle.setForeground(new Color(108, 117, 125));
+
+        JLabel lbIcon = new JLabel();
+        lbIcon.setHorizontalAlignment(SwingConstants.RIGHT);
+        ImageIcon raw = loadIcon(iconPath, 26, 26);
+        if (raw != null) lbIcon.setIcon(raw);
+
+        top.add(lbTitle, BorderLayout.WEST);
+        top.add(lbIcon, BorderLayout.EAST);
+
+        JLabel lbValue = new JLabel(value);
+        lbValue.setFont(new Font("Tahoma", Font.BOLD, 18));
+        lbValue.setForeground(valueColor);
+        lbValue.setHorizontalAlignment(SwingConstants.LEFT);
+
+        card.add(top, BorderLayout.NORTH);
+        card.add(lbValue, BorderLayout.CENTER);
+        return card;
+    }
+
+    private ImageIcon loadIcon(String path, int w, int h) {
+        try {
+            java.net.URL url = getClass().getResource(path);
+            if (url == null) return null;
+            ImageIcon icon = new ImageIcon(url);
+            Image img = icon.getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+            return new ImageIcon(img);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+    
+    private boolean withinRange(java.util.Date date, TimeRange range) {
+        if (date == null || range == null) return false;
+        return !date.before(range.getBegin()) && date.before(range.getEnd());
+    }
+    
+    private TimeRange getSelectedRange() {
+        String selected = cboRange != null ? (String) cboRange.getSelectedItem() : "Hôm nay";
+        if ("Tuần này".equals(selected)) return TimeRange.thisWeek();
+        if ("Tháng này".equals(selected)) return TimeRange.thisMonth();
+        if ("Quý này".equals(selected)) return TimeRange.thisQuarter();
+        if ("Năm nay".equals(selected)) return TimeRange.thisYear();
+        return TimeRange.today();
+    }
+    
+    private Map<String, Double> aggregateRevenueByDay(List<Bill> paidBills) {
+        Map<String, Double> map = new java.util.TreeMap<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM");
+        for (Bill b : paidBills) {
+            String key = sdf.format(b.getCheckout() != null ? b.getCheckout() : b.getCheckin());
+            map.merge(key, b.getTotal_amount(), Double::sum);
+        }
+        return map;
+    }
+
+    private DefaultCategoryDataset buildRevenueByDayDataset(List<Bill> paidBills) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        Map<String, Double> dateToRevenue = aggregateRevenueByDay(paidBills);
+        for (Map.Entry<String, Double> e : dateToRevenue.entrySet()) {
+            dataset.addValue(e.getValue(), "Doanh thu", e.getKey());
+        }
+        return dataset;
+    }
+
+    // YoY/MoM helpers removed as requested
+    
+    // ========================================
+    // Export / Print actions
+    // ========================================
+    
+    private void exportPdfReport() {
+        try {
+            if (generalChartContainer.getComponentCount() == 0) return;
+            ChartPanel chartPanel = (ChartPanel) generalChartContainer.getComponent(0);
+            JFreeChart chart = chartPanel.getChart();
+            File out = XPDF.exportGeneralRevenue(chart, (String) cboRange.getSelectedItem());
+            XDialog.success("Đã xuất PDF: " + out.getAbsolutePath(), "Xuất báo cáo");
+        } catch (Exception ex) {
+            XDialog.error("Lỗi xuất PDF: " + ex.getMessage(), "Lỗi");
+        }
+    }
+    
+    private void exportExcelReport() {
+        try {
+            TimeRange range = getSelectedRange();
+            List<Bill> bills = billDAO.findAll();
+            List<Bill> paid = new ArrayList<>();
+            for (Bill b : bills) {
+                if (b.getStatus() != null && b.getStatus() == 1 && withinRange(b.getCheckout(), range)) paid.add(b);
+            }
+            File out = XExcel.exportGeneralRevenueBills(paid, (String) cboRange.getSelectedItem());
+            XDialog.success("Đã xuất Excel: " + out.getAbsolutePath(), "Xuất báo cáo");
+        } catch (Exception ex) {
+            XDialog.error("Lỗi xuất Excel: " + ex.getMessage(), "Lỗi");
+        }
+    }
+    
+    // Removed printCurrentChart per request
     
     /**
      * Create product revenue pie chart with REAL database data
@@ -146,7 +428,7 @@ public class ReportManagement extends javax.swing.JFrame {
             }
             
             // Create pie dataset with percentage labels - SORTED by revenue descending
-            DefaultPieDataset pieDataset = new DefaultPieDataset();
+            DefaultPieDataset<String> pieDataset = new DefaultPieDataset<>();
             double totalRevenue = productRevenue.values().stream().mapToDouble(Double::doubleValue).sum();
             
             // Sort products by revenue (highest first) and limit to top 10 for readability
@@ -295,7 +577,7 @@ public class ReportManagement extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel3 = new javax.swing.JPanel();
+        pnlGeneral = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
@@ -334,22 +616,22 @@ public class ReportManagement extends javax.swing.JFrame {
         jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jTabbedPane1.setMinimumSize(new java.awt.Dimension(245, 30));
 
-        jPanel3.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel3.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
-        jPanel3.setForeground(new java.awt.Color(255, 255, 255));
+        pnlGeneral.setBackground(new java.awt.Color(255, 255, 255));
+        pnlGeneral.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
+        pnlGeneral.setForeground(new java.awt.Color(255, 255, 255));
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout pnlGeneralLayout = new javax.swing.GroupLayout(pnlGeneral);
+        pnlGeneral.setLayout(pnlGeneralLayout);
+        pnlGeneralLayout.setHorizontalGroup(
+            pnlGeneralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 1185, Short.MAX_VALUE)
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        pnlGeneralLayout.setVerticalGroup(
+            pnlGeneralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 642, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("DOANH THU TỔNG QUÁT", jPanel3);
+        jTabbedPane1.addTab("DOANH THU TỔNG QUÁT", pnlGeneral);
 
         jPanel4.setBackground(new java.awt.Color(255, 255, 255));
         jPanel4.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
@@ -418,11 +700,6 @@ public class ReportManagement extends javax.swing.JFrame {
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Exit.png"))); // NOI18N
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                handleExit();
-            }
-        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -505,12 +782,12 @@ public class ReportManagement extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JPanel pnlGeneral;
     // End of variables declaration//GEN-END:variables
 }
