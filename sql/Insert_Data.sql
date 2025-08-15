@@ -81,12 +81,82 @@ INSERT INTO CATE (category_id, category_name, is_available) VALUES ('C008', N'L�
 INSERT INTO CATE (category_id, category_name, is_available) VALUES ('C009', N'Khai Vị', 1);
 
 -- ========================================
--- 5. INSERT PRODUCT - SẢN PHẨM (BỎ QUA - SẼ INSERT TỪ HÌNH ẢNH)
+-- 5. INSERT PRODUCT - SẢN PHẨM
 -- ========================================
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('Bước 5: Bỏ qua insert sản phẩm mẫu - sẽ insert từ hình ảnh chính thức...');
+    DBMS_OUTPUT.PUT_LINE('Bước 5: Insert dữ liệu PRODUCT...');
 END;
 /
+
+-- Mì cay (C001)
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('M001', N'Mì cay bò', 65000, 0, N'phần', 'mi_cay_1.jpg', 1, NULL, 'C001');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('M002', N'Mì cay hải sản', 75000, 0, N'phần', 'mi_cay_2.jpg', 1, NULL, 'C001');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('M003', N'Mì cay xúc xích', 55000, 0, N'phần', 'mi_cay_3.jpg', 1, NULL, 'C001');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('M004', N'Mì cay kim chi', 60000, 0, N'phần', 'mi_cay_4.png', 1, NULL, 'C001');
+
+-- Đồ ăn kèm (C002)
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('AK01', N'Khoai tây chiên', 35000, 0, N'phần', 'anvat_khoai_tay.jpg', 1, NULL, 'C002');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('AK02', N'Xúc xích chiên', 30000, 0, N'phần', 'anvat_xuc_xich.jpg', 1, NULL, 'C002');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('AK03', N'Bánh gà', 45000, 0, N'phần', 'anvat_banh_ga.jpg', 1, NULL, 'C002');
+
+-- Nước uống (C003)
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('NU01', N'Trà tắc', 25000, 0, N'ly', 'nuoc_tra_tac.jpg', 1, NULL, 'C003');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('NU02', N'Coca', 20000, 0, N'lon', 'nuoc_coca.jpg', 1, NULL, 'C003');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('NU03', N'Cam ép', 30000, 0, N'ly', 'nuoc_cam_ep.jpg', 1, NULL, 'C003');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('NU04', N'7Up', 20000, 0, N'lon', 'nuoc_7up.webp', 1, NULL, 'C003');
+
+-- Tráng miệng (C004)
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('TM01', N'Bánh flan', 20000, 0, N'phần', 'trang_mieng_banh_1.png', 1, NULL, 'C004');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('TM02', N'Kem dừa', 25000, 0, N'ly', 'trang_mieng_banh_2.png', 1, NULL, 'C004');
+
+-- Combo (C005)
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('CB01', N'Combo mì cay + nước', 95000, 0, N'combo', 'combo_mi_cay_1.jpg', 1, NULL, 'C005');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('CB02', N'Combo 2 mì + 2 nước', 180000, 0, N'combo', 'combo_mi_cay_2.jpg', 1, NULL, 'C005');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('CB03', N'Combo gia đình', 250000, 0, N'combo', 'combo_mi_cay_3.jpg', 1, NULL, 'C005');
+
+-- Đồ ăn vặt (C006)
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('AV01', N'Bánh tráng trộn', 30000, 0, N'phần', 'anvat_banh_trang.jpg', 1, NULL, 'C006');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('AV02', N'Chân gà sả tắc', 45000, 0, N'phần', 'anvat_chan_ga.jpg', 1, NULL, 'C006');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('AV03', N'Xoài lắc', 25000, 0, N'phần', 'anvat_xoai_lac.jpg', 1, NULL, 'C006');
+
+-- Cơm (C007)
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('COM1', N'Cơm gà xối mỡ', 55000, 0, N'phần', 'com_ga_ran.jpg', 1, NULL, 'C007');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('COM2', N'Cơm bò xào', 65000, 0, N'phần', 'com_bo_xao.jpg', 1, NULL, 'C007');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('COM3', N'Cơm heo xào', 60000, 0, N'phần', 'com_heo_xao.jpg', 1, NULL, 'C007');
+
+-- Lẩu (C008)
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('LAU1', N'Lẩu bò', 220000, 0, N'nồi', 'lau_bo.jpg', 1, NULL, 'C008');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('LAU2', N'Lẩu hải sản', 260000, 0, N'nồi', 'lau_hai_san.png', 1, NULL, 'C008');
+
+-- Khai vị (C009)
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('KV01', N'Đậu hũ chiên', 30000, 0, N'phần', 'khaivi_dau_hu_chien.jpg', 1, NULL, 'C009');
+INSERT INTO PRODUCT (product_id, product_name, price, discount, unit, image, is_available, note, category_id)
+VALUES ('KV02', N'Gỏi cuốn', 35000, 0, N'phần', 'khaivi_goi_cuon.jpg', 1, NULL, 'C009');
 
 -- ========================================
 -- 6. INSERT TABLE_FOR_CUSTOMER - BÀN ĂN
@@ -312,12 +382,167 @@ INSERT INTO BILL (user_id, phone_number, payment_history_id, table_number, total
 VALUES ('U004', '0821234567', 25, 24, 245000, SYSDATE - 150, SYSDATE - 150 + 3.5/24, N'Đã thanh toán');
 
 -- ========================================
--- 10. INSERT BILL_DETAIL - CHI TIẾT HÓA ĐƠN (BỎ QUA - SẼ INSERT SAU KHI CÓ SẢN PHẨM)
+-- 10. INSERT BILL_DETAIL - CHI TIẾT HÓA ĐƠN
 -- ========================================
 BEGIN
-    DBMS_OUTPUT.PUT_LINE('Bước 10: Bỏ qua insert BILL_DETAIL - sẽ insert sau khi có sản phẩm chính thức...');
+    DBMS_OUTPUT.PUT_LINE('Bước 10: Insert dữ liệu BILL_DETAIL...');
 END;
 /
+
+-- Mỗi hóa đơn sẽ có nhiều dòng chi tiết với đa dạng sản phẩm từ các danh mục khác nhau
+-- Hóa đơn 1: Mì cay bò + Nước coca + Bánh flan
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 1), 'M001', 1, 65000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 1), 'NU02', 2, 20000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 1), 'TM01', 1, 20000, 0);
+
+-- Hóa đơn 2: Combo mì cay + nước
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 2), 'CB01', 1, 95000, 0);
+
+-- Hóa đơn 3: Combo 2 mì + 2 nước
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 3), 'CB02', 1, 180000, 0);
+
+-- Hóa đơn 4: Mì cay hải sản + Khoai tây chiên + Trà tắc
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 4), 'M002', 1, 75000, 0);
+
+-- Hóa đơn 5: Lẩu bò + Cơm gà + Nước uống
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 5), 'LAU1', 1, 220000, 0);
+
+-- Hóa đơn 6: Mì cay kim chi + Xúc xích chiên + Cam ép + Kem dừa
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 6), 'M004', 1, 60000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 6), 'AK02', 1, 30000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 6), 'NU03', 1, 30000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 6), 'TM02', 1, 25000, 0);
+
+-- Hóa đơn 7: Cơm bò xào + Đậu hũ chiên + 7Up
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 7), 'COM2', 1, 65000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 7), 'KV01', 1, 30000, 0);
+
+-- Hóa đơn 8: Lẩu hải sản + Gỏi cuốn + Bánh tráng trộn
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 8), 'LAU2', 1, 260000, 0);
+
+-- Hóa đơn 9: Mì cay xúc xích + Bánh gà + Trà tắc
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 9), 'M003', 1, 55000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 9), 'AK03', 1, 45000, 0);
+
+-- Hóa đơn 10: Combo gia đình
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 10), 'CB03', 1, 250000, 0);
+
+-- Hóa đơn 11: Cơm gà xối mỡ + Chân gà sả tắc + Coca
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 11), 'COM1', 1, 55000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 11), 'AV02', 1, 45000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 11), 'NU02', 2, 20000, 0);
+
+-- Hóa đơn 12: Mì cay bò + Xoài lắc + Bánh flan
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 12), 'M001', 1, 65000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 12), 'AV03', 1, 25000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 12), 'TM01', 1, 20000, 0);
+
+-- Hóa đơn 13: Cơm heo xào + Khoai tây chiên + Cam ép + Kem dừa
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 13), 'COM3', 1, 60000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 13), 'AK01', 1, 35000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 13), 'NU03', 1, 30000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 13), 'TM02', 1, 25000, 0);
+
+-- Hóa đơn 14: Mì cay hải sản + Gỏi cuốn + 7Up + Bánh flan
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 14), 'M002', 1, 75000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 14), 'KV02', 1, 35000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 14), 'NU04', 1, 20000, 0);
+
+-- Hóa đơn 15: Combo 2 mì + 2 nước + Bánh tráng trộn
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 15), 'CB02', 1, 180000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 15), 'AV01', 1, 30000, 0);
+
+-- Hóa đơn 16: Lẩu bò + Đậu hũ chiên + Trà tắc
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 16), 'LAU1', 1, 220000, 0);
+
+-- Hóa đơn 17: Mì cay kim chi + Bánh gà + Coca + Kem dừa
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 17), 'M004', 1, 60000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 17), 'AK03', 1, 45000, 0);
+
+-- Hóa đơn 18: Cơm gà xối mỡ + Chân gà sả tắc + Cam ép + Bánh flan
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 18), 'COM1', 1, 55000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 18), 'AV02', 1, 45000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 18), 'NU03', 1, 30000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 18), 'TM01', 1, 20000, 0);
+
+-- Hóa đơn 19: Mì cay xúc xích + Xoài lắc + 7Up
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 19), 'M003', 1, 55000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 19), 'AV03', 1, 25000, 0);
+
+-- Hóa đơn 20: Combo gia đình + Gỏi cuốn
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 20), 'CB03', 1, 250000, 0);
+
+-- Hóa đơn 21: Cơm bò xào + Khoai tây chiên + Trà tắc + Kem dừa
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 21), 'COM2', 1, 65000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 21), 'AK01', 1, 35000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 21), 'NU01', 1, 25000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 21), 'TM02', 1, 25000, 0);
+
+-- Hóa đơn 22: Combo mì cay + nước + Bánh tráng trộn
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 22), 'CB01', 1, 95000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 22), 'AV01', 1, 30000, 0);
+
+-- Hóa đơn 23: Lẩu hải sản + Đậu hũ chiên + Coca + Bánh flan
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 23), 'LAU2', 1, 260000, 0);
+
+-- Hóa đơn 24: Mì cay bò + Xúc xích chiên + Cam ép
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 24), 'M001', 1, 65000, 0);
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 24), 'AK02', 1, 30000, 0);
+
+-- Hóa đơn 25: Combo gia đình + Chân gà sả tắc
+INSERT INTO BILL_DETAIL (bill_id, product_id, amount, price, discount)
+VALUES ((SELECT bill_id FROM BILL WHERE payment_history_id = 25), 'CB03', 1, 250000, 0);
 
 -- ========================================
 -- COMMIT DỮ LIỆU
