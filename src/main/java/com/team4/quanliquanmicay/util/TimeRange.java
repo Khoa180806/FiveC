@@ -22,6 +22,11 @@ public class TimeRange {
         return new TimeRange(begin, begin.plusDays(1));
     }
     
+    public static TimeRange yesterday() {
+        LocalDate begin = LocalDate.now().minusDays(1);
+        return new TimeRange(begin, begin.plusDays(1));
+    }
+    
     public static TimeRange thisWeek() {
         LocalDate now = LocalDate.now();
         LocalDate begin = now.minusDays(now.getDayOfWeek().getValue() - 1);
@@ -32,6 +37,13 @@ public class TimeRange {
         LocalDate now = LocalDate.now();
         LocalDate begin = now.withDayOfMonth(1);
         return new TimeRange(begin, begin.plusDays(now.lengthOfMonth()));
+    }
+    
+    public static TimeRange lastMonth() {
+        LocalDate now = LocalDate.now();
+        LocalDate lastMonth = now.minusMonths(1);
+        LocalDate begin = lastMonth.withDayOfMonth(1);
+        return new TimeRange(begin, begin.plusDays(lastMonth.lengthOfMonth()));
     }
     
     public static TimeRange thisQuarter() {
@@ -45,5 +57,13 @@ public class TimeRange {
         LocalDate now = LocalDate.now();
         LocalDate begin = now.withMonth(1).withDayOfMonth(1);
         return new TimeRange(begin, begin.plusMonths(12));
+    }
+    
+    public Date getFrom() {
+        return begin;
+    }
+    
+    public Date getTo() {
+        return end;
     }
 }
