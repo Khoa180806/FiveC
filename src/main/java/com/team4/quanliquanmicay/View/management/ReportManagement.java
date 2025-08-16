@@ -17,7 +17,7 @@ import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
 import com.team4.quanliquanmicay.Entity.Bill;
 import com.team4.quanliquanmicay.Entity.BillDetails;
 import com.team4.quanliquanmicay.Entity.Product;
-
+import com.team4.quanliquanmicay.util.XDialog;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -28,6 +28,7 @@ import java.awt.FlowLayout;
 import java.awt.Component;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,6 +62,10 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
+import org.jfree.chart.labels.CategoryItemLabelGenerator;
 
 import com.team4.quanliquanmicay.util.XPDF;
 import com.team4.quanliquanmicay.util.XExcel;
@@ -70,6 +75,8 @@ import com.team4.quanliquanmicay.Entity.UserAccount;
 import com.team4.quanliquanmicay.util.Xmail;
 import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
+import javax.swing.BoxLayout;
+import java.util.TreeMap;
 
 /**
  *
@@ -157,12 +164,19 @@ public class ReportManagement extends javax.swing.JFrame {
     private JTable tblProd;
     private DefaultTableModel prodTableModel;
     
-    // TAB 2: Employee Revenue (jPanel5)
+    // TAB 2: Employee Revenue (jPanel5) - Enhanced
     private JComboBox<String> cboEmpRange;
+    private JComboBox<String> cboEmpCompare; // So sánh với mốc thời gian khác
+    private JDateChooser dcEmpFrom; // Chọn khoảng thời gian tùy ý
+    private JDateChooser dcEmpTo;
     private JPanel empChartContainer;
     private JPanel empTableContainer;
+    private JPanel empSecondaryChartContainer; // Biểu đồ phụ cho số hóa đơn và TB/HĐ
+    private JPanel empStatsContainer; // Container cho thống kê và tỷ lệ
     private JTable tblEmp;
     private DefaultTableModel empTableModel;
+    private JCheckBox chkShowComparison; // Hiển thị so sánh
+    private JCheckBox chkShowProductivity; // Hiển thị năng suất
     
     // TAB 3: Trend (jPanel6) - Enhanced
     private JDateChooser dcFromDate;
@@ -315,10 +329,10 @@ public class ReportManagement extends javax.swing.JFrame {
             dcReportTo = new JDateChooser();
             dcReportFrom.setDateFormatString("dd/MM/yyyy");
             dcReportTo.setDateFormatString("dd/MM/yyyy");
-            java.util.Calendar cal = java.util.Calendar.getInstance();
-            cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.DAY_OF_MONTH, 1);
             dcReportFrom.setDate(cal.getTime());
-            cal = java.util.Calendar.getInstance();
+            cal = Calendar.getInstance();
             dcReportTo.setDate(cal.getTime());
             
             // Add change listeners to refresh preview when dates change
@@ -1135,12 +1149,12 @@ public class ReportManagement extends javax.swing.JFrame {
             
             // Calculate trend vs previous period
             long days = Math.max(1L, (to.getTime() - from.getTime()) / (24L * 60L * 60L * 1000L) + 1);
-            java.util.Calendar prevFromCal = java.util.Calendar.getInstance();
+            Calendar prevFromCal = Calendar.getInstance();
             prevFromCal.setTime(from);
-            prevFromCal.add(java.util.Calendar.DAY_OF_MONTH, (int) -days);
-            java.util.Calendar prevToCal = java.util.Calendar.getInstance();
+            prevFromCal.add(Calendar.DAY_OF_MONTH, (int) -days);
+            Calendar prevToCal = Calendar.getInstance();
             prevToCal.setTime(from);
-            prevToCal.add(java.util.Calendar.DAY_OF_MONTH, -1);
+            prevToCal.add(Calendar.DAY_OF_MONTH, -1);
             
             double currentRevenue = paid.stream().mapToDouble(Bill::getTotal_amount).sum();
             double prevRevenue = 0.0;
@@ -1173,9 +1187,9 @@ public class ReportManagement extends javax.swing.JFrame {
             Map<Integer, Integer> hourlyOrders = new HashMap<>();
             for (Bill b : paid) {
                 if (b.getCheckout() != null) {
-                    java.util.Calendar cal = java.util.Calendar.getInstance();
+                    Calendar cal = Calendar.getInstance();
                     cal.setTime(b.getCheckout());
-                    int hour = cal.get(java.util.Calendar.HOUR_OF_DAY);
+                    int hour = cal.get(Calendar.HOUR_OF_DAY);
                     hourlyOrders.merge(hour, 1, Integer::sum);
                 }
             }
@@ -1532,13 +1546,13 @@ public class ReportManagement extends javax.swing.JFrame {
             default: // Theo ngày
                 sdf = new SimpleDateFormat("dd/MM");
                 // Initialize all days in range
-                java.util.Calendar cursor = java.util.Calendar.getInstance();
+                Calendar cursor = Calendar.getInstance();
                 cursor.setTime(from);
-                java.util.Calendar end = java.util.Calendar.getInstance();
+                Calendar end = Calendar.getInstance();
                 end.setTime(to);
                 while (!cursor.after(end)) {
                     result.put(sdf.format(cursor.getTime()), 0.0);
-                    cursor.add(java.util.Calendar.DAY_OF_MONTH, 1);
+                    cursor.add(Calendar.DAY_OF_MONTH, 1);
                 }
                 break;
         }
@@ -1730,13 +1744,13 @@ public class ReportManagement extends javax.swing.JFrame {
             
             long days = (to.getTime() - from.getTime()) / (24 * 60 * 60 * 1000) + 1;
             
-            java.util.Calendar prevFromCal = java.util.Calendar.getInstance();
+            Calendar prevFromCal = Calendar.getInstance();
             prevFromCal.setTime(from);
-            prevFromCal.add(java.util.Calendar.DAY_OF_MONTH, (int) -days);
+            prevFromCal.add(Calendar.DAY_OF_MONTH, (int) -days);
             
-            java.util.Calendar prevToCal = java.util.Calendar.getInstance();
+            Calendar prevToCal = Calendar.getInstance();
             prevToCal.setTime(from);
-            prevToCal.add(java.util.Calendar.DAY_OF_MONTH, -1);
+            prevToCal.add(Calendar.DAY_OF_MONTH, -1);
             
             List<Bill> prevBills = getBillsInRange(prevFromCal.getTime(), prevToCal.getTime());
             
@@ -1799,11 +1813,11 @@ public class ReportManagement extends javax.swing.JFrame {
         for (Bill bill : bills) {
             if (bill.getCheckout() == null) continue;
             
-            java.util.Calendar cal = java.util.Calendar.getInstance();
+            Calendar cal = Calendar.getInstance();
             cal.setTime(bill.getCheckout());
             
-            int dayOfWeek = cal.get(java.util.Calendar.DAY_OF_WEEK) - 1; // 0=Sunday
-            int hour = cal.get(java.util.Calendar.HOUR_OF_DAY);
+            int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK) - 1; // 0=Sunday
+            int hour = cal.get(Calendar.HOUR_OF_DAY);
             
             heatmapData[dayOfWeek][hour] += bill.getTotal_amount();
         }
@@ -2640,7 +2654,7 @@ public class ReportManagement extends javax.swing.JFrame {
         );
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>                        
 
     /**
      * @param args the command line arguments
@@ -2948,14 +2962,6 @@ public class ReportManagement extends javax.swing.JFrame {
     /**
      * Initialize General Dashboard
      */
-    private void initGeneralDashboard() {
-        try {
-            // Basic implementation for now
-            System.out.println("Initializing General Dashboard...");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        }
     
     // ========================================
     // MISSING METHODS - STUB IMPLEMENTATIONS
@@ -2966,10 +2972,232 @@ public class ReportManagement extends javax.swing.JFrame {
      */
     private void initEmployeeRevenueTab() {
         try {
-            // Basic implementation for now
-            System.out.println("Initializing Employee Revenue Tab...");
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            jPanel5.setLayout(new BorderLayout());
+            jPanel5.setBackground(Color.WHITE);
+
+            // Header với tiêu đề và điều khiển nâng cao
+            JPanel header = new JPanel(new BorderLayout());
+            header.setBackground(Color.WHITE);
+            header.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            JLabel title = new JLabel("Doanh thu theo nhân viên");
+            title.setFont(new Font("Tahoma", Font.BOLD, 20));
+            title.setForeground(new Color(134, 39, 43));
+            header.add(title, BorderLayout.WEST);
+
+            // Panel điều khiển bên phải - NÂNG CAO
+            JPanel rightHeader = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+            rightHeader.setOpaque(false);
+            
+            // Combo box khoảng thời gian chính
+            cboEmpRange = new JComboBox<>(new String[] { 
+                "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm nay", "Khoảng tùy ý" 
+            });
+            cboEmpRange.setSelectedItem("Tháng này");
+            
+            // Combo box so sánh với mốc thời gian khác
+            cboEmpCompare = new JComboBox<>(new String[] { 
+                "Không so sánh", "Tháng trước", "Quý trước", "Năm trước" 
+            });
+            cboEmpCompare.setSelectedItem("Không so sánh");
+            
+            // Date chooser cho khoảng tùy ý
+            dcEmpFrom = new JDateChooser();
+            dcEmpTo = new JDateChooser();
+            dcEmpFrom.setDateFormatString("dd/MM/yyyy");
+            dcEmpTo.setDateFormatString("dd/MM/yyyy");
+            dcEmpFrom.setDate(Calendar.getInstance().getTime());
+            dcEmpTo.setDate(Calendar.getInstance().getTime());
+            dcEmpFrom.setVisible(false);
+            dcEmpTo.setVisible(false);
+            
+            // Checkbox cho các tính năng - MẶC ĐỊNH UNCHECK
+            chkShowComparison = new JCheckBox("So sánh", false);
+            chkShowProductivity = new JCheckBox("Năng suất", false);
+            
+            JButton btnRefresh = XTheme.createBeButton("Làm mới", e -> { 
+                // HIỂN THỊ XDIALOG XÁC NHẬN TRƯỚC KHI LÀM MỚI
+                boolean confirm = XDialog.confirm(
+                    "Bạn có muốn làm mới dữ liệu không?", 
+                    "Xác nhận làm mới"
+                );
+                
+                if (confirm) {
+                    // NẾU NGƯỜI DÙNG CHỌN CÓ THÌ LÀM MỚI
+                    resetEmployeeTabToDefault();
+                    
+                    // HIỂN THỊ XDIALOG THÔNG BÁO HOÀN THÀNH
+                    XDialog.success("Làm mới thành công!", "Thông báo");
+                }
+                e.getSource(); 
+            });
+            
+            // Thêm listener cho combo box
+            cboEmpRange.addActionListener(e -> {
+                if ("Khoảng tùy ý".equals(cboEmpRange.getSelectedItem())) {
+                    dcEmpFrom.setVisible(true);
+                    dcEmpTo.setVisible(true);
+                } else {
+                    dcEmpFrom.setVisible(false);
+                    dcEmpTo.setVisible(false);
+                }
+                refreshEmployeeRevenueData();
+            });
+            
+            cboEmpCompare.addActionListener(e -> {
+                // KHI CHỌN "KHÔNG SO SÁNH" THÌ TỰ ĐỘNG UNCHECK CHECKBOX SO SÁNH
+                if ("Không so sánh".equals(cboEmpCompare.getSelectedItem())) {
+                    chkShowComparison.setSelected(false);
+                } else {
+                    chkShowComparison.setSelected(true);
+                }
+                refreshEmployeeRevenueData();
+            });
+            
+            // THÊM LISTENER CHO CHECKBOX NĂNG SUẤT - ĐIỀU KHIỂN HIỂN THỊ
+            chkShowProductivity.addActionListener(e -> {
+                toggleProductivityDisplay();
+                refreshEmployeeRevenueData();
+            });
+            
+            chkShowComparison.addActionListener(e -> {
+                // KHI UNCHECK CHECKBOX SO SÁNH THÌ TỰ ĐỘNG CHUYỂN COMBO BOX VỀ "KHÔNG SO SÁNH"
+                if (!chkShowComparison.isSelected()) {
+                    cboEmpCompare.setSelectedItem("Không so sánh");
+                }
+                refreshEmployeeRevenueData();
+            });
+            
+            rightHeader.add(new JLabel("Khoảng:"));
+            rightHeader.add(cboEmpRange);
+            rightHeader.add(new JLabel("So sánh:"));
+            rightHeader.add(cboEmpCompare);
+            rightHeader.add(chkShowComparison);
+            rightHeader.add(chkShowProductivity);
+            rightHeader.add(new JLabel("Từ:"));
+            rightHeader.add(dcEmpFrom);
+            rightHeader.add(new JLabel("Đến:"));
+            rightHeader.add(dcEmpTo);
+            rightHeader.add(btnRefresh);
+            header.add(rightHeader, BorderLayout.EAST);
+
+            jPanel5.add(header, BorderLayout.NORTH);
+
+            // Panel chính chứa biểu đồ và bảng - SỬ DỤNG LAYOUT MANAGER TỐT HƠN
+            JPanel mainContent = new JPanel();
+            mainContent.setBackground(Color.WHITE);
+            mainContent.setLayout(new BoxLayout(mainContent, BoxLayout.Y_AXIS));
+
+            // Container cho biểu đồ chính - LUÔN HIỂN THỊ
+            empChartContainer = new JPanel(new BorderLayout());
+            empChartContainer.setBorder(BorderFactory.createEmptyBorder(6, 12, 12, 12));
+            empChartContainer.setBackground(Color.WHITE);
+            empChartContainer.setPreferredSize(new Dimension(10, 400));
+            empChartContainer.setMinimumSize(new Dimension(10, 400));
+            mainContent.add(empChartContainer);
+
+            // Container cho thống kê và tỷ lệ phần trăm - SỬ DỤNG GRIDLAYOUT CÓ KHẢ NĂNG CO GIÃN
+            empStatsContainer = new JPanel(new GridLayout(1, 4, 25, 10));
+            empStatsContainer.setBackground(Color.WHITE);
+            empStatsContainer.setBorder(BorderFactory.createEmptyBorder(0, 12, 12, 12));
+            empStatsContainer.setPreferredSize(new Dimension(10, 170)); // TĂNG TỪ 140 LÊN 170
+            empStatsContainer.setMinimumSize(new Dimension(10, 170));   // TĂNG TỪ 140 LÊN 170
+            mainContent.add(empStatsContainer);
+
+            // Container cho biểu đồ phụ (số hóa đơn và TB/HĐ) - CHỈ HIỂN THỊ KHI TÍCH NĂNG SUẤT
+            empSecondaryChartContainer = new JPanel(new BorderLayout());
+            empSecondaryChartContainer.setBackground(Color.WHITE);
+            empSecondaryChartContainer.setBorder(BorderFactory.createEmptyBorder(0, 12, 12, 12));
+            empSecondaryChartContainer.setPreferredSize(new Dimension(10, 300));
+            empSecondaryChartContainer.setMinimumSize(new Dimension(10, 300));
+            empSecondaryChartContainer.setVisible(false); // MẶC ĐỊNH ẨN
+            mainContent.add(empSecondaryChartContainer);
+
+            // Container cho bảng - LUÔN HIỂN THỊ
+            empTableContainer = new JPanel(new BorderLayout());
+            empTableContainer.setBackground(Color.WHITE);
+            empTableContainer.setBorder(BorderFactory.createEmptyBorder(0, 12, 12, 12));
+            initEmpTable();
+            empTableContainer.setPreferredSize(new Dimension(10, 250));
+            empTableContainer.setMinimumSize(new Dimension(10, 250));
+            mainContent.add(empTableContainer);
+
+            // THÊM SCROLL PANE ĐỂ CÓ THANH KÉO
+            JScrollPane scrollPane = new JScrollPane(mainContent);
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            scrollPane.setBorder(null);
+            scrollPane.getViewport().setBackground(Color.WHITE);
+            
+            // Tùy chỉnh scroll pane
+            scrollPane.getVerticalScrollBar().setUnitIncrement(20);
+            scrollPane.getVerticalScrollBar().setBlockIncrement(100);
+            
+            jPanel5.add(scrollPane, BorderLayout.CENTER);
+
+            // Tải dữ liệu ban đầu
+            refreshEmployeeRevenueData();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorPanel(jPanel5, "Lỗi khi tạo giao diện doanh thu theo nhân viên: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Khởi tạo bảng hiển thị doanh thu nhân viên
+     */
+   
+
+    /**
+     * Làm mới dữ liệu doanh thu theo nhân viên
+     */
+
+    /**
+     * Cập nhật bảng doanh thu nhân viên
+     */
+    private void updateEmpTable(List<Map.Entry<String, Double>> sortedRevenue, 
+                               Map<String, Integer> ordersByEmployee, 
+                               Map<String, String> userIdToName) {
+        empTableModel.setRowCount(0);
+        NumberFormat nf = NumberFormat.getInstance(Locale.forLanguageTag("vi-VN"));
+        
+        for (Map.Entry<String, Double> entry : sortedRevenue) {
+            String userId = entry.getKey();
+            String name = userIdToName.getOrDefault(userId, userId);
+            int orders = ordersByEmployee.getOrDefault(userId, 0);
+            double revenue = entry.getValue() != null ? entry.getValue() : 0.0;
+            
+            empTableModel.addRow(new Object[] { 
+                userId, 
+                name, 
+                orders, 
+                nf.format(revenue) 
+            });
+        }
+    }
+
+    /**
+     * Lấy khoảng thời gian được chọn cho tab nhân viên
+     */
+    private TimeRange getSelectedEmpRange(String selected) {
+        switch (selected) {
+            case "Hôm nay":
+                return TimeRange.today();
+            case "Tuần này":
+                return TimeRange.thisWeek();
+            case "Năm nay":
+                return TimeRange.thisYear();
+            case "Khoảng tùy ý":
+                if (dcEmpFrom != null && dcEmpTo != null && dcEmpFrom.getDate() != null && dcEmpTo.getDate() != null) {
+                    java.util.Date from = normalizeStartOfDay(dcEmpFrom.getDate());
+                    java.util.Date to = normalizeEndOfDay(dcEmpTo.getDate());
+                    return new TimeRange(from, to);
+                }
+                // Fallback to this month if date chooser is not set
+                return TimeRange.thisMonth();
+            default: // "Tháng này"
+                return TimeRange.thisMonth();
         }
     }
     
@@ -2994,12 +3222,12 @@ public class ReportManagement extends javax.swing.JFrame {
      */
     private java.util.Date normalizeStartOfDay(java.util.Date date) {
         if (date == null) return null;
-        java.util.Calendar cal = java.util.Calendar.getInstance();
+        Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        cal.set(java.util.Calendar.HOUR_OF_DAY, 0);
-        cal.set(java.util.Calendar.MINUTE, 0);
-        cal.set(java.util.Calendar.SECOND, 0);
-        cal.set(java.util.Calendar.MILLISECOND, 0);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
     }
     
@@ -3008,12 +3236,12 @@ public class ReportManagement extends javax.swing.JFrame {
      */
     private java.util.Date normalizeEndOfDay(java.util.Date date) {
         if (date == null) return null;
-        java.util.Calendar cal = java.util.Calendar.getInstance();
+        Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
-        cal.set(java.util.Calendar.MINUTE, 59);
-        cal.set(java.util.Calendar.SECOND, 59);
-        cal.set(java.util.Calendar.MILLISECOND, 999);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
         return cal.getTime();
     }
     
@@ -3023,5 +3251,1393 @@ public class ReportManagement extends javax.swing.JFrame {
     private boolean withinRange(java.util.Date date, TimeRange range) {
         if (date == null || range == null) return false;
         return !date.before(range.getFrom()) && !date.after(range.getTo());
+    }
+
+    /**
+     * Initialize General Dashboard with comprehensive revenue overview
+     */
+    private void initGeneralDashboard() {
+        try {
+            pnlGeneral.setLayout(new BorderLayout());
+            pnlGeneral.setBackground(Color.WHITE);
+
+            // Header với tiêu đề và điều khiển
+            JPanel header = new JPanel(new BorderLayout());
+            header.setBackground(Color.WHITE);
+            header.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            JLabel title = new JLabel("Tổng quan doanh thu");
+            title.setFont(new Font("Tahoma", Font.BOLD, 20));
+            title.setForeground(new Color(134, 39, 43));
+            header.add(title, BorderLayout.WEST);
+
+            // Panel điều khiển bên phải
+            JPanel rightHeader = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+            rightHeader.setOpaque(false);
+            
+            cboFilterType = new JComboBox<>(new String[] { "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm nay", "Khoảng tùy chỉnh" });
+            cboFilterType.setSelectedItem("Tháng này");
+            
+            JButton btnRefresh = XTheme.createBeButton("Làm mới", e -> { refreshGeneralDashboard(); e.getSource(); });
+            cboFilterType.addActionListener(e -> { refreshGeneralDashboard(); e.getSource(); });
+            
+            rightHeader.add(new JLabel("Khoảng:"));
+            rightHeader.add(cboFilterType);
+            rightHeader.add(btnRefresh);
+            header.add(rightHeader, BorderLayout.EAST);
+
+            pnlGeneral.add(header, BorderLayout.NORTH);
+
+            // Panel chính chứa KPI và biểu đồ
+            JPanel mainContent = new JPanel();
+            mainContent.setBackground(Color.WHITE);
+            mainContent.setLayout(new BoxLayout(mainContent, BoxLayout.Y_AXIS));
+
+            // KPI Container - 4 thẻ KPI chính
+            kpiContainer = new JPanel(new GridLayout(2, 2, 15, 15));
+            kpiContainer.setBackground(Color.WHITE);
+            kpiContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10));
+            kpiContainer.setPreferredSize(new Dimension(0, 200));
+            mainContent.add(kpiContainer);
+
+            // Biểu đồ doanh thu theo thời gian
+            JPanel chartSection = new JPanel(new BorderLayout());
+            chartSection.setBackground(Color.WHITE);
+            chartSection.setBorder(BorderFactory.createTitledBorder("Biểu đồ doanh thu theo thời gian"));
+            chartSection.setPreferredSize(new Dimension(0, 300));
+            
+            // Container cho biểu đồ
+            JPanel chartContainer = new JPanel(new BorderLayout());
+            chartContainer.setBackground(Color.WHITE);
+            chartContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            chartSection.add(chartContainer, BorderLayout.CENTER);
+            mainContent.add(chartSection);
+
+            // Bảng chi tiết hóa đơn
+            JPanel tableSection = new JPanel(new BorderLayout());
+            tableSection.setBackground(Color.WHITE);
+            tableSection.setBorder(BorderFactory.createTitledBorder("Chi tiết hóa đơn"));
+            tableSection.setPreferredSize(new Dimension(0, 200));
+            
+            tableContainer = new JPanel(new BorderLayout());
+            tableContainer.setBackground(Color.WHITE);
+            initGeneralTable();
+            tableSection.add(tableContainer, BorderLayout.CENTER);
+            mainContent.add(tableSection);
+
+            pnlGeneral.add(mainContent, BorderLayout.CENTER);
+
+            // Tải dữ liệu ban đầu
+            refreshGeneralDashboard();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorPanel(pnlGeneral, "Lỗi khi tạo giao diện tổng quan: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Khởi tạo bảng tổng quan
+     */
+    private void initGeneralTable() {
+        billTableModel = new DefaultTableModel(new Object[] { 
+            "Mã HĐ", "Bàn", "Nhân viên", "Check-in", "Check-out", "Tổng tiền", "Trạng thái" 
+        }, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+        
+        tblBills = new JTable(billTableModel);
+        tblBills.setRowHeight(25);
+        tblBills.setFont(new Font("Tahoma", Font.PLAIN, 11));
+        tblBills.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 11));
+
+        // Căn giữa các cột
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        tblBills.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+        tblBills.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+        tblBills.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+        tblBills.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
+        tblBills.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
+        
+        // Căn phải cột tiền
+        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+        rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
+        tblBills.getColumnModel().getColumn(5).setCellRenderer(rightRenderer);
+
+        // Set độ rộng cột
+        tblBills.getColumnModel().getColumn(0).setPreferredWidth(80);
+        tblBills.getColumnModel().getColumn(1).setPreferredWidth(50);
+        tblBills.getColumnModel().getColumn(2).setPreferredWidth(120);
+        tblBills.getColumnModel().getColumn(3).setPreferredWidth(100);
+        tblBills.getColumnModel().getColumn(4).setPreferredWidth(100);
+        tblBills.getColumnModel().getColumn(5).setPreferredWidth(120);
+        tblBills.getColumnModel().getColumn(6).setPreferredWidth(100);
+
+        JScrollPane sp = new JScrollPane(tblBills);
+        tableContainer.add(sp, BorderLayout.CENTER);
+    }
+
+    /**
+     * Làm mới dashboard tổng quan
+     */
+    private void refreshGeneralDashboard() {
+        try {
+            String selectedRange = cboFilterType != null ? (String) cboFilterType.getSelectedItem() : "Tháng này";
+            TimeRange range = getSelectedGeneralRange(selectedRange);
+
+            List<Bill> bills = billDAO.findAll();
+            List<UserAccount> users = userDAO.findAll();
+
+            if (bills == null) bills = new ArrayList<>();
+            if (users == null) users = new ArrayList<>();
+
+            Map<String, String> userIdToName = new HashMap<>();
+            for (UserAccount u : users) {
+                if (u != null && u.getUser_id() != null) {
+                    String name = (u.getFullName() != null && !u.getFullName().trim().isEmpty()) ? 
+                        u.getFullName() : u.getUsername();
+                    userIdToName.put(u.getUser_id(), name);
+                }
+            }
+
+            List<Bill> filteredBills = new ArrayList<>();
+            double totalRevenue = 0;
+            int totalOrders = 0;
+            int completedOrders = 0;
+            int cancelledOrders = 0;
+            
+            for (Bill b : bills) {
+                if (b == null) continue;
+                
+                java.util.Date when = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
+                if (when == null) continue;
+                if (!withinRange(when, range)) continue;
+
+                filteredBills.add(b);
+                totalRevenue += b.getTotal_amount();
+                totalOrders++;
+                
+                if (b.getStatus() != null) {
+                    if (b.getStatus() == 1) {
+                        completedOrders++;
+                    } else if (b.getStatus() == 2) {
+                        cancelledOrders++;
+                    }
+                }
+            }
+
+            updateGeneralKPIs(totalRevenue, totalOrders, completedOrders, cancelledOrders);
+            updateGeneralChart(filteredBills, range);
+            updateGeneralTable(filteredBills, userIdToName);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            showErrorPanel(pnlGeneral, "Lỗi tải dữ liệu tổng quan: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Cập nhật KPI cards cho dashboard tổng quan
+     */
+    private void updateGeneralKPIs(double totalRevenue, int totalOrders, int completedOrders, int cancelledOrders) {
+        kpiContainer.removeAll();
+        
+        kpiContainer.add(createKPICard("Tổng doanh thu", 
+            String.format("%,.0f VNĐ", totalRevenue), 
+            new Color(134, 39, 43), 
+            "💰"));
+        
+        kpiContainer.add(createKPICard("Tổng hóa đơn", 
+            String.valueOf(totalOrders), 
+            new Color(52, 144, 220), 
+            "📋"));
+        
+        kpiContainer.add(createKPICard("Hoàn thành", 
+            String.valueOf(completedOrders), 
+            new Color(40, 167, 69), 
+            "✅"));
+        
+        kpiContainer.add(createKPICard("Đã hủy", 
+            String.valueOf(cancelledOrders), 
+            new Color(220, 53, 69), 
+            "❌"));
+        
+        kpiContainer.revalidate();
+        kpiContainer.repaint();
+    }
+
+    /**
+     * Tạo KPI card với icon và màu sắc
+     */
+    private JPanel createKPICard(String label, String value, Color valueColor, String icon) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(230, 230, 230), 1),
+            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        header.setOpaque(false);
+        
+        JLabel iconLabel = new JLabel(icon);
+        iconLabel.setFont(new Font("Segoe UI", Font.PLAIN, 20));
+        
+        JLabel titleLabel = new JLabel(label);
+        titleLabel.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        titleLabel.setForeground(new Color(108, 117, 125));
+        
+        header.add(iconLabel);
+        header.add(titleLabel);
+        
+        JLabel valueLabel = new JLabel(value);
+        valueLabel.setFont(new Font("Tahoma", Font.BOLD, 18));
+        valueLabel.setForeground(valueColor);
+        valueLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        valueLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+
+        card.add(header, BorderLayout.NORTH);
+        card.add(valueLabel, BorderLayout.CENTER);
+        
+        return card;
+    }
+
+    /**
+     * Cập nhật biểu đồ tổng quan
+     */
+    private void updateGeneralChart(List<Bill> bills, TimeRange range) {
+        try {
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            Map<String, Double> revenueByDay = new TreeMap<>();
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM");
+            
+            for (Bill b : bills) {
+                if (b.getStatus() != null && b.getStatus() == 1) {
+                    String dayKey = sdf.format(b.getCheckout() != null ? b.getCheckout() : b.getCheckin());
+                    revenueByDay.merge(dayKey, b.getTotal_amount(), Double::sum);
+                }
+            }
+            
+            for (Map.Entry<String, Double> entry : revenueByDay.entrySet()) {
+                dataset.addValue(entry.getValue(), "Doanh thu", entry.getKey());
+            }
+            
+            String title = "Doanh thu theo ngày (" + getRangeLabel(range) + ")";
+            JFreeChart chart = XChart.createBarChart(title, "Ngày", "VNĐ", dataset);
+            
+            CategoryPlot plot = chart.getCategoryPlot();
+            BarRenderer renderer = (BarRenderer) plot.getRenderer();
+            renderer.setSeriesPaint(0, new Color(134, 39, 43));
+            renderer.setItemMargin(0.1);
+            renderer.setDefaultItemLabelGenerator(new StandardCategoryItemLabelGenerator());
+            renderer.setDefaultItemLabelsVisible(true);
+            
+            ChartPanel panel = XChart.createChartPanel(chart);
+            
+       // Thay thế đoạn code lỗi (dòng 3414-3422):
+for (Component comp : pnlGeneral.getComponents()) {
+    if (comp instanceof JPanel) {
+        JPanel panelComp = (JPanel) comp;
+        for (Component subComp : panelComp.getComponents()) {
+            if (subComp instanceof JPanel) {
+                JPanel subPanel = (JPanel) subComp;  // CAST VỀ JPANEL
+                if (subPanel.getBorder() != null && 
+                    subPanel.getBorder().toString().contains("Biểu đồ doanh thu")) {
+                    subPanel.removeAll();
+                    subPanel.add(panel, BorderLayout.CENTER);
+                    subPanel.revalidate();
+                    subPanel.repaint();
+                    return;
+                }
+            }
+        }
+    }
+}
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    /**
+     * Cập nhật bảng tổng quan
+     */
+    private void updateGeneralTable(List<Bill> bills, Map<String, String> userIdToName) {
+        billTableModel.setRowCount(0);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+        NumberFormat nf = NumberFormat.getInstance(Locale.forLanguageTag("vi-VN"));
+        
+        for (Bill b : bills) {
+            if (b == null) continue;
+            
+            String employeeName = userIdToName.getOrDefault(b.getUser_id(), b.getUser_id());
+            String checkinStr = b.getCheckin() != null ? sdf.format(b.getCheckin()) : "";
+            String checkoutStr = b.getCheckout() != null ? sdf.format(b.getCheckout()) : "";
+            String statusText = getStatusText(b.getStatus());
+            
+            billTableModel.addRow(new Object[] { 
+                b.getBill_id(),
+                b.getTable_number(),
+                employeeName,
+                checkinStr,
+                checkoutStr,
+                nf.format(b.getTotal_amount()),
+                statusText
+            });
+        }
+    }
+
+    /**
+     * Lấy khoảng thời gian được chọn cho dashboard tổng quan
+     */
+    private TimeRange getSelectedGeneralRange(String selected) {
+        switch (selected) {
+            case "Hôm nay":
+                return TimeRange.today();
+            case "Tuần này":
+                return TimeRange.thisWeek();
+            case "Quý này":
+                return TimeRange.thisQuarter();
+            case "Năm nay":
+                return TimeRange.thisYear();
+            default:
+                return TimeRange.thisMonth();
+        }
+    }
+
+    /**
+     * Lấy label cho khoảng thời gian
+     */
+    private String getRangeLabel(TimeRange range) {
+        if (range == null) return "";
+        
+        // KIỂM TRA XEM KHOẢNG THỜI GIAN CÓ PHẢI LÀ CÁC KHOẢNG ĐẶC BIỆT KHÔNG
+        Calendar cal = Calendar.getInstance();
+        Calendar today = Calendar.getInstance();
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+        
+        Calendar tomorrow = (Calendar) today.clone();
+        tomorrow.add(Calendar.DAY_OF_MONTH, 1);
+        
+        Calendar weekStart = (Calendar) today.clone();
+        weekStart.set(Calendar.DAY_OF_WEEK, weekStart.getFirstDayOfWeek());
+        
+        Calendar weekEnd = (Calendar) weekStart.clone();
+        weekEnd.add(Calendar.DAY_OF_WEEK, 6);
+        
+        Calendar monthStart = (Calendar) today.clone();
+        monthStart.set(Calendar.DAY_OF_MONTH, 1);
+        
+        Calendar monthEnd = (Calendar) monthStart.clone();
+        monthEnd.add(Calendar.MONTH, 1);
+        monthEnd.add(Calendar.DAY_OF_MONTH, -1);
+        
+        Calendar yearStart = (Calendar) today.clone();
+        yearStart.set(Calendar.DAY_OF_YEAR, 1);
+        
+        Calendar yearEnd = (Calendar) yearStart.clone();
+        yearEnd.add(Calendar.YEAR, 1);
+        yearEnd.add(Calendar.DAY_OF_YEAR, -1);
+        
+        // So sánh với các khoảng thời gian đặc biệt
+        if (range.getFrom().equals(today.getTime()) && range.getTo().equals(tomorrow.getTime())) {
+            return "Hôm nay";
+        } else if (range.getFrom().equals(weekStart.getTime()) && range.getTo().equals(weekEnd.getTime())) {
+            return "Tuần này";
+        } else if (range.getFrom().equals(monthStart.getTime()) && range.getTo().equals(monthEnd.getTime())) {
+            return "Tháng này";
+        } else if (range.getFrom().equals(yearStart.getTime()) && range.getTo().equals(yearEnd.getTime())) {
+            return "Năm nay";
+        } else {
+            // Nếu không phải khoảng đặc biệt thì trả về ngày tháng
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            String fromStr = sdf.format(range.getFrom());
+            String toStr = sdf.format(range.getTo());
+            
+            if (fromStr.equals(toStr)) {
+                return fromStr;
+            } else {
+                return fromStr + " - " + toStr;
+            }
+        }
+    }
+
+    /**
+     * Lấy text trạng thái hóa đơn
+     */
+    private String getStatusText(Integer status) {
+        if (status == null) return "Không xác định";
+        switch (status) {
+            case 0: return "Đang phục vụ";
+            case 1: return "Đã thanh toán";
+            case 2: return "Đã hủy";
+            default: return "Không xác định";
+        }
+    }
+
+    /**
+     * Cập nhật bảng doanh thu nhân viên với thông tin chi tiết
+     */
+   
+    /**
+     * Khởi tạo bảng hiển thị doanh thu nhân viên - Enhanced version
+     */
+  
+    /**
+     * Làm mới dữ liệu doanh thu theo nhân viên - Enhanced version
+     */
+    private void refreshEmployeeRevenueData() {
+        try {
+            String selectedRange = cboEmpRange != null ? (String) cboEmpRange.getSelectedItem() : "Tháng này";
+            TimeRange range = getSelectedEmpRange(selectedRange);
+
+            // Lấy dữ liệu cho khoảng thời gian chính
+            List<Bill> bills = billDAO.findAll();
+            List<UserAccount> users = userDAO.findAll();
+
+            if (bills == null) bills = new ArrayList<>();
+            if (users == null) users = new ArrayList<>();
+
+            Map<String, String> userIdToName = new HashMap<>();
+            Map<String, String> userIdToRole = new HashMap<>();
+            for (UserAccount u : users) {
+                if (u != null && u.getUser_id() != null) {
+                    String name = (u.getFullName() != null && !u.getFullName().trim().isEmpty()) ? 
+                        u.getFullName() : u.getUsername();
+                    userIdToName.put(u.getUser_id(), name);
+                    userIdToRole.put(u.getUser_id(), u.getRole_id());
+                }
+            }
+
+            Map<String, Double> revenueByEmployee = new HashMap<>();
+            Map<String, Integer> ordersByEmployee = new HashMap<>();
+            Map<String, Double> avgOrderValue = new HashMap<>();
+            
+            // Tính toán dữ liệu cho khoảng thời gian chính
+            for (Bill b : bills) {
+                if (b == null) continue;
+                if (b.getStatus() == null || b.getStatus() != 1) continue;
+                
+                java.util.Date when = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
+                if (when == null) continue;
+                if (!withinRange(when, range)) continue;
+
+                String userId = b.getUser_id();
+                if (userId == null) userId = "N/A";
+                
+                double revenue = b.getTotal_amount();
+                revenueByEmployee.merge(userId, revenue, Double::sum);
+                ordersByEmployee.merge(userId, 1, Integer::sum);
+            }
+
+            // KIỂM TRA XEM CÓ DỮ LIỆU TRONG KHOẢNG THỜI GIAN ĐÃ CHỌN KHÔNG
+            if (revenueByEmployee.isEmpty()) {
+                // Không có dữ liệu - hiển thị thông báo và reset về mặc định
+                XDialog.warning("Không có dữ liệu biểu đồ trong khoảng thời gian đã chọn.\nHệ thống sẽ reset về khoảng thời gian mặc định.", "Thông báo");
+                
+                // Reset về mặc định
+                resetEmployeeTabToDefault();
+                return;
+            }
+
+            // TÍNH NĂNG SO SÁNH THẬT SỰ - CHỈ KHI TÍCH CHECKBOX SO SÁNH
+            Map<String, Double> comparisonRevenueByEmployee = new HashMap<>();
+            String comparisonLabel = "";
+            boolean hasComparisonData = false;
+            
+            if (chkShowComparison != null && chkShowComparison.isSelected()) {
+                // Lấy khoảng thời gian so sánh dựa trên khoảng thời gian hiện tại
+                TimeRange comparisonRange = getComparisonTimeRange(range);
+                
+                if (comparisonRange != null) {
+                    // Tính toán dữ liệu cho khoảng thời gian so sánh
+                    for (Bill b : bills) {
+                        if (b == null) continue;
+                        if (b.getStatus() == null || b.getStatus() != 1) continue;
+                        
+                        java.util.Date when = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
+                        if (when == null) continue;
+                        if (!withinRange(when, comparisonRange)) continue;
+
+                        String userId = b.getUser_id();
+                        if (userId == null) userId = "N/A";
+                        
+                        double revenue = b.getTotal_amount();
+                        comparisonRevenueByEmployee.merge(userId, revenue, Double::sum);
+                    }
+                    
+                    // Kiểm tra xem có dữ liệu so sánh không
+                    if (!comparisonRevenueByEmployee.isEmpty()) {
+                        hasComparisonData = true;
+                        comparisonLabel = getComparisonLabel(range);
+                    } else {
+                        // Không có dữ liệu so sánh - hiển thị thông báo
+                        XDialog.warning("Không có dữ liệu để so sánh trong khoảng thời gian trước đó.\nVui lòng chọn khoảng thời gian khác.", "Thông báo so sánh");
+                        
+                        // Tắt checkbox so sánh
+                        chkShowComparison.setSelected(false);
+                        hasComparisonData = false;
+                    }
+                }
+            }
+
+            // Tính doanh thu trung bình trên hóa đơn
+            for (String userId : revenueByEmployee.keySet()) {
+                double revenue = revenueByEmployee.get(userId);
+                int orders = ordersByEmployee.get(userId);
+                if (orders > 0) {
+                    avgOrderValue.put(userId, revenue / orders);
+                }
+            }
+
+            // Tính tổng doanh thu để tính tỷ lệ phần trăm
+            double totalRevenue = revenueByEmployee.values().stream().mapToDouble(Double::doubleValue).sum();
+
+            List<Map.Entry<String, Double>> sortedByRevenue = new ArrayList<>(revenueByEmployee.entrySet());
+            sortedByRevenue.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
+
+            // Tạo biểu đồ chính với màu sắc đa dạng
+            if (hasComparisonData) {
+                // Tạo biểu đồ so sánh THẬT SỰ
+                createComparisonEmployeeChart(sortedByRevenue, userIdToName, range, 
+                    comparisonRevenueByEmployee, comparisonLabel);
+            } else {
+                // Tạo biểu đồ đơn giản
+                createMainEmployeeChart(sortedByRevenue, userIdToName, range);
+            }
+            
+            // Tạo thống kê và tỷ lệ phần trăm
+            createEmployeeStats(sortedByRevenue, userIdToName, totalRevenue);
+            
+            // TẠO BIỂU ĐỒ PHỤ CHỈ KHI TÍCH CHECKBOX NĂNG SUẤT
+            if (chkShowProductivity != null && chkShowProductivity.isSelected()) {
+                createSecondaryEmployeeCharts(sortedByRevenue, userIdToName, ordersByEmployee, avgOrderValue);
+            }
+            
+            // Cập nhật bảng với thông tin chi tiết
+            updateEmpTableEnhanced(sortedByRevenue, ordersByEmployee, avgOrderValue, userIdToName, userIdToRole);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            showErrorPanel(jPanel5, "Lỗi tải dữ liệu doanh thu theo nhân viên: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Khởi tạo bảng hiển thị doanh thu nhân viên - Enhanced version với border
+     */
+    private void initEmpTable() {
+        empTableModel = new DefaultTableModel(new Object[] { 
+            "Mã NV", "Tên nhân viên", "Vai trò", "Số hóa đơn", "Doanh thu (VNĐ)", "TB/HĐ (VNĐ)" 
+        }, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+        
+        tblEmp = new JTable(empTableModel);
+        tblEmp.setRowHeight(32); // Tăng chiều cao hàng để dễ đọc
+        tblEmp.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        tblEmp.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 12));
+        
+        // TẮT KHẢ NĂNG DI CHUYỂN CỘT
+        tblEmp.getTableHeader().setReorderingAllowed(false);
+        
+        // Thêm border cho bảng
+        tblEmp.setShowGrid(true);
+        tblEmp.setGridColor(new Color(200, 200, 200));
+        tblEmp.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 150)));
+        
+        // Tùy chỉnh header - ĐỔI MÀU GIỐNG TAB DOANH THU THEO MÓN
+        tblEmp.getTableHeader().setBackground(new Color(134, 39, 43)); // Màu đỏ đậm FiveC theme
+        tblEmp.getTableHeader().setForeground(Color.WHITE); // Chữ trắng để dễ đọc
+        tblEmp.getTableHeader().setBorder(BorderFactory.createLineBorder(new Color(150, 150, 150)));
+
+        // Căn giữa các cột - GIỮ NGUYÊN GRID
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        centerRenderer.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(2, 5, 2, 5)
+        ));
+        tblEmp.getColumnModel().getColumn(0).setCellRenderer(centerRenderer); // Mã NV
+        tblEmp.getColumnModel().getColumn(2).setCellRenderer(centerRenderer); // Vai trò
+        tblEmp.getColumnModel().getColumn(3).setCellRenderer(centerRenderer); // Số hóa đơn
+        
+        // Căn phải các cột tiền - GIỮ NGUYÊN GRID
+        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+        rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
+        rightRenderer.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(2, 5, 2, 5)
+        ));
+        tblEmp.getColumnModel().getColumn(4).setCellRenderer(rightRenderer); // Doanh thu
+        tblEmp.getColumnModel().getColumn(5).setCellRenderer(rightRenderer); // TB/HĐ
+        
+        // Căn trái cho tên nhân viên - GIỮ NGUYÊN GRID
+        DefaultTableCellRenderer leftRenderer = new DefaultTableCellRenderer();
+        leftRenderer.setHorizontalAlignment(SwingConstants.LEFT);
+        leftRenderer.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(2, 5, 2, 5)
+        ));
+        tblEmp.getColumnModel().getColumn(1).setCellRenderer(leftRenderer); // Tên nhân viên
+
+        // Set độ rộng cột
+        tblEmp.getColumnModel().getColumn(0).setPreferredWidth(80);   // Mã NV
+        tblEmp.getColumnModel().getColumn(1).setPreferredWidth(180);  // Tên nhân viên
+        tblEmp.getColumnModel().getColumn(2).setPreferredWidth(100);  // Vai trò (tăng để hiển thị "Admin"/"Nhân viên")
+        tblEmp.getColumnModel().getColumn(3).setPreferredWidth(100);  // Số hóa đơn
+        tblEmp.getColumnModel().getColumn(4).setPreferredWidth(140);  // Doanh thu
+        tblEmp.getColumnModel().getColumn(5).setPreferredWidth(140);  // TB/HĐ
+
+        JScrollPane sp = new JScrollPane(tblEmp);
+        sp.setBorder(BorderFactory.createLineBorder(new Color(150, 150, 150)));
+        empTableContainer.add(sp, BorderLayout.CENTER);
+    }
+
+    /**
+     * Cập nhật bảng doanh thu nhân viên với thông tin chi tiết - Enhanced version
+     */
+    private void updateEmpTableEnhanced(List<Map.Entry<String, Double>> sortedRevenue, 
+                               Map<String, Integer> ordersByEmployee, 
+                                      Map<String, Double> avgOrderValue,
+                                      Map<String, String> userIdToName,
+                                      Map<String, String> userIdToRole) {
+        empTableModel.setRowCount(0);
+        NumberFormat nf = NumberFormat.getInstance(Locale.forLanguageTag("vi-VN"));
+        
+        for (Map.Entry<String, Double> entry : sortedRevenue) {
+            String userId = entry.getKey();
+            String name = userIdToName.getOrDefault(userId, userId);
+            
+            // Đổi vai trò từ R001/R002 thành Admin/Nhân viên
+            String roleDisplay = getRoleDisplayName(userIdToRole.getOrDefault(userId, "N/A"));
+            
+            int orders = ordersByEmployee.getOrDefault(userId, 0);
+            double revenue = entry.getValue() != null ? entry.getValue() : 0.0;
+            double avgValue = avgOrderValue.getOrDefault(userId, 0.0);
+            
+            // LÀM TRÒN SỐ THEO QUY TẮC 0.5
+            long roundedRevenue = Math.round(revenue);
+            
+            // LÀM TRÒN TB/HĐ TỚI HÀNG NGHÌN THEO QUY TẮC 0.5
+            // Ví dụ: 165.631,579 -> 165.632, 165.500 -> 165.500
+            long roundedAvgValue = Math.round(avgValue / 1000.0) * 1000;
+            
+            // Format số tiền với dấu phẩy ngăn cách hàng nghìn và làm tròn
+            String formattedRevenue = nf.format(roundedRevenue);
+            String formattedAvgValue = nf.format(roundedAvgValue);
+            
+            // ĐỊNH DẠNG TÊN NHÂN VIÊN ĐẸP HƠN VỚI HTML
+            String formattedName = String.format(
+                "<html><div style='text-align: left; line-height: 1.3; padding: 5px;'>%s</div></html>",
+                name
+            );
+            
+            empTableModel.addRow(new Object[] { 
+                userId, 
+                formattedName, // SỬ DỤNG TÊN ĐÃ ĐỊNH DẠNG
+                roleDisplay,
+                orders, 
+                formattedRevenue,
+                formattedAvgValue
+            });
+        }
+        
+        // Tự động điều chỉnh độ rộng cột sau khi có dữ liệu
+        for (int i = 0; i < tblEmp.getColumnCount(); i++) {
+            tblEmp.getColumnModel().getColumn(i).setPreferredWidth(
+                tblEmp.getColumnModel().getColumn(i).getPreferredWidth()
+            );
+        }
+    }
+    
+    /**
+     * Chuyển đổi mã vai trò thành tên hiển thị
+     */
+    private String getRoleDisplayName(String roleId) {
+        if (roleId == null) return "N/A";
+        switch (roleId) {
+            case "R001": return "Admin";
+            case "R002": return "Nhân viên";
+            default: return roleId;
+        }
+    }
+
+    // Thêm method mới để tạo biểu đồ chính (dòng 3750-3800):
+    private void createMainEmployeeChart(List<Map.Entry<String, Double>> sortedByRevenue, 
+                                       Map<String, String> userIdToName, TimeRange range) {
+        try {
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            
+            // Tạo dataset với TẤT CẢ nhân viên trong 1 series duy nhất để sửa lệch cột
+            for (int i = 0; i < sortedByRevenue.size(); i++) {
+                Map.Entry<String, Double> entry = sortedByRevenue.get(i);
+                String userId = entry.getKey();
+                String displayName = userIdToName.getOrDefault(userId, userId);
+                double revenue = entry.getValue();
+                
+                // TẤT CẢ nhân viên vào 1 series "Doanh thu" - KHÔNG tạo series riêng
+                dataset.addValue(revenue, "Doanh thu", displayName);
+            }
+
+            String title = "Doanh thu theo nhân viên (" + getRangeLabel(range) + ")";
+            JFreeChart chart = XChart.createBarChart(title, "Nhân viên", "VNĐ", dataset);
+            
+            CategoryPlot plot = chart.getCategoryPlot();
+            BarRenderer renderer = (BarRenderer) plot.getRenderer();
+            
+            // Tự động scale trục Y theo max data - TĂNG MARGIN ĐỂ SỐ KHÔNG BỊ CẮT
+            double maxValue = sortedByRevenue.stream()
+                .mapToDouble(e -> e.getValue() != null ? e.getValue() : 0.0)
+                .max()
+                .orElse(0.0);
+            
+            if (maxValue > 0) {
+                double upperBound = maxValue * 1.2; // TĂNG TỪ 1.1 LÊN 1.2 (20% thay vì 10%)
+                plot.getRangeAxis().setUpperBound(upperBound);
+                plot.getRangeAxis().setLowerBound(0.0);
+            }
+            
+            // CĂN GIỮA CÁC CỘT TRONG CATEGORY - SỬA LỆCH CỘT
+            org.jfree.chart.axis.CategoryAxis domainAxis = plot.getDomainAxis();
+            domainAxis.setCategoryMargin(0.1);
+            plot.setDomainGridlinesVisible(true);
+            
+            // MÀU SẮC ĐA DẠNG CHO TỪNG NHÂN VIÊN - TẤT CẢ CÁC KHOẢNG THỜI GIAN ĐỀU CÙNG MÀU
+            // SỬ DỤNG MÀU XANH CHO TẤT CẢ CÁC KHOẢNG THỜI GIAN (HÔM NAY, TUẦN NÀY, THÁNG NÀY, QUÝ NÀY, NĂM NÀY, KHOẢNG TÙY Ý)
+            Color[] colors = {
+                new Color(52, 144, 220),  // Xanh dương
+                new Color(40, 167, 69),   // Xanh lá
+                new Color(0, 123, 255),   // Xanh dương sáng
+                new Color(52, 144, 220),  // Xanh dương
+                new Color(40, 167, 69),   // Xanh lá
+                new Color(0, 123, 255),   // Xanh dương sáng
+                new Color(52, 144, 220),  // Xanh dương
+                new Color(40, 167, 69),   // Xanh lá
+                new Color(0, 123, 255),   // Xanh dương sáng
+                new Color(52, 144, 220)   // Xanh dương
+            };
+            
+            // GIỮ LẠI MÀU SẮC ĐA DẠNG - Sử dụng GradientBarPainter để tạo màu khác nhau cho từng cột
+            for (int i = 0; i < sortedByRevenue.size(); i++) {
+                Color color = colors[i % colors.length];
+                
+                // Tạo custom renderer cho từng cột để có màu khác nhau
+                org.jfree.chart.renderer.category.GradientBarPainter painter = new org.jfree.chart.renderer.category.GradientBarPainter();
+                renderer.setBarPainter(painter);
+                
+                // Set màu cho từng item (cột) trong series
+                renderer.setSeriesPaint(0, color);
+            }
+            
+            // CĂN CHỈNH CỘT ĐỂ NẰM Ở GIỮA TÊN NHÂN VIÊN
+            renderer.setItemMargin(0.1);
+            renderer.setMaximumBarWidth(0.8);
+            
+            // Tùy chỉnh khoảng cách và hiển thị để số không bị che
+            renderer.setDefaultItemLabelGenerator(
+                new StandardCategoryItemLabelGenerator(
+                    "{2}", // Pattern để hiển thị giá trị - KHÔNG ĐƯỢC NULL
+                    new java.text.DecimalFormat("#,##0") // Format làm tròn về số nguyên, dấu phẩy ngăn cách hàng nghìn
+                )
+            );
+            renderer.setDefaultItemLabelsVisible(true);
+            
+            // Tùy chỉnh font và vị trí label để số hiển thị rõ ràng
+            renderer.setDefaultItemLabelFont(new Font("Tahoma", Font.BOLD, 11));
+            renderer.setDefaultItemLabelPaint(Color.BLACK);
+            
+            // Tùy chỉnh vị trí label - đặt phía trên cột và số nằm NGANG
+            renderer.setDefaultPositiveItemLabelPosition(
+                new org.jfree.chart.labels.ItemLabelPosition(
+                    org.jfree.chart.labels.ItemLabelAnchor.OUTSIDE12
+                    , org.jfree.chart.ui.TextAnchor.BOTTOM_CENTER
+                    , org.jfree.chart.ui.TextAnchor.BOTTOM_CENTER
+                    , 0.0
+                )
+            );
+            
+            // Tùy chỉnh màu nền cho biểu đồ
+            plot.setBackgroundPaint(Color.WHITE);
+            plot.setDomainGridlinePaint(new Color(200, 200, 200));
+            plot.setRangeGridlinePaint(new Color(200, 200, 200));
+            
+            // TĂNG MARGIN CHO BIỂU ĐỒ ĐỂ SỐ KHÔNG BỊ CẮT
+            plot.setAxisOffset(new org.jfree.chart.ui.RectangleInsets(40, 20, 20, 20)); // TĂNG TỪ (20,10,10,10) LÊN (40,20,20,20)
+            
+            // Tùy chỉnh legend để hiển thị rõ ràng
+            chart.getLegend().setPosition(org.jfree.chart.ui.RectangleEdge.BOTTOM);
+            chart.getLegend().setBackgroundPaint(Color.WHITE);
+            chart.getLegend().setBorder(1.0, 1.0, 1.0, 1.0);
+            chart.getLegend().setItemFont(new Font("Tahoma", Font.PLAIN, 11));
+            
+            ChartPanel panel = XChart.createChartPanel(chart);
+            empChartContainer.removeAll();
+            empChartContainer.add(panel, BorderLayout.CENTER);
+            empChartContainer.revalidate();
+            empChartContainer.repaint();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    // Thêm method mới để tạo thống kê và tỷ lệ phần trăm (dòng 3800-3850):
+    private void createEmployeeStats(List<Map.Entry<String, Double>> sortedByRevenue, 
+                                   Map<String, String> userIdToName, double totalRevenue) {
+        try {
+            empStatsContainer.removeAll();
+            
+            if (sortedByRevenue.isEmpty()) {
+                empStatsContainer.add(createStatCard("Không có dữ liệu", "0", new Color(108, 117, 125)));
+                empStatsContainer.revalidate();
+                empStatsContainer.repaint();
+                return;
+            }
+            
+            // Top 1 nhân viên - SỬA ĐỂ TẤT CẢ TEXT CÓ CÙNG ĐỘ ĐẬM
+            Map.Entry<String, Double> topEmployee = sortedByRevenue.get(0);
+            String topName = userIdToName.getOrDefault(topEmployee.getKey(), topEmployee.getKey());
+            double topRevenue = topEmployee.getValue();
+            double topPercentage = totalRevenue > 0 ? (topRevenue / totalRevenue) * 100 : 0;
+            
+            // TẠO TEXT ĐỊNH DẠNG - TẤT CẢ ĐỀU CÓ CÙNG FONT WEIGHT VÀ SIZE
+            // TĂNG KÍCH THƯỚC CHỮ VÀ ĐIỀU CHỈNH KHOẢNG CÁCH ĐỂ TEXT KHÔNG BỊ CẮT
+            String topContent = String.format(
+                "<html><div style='text-align: center; line-height: 1.8; width: 100%%; padding: 10px;'>" +
+                "<div style='font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #FFC107; word-wrap: break-word;'>%s</div>" +
+                "<div style='font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #FFC107;'>%,.0f VNĐ</div>" +
+                "<div style='font-size: 16px; font-weight: bold; color: #FFC107;'>%.1f%%</div>" +
+                "</div></html>",
+                topName, topRevenue, topPercentage
+            );
+            
+            empStatsContainer.add(createStatCard(" Top 1", topContent, new Color(255, 193, 7)));
+            
+            // Tổng doanh thu - TĂNG KÍCH THƯỚC CHỮ CHO ĐỘ RỘNG MỚI
+            empStatsContainer.add(createStatCard(" Tổng doanh thu", 
+                String.format("<html><div style='text-align: center; font-size: 16px; font-weight: bold; line-height: 1.8; padding: 10px; width: 100%%;'>%,.0f VNĐ</div></html>", totalRevenue), 
+                new Color(134, 39, 43)));
+            
+            // Số nhân viên - TĂNG KÍCH THƯỚC CHỮ CHO ĐỘ RỘNG MỚI
+            empStatsContainer.add(createStatCard("👥 Số nhân viên", 
+                String.format("<html><div style='text-align: center; font-size: 16px; font-weight: bold; line-height: 1.8; padding: 5px;'>%d</div></html>", sortedByRevenue.size()), 
+                new Color(52, 144, 220)));
+            
+            // Doanh thu trung bình - TĂNG KÍCH THƯỚC CHỮ CHO ĐỘ RỘNG MỚI
+            double avgRevenue = totalRevenue / sortedByRevenue.size();
+            empStatsContainer.add(createStatCard("📊 TB/Nhân viên", 
+                String.format("<html><div style='text-align: center; font-size: 16px; font-weight: bold; line-height: 1.8; padding: 5px;'>%,.0f VNĐ</div></html>", avgRevenue), 
+                new Color(40, 167, 69)));
+            
+            empStatsContainer.revalidate();
+            empStatsContainer.repaint();
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    // Thêm method mới để tạo biểu đồ phụ (dòng 3850-3900):
+    private void createSecondaryEmployeeCharts(List<Map.Entry<String, Double>> sortedByRevenue, 
+                                             Map<String, String> userIdToName,
+                               Map<String, Integer> ordersByEmployee, 
+                                             Map<String, Double> avgOrderValue) {
+        try {
+            empSecondaryChartContainer.removeAll();
+            
+            // Tạo tabbed pane cho 2 biểu đồ phụ
+            JTabbedPane secondaryTabs = new JTabbedPane();
+            secondaryTabs.setFont(new Font("Tahoma", Font.BOLD, 12));
+            
+            // Tab 1: Số hóa đơn
+            JPanel ordersPanel = new JPanel(new BorderLayout());
+            ordersPanel.setBackground(Color.WHITE);
+            
+            DefaultCategoryDataset ordersDataset = new DefaultCategoryDataset();
+            for (Map.Entry<String, Double> entry : sortedByRevenue) {
+            String userId = entry.getKey();
+                String displayName = userIdToName.getOrDefault(userId, userId);
+            int orders = ordersByEmployee.getOrDefault(userId, 0);
+                ordersDataset.addValue(orders, "Số hóa đơn", displayName);
+            }
+            
+            JFreeChart ordersChart = XChart.createBarChart("Số hóa đơn theo nhân viên", "Nhân viên", "Số hóa đơn", ordersDataset);
+            CategoryPlot ordersPlot = ordersChart.getCategoryPlot();
+            BarRenderer ordersRenderer = (BarRenderer) ordersPlot.getRenderer();
+            ordersRenderer.setSeriesPaint(0, new Color(52, 144, 220)); // Màu xanh dương
+            
+            // Tự động scale trục Y cho biểu đồ số hóa đơn
+            double maxOrders = ordersByEmployee.values().stream().mapToDouble(Integer::doubleValue).max().orElse(0.0);
+            if (maxOrders > 0) {
+                double upperBound = maxOrders * 1.2; // Thêm 20% margin
+                ordersPlot.getRangeAxis().setUpperBound(upperBound);
+                ordersPlot.getRangeAxis().setLowerBound(0.0);
+            }
+            
+            // Căn giữa các cột
+            org.jfree.chart.axis.CategoryAxis ordersDomainAxis = ordersPlot.getDomainAxis();
+            ordersDomainAxis.setCategoryMargin(0.1);
+            ordersPlot.setDomainGridlinesVisible(true);
+            
+            // Tùy chỉnh khoảng cách cột
+            ordersRenderer.setItemMargin(0.1);
+            ordersRenderer.setMaximumBarWidth(0.8);
+            
+            ChartPanel ordersChartPanel = XChart.createChartPanel(ordersChart);
+            ordersPanel.add(ordersChartPanel, BorderLayout.CENTER);
+            
+            // Tab 2: Doanh thu trung bình trên hóa đơn
+            JPanel avgPanel = new JPanel(new BorderLayout());
+            avgPanel.setBackground(Color.WHITE);
+            
+            DefaultCategoryDataset avgDataset = new DefaultCategoryDataset();
+            for (Map.Entry<String, Double> entry : sortedByRevenue) {
+                String userId = entry.getKey();
+                String displayName = userIdToName.getOrDefault(userId, userId);
+                double avgValue = avgOrderValue.getOrDefault(userId, 0.0);
+                
+                // LÀM TRÒN SỐ TB/HĐ TỚI HÀNG NGHÌN THEO QUY TẮC 0.5
+                long roundedAvgValue = Math.round(avgValue / 1000.0) * 1000;
+                avgDataset.addValue(roundedAvgValue, "TB/HĐ", displayName);
+            }
+            
+            JFreeChart avgChart = XChart.createBarChart("Doanh thu TB/HĐ theo nhân viên", "Nhân viên", "VNĐ", avgDataset);
+            CategoryPlot avgPlot = avgChart.getCategoryPlot();
+            BarRenderer avgRenderer = (BarRenderer) avgPlot.getRenderer();
+            avgRenderer.setSeriesPaint(0, new Color(40, 167, 69)); // Màu xanh lá
+            
+            // THÊM SỐ LIỆU TRÊN CÁC CỘT CHO BIỂU ĐỒ TB/HĐ - LÀM TRÒN SỐ
+            avgRenderer.setDefaultItemLabelGenerator(
+                new StandardCategoryItemLabelGenerator(
+                    "{2}", // Pattern để hiển thị giá trị
+                    new java.text.DecimalFormat("#,##0") // Format làm tròn về số nguyên
+                )
+            );
+            avgRenderer.setDefaultItemLabelsVisible(true);
+            
+            // Vị trí label - đặt phía trên cột và số nằm NGANG
+            avgRenderer.setDefaultPositiveItemLabelPosition(
+                new org.jfree.chart.labels.ItemLabelPosition(
+                    org.jfree.chart.labels.ItemLabelAnchor.OUTSIDE12,
+                    org.jfree.chart.ui.TextAnchor.BOTTOM_CENTER,
+                    org.jfree.chart.ui.TextAnchor.BOTTOM_CENTER,
+                    0.0
+                )
+            );
+            
+            // Tự động scale trục Y cho biểu đồ TB/HĐ
+            double maxAvgValue = avgOrderValue.values().stream().mapToDouble(Double::doubleValue).max().orElse(0.0);
+            if (maxAvgValue > 0) {
+                double upperBound = maxAvgValue * 1.2; // Thêm 20% margin
+                avgPlot.getRangeAxis().setUpperBound(upperBound);
+                avgPlot.getRangeAxis().setLowerBound(0.0);
+            }
+            
+            // Căn giữa các cột
+            org.jfree.chart.axis.CategoryAxis avgDomainAxis = avgPlot.getDomainAxis();
+            avgDomainAxis.setCategoryMargin(0.1);
+            avgPlot.setDomainGridlinesVisible(true);
+            
+            // Tùy chỉnh khoảng cách cột
+            avgRenderer.setItemMargin(0.1);
+            avgRenderer.setMaximumBarWidth(0.8);
+            
+            ChartPanel avgChartPanel = XChart.createChartPanel(avgChart);
+            avgPanel.add(avgChartPanel, BorderLayout.CENTER);
+            
+            // Thêm các tab vào tabbed pane
+            secondaryTabs.addTab("📋 Số hóa đơn", ordersPanel);
+            secondaryTabs.addTab("💰 TB/HĐ", avgPanel);
+            
+            empSecondaryChartContainer.add(secondaryTabs, BorderLayout.CENTER);
+            empSecondaryChartContainer.revalidate();
+            empSecondaryChartContainer.repaint();
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    // Thêm method mới để tạo stat card (dòng 3900-3950):
+    private JPanel createStatCard(String title, String value, Color valueColor) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(230, 230, 230), 1),
+            BorderFactory.createEmptyBorder(20, 30, 20, 30) // TĂNG PADDING ĐỂ TEXT CÓ KHÔNG GIAN TỐT HƠN
+        ));
+        
+        // TĂNG CHIỀU CAO VÀ CHIỀU RỘNG CỦA CARD ĐỂ TEXT KHÔNG BỊ CẮT
+        card.setPreferredSize(new Dimension(400, 160)); // TĂNG CHIỀU RỘNG TỪ 350 LÊN 400, CHIỀU CAO TỪ 140 LÊN 160
+        card.setMinimumSize(new Dimension(380, 150));   // TĂNG CHIỀU RỘNG TỪ 330 LÊN 380, CHIỀU CAO TỪ 130 LÊN 150
+        card.setPreferredSize(new Dimension(350, 140)); // TĂNG CHIỀU RỘNG TỪ 320 LÊN 350
+        card.setMinimumSize(new Dimension(330, 130));   // TĂNG CHIỀU RỘNG TỪ 300 LÊN 330
+
+        // KÍCH THƯỚC TITLE VỪA PHẢI - ĐẢM BẢO CÙNG ĐỘ ĐẬM
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Tahoma", Font.BOLD, 13)); // LUÔN BOLD
+        titleLabel.setForeground(new Color(108, 117, 125));
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        titleLabel.setVerticalAlignment(SwingConstants.CENTER); // CĂN GIỮA THEO CHIỀU DỌC
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 15, 0)); // THÊM PADDING TRÊN VÀ TĂNG KHOẢNG CÁCH
+
+        // KÍCH THƯỚC VALUE VỪA PHẢI - ĐẢM BẢO CÙNG ĐỘ ĐẬM
+        JLabel valueLabel = new JLabel(value);
+        // KIỂM TRA NẾU LÀ HTML THÌ KHÔNG SET FONT, NGƯỢC LẠI THÌ SET FONT MẶC ĐỊNH
+        if (value.startsWith("<html>")) {
+            // HTML content - không set font để HTML có thể điều khiển hoàn toàn
+            valueLabel.setForeground(valueColor);
+        } else {
+            // Plain text - set font mặc định
+            valueLabel.setFont(new Font("Tahoma", Font.BOLD, 16));
+            valueLabel.setForeground(valueColor);
+        }
+        valueLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        valueLabel.setVerticalAlignment(SwingConstants.CENTER); // CĂN GIỮA THEO CHIỀU DỌC
+        valueLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0)); // TĂNG KHOẢNG CÁCH
+        valueLabel.setPreferredSize(new Dimension(300, 80)); // SET KÍCH THƯỚC CỐ ĐỊNH CHO VALUE LABEL
+
+        card.add(titleLabel, BorderLayout.NORTH);
+        card.add(valueLabel, BorderLayout.CENTER);
+        
+        return card;
+    }
+
+    // Thêm method mới để reset tab nhân viên về mặc định (dòng 3950-4000):
+    /**
+     * Reset tab nhân viên về mặc định khi không có dữ liệu hoặc khi bấm nút làm mới
+     */
+    private void resetEmployeeTabToDefault() {
+        try {
+            // Reset combo box về mặc định
+            if (cboEmpRange != null) {
+                cboEmpRange.setSelectedItem("Tháng này");
+            }
+            if (cboEmpCompare != null) {
+                cboEmpCompare.setSelectedItem("Không so sánh");
+            }
+            
+            // Reset date chooser
+            if (dcEmpFrom != null && dcEmpTo != null) {
+                Calendar cal = Calendar.getInstance();
+                cal.set(Calendar.DAY_OF_MONTH, 1);
+                dcEmpFrom.setDate(cal.getTime());
+                dcEmpTo.setDate(Calendar.getInstance().getTime());
+                dcEmpFrom.setVisible(false);
+                dcEmpTo.setVisible(false);
+            }
+            
+            // RESET CHECKBOX VỀ TRẠNG THÁI UNCHECK - TRẠNG THÁI BAN ĐẦU
+            if (chkShowComparison != null) {
+                chkShowComparison.setSelected(false);
+            }
+            if (chkShowProductivity != null) {
+                chkShowProductivity.setSelected(false);
+            }
+            
+            // Ẩn các thành phần năng suất khi reset
+            if (empSecondaryChartContainer != null) {
+                empSecondaryChartContainer.setVisible(false);
+            }
+            
+            // Cập nhật layout
+            if (empSecondaryChartContainer != null) {
+                empSecondaryChartContainer.getParent().revalidate();
+                empSecondaryChartContainer.getParent().repaint();
+            }
+            
+            // KHÔNG XÓA BẢNG - CHỈ RESET CÁC CONTROL VỀ MẶC ĐỊNH
+            // showNoDataMessage(); // BỎ DÒNG NÀY
+            
+            // TẢI LẠI DỮ LIỆU VỚI KHOẢNG THỜI GIAN MẶC ĐỊNH
+            refreshEmployeeRevenueData();
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    // Thêm method mới để hiển thị thông báo "Không có dữ liệu" (dòng 4000-4050):
+    /**
+     * Hiển thị thông báo "Không có dữ liệu" trong các container
+     */
+    private void showNoDataMessage() {
+        try {
+            // Hiển thị thông báo trong biểu đồ chính
+            empChartContainer.removeAll();
+            JLabel noDataLabel = new JLabel("<html><center>📊 Không có dữ liệu biểu đồ<br/>trong khoảng thời gian đã chọn</center></html>");
+            noDataLabel.setFont(new Font("Tahoma", Font.BOLD, 16));
+            noDataLabel.setForeground(new Color(108, 117, 125));
+            noDataLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            noDataLabel.setBorder(BorderFactory.createEmptyBorder(50, 20, 50, 20));
+            empChartContainer.add(noDataLabel, BorderLayout.CENTER);
+            empChartContainer.revalidate();
+            empChartContainer.repaint();
+            
+            // Hiển thị thông báo trong thống kê
+            empStatsContainer.removeAll();
+            empStatsContainer.add(createStatCard(" Không có dữ liệu", "Vui lòng chọn\nkhoảng thời gian khác", new Color(108, 117, 125)));
+            empStatsContainer.revalidate();
+            empStatsContainer.repaint();
+            
+            // Hiển thị thông báo trong biểu đồ phụ
+            empSecondaryChartContainer.removeAll();
+            JLabel noDataSecondaryLabel = new JLabel("<html><center>📊 Không có dữ liệu biểu đồ phụ<br/>trong khoảng thời gian đã chọn</center></html>");
+            noDataSecondaryLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+            noDataSecondaryLabel.setForeground(new Color(108, 117, 125));
+            noDataSecondaryLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            noDataSecondaryLabel.setBorder(BorderFactory.createEmptyBorder(30, 20, 30, 20));
+            empSecondaryChartContainer.add(noDataSecondaryLabel, BorderLayout.CENTER);
+            empSecondaryChartContainer.revalidate();
+            empSecondaryChartContainer.repaint();
+            
+            // Hiển thị thông báo trong bảng
+            empTableContainer.removeAll();
+            JLabel noDataTableLabel = new JLabel("<html><center> Không có dữ liệu bảng<br/>trong khoảng thời gian đã chọn</center></html>");
+            noDataTableLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+            noDataTableLabel.setForeground(new Color(108, 117, 125));
+            noDataTableLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            noDataTableLabel.setBorder(BorderFactory.createEmptyBorder(30, 20, 30, 20));
+            empTableContainer.add(noDataTableLabel, BorderLayout.CENTER);
+            empTableContainer.revalidate();
+            empTableContainer.repaint();
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    // Sửa lại method getSelectedEmpRange() để xử lý khoảng thời gian tùy ý tốt hơn (dòng 4050-4100):
+  
+    /**
+     * Lấy khoảng thời gian so sánh dựa trên khoảng thời gian hiện tại
+     */
+    private TimeRange getComparisonTimeRange(TimeRange currentRange) {
+        try {
+            if (currentRange == null) return null;
+            
+        Calendar cal = Calendar.getInstance();
+            java.util.Date from, to;
+            
+            // Tính toán khoảng thời gian so sánh dựa trên khoảng thời gian hiện tại
+            long currentDays = (currentRange.getTo().getTime() - currentRange.getFrom().getTime()) / (24 * 60 * 60 * 1000) + 1;
+            
+            // Nếu khoảng thời gian hiện tại là 1 tháng, so sánh với tháng trước
+            if (currentDays >= 28 && currentDays <= 31) {
+                cal.setTime(currentRange.getFrom());
+                cal.add(Calendar.MONTH, -1);
+                from = cal.getTime();
+                cal.setTime(currentRange.getTo());
+                cal.add(Calendar.MONTH, -1);
+                to = cal.getTime();
+            }
+            // Nếu khoảng thời gian hiện tại là 1 tuần, so sánh với tuần trước
+            else if (currentDays >= 7 && currentDays <= 8) {
+                cal.setTime(currentRange.getFrom());
+                cal.add(Calendar.WEEK_OF_YEAR, -1);
+                from = cal.getTime();
+                cal.setTime(currentRange.getTo());
+                cal.add(Calendar.WEEK_OF_YEAR, -1);
+                to = cal.getTime();
+            }
+            // Nếu khoảng thời gian hiện tại là 1 năm, so sánh với năm trước
+            else if (currentDays >= 365 && currentDays <= 366) {
+                cal.setTime(currentRange.getFrom());
+                cal.add(Calendar.YEAR, -1);
+                from = cal.getTime();
+                cal.setTime(currentRange.getTo());
+                cal.add(Calendar.YEAR, -1);
+                to = cal.getTime();
+            }
+            // Mặc định so sánh với khoảng thời gian tương tự trước đó
+            else {
+                cal.setTime(currentRange.getFrom());
+                cal.add(Calendar.DAY_OF_MONTH, (int) -currentDays);
+                from = cal.getTime();
+                cal.setTime(currentRange.getTo());
+                cal.add(Calendar.DAY_OF_MONTH, (int) -currentDays);
+                to = cal.getTime();
+            }
+            
+            return new TimeRange(normalizeStartOfDay(from), normalizeEndOfDay(to));
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Lấy label hiển thị cho khoảng thời gian so sánh
+     */
+    private String getComparisonLabel(TimeRange currentRange) {
+        try {
+            if (currentRange == null) return "So sánh";
+            
+            long currentDays = (currentRange.getTo().getTime() - currentRange.getFrom().getTime()) / (24 * 60 * 60 * 1000) + 1;
+            
+            if (currentDays >= 28 && currentDays <= 31) {
+                return "Tháng trước";
+            } else if (currentDays >= 7 && currentDays <= 8) {
+                return "Tuần trước";
+            } else if (currentDays >= 365 && currentDays <= 366) {
+                return "Năm trước";
+            } else {
+                return "Kỳ trước";
+            }
+        } catch (Exception ex) {
+            return "So sánh";
+        }
+    }
+
+    /**
+     * Tạo biểu đồ so sánh doanh thu nhân viên giữa 2 khoảng thời gian
+     */
+    private void createComparisonEmployeeChart(List<Map.Entry<String, Double>> currentRevenue, 
+                                             Map<String, String> userIdToName, 
+                                             TimeRange currentRange,
+                                             Map<String, Double> comparisonRevenue,
+                                             String comparisonLabel) {
+        try {
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            
+            // Tạo dataset với 2 series: hiện tại và so sánh
+            for (Map.Entry<String, Double> entry : currentRevenue) {
+                String userId = entry.getKey();
+                String displayName = userIdToName.getOrDefault(userId, userId);
+                double currentValue = entry.getValue();
+                double comparisonValue = comparisonRevenue.getOrDefault(userId, 0.0);
+                
+                // Thêm dữ liệu hiện tại
+                dataset.addValue(currentValue, "Kỳ hiện tại", displayName);
+                
+                // Thêm dữ liệu so sánh
+                dataset.addValue(comparisonValue, comparisonLabel, displayName);
+            }
+            
+            // Thêm dữ liệu so sánh cho các nhân viên không có trong kỳ hiện tại
+            for (String userId : comparisonRevenue.keySet()) {
+                if (currentRevenue.stream().noneMatch(e -> e.getKey().equals(userId))) {
+                    String displayName = userIdToName.getOrDefault(userId, userId);
+                    double comparisonValue = comparisonRevenue.get(userId);
+                    dataset.addValue(0.0, "Kỳ hiện tại", displayName);
+                    dataset.addValue(comparisonValue, comparisonLabel, displayName);
+                }
+            }
+
+            String title = "So sánh doanh thu theo nhân viên (" + getRangeLabel(currentRange) + " vs " + comparisonLabel + ")";
+            JFreeChart chart = XChart.createBarChart(title, "Nhân viên", "VNĐ", dataset);
+            
+            CategoryPlot plot = chart.getCategoryPlot();
+            BarRenderer renderer = (BarRenderer) plot.getRenderer();
+            
+            // Tự động scale trục Y theo max data
+            double maxValue = Math.max(
+                currentRevenue.stream().mapToDouble(e -> e.getValue() != null ? e.getValue() : 0.0).max().orElse(0.0),
+                comparisonRevenue.values().stream().mapToDouble(Double::doubleValue).max().orElse(0.0)
+            );
+            
+            if (maxValue > 0) {
+                double upperBound = maxValue * 1.2;
+                plot.getRangeAxis().setUpperBound(upperBound);
+                plot.getRangeAxis().setLowerBound(0.0);
+            }
+            
+            // Căn giữa các cột
+            org.jfree.chart.axis.CategoryAxis domainAxis = plot.getDomainAxis();
+            domainAxis.setCategoryMargin(0.2);
+            plot.setDomainGridlinesVisible(true);
+            
+            // Màu sắc cho 2 series
+            renderer.setSeriesPaint(0, new Color(134, 39, 43)); // Đỏ đậm cho kỳ hiện tại
+            renderer.setSeriesPaint(1, new Color(52, 144, 220)); // Xanh dương cho kỳ so sánh
+            
+            // Căn chỉnh cột
+            renderer.setItemMargin(0.1);
+            renderer.setMaximumBarWidth(0.8);
+            
+            // Hiển thị label trên cột
+            // Sử dụng constructor hợp lệ của StandardCategoryItemLabelGenerator vì constructor với pattern, locale, decimalformat không tồn tại
+            // Chỉ cần truyền vào DecimalFormat cho giá trị số, không cần pattern và locale
+            // Dùng DecimalFormat("#,##0") để hiển thị số nguyên với dấu phẩy ngăn cách hàng nghìn
+            renderer.setDefaultItemLabelGenerator(
+                new StandardCategoryItemLabelGenerator(
+                    "{2}", // Pattern để hiển thị giá trị - KHÔNG ĐƯỢC NULL
+                    new java.text.DecimalFormat("#,##0") // Format làm tròn về số nguyên, dấu phẩy ngăn cách hàng nghìn
+                )
+            );
+            renderer.setDefaultItemLabelsVisible(true);
+            renderer.setDefaultItemLabelFont(new Font("Tahoma", Font.BOLD, 10));
+            renderer.setDefaultItemLabelPaint(Color.BLACK);
+            
+            // Vị trí label
+            renderer.setDefaultPositiveItemLabelPosition(
+                new org.jfree.chart.labels.ItemLabelPosition(
+                    org.jfree.chart.labels.ItemLabelAnchor.OUTSIDE12,
+                    org.jfree.chart.ui.TextAnchor.BOTTOM_CENTER,
+                    org.jfree.chart.ui.TextAnchor.BOTTOM_CENTER,
+                    0.0
+                )
+            );
+            
+            // Tùy chỉnh màu nền
+            plot.setBackgroundPaint(Color.WHITE);
+            plot.setDomainGridlinePaint(new Color(200, 200, 200));
+            plot.setRangeGridlinePaint(new Color(200, 200, 200));
+            
+            // Tăng margin để số không bị cắt
+            plot.setAxisOffset(new org.jfree.chart.ui.RectangleInsets(40, 20, 20, 20));
+            
+            // Tùy chỉnh legend
+            chart.getLegend().setPosition(org.jfree.chart.ui.RectangleEdge.BOTTOM);
+            chart.getLegend().setBackgroundPaint(Color.WHITE);
+            chart.getLegend().setBorder(1.0, 1.0, 1.0, 1.0);
+            chart.getLegend().setItemFont(new Font("Tahoma", Font.PLAIN, 11));
+            
+            ChartPanel panel = XChart.createChartPanel(chart);
+            empChartContainer.removeAll();
+            empChartContainer.add(panel, BorderLayout.CENTER);
+            empChartContainer.revalidate();
+            empChartContainer.repaint();
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    // Thêm method mới để điều khiển hiển thị các thành phần năng suất (dòng 4100-4150):
+    /**
+     * Điều khiển hiển thị các thành phần năng suất dựa trên checkbox
+     */
+    private void toggleProductivityDisplay() {
+        try {
+            if (chkShowProductivity != null && chkShowProductivity.isSelected()) {
+                // Hiển thị các thành phần năng suất
+                if (empSecondaryChartContainer != null) {
+                    empSecondaryChartContainer.setVisible(true);
+                }
+            } else {
+                // Ẩn các thành phần năng suất
+                if (empSecondaryChartContainer != null) {
+                    empSecondaryChartContainer.setVisible(false);
+                }
+            }
+            
+            // Cập nhật layout
+            if (empSecondaryChartContainer != null) {
+                empSecondaryChartContainer.getParent().revalidate();
+                empSecondaryChartContainer.getParent().repaint();
+            }
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }
