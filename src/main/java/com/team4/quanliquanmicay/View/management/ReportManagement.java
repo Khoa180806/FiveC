@@ -22,7 +22,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Component;
@@ -35,7 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -48,7 +46,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import javax.swing.JTextArea;
-import javax.swing.JTabbedPane;
 import javax.swing.Box;
 import com.toedter.calendar.JDateChooser;
 import javax.swing.table.DefaultTableModel;
@@ -77,6 +74,10 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingWorker;
 import javax.swing.BoxLayout;
 import java.util.TreeMap;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyAdapter;
+import javax.swing.InputVerifier;
+import javax.swing.JComponent;
 
 /**
  *
@@ -124,6 +125,12 @@ public class ReportManagement extends javax.swing.JFrame {
         // Build Report Tab
         initReportTab();
         
+        // Setup tooltips and validation
+        setupTooltipsAndValidation();
+        
+        // Setup keyboard shortcuts
+        setupKeyboardShortcuts();
+        
         // Exit action
         jButton1.addActionListener(e -> { handleExit(); e.getSource(); });
         
@@ -144,18 +151,6 @@ public class ReportManagement extends javax.swing.JFrame {
     // TAB 1: DOANH THU TỔNG QUÁT (pnlGeneral)
     // ========================================
     
-    // New filtering controls for quick revenue view
-    private JComboBox<String> cboFilterType; // Ngày/Tuần/Tháng/Quý/Năm/Khoảng
-    private JDateChooser dcFilterSingle;     // Only for Ngày
-    private JDateChooser dcFilterFromRange;  // For Khoảng - from
-    private JDateChooser dcFilterToRange;    // For Khoảng - to
-    private JLabel lbNgayLabel;
-    private JLabel lbTuLabel;
-    private JLabel lbDenLabel;
-    private JPanel kpiContainer;
-    private JPanel tableContainer;
-    private JTable tblBills;
-    private DefaultTableModel billTableModel;
     
     // TAB 2: Product Revenue (jPanel4)
     private JComboBox<String> cboProdRange;
@@ -164,6 +159,7 @@ public class ReportManagement extends javax.swing.JFrame {
     private JTable tblProd;
     private DefaultTableModel prodTableModel;
     
+<<<<<<< HEAD
     // TAB 2: Employee Revenue (jPanel5) - Enhanced
     private JComboBox<String> cboEmpRange;
     private JComboBox<String> cboEmpCompare; // So sánh với mốc thời gian khác
@@ -177,22 +173,18 @@ public class ReportManagement extends javax.swing.JFrame {
     private DefaultTableModel empTableModel;
     private JCheckBox chkShowComparison; // Hiển thị so sánh
     private JCheckBox chkShowProductivity; // Hiển thị năng suất
+=======
+>>>>>>> e6a8feeab89fa60a97aa8738f3e1f3e8b7139f9f
     
     // TAB 3: Trend (jPanel6) - Enhanced
     private JDateChooser dcFromDate;
     private JDateChooser dcToDate;
     private JPanel trendChartContainer;
-    private JLabel trendInsightLabel;
     
     // Enhanced trend components
     private JComboBox<String> cboViewType;
     private JComboBox<String> cboChartType;
     private JCheckBox chkShowForecast;
-    private JCheckBox chkShowMovingAvg;
-    private JTabbedPane chartTabs;
-    private JPanel mainChartPanel;
-    private JPanel heatmapPanel;
-    private JPanel statsPanel;
     private JPanel forecastPanel;
     private JTextArea advancedInsights;
     private JPanel kpiGrid;
@@ -214,10 +206,10 @@ public class ReportManagement extends javax.swing.JFrame {
     private JProgressBar progressBar;
     private JLabel progressLabel;
     private JPanel progressPanel;
-    private JComboBox<String> templateCombo;
     private JPanel quickDatePanel;
     private JButton btnToday, btnThisWeek, btnThisMonth, btnThisQuarter, btnThisYear;
     private JButton btnCustomRange;
+    private JButton btnExport, btnEmail, btnRefreshPreview;
 
     
     // Report tab components
@@ -259,7 +251,7 @@ public class ReportManagement extends javax.swing.JFrame {
             header.add(title, BorderLayout.WEST);
 
             // Add refresh preview button to header
-            JButton btnRefreshPreview = XTheme.createBeButton("Làm mới xem trước", e -> { refreshReportPreview(); e.getSource(); });
+            btnRefreshPreview = XTheme.createBeButton("Làm mới xem trước", e -> { refreshReportPreview(); e.getSource(); });
             header.add(btnRefreshPreview, BorderLayout.EAST);
 
             jPanel7.add(header, BorderLayout.NORTH);
@@ -284,12 +276,12 @@ public class ReportManagement extends javax.swing.JFrame {
             quickDatePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 3));
             quickDatePanel.setOpaque(false);
             
-            btnToday = XTheme.createCustomButton("Hôm nay", new Color(40, 167, 69), Color.WHITE, e -> setDateRange(TimeRange.today()));
-            btnThisWeek = XTheme.createCustomButton("Tuần này", new Color(255, 193, 7), new Color(33, 37, 41), e -> setDateRange(TimeRange.thisWeek()));
-            btnThisMonth = XTheme.createCustomButton("Tháng này", new Color(134, 39, 43), Color.WHITE, e -> setDateRange(TimeRange.thisMonth()));
-            btnThisQuarter = XTheme.createCustomButton("Quý này", new Color(52, 144, 220), Color.WHITE, e -> setDateRange(TimeRange.thisQuarter()));
-            btnThisYear = XTheme.createCustomButton("Năm nay", new Color(220, 53, 69), Color.WHITE, e -> setDateRange(TimeRange.thisYear()));
-            btnCustomRange = XTheme.createCustomButton("Tùy chỉnh", new Color(204, 164, 133), new Color(33, 37, 41), e -> enableCustomDateRange());
+            btnToday = XTheme.createCustomButton("Hôm nay", new Color(40, 167, 69), Color.WHITE, _ -> { setDateRange(TimeRange.today()); });
+            btnThisWeek = XTheme.createCustomButton("Tuần này", new Color(255, 193, 7), new Color(33, 37, 41), _ -> { setDateRange(TimeRange.thisWeek()); });
+            btnThisMonth = XTheme.createCustomButton("Tháng này", new Color(134, 39, 43), Color.WHITE, _ -> { setDateRange(TimeRange.thisMonth()); });
+            btnThisQuarter = XTheme.createCustomButton("Quý này", new Color(52, 144, 220), Color.WHITE, _ -> { setDateRange(TimeRange.thisQuarter()); });
+            btnThisYear = XTheme.createCustomButton("Năm nay", new Color(220, 53, 69), Color.WHITE, _ -> { setDateRange(TimeRange.thisYear()); });
+            btnCustomRange = XTheme.createCustomButton("Tùy chỉnh", new Color(204, 164, 133), new Color(33, 37, 41), _ -> { enableCustomDateRange(); });
             
             // Set font for buttons
             Font buttonFont = new Font("Tahoma", Font.PLAIN, 11);
@@ -336,8 +328,8 @@ public class ReportManagement extends javax.swing.JFrame {
             dcReportTo.setDate(cal.getTime());
             
             // Add change listeners to refresh preview when dates change
-            dcReportFrom.addPropertyChangeListener("date", e -> refreshReportPreview());
-            dcReportTo.addPropertyChangeListener("date", e -> refreshReportPreview());
+            dcReportFrom.addPropertyChangeListener("date", _ -> { refreshReportPreview(); });
+            dcReportTo.addPropertyChangeListener("date", _ -> { refreshReportPreview(); });
             
             customDatePanel.add(new JLabel("Từ ngày:"));
             customDatePanel.add(dcReportFrom);
@@ -357,12 +349,12 @@ public class ReportManagement extends javax.swing.JFrame {
             chkHourlyStats = new JCheckBox("Thống kê theo giờ", false);
             
             // Add change listeners to refresh preview when options change
-            chkGeneralRevenue.addActionListener(e -> refreshReportPreview());
-            chkProductRevenue.addActionListener(e -> refreshReportPreview());
-            chkEmployeeRevenue.addActionListener(e -> refreshReportPreview());
-            chkTrendAnalysis.addActionListener(e -> refreshReportPreview());
-            chkTopProducts.addActionListener(e -> refreshReportPreview());
-            chkHourlyStats.addActionListener(e -> refreshReportPreview());
+            chkGeneralRevenue.addActionListener(_ -> { refreshReportPreview(); });
+            chkProductRevenue.addActionListener(_ -> { refreshReportPreview(); });
+            chkEmployeeRevenue.addActionListener(_ -> { refreshReportPreview(); });
+            chkTrendAnalysis.addActionListener(_ -> { refreshReportPreview(); });
+            chkTopProducts.addActionListener(_ -> { refreshReportPreview(); });
+            chkHourlyStats.addActionListener(_ -> { refreshReportPreview(); });
 
             JPanel templateGrid = new JPanel(new GridLayout(3, 2, 5, 5));
             templateGrid.setOpaque(false);
@@ -422,8 +414,8 @@ public class ReportManagement extends javax.swing.JFrame {
             // Action buttons
             JPanel actionSection = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 15));
             actionSection.setOpaque(false);
-            JButton btnExport = XTheme.createMiyCayButton("Xuất báo cáo", e -> { handleExportReport(); e.getSource(); });
-            JButton btnEmail = XTheme.createBeButton("Gửi email báo cáo", e -> { handleSendEmail(); e.getSource(); });
+            btnExport = XTheme.createMiyCayButton("Xuất báo cáo", e -> { handleExportReport(); e.getSource(); });
+            btnEmail = XTheme.createBeButton("Gửi email báo cáo", e -> { handleSendEmail(); e.getSource(); });
             actionSection.add(btnExport);
             actionSection.add(btnEmail);
 
@@ -1411,8 +1403,8 @@ public class ReportManagement extends javax.swing.JFrame {
             cboProdRange = new JComboBox<>(new String[] { "Ngày", "Tháng", "Năm" });
             // Default to Tháng to increase chance of visible data
             cboProdRange.setSelectedItem("Tháng");
-            JButton btnRefresh = XTheme.createBeButton("Làm mới", e -> { refreshProductRevenueData(); e.getSource(); });
-            cboProdRange.addActionListener(e -> { refreshProductRevenueData(); e.getSource(); });
+            JButton             btnRefresh = XTheme.createBeButton("Làm mới", _ -> { refreshProductRevenueData(); });
+            cboProdRange.addActionListener(_ -> { refreshProductRevenueData(); });
             rightHeader.add(new JLabel("Khoảng:"));
             rightHeader.add(cboProdRange);
             rightHeader.add(btnRefresh);
@@ -1630,11 +1622,11 @@ public class ReportManagement extends javax.swing.JFrame {
         ));
 
         JLabel lbTitle = new JLabel(label);
-        lbTitle.setFont(new Font("Tahoma", Font.PLAIN, 10));
+        lbTitle.setFont(new Font("Segoe UI", Font.PLAIN, 10));
         lbTitle.setForeground(new Color(108, 117, 125));
 
         JLabel lbValue = new JLabel(value);
-        lbValue.setFont(new Font("Tahoma", Font.BOLD, 12));
+        lbValue.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lbValue.setForeground(valueColor);
         lbValue.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -1653,48 +1645,87 @@ public class ReportManagement extends javax.swing.JFrame {
             String chartType = cboChartType != null ? (String) cboChartType.getSelectedItem() : "Line Chart";
             String viewType = cboViewType != null ? (String) cboViewType.getSelectedItem() : "Theo ngày";
             
-            if ("Line Chart".equals(chartType) || "Area Chart".equals(chartType)) {
-                // XY Chart for line/area
-                org.jfree.data.xy.XYSeries series = new org.jfree.data.xy.XYSeries("Doanh thu");
-                int index = 1;
-                for (Map.Entry<String, Double> e : dataByPeriod.entrySet()) {
-                    series.add(index++, e.getValue());
-                }
-                
-                org.jfree.data.xy.XYSeriesCollection ds = new org.jfree.data.xy.XYSeriesCollection(series);
-                
-                // Add moving average if enabled
-                if (chkShowMovingAvg != null && chkShowMovingAvg.isSelected()) {
-                    org.jfree.data.xy.XYSeries maSeries = calculateMovingAverage(dataByPeriod, 7);
-                    ds.addSeries(maSeries);
-                }
-                
-                String title = "Xu hướng doanh thu " + viewType.toLowerCase();
-                JFreeChart chart = XChart.createLineChart(title, getViewTypeLabel(), "VNĐ", ds);
-                ChartPanel panel = XChart.createChartPanel(chart);
-                
-                trendChartContainer.removeAll();
-                trendChartContainer.add(panel, BorderLayout.CENTER);
-            } else {
-                // Bar Chart
-                DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-                for (Map.Entry<String, Double> e : dataByPeriod.entrySet()) {
-                    dataset.addValue(e.getValue(), "Doanh thu", e.getKey());
-                }
-                
-                String title = "Doanh thu " + viewType.toLowerCase();
-                JFreeChart chart = XChart.createBarChart(title, getViewTypeLabel(), "VNĐ", dataset);
-                ChartPanel panel = XChart.createChartPanel(chart);
-                
-                trendChartContainer.removeAll();
-                trendChartContainer.add(panel, BorderLayout.CENTER);
+            // Create dataset
+            DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+            for (Map.Entry<String, Double> e : dataByPeriod.entrySet()) {
+                dataset.addValue(e.getValue(), "Doanh thu", e.getKey());
             }
+            
+
+            
+            // Add forecast if enabled
+            if (chkShowForecast != null && chkShowForecast.isSelected()) {
+                List<Double> values = new ArrayList<>(dataByPeriod.values());
+                if (values.size() >= 3) {
+                    double trend = calculateSimpleTrend(values);
+                    double lastValue = values.get(values.size() - 1);
+                    
+                    // Forecast next 3 periods
+                    for (int i = 1; i <= 3; i++) {
+                        double forecast = Math.max(0, lastValue + (trend * i));
+                        String forecastPeriod = "Dự báo " + i;
+                        dataset.addValue(forecast, "Dự báo", forecastPeriod);
+                    }
+                }
+            }
+            
+            String title = "Xu hướng doanh thu " + viewType.toLowerCase();
+            JFreeChart chart;
+            
+            // Create chart based on type
+            if ("Bar Chart".equals(chartType)) {
+                chart = XChart.createBarChart(title, getViewTypeLabel(), "VNĐ", dataset);
+            } else if ("Area Chart".equals(chartType)) {
+                chart = XChart.createAreaChart(title, getViewTypeLabel(), "VNĐ", dataset);
+            } else {
+                // Default to Line Chart
+                chart = XChart.createLineChart(title, getViewTypeLabel(), "VNĐ", dataset);
+            }
+            
+            // Modern styling
+            org.jfree.chart.plot.CategoryPlot plot = (org.jfree.chart.plot.CategoryPlot) chart.getPlot();
+            plot.setBackgroundPaint(new Color(248, 249, 250));
+            plot.setDomainGridlinePaint(new Color(200, 200, 200));
+            plot.setRangeGridlinePaint(new Color(200, 200, 200));
+            
+            // Customize colors for different series
+            org.jfree.chart.renderer.category.CategoryItemRenderer renderer = plot.getRenderer();
+            if (renderer instanceof org.jfree.chart.renderer.category.LineAndShapeRenderer) {
+                org.jfree.chart.renderer.category.LineAndShapeRenderer lineRenderer = 
+                    (org.jfree.chart.renderer.category.LineAndShapeRenderer) renderer;
+                
+                // Set colors for different series
+                lineRenderer.setSeriesPaint(0, new Color(134, 39, 43)); // Main revenue - red
+                lineRenderer.setSeriesPaint(1, new Color(255, 193, 7));  // Forecast - yellow
+                lineRenderer.setSeriesStroke(0, new java.awt.BasicStroke(2.0f));
+                lineRenderer.setSeriesStroke(1, new java.awt.BasicStroke(2.0f, java.awt.BasicStroke.CAP_ROUND, 
+                    java.awt.BasicStroke.JOIN_ROUND, 0, new float[]{10, 5}, 0)); // Dotted line for forecast
+            } else if (renderer instanceof org.jfree.chart.renderer.category.BarRenderer) {
+                org.jfree.chart.renderer.category.BarRenderer barRenderer = 
+                    (org.jfree.chart.renderer.category.BarRenderer) renderer;
+                barRenderer.setSeriesPaint(0, new Color(134, 39, 43));
+                barRenderer.setSeriesPaint(1, new Color(255, 193, 7));
+            }
+            
+            ChartPanel panel = XChart.createChartPanel(chart);
+            
+            trendChartContainer.removeAll();
+            trendChartContainer.add(panel, BorderLayout.CENTER);
             
             trendChartContainer.revalidate();
             trendChartContainer.repaint();
             
         } catch (Exception ex) {
             ex.printStackTrace();
+            // Show error in chart container
+            trendChartContainer.removeAll();
+            JLabel errorLabel = new JLabel("❌ Lỗi tạo biểu đồ: " + ex.getMessage());
+            errorLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            errorLabel.setFont(new Font("Tahoma", Font.BOLD, 14));
+            errorLabel.setForeground(Color.RED);
+            trendChartContainer.add(errorLabel, BorderLayout.CENTER);
+            trendChartContainer.revalidate();
+            trendChartContainer.repaint();
         }
     }
     
@@ -1712,24 +1743,7 @@ public class ReportManagement extends javax.swing.JFrame {
         }
     }
     
-    /**
-     * Calculate simple moving average
-     */
-    private org.jfree.data.xy.XYSeries calculateMovingAverage(Map<String, Double> data, int window) {
-        org.jfree.data.xy.XYSeries maSeries = new org.jfree.data.xy.XYSeries("MA" + window);
-        
-        List<Double> values = new ArrayList<>(data.values());
-        for (int i = window - 1; i < values.size(); i++) {
-            double sum = 0;
-            for (int j = i - window + 1; j <= i; j++) {
-                sum += values.get(j);
-            }
-            double ma = sum / window;
-            maSeries.add(i + 1, ma);
-        }
-        
-        return maSeries;
-    }
+
     
     /**
      * Calculate growth rate vs previous period
@@ -2198,22 +2212,26 @@ public class ReportManagement extends javax.swing.JFrame {
         return variance;
     }
     
+    /**
+     * Calculate simple trend using linear regression
+     */
     private double calculateSimpleTrend(List<Double> values) {
         if (values.size() < 2) return 0;
         
-        // Simple linear regression slope
         int n = values.size();
-        double sumX = n * (n + 1) / 2.0;
-        double sumY = values.stream().mapToDouble(Double::doubleValue).sum();
-        double sumXY = 0;
-        double sumX2 = 0;
+        double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
         
         for (int i = 0; i < n; i++) {
-            sumXY += (i + 1) * values.get(i);
-            sumX2 += (i + 1) * (i + 1);
+            double x = i;
+            double y = values.get(i);
+            sumX += x;
+            sumY += y;
+            sumXY += x * y;
+            sumX2 += x * x;
         }
         
-        return (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+        double slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+        return slope;
     }
     
     /**
@@ -2827,28 +2845,15 @@ public class ReportManagement extends javax.swing.JFrame {
             // Show progress
             showProgressBar("Đang xuất báo cáo...");
             
-            // Validate inputs
-            java.util.Date from = normalizeStartOfDay(dcReportFrom.getDate());
-            java.util.Date to = normalizeEndOfDay(dcReportTo.getDate());
-            if (from == null || to == null) { 
+            // Use enhanced validation
+            if (!validateReportSettings()) {
                 hideProgressBar();
-                XDialog.error("Vui lòng chọn đủ ngày.", "Lỗi"); 
-                return; 
-            }
-            if (from.after(to)) { 
-                java.util.Date tmp = from; from = to; to = tmp; 
-                dcReportFrom.setDate(from); 
-                dcReportTo.setDate(to); 
-            }
-
-            // Check if at least one report type is selected
-            if (!chkGeneralRevenue.isSelected() && !chkProductRevenue.isSelected() && 
-                !chkEmployeeRevenue.isSelected() && !chkTrendAnalysis.isSelected() &&
-                !chkTopProducts.isSelected() && !chkHourlyStats.isSelected()) {
-                hideProgressBar();
-                XDialog.error("Vui lòng chọn ít nhất một loại báo cáo.", "Lỗi");
                 return;
             }
+            
+            // Get validated dates
+            java.util.Date from = normalizeStartOfDay(dcReportFrom.getDate());
+            java.util.Date to = normalizeEndOfDay(dcReportTo.getDate());
 
             String label = new SimpleDateFormat("dd/MM/yyyy").format(from) + " - " + new SimpleDateFormat("dd/MM/yyyy").format(to);
 
@@ -2894,7 +2899,7 @@ public class ReportManagement extends javax.swing.JFrame {
                 
                 if (lastExportedFile != null && lastExportedFile.exists()) {
                     hideProgressBar();
-                    XDialog.success("Đã xuất PDF: " + lastExportedFile.getAbsolutePath(), "Xuất báo cáo");
+                    showExportSuccess(lastExportedFile, "PDF");
                 } else {
                     hideProgressBar();
                     XDialog.error("Không thể tạo file PDF. Vui lòng thử lại.", "Lỗi");
@@ -2925,33 +2930,15 @@ public class ReportManagement extends javax.swing.JFrame {
                 
                 if (lastExportedFile != null && lastExportedFile.exists()) {
                     hideProgressBar();
-                    XDialog.success("Đã xuất Excel: " + lastExportedFile.getAbsolutePath(), "Xuất báo cáo");
+                    showExportSuccess(lastExportedFile, "Excel");
                 } else {
                     hideProgressBar();
                     XDialog.error("Không thể tạo file Excel. Vui lòng thử lại.", "Lỗi");
                 }
             }
-        } catch (OutOfMemoryError ex) {
+        } catch (Throwable ex) {
             hideProgressBar();
-            ex.printStackTrace();
-            XDialog.error("Không đủ bộ nhớ để xuất báo cáo. Vui lòng giảm khoảng thời gian hoặc restart ứng dụng.", "Lỗi bộ nhớ");
-        } catch (Exception ex) {
-            hideProgressBar();
-            ex.printStackTrace();
-            String errorMessage = "Lỗi xuất báo cáo: ";
-            
-            // Phân loại lỗi để hiển thị thông báo phù hợp
-            if (ex instanceof java.io.IOException) {
-                errorMessage += "Lỗi ghi file. Vui lòng kiểm tra quyền ghi và dung lượng ổ đĩa.";
-            } else if (ex instanceof java.sql.SQLException) {
-                errorMessage += "Lỗi truy cập dữ liệu. Vui lòng kiểm tra kết nối database.";
-            } else if (ex.getMessage() != null && ex.getMessage().contains("FileNotFoundException")) {
-                errorMessage += "Không thể tạo file tại vị trí đã chọn. Kiểm tra quyền ghi thư mục.";
-            } else {
-                errorMessage += ex.getMessage() != null ? ex.getMessage() : "Lỗi không xác định.";
-            }
-            
-            XDialog.error(errorMessage, "Lỗi xuất báo cáo");
+            handleEnhancedError(ex, "xuất báo cáo");
         }
     }
     
@@ -3205,20 +3192,337 @@ public class ReportManagement extends javax.swing.JFrame {
      * Initialize Trend Tab
      */
     private void initTrendTab() {
+        jPanel6.setLayout(new BorderLayout());
+        jPanel6.setBackground(Color.WHITE);
+        
+        // Header đơn giản
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(new Color(134, 39, 43));
+        header.setPreferredSize(new Dimension(0, 60));
+        
+        JLabel title = new JLabel("PHÂN TÍCH XU HƯỚNG DOANH THU");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        title.setForeground(Color.WHITE);
+        title.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        header.add(title, BorderLayout.CENTER);
+        
+        // Main content đơn giản
+        JPanel mainContent = new JPanel(new BorderLayout());
+        mainContent.setBackground(Color.WHITE);
+        mainContent.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        
+        // Controls đơn giản
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        controls.setBackground(Color.WHITE);
+        
+        // Date controls
+        JLabel fromLabel = new JLabel("Từ ngày:");
+        dcFromDate = new JDateChooser();
+        dcFromDate.setDateFormatString("dd/MM/yyyy");
+        
+        JLabel toLabel = new JLabel("Đến ngày:");
+        dcToDate = new JDateChooser();
+        dcToDate.setDateFormatString("dd/MM/yyyy");
+        
+        // View type
+        cboViewType = new JComboBox<>(new String[]{"Theo ngày", "Theo tuần", "Theo tháng"});
+        
+        // Chart type
+        cboChartType = new JComboBox<>(new String[]{"Line Chart", "Area Chart", "Bar Chart"});
+        
+        // Options
+        chkShowForecast = new JCheckBox("Hiển thị dự báo");
+        
+        // Refresh button
+        JButton btnRefresh = new JButton("Làm mới");
+        btnRefresh.setBackground(new Color(134, 39, 43));
+        btnRefresh.setForeground(Color.WHITE);
+        
+        controls.add(fromLabel);
+        controls.add(dcFromDate);
+        controls.add(toLabel);
+        controls.add(dcToDate);
+        controls.add(new JLabel("Xem theo:"));
+        controls.add(cboViewType);
+        controls.add(new JLabel("Loại biểu đồ:"));
+        controls.add(cboChartType);
+        controls.add(chkShowForecast);
+        controls.add(btnRefresh);
+        
+        // Chart container
+        trendChartContainer = new JPanel(new BorderLayout());
+        trendChartContainer.setBackground(Color.WHITE);
+        trendChartContainer.setBorder(BorderFactory.createTitledBorder("Biểu Đồ Xu Hướng"));
+        
+        // KPI summary
+        kpiGrid = new JPanel(new GridLayout(1, 4, 10, 0));
+        kpiGrid.setBackground(Color.WHITE);
+        kpiGrid.setBorder(BorderFactory.createTitledBorder("Tóm Tắt"));
+        
+        // Initialize KPI cards with placeholder data (4 cards to match updateTrendKPIs)
+        kpiGrid.add(createTrendKpiCard("Tổng doanh thu", "Đang tải...", new Color(134,39,43)));
+        kpiGrid.add(createTrendKpiCard("TB/Ngày", "Đang tải...", new Color(40,167,69)));
+        kpiGrid.add(createTrendKpiCard("Tăng trưởng", "Đang tải...", new Color(40,167,69)));
+        kpiGrid.add(createTrendKpiCard("Cao điểm", "Đang tải...", new Color(255,193,7)));
+        
+        mainContent.add(controls, BorderLayout.NORTH);
+        mainContent.add(trendChartContainer, BorderLayout.CENTER);
+        mainContent.add(kpiGrid, BorderLayout.SOUTH);
+        
+        jPanel6.add(header, BorderLayout.NORTH);
+        jPanel6.add(mainContent, BorderLayout.CENTER);
+        
+        // Event listeners
+        dcFromDate.addPropertyChangeListener("date", _ -> { refreshEnhancedTrendData(); });
+        dcToDate.addPropertyChangeListener("date", _ -> { refreshEnhancedTrendData(); });
+        cboViewType.addActionListener(_ -> { refreshEnhancedTrendData(); });
+        cboChartType.addActionListener(_ -> { refreshEnhancedTrendData(); });
+        chkShowForecast.addActionListener(_ -> { refreshEnhancedTrendData(); });
+        btnRefresh.addActionListener(_ -> { refreshEnhancedTrendData(); });
+        
+        // Initial load
+        refreshEnhancedTrendData();
+    }
+    
+    
+    /**
+     * Setup tooltips and validation for better UX
+     */
+    private void setupTooltipsAndValidation() {
         try {
-            // Basic implementation for now
-            System.out.println("Initializing Trend Tab...");
+            // Setup tooltips for report content checkboxes
+            if (chkGeneralRevenue != null) {
+                chkGeneralRevenue.setToolTipText("Bao gồm tổng doanh thu, số hóa đơn, giá trị trung bình và phân tích tổng quan");
+            }
+            if (chkProductRevenue != null) {
+                chkProductRevenue.setToolTipText("Chi tiết doanh thu theo từng món ăn, sản phẩm bán chạy và phân tích hiệu suất");
+            }
+            if (chkEmployeeRevenue != null) {
+                chkEmployeeRevenue.setToolTipText("Thống kê doanh thu theo nhân viên, hiệu suất bán hàng và xếp hạng");
+            }
+            if (chkTrendAnalysis != null) {
+                chkTrendAnalysis.setToolTipText("Phân tích xu hướng doanh thu theo thời gian, dự báo và biểu đồ tăng trưởng");
+            }
+            if (chkTopProducts != null) {
+                chkTopProducts.setToolTipText("Danh sách top 10 sản phẩm bán chạy nhất với số lượng và doanh thu");
+            }
+            if (chkHourlyStats != null) {
+                chkHourlyStats.setToolTipText("Thống kê doanh thu theo giờ trong ngày, phân tích giờ cao điểm");
+            }
+            
+            // Setup tooltips for time range buttons
+            if (btnToday != null) {
+                btnToday.setToolTipText("Báo cáo cho ngày hôm nay");
+            }
+            if (btnThisWeek != null) {
+                btnThisWeek.setToolTipText("Báo cáo cho tuần hiện tại (Thứ 2 - Chủ nhật)");
+            }
+            if (btnThisMonth != null) {
+                btnThisMonth.setToolTipText("Báo cáo cho tháng hiện tại");
+            }
+            if (btnThisQuarter != null) {
+                btnThisQuarter.setToolTipText("Báo cáo cho quý hiện tại");
+            }
+            if (btnThisYear != null) {
+                btnThisYear.setToolTipText("Báo cáo cho năm hiện tại");
+            }
+            if (btnCustomRange != null) {
+                btnCustomRange.setToolTipText("Tùy chỉnh khoảng thời gian báo cáo");
+            }
+            
+            // Setup tooltips for export options
+            if (rdoPdf != null) {
+                rdoPdf.setToolTipText("Xuất báo cáo dưới định dạng PDF (khuyến nghị cho in ấn)");
+            }
+            if (rdoExcel != null) {
+                rdoExcel.setToolTipText("Xuất báo cáo dưới định dạng Excel (dễ chỉnh sửa và phân tích)");
+            }
+            if (chkMerge != null) {
+                chkMerge.setToolTipText("Gộp tất cả các loại báo cáo đã chọn vào một file duy nhất");
+            }
+            
+            // Setup tooltips for email field
+            if (txtEmail != null) {
+                txtEmail.setToolTipText("Nhập địa chỉ email để gửi báo cáo (ví dụ: example@company.com)");
+                setupEmailValidation();
+            }
+            
+            // Setup tooltips for action buttons
+            if (btnExport != null) {
+                btnExport.setToolTipText("Xuất báo cáo theo định dạng đã chọn (Ctrl+E)");
+            }
+            if (btnEmail != null) {
+                btnEmail.setToolTipText("Gửi báo cáo qua email (Ctrl+S)");
+            }
+            if (btnRefreshPreview != null) {
+                btnRefreshPreview.setToolTipText("Làm mới dữ liệu xem trước (F5)");
+            }
+            
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.err.println("Lỗi setup tooltips: " + ex.getMessage());
         }
     }
     
+    /**
+     * Setup email validation
+     */
+    private void setupEmailValidation() {
+        if (txtEmail != null) {
+            txtEmail.setInputVerifier(new InputVerifier() {
+                @Override
+                public boolean verify(JComponent input) {
+                    String email = txtEmail.getText().trim();
+                    if (email.isEmpty()) return true; // Allow empty
+                    
+                    // Basic email validation
+                    String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+                    boolean isValid = email.matches(emailRegex);
+                    
+                    if (!isValid) {
+                        txtEmail.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+                        txtEmail.setToolTipText("Email không hợp lệ. Ví dụ: example@company.com");
+                    } else {
+                        txtEmail.setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
+                        txtEmail.setToolTipText("Email hợp lệ");
+                    }
+                    
+                    return true; // Always allow input, just show visual feedback
+                }
+            });
+        }
+    }
+    
+    /**
+     * Setup keyboard shortcuts for better UX
+     */
+    private void setupKeyboardShortcuts() {
+        try {
+            // Add keyboard shortcuts to the frame
+            this.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    // Ctrl+E for export report
+                    if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_E) {
+                        e.consume();
+                        if (btnExport != null && btnExport.isEnabled()) {
+                            btnExport.doClick();
+                        }
+                    }
+                    // Ctrl+S for send email
+                    else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_S) {
+                        e.consume();
+                        if (btnEmail != null && btnEmail.isEnabled()) {
+                            btnEmail.doClick();
+                        }
+                    }
+                    // F5 for refresh preview
+                    else if (e.getKeyCode() == KeyEvent.VK_F5) {
+                        e.consume();
+                        if (btnRefreshPreview != null && btnRefreshPreview.isEnabled()) {
+                            btnRefreshPreview.doClick();
+                        }
+                    }
+                    // Escape to exit
+                    else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                        e.consume();
+                        handleExit();
+                    }
+                }
+            });
+            
+            // Make frame focusable to receive key events
+            this.setFocusable(true);
+            this.requestFocusInWindow();
+            
+        } catch (Exception ex) {
+            System.err.println("Lỗi setup keyboard shortcuts: " + ex.getMessage());
+        }
+    }
+    
+    /**
+     * Enhanced validation for report settings
+     */
+    private boolean validateReportSettings() {
+        StringBuilder errors = new StringBuilder();
+        
+        // Check date range
+        java.util.Date from = dcReportFrom != null ? dcReportFrom.getDate() : null;
+        java.util.Date to = dcReportTo != null ? dcReportTo.getDate() : null;
+        
+        if (from == null || to == null) {
+            errors.append("• Vui lòng chọn đầy đủ ngày bắt đầu và kết thúc\n");
+        } else if (from.after(to)) {
+            errors.append("• Ngày bắt đầu không được sau ngày kết thúc\n");
+        }
+        
+        // Check if at least one report type is selected
+        boolean hasSelection = false;
+        if (chkGeneralRevenue != null && chkGeneralRevenue.isSelected()) hasSelection = true;
+        if (chkProductRevenue != null && chkProductRevenue.isSelected()) hasSelection = true;
+        if (chkEmployeeRevenue != null && chkEmployeeRevenue.isSelected()) hasSelection = true;
+        if (chkTrendAnalysis != null && chkTrendAnalysis.isSelected()) hasSelection = true;
+        if (chkTopProducts != null && chkTopProducts.isSelected()) hasSelection = true;
+        if (chkHourlyStats != null && chkHourlyStats.isSelected()) hasSelection = true;
+        
+        if (!hasSelection) {
+            errors.append("• Vui lòng chọn ít nhất một loại báo cáo\n");
+        }
+        
+        // Check email if provided
+        if (txtEmail != null && !txtEmail.getText().trim().isEmpty()) {
+            String email = txtEmail.getText().trim();
+            String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+            if (!email.matches(emailRegex)) {
+                errors.append("• Email không hợp lệ\n");
+            }
+        }
+        
+        // Show errors if any
+        if (errors.length() > 0) {
+            XDialog.error("Vui lòng sửa các lỗi sau:\n\n" + errors.toString(), "Lỗi cấu hình");
+            return false;
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Enhanced error handling with specific error types
+     */
+    private void handleEnhancedError(Throwable ex, String operation) {
+        String errorMessage = "Lỗi " + operation + ": ";
+        
+        if (ex instanceof java.io.IOException) {
+            errorMessage += "Lỗi ghi file. Vui lòng kiểm tra:\n" +
+                          "• Quyền ghi thư mục\n" +
+                          "• Dung lượng ổ đĩa\n" +
+                          "• File có đang được mở bởi ứng dụng khác không";
+        } else if (ex instanceof java.sql.SQLException) {
+            errorMessage += "Lỗi truy cập dữ liệu. Vui lòng kiểm tra:\n" +
+                          "• Kết nối database\n" +
+                          "• Quyền truy cập dữ liệu\n" +
+                          "• Tình trạng server";
+        } else if (ex instanceof java.lang.Error) {
+            errorMessage += "Lỗi hệ thống nghiêm trọng. Vui lòng:\n" +
+                          "• Giảm khoảng thời gian báo cáo\n" +
+                          "• Đóng các ứng dụng khác\n" +
+                          "• Restart ứng dụng";
+        } else if (ex instanceof java.lang.NullPointerException) {
+            errorMessage += "Lỗi dữ liệu null. Vui lòng kiểm tra lại cấu hình báo cáo";
+        } else {
+            errorMessage += ex.getMessage() != null ? ex.getMessage() : "Lỗi không xác định";
+        }
+        
+        XDialog.error(errorMessage, "Lỗi " + operation);
+        ex.printStackTrace();
+    }
+    
     // ========================================
-    // UTILITY METHODS
+    // UTILITY METHODS FOR DATE HANDLING
     // ========================================
     
     /**
-     * Normalize start of day
+     * Normalize date to start of day (00:00:00)
      */
     private java.util.Date normalizeStartOfDay(java.util.Date date) {
         if (date == null) return null;
@@ -3232,7 +3536,7 @@ public class ReportManagement extends javax.swing.JFrame {
     }
     
     /**
-     * Normalize end of day
+     * Normalize date to end of day (23:59:59)
      */
     private java.util.Date normalizeEndOfDay(java.util.Date date) {
         if (date == null) return null;
@@ -3246,7 +3550,7 @@ public class ReportManagement extends javax.swing.JFrame {
     }
     
     /**
-     * Check if date is within range
+     * Check if a date is within a time range
      */
     private boolean withinRange(java.util.Date date, TimeRange range) {
         if (date == null || range == null) return false;
