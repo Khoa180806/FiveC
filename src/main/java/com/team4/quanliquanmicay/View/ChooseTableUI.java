@@ -47,7 +47,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         
         // Đặt tab 1-12 làm tab mặc định
-        jTabbedPane1.setSelectedIndex(0);
+        pnlTable.setSelectedIndex(0);
         
         // Xóa các dòng ép buộc kích thước button
         // ÉP BUỘC KÍCH THƯỚC KHÁC NHAU CHO HAI NÚT
@@ -63,7 +63,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
         loadTable();
         
         // Thêm event listener cho các button
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnTranferTable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
@@ -86,12 +86,12 @@ public class ChooseTableUI extends javax.swing.JFrame {
         pnlTitle = new javax.swing.JPanel();
         lblTitle = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel2 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
+        pnlTable = new javax.swing.JTabbedPane();
+        pnlTable1to12 = new javax.swing.JPanel();
+        pnlTable13to24 = new javax.swing.JPanel();
+        btnExit = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
-        jButton1 = new javax.swing.JButton();
+        btnTranferTable = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -103,50 +103,50 @@ public class ChooseTableUI extends javax.swing.JFrame {
 
         jPanel5.setBackground(new java.awt.Color(204, 164, 133));
 
-        jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        pnlTable.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout pnlTable1to12Layout = new javax.swing.GroupLayout(pnlTable1to12);
+        pnlTable1to12.setLayout(pnlTable1to12Layout);
+        pnlTable1to12Layout.setHorizontalGroup(
+            pnlTable1to12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 0, Short.MAX_VALUE)
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
-        jTabbedPane1.addTab("1-12", jPanel2);
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        pnlTable1to12Layout.setVerticalGroup(
+            pnlTable1to12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 0, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("13-24", jPanel3);
+        pnlTable.addTab("1-12", pnlTable1to12);
 
-        jButton2.setBackground(new java.awt.Color(119, 50, 5));
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Exit.png"))); // NOI18N
-        jButton2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        javax.swing.GroupLayout pnlTable13to24Layout = new javax.swing.GroupLayout(pnlTable13to24);
+        pnlTable13to24.setLayout(pnlTable13to24Layout);
+        pnlTable13to24Layout.setHorizontalGroup(
+            pnlTable13to24Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        pnlTable13to24Layout.setVerticalGroup(
+            pnlTable13to24Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+
+        pnlTable.addTab("13-24", pnlTable13to24);
+
+        btnExit.setBackground(new java.awt.Color(119, 50, 5));
+        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btnExitActionPerformed(evt);
             }
         });
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
-        jButton1.setBackground(new java.awt.Color(204, 255, 204));
-        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jButton1.setForeground(new java.awt.Color(0, 153, 0));
-        jButton1.setText("Chuyển bàn");
-        jButton1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnTranferTable.setBackground(new java.awt.Color(204, 255, 204));
+        btnTranferTable.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        btnTranferTable.setForeground(new java.awt.Color(0, 153, 0));
+        btnTranferTable.setText("Chuyển bàn");
+        btnTranferTable.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -155,26 +155,26 @@ public class ChooseTableUI extends javax.swing.JFrame {
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTabbedPane1)
+                    .addComponent(pnlTable)
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jSeparator1)
-                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 351, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(btnTranferTable, javax.swing.GroupLayout.PREFERRED_SIZE, 351, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)))
+                        .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(pnlTable, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1))
+                    .addComponent(btnExit, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnTranferTable))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -455,12 +455,12 @@ public class ChooseTableUI extends javax.swing.JFrame {
     // Hàm fill dữ liệu bàn lên 2 panel
     public void loadTable() {
         List<TableForCustomer> tables = tableDAO.findAll();
-        jPanel2.removeAll();
-        jPanel3.removeAll();
+        pnlTable1to12.removeAll();
+        pnlTable13to24.removeAll();
 
         // PHẢI set layout cho panel để add button động!
-        jPanel2.setLayout(new GridLayout(2, 6, 15, 15));
-        jPanel3.setLayout(new GridLayout(2, 6, 15, 15));
+        pnlTable1to12.setLayout(new GridLayout(2, 6, 15, 15));
+        pnlTable13to24.setLayout(new GridLayout(2, 6, 15, 15));
 
         // Tạo map để tra cứu nhanh
         java.util.Map<Integer, TableForCustomer> tableMap = new java.util.HashMap<>();
@@ -474,7 +474,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
             JButton btn = createButton(i, table);
             btn.setMaximumSize(new Dimension(120, 800));
             btn.setPreferredSize(new Dimension(120, 800));
-            jPanel2.add(btn);
+            pnlTable1to12.add(btn);
         }
 
         // 13-24: VIP
@@ -483,14 +483,14 @@ public class ChooseTableUI extends javax.swing.JFrame {
             JButton btn = createButton(i, table);
             btn.setMaximumSize(new Dimension(120, 100));
             btn.setPreferredSize(new Dimension(120, 100));
-            jPanel3.add(btn);
+            pnlTable13to24.add(btn);
         }
 
         // Cập nhật giao diện
-        jPanel2.revalidate();
-        jPanel2.repaint();
-        jPanel3.revalidate();
-        jPanel3.repaint();
+        pnlTable1to12.revalidate();
+        pnlTable1to12.repaint();
+        pnlTable13to24.revalidate();
+        pnlTable13to24.repaint();
     }
 
     // Hàm tạo button cho từng bàn
@@ -767,14 +767,14 @@ public class ChooseTableUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
+    private javax.swing.JButton btnExit;
+    private javax.swing.JButton btnTranferTable;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel lblTitle;
+    private javax.swing.JTabbedPane pnlTable;
+    private javax.swing.JPanel pnlTable13to24;
+    private javax.swing.JPanel pnlTable1to12;
     private javax.swing.JPanel pnlTitle;
     // End of variables declaration//GEN-END:variables
 

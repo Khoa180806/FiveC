@@ -874,16 +874,16 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         btnUnBill = new javax.swing.JButton();
         btnPayment = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
+        lblBillId = new javax.swing.JLabel();
+        lblEmployee = new javax.swing.JLabel();
         txtName_Employee = new javax.swing.JTextField();
         txtBill_Id = new javax.swing.JTextField();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel14 = new javax.swing.JLabel();
+        lblTable = new javax.swing.JLabel();
+        lblStatus = new javax.swing.JLabel();
         txtStatus = new javax.swing.JTextField();
         txtTable_Name = new javax.swing.JTextField();
-        jLabel15 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
+        lblCreateAt = new javax.swing.JLabel();
+        lblDoneTime = new javax.swing.JLabel();
         txtEnd = new javax.swing.JTextField();
         txtBegin = new javax.swing.JTextField();
 
@@ -990,37 +990,37 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         jPanel2.setBackground(new java.awt.Color(204, 164, 133));
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
 
-        jLabel11.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel11.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel11.setText("MÃ HÓA ĐƠN :");
+        lblBillId.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblBillId.setForeground(new java.awt.Color(255, 255, 255));
+        lblBillId.setText("MÃ HÓA ĐƠN :");
 
-        jLabel12.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel12.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel12.setText("NHÂN VIÊN :");
+        lblEmployee.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblEmployee.setForeground(new java.awt.Color(255, 255, 255));
+        lblEmployee.setText("NHÂN VIÊN :");
 
         txtName_Employee.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         txtBill_Id.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jLabel13.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel13.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel13.setText("BÀN SỐ :");
+        lblTable.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblTable.setForeground(new java.awt.Color(255, 255, 255));
+        lblTable.setText("BÀN SỐ :");
 
-        jLabel14.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel14.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel14.setText("TRẠNG THÁI");
+        lblStatus.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblStatus.setForeground(new java.awt.Color(255, 255, 255));
+        lblStatus.setText("TRẠNG THÁI");
 
         txtStatus.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         txtTable_Name.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jLabel15.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel15.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel15.setText("THỜI ĐIỂM TẠO :");
+        lblCreateAt.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblCreateAt.setForeground(new java.awt.Color(255, 255, 255));
+        lblCreateAt.setText("THỜI ĐIỂM TẠO :");
 
-        jLabel16.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel16.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel16.setText("THỜI ĐIỂM THANH TOÁN :");
+        lblDoneTime.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblDoneTime.setForeground(new java.awt.Color(255, 255, 255));
+        lblDoneTime.setText("THỜI ĐIỂM THANH TOÁN :");
 
         txtEnd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
@@ -1033,16 +1033,16 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(53, 53, 53)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel11)
-                    .addComponent(jLabel12))
+                    .addComponent(lblBillId)
+                    .addComponent(lblEmployee))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(txtBill_Id)
                     .addComponent(txtName_Employee, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel14)
-                    .addComponent(jLabel13))
+                    .addComponent(lblStatus)
+                    .addComponent(lblTable))
                 .addGap(12, 12, 12)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(txtStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1050,11 +1050,11 @@ public class BillUI extends javax.swing.JFrame implements BillController {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel15)
+                        .addComponent(lblCreateAt)
                         .addGap(74, 74, 74)
                         .addComponent(txtBegin))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel16)
+                        .addComponent(lblDoneTime)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -1064,19 +1064,19 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
+                    .addComponent(lblBillId)
                     .addComponent(txtBill_Id, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel13)
+                    .addComponent(lblTable)
                     .addComponent(txtTable_Name, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel15)
+                    .addComponent(lblCreateAt)
                     .addComponent(txtBegin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel12)
+                    .addComponent(lblEmployee)
                     .addComponent(txtName_Employee, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel14)
+                    .addComponent(lblStatus)
                     .addComponent(txtStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel16)
+                    .addComponent(lblDoneTime)
                     .addComponent(txtEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -1196,17 +1196,17 @@ public class BillUI extends javax.swing.JFrame implements BillController {
     private javax.swing.JButton btnUnBill;
     private javax.swing.JButton btnUnOrder;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel lblBillId;
+    private javax.swing.JLabel lblCreateAt;
+    private javax.swing.JLabel lblDoneTime;
+    private javax.swing.JLabel lblEmployee;
+    private javax.swing.JLabel lblStatus;
+    private javax.swing.JLabel lblTable;
     private javax.swing.JTable tbBill;
     private javax.swing.JTextField txtBegin;
     private javax.swing.JTextField txtBill_Id;
