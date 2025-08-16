@@ -159,7 +159,6 @@ public class ReportManagement extends javax.swing.JFrame {
     private JTable tblProd;
     private DefaultTableModel prodTableModel;
     
-<<<<<<< HEAD
     // TAB 2: Employee Revenue (jPanel5) - Enhanced
     private JComboBox<String> cboEmpRange;
     private JComboBox<String> cboEmpCompare; // So sánh với mốc thời gian khác
@@ -173,8 +172,6 @@ public class ReportManagement extends javax.swing.JFrame {
     private DefaultTableModel empTableModel;
     private JCheckBox chkShowComparison; // Hiển thị so sánh
     private JCheckBox chkShowProductivity; // Hiển thị năng suất
-=======
->>>>>>> e6a8feeab89fa60a97aa8738f3e1f3e8b7139f9f
     
     // TAB 3: Trend (jPanel6) - Enhanced
     private JDateChooser dcFromDate;
@@ -210,6 +207,13 @@ public class ReportManagement extends javax.swing.JFrame {
     private JButton btnToday, btnThisWeek, btnThisMonth, btnThisQuarter, btnThisYear;
     private JButton btnCustomRange;
     private JButton btnExport, btnEmail, btnRefreshPreview;
+    
+    // TAB 1: General Dashboard components
+    private JComboBox<String> cboFilterType;
+    private JPanel kpiContainer;
+    private JPanel tableContainer;
+    private JTable tblBills;
+    private DefaultTableModel billTableModel;
 
     
     // Report tab components
@@ -2899,7 +2903,7 @@ public class ReportManagement extends javax.swing.JFrame {
                 
                 if (lastExportedFile != null && lastExportedFile.exists()) {
                     hideProgressBar();
-                    showExportSuccess(lastExportedFile, "PDF");
+                    XDialog.success("Xuất báo cáo PDF thành công!\nFile: " + lastExportedFile.getName(), "Thành công");
                 } else {
                     hideProgressBar();
                     XDialog.error("Không thể tạo file PDF. Vui lòng thử lại.", "Lỗi");
@@ -2930,7 +2934,7 @@ public class ReportManagement extends javax.swing.JFrame {
                 
                 if (lastExportedFile != null && lastExportedFile.exists()) {
                     hideProgressBar();
-                    showExportSuccess(lastExportedFile, "Excel");
+                    XDialog.success("Xuất báo cáo Excel thành công!\nFile: " + lastExportedFile.getName(), "Thành công");
                 } else {
                     hideProgressBar();
                     XDialog.error("Không thể tạo file Excel. Vui lòng thử lại.", "Lỗi");
@@ -4457,7 +4461,7 @@ for (Component comp : pnlGeneral.getComponents()) {
             empSecondaryChartContainer.removeAll();
             
             // Tạo tabbed pane cho 2 biểu đồ phụ
-            JTabbedPane secondaryTabs = new JTabbedPane();
+            javax.swing.JTabbedPane secondaryTabs = new javax.swing.JTabbedPane();
             secondaryTabs.setFont(new Font("Tahoma", Font.BOLD, 12));
             
             // Tab 1: Số hóa đơn
