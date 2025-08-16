@@ -132,7 +132,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
         pnlTable.addTab("13-24", pnlTable13to24);
 
         btnExit.setBackground(new java.awt.Color(119, 50, 5));
-        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
+        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Exit.png"))); // NOI18N
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -723,6 +723,14 @@ public class ChooseTableUI extends javax.swing.JFrame {
     }
     
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
+        // Xử lý sự kiện cho button Exit với xác nhận
+        if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng?", "Xác nhận thoát")) {
+            this.dispose();
+        }
+        // Nếu chọn NO thì không làm gì cả, tiếp tục sử dụng ứng dụng
+    }
+    
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {
         // Xử lý sự kiện cho button Exit với xác nhận
         if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng?", "Xác nhận thoát")) {
             this.dispose();

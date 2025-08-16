@@ -341,8 +341,8 @@ public class MainUI extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         pnlFeature = new javax.swing.JPanel();
         jPanel10 = new javax.swing.JPanel();
-        jButton13 = new javax.swing.JButton();
-        jButton14 = new javax.swing.JButton();
+        btnReport = new javax.swing.JButton();
+        btnChangePassWord = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -405,28 +405,28 @@ public class MainUI extends javax.swing.JFrame {
 
         jPanel10.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
 
-        jButton13.setBackground(new java.awt.Color(248, 248, 248));
-        jButton13.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton13.setForeground(new java.awt.Color(134, 39, 43));
-        jButton13.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Statistics.png"))); // NOI18N
-        jButton13.setText("Thống kê");
-        jButton13.setToolTipText("");
-        jButton13.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
-        jButton13.addActionListener(new java.awt.event.ActionListener() {
+        btnReport.setBackground(new java.awt.Color(248, 248, 248));
+        btnReport.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnReport.setForeground(new java.awt.Color(134, 39, 43));
+        btnReport.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Statistics.png"))); // NOI18N
+        btnReport.setText("Thống kê");
+        btnReport.setToolTipText("");
+        btnReport.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        btnReport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton13ActionPerformed(evt);
+                btnReportActionPerformed(evt);
             }
         });
 
-        jButton14.setBackground(new java.awt.Color(248, 248, 248));
-        jButton14.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton14.setForeground(new java.awt.Color(134, 39, 43));
-        jButton14.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Unlock.png"))); // NOI18N
-        jButton14.setText("Đổi mật khẩu");
-        jButton14.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
-        jButton14.addActionListener(new java.awt.event.ActionListener() {
+        btnChangePassWord.setBackground(new java.awt.Color(248, 248, 248));
+        btnChangePassWord.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnChangePassWord.setForeground(new java.awt.Color(134, 39, 43));
+        btnChangePassWord.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Unlock.png"))); // NOI18N
+        btnChangePassWord.setText("Đổi mật khẩu");
+        btnChangePassWord.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204)));
+        btnChangePassWord.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton14ActionPerformed(evt);
+                btnChangePassWordActionPerformed(evt);
             }
         });
 
@@ -437,17 +437,17 @@ public class MainUI extends javax.swing.JFrame {
             .addGroup(jPanel10Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton14, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
+                    .addComponent(btnReport, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnChangePassWord, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel10Layout.setVerticalGroup(
             jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel10Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnReport, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton14, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnChangePassWord, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -964,6 +964,26 @@ public class MainUI extends javax.swing.JFrame {
                      "Vui lòng chờ phiên bản cập nhật.", "Thông báo");
     }
     
+    private void btnReportActionPerformed(java.awt.event.ActionEvent evt) {
+        XDialog.alert("Chức năng này đang được phát triển!\n\n" +
+                     "Vui lòng chờ phiên bản cập nhật.", "Thông báo");
+    }
+    
+    private void btnChangePassWordActionPerformed(java.awt.event.ActionEvent evt) {
+        try {
+            if (changePasswordUI == null || !changePasswordUI.isVisible()) {
+                changePasswordUI = new com.team4.quanliquanmicay.View.ChangePassword();
+                changePasswordUI.setVisible(true);
+            } else {
+                changePasswordUI.toFront();
+                changePasswordUI.requestFocus();
+            }
+        } catch (Exception ex) {
+            System.err.println("❌ Lỗi khi mở ChangePassword: " + ex.getMessage());
+            XDialog.error("Lỗi khi mở Đổi mật khẩu: " + ex.getMessage(), "Lỗi hệ thống");
+        }
+    }
+    
     /**
      * Cập nhật giao diện dựa trên role của người dùng
      * @param roleId ADMIN hoặc STAFF
@@ -1038,15 +1058,15 @@ public class MainUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBillManagement;
     private javax.swing.JButton btnCategoryManagement;
+    private javax.swing.JButton btnChangePassWord;
     private javax.swing.JButton btnChooseTable;
     private javax.swing.JButton btnCustomerManagement;
     private javax.swing.JButton btnExit;
     private javax.swing.JButton btnHelp;
     private javax.swing.JButton btnPayUi;
+    private javax.swing.JButton btnReport;
     private javax.swing.JButton btnTableManagement;
     private javax.swing.JButton btnUserManagement;
-    private javax.swing.JButton jButton13;
-    private javax.swing.JButton jButton14;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
