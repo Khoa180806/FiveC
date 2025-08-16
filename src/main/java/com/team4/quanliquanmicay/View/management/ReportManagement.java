@@ -162,6 +162,7 @@ public class ReportManagement extends javax.swing.JFrame {
     private JComboBox<String> cboViewType;
     private JComboBox<String> cboChartType;
     private JCheckBox chkShowForecast;
+    private JCheckBox chkShowMovingAvg;
     private JPanel forecastPanel;
     private JTextArea advancedInsights;
     private JPanel kpiGrid;
@@ -1628,7 +1629,21 @@ public class ReportManagement extends javax.swing.JFrame {
                 dataset.addValue(e.getValue(), "Doanh thu", e.getKey());
             }
             
-
+            // Add moving average if enabled
+            if (chkShowMovingAvg != null && chkShowMovingAvg.isSelected()) {
+                List<Double> values = new ArrayList<>(dataByPeriod.values());
+                int window = Math.min(7, values.size()); // Use smaller window for better visualization
+                
+                for (int i = window - 1; i < values.size(); i++) {
+                    double sum = 0;
+                    for (int j = i - window + 1; j <= i; j++) {
+                        sum += values.get(j);
+                    }
+                    double ma = sum / window;
+                    String period = new ArrayList<>(dataByPeriod.keySet()).get(i);
+                    dataset.addValue(ma, "Đường trung bình", period);
+                }
+            }
             
             // Add forecast if enabled
             if (chkShowForecast != null && chkShowForecast.isSelected()) {
@@ -1673,15 +1688,19 @@ public class ReportManagement extends javax.swing.JFrame {
                 
                 // Set colors for different series
                 lineRenderer.setSeriesPaint(0, new Color(134, 39, 43)); // Main revenue - red
-                lineRenderer.setSeriesPaint(1, new Color(255, 193, 7));  // Forecast - yellow
+                lineRenderer.setSeriesPaint(1, new Color(40, 167, 69));  // Moving average - green
+                lineRenderer.setSeriesPaint(2, new Color(255, 193, 7));  // Forecast - yellow
                 lineRenderer.setSeriesStroke(0, new java.awt.BasicStroke(2.0f));
                 lineRenderer.setSeriesStroke(1, new java.awt.BasicStroke(2.0f, java.awt.BasicStroke.CAP_ROUND, 
+                    java.awt.BasicStroke.JOIN_ROUND, 0, new float[]{5, 5}, 0)); // Dashed line for MA
+                lineRenderer.setSeriesStroke(2, new java.awt.BasicStroke(2.0f, java.awt.BasicStroke.CAP_ROUND, 
                     java.awt.BasicStroke.JOIN_ROUND, 0, new float[]{10, 5}, 0)); // Dotted line for forecast
             } else if (renderer instanceof org.jfree.chart.renderer.category.BarRenderer) {
                 org.jfree.chart.renderer.category.BarRenderer barRenderer = 
                     (org.jfree.chart.renderer.category.BarRenderer) renderer;
                 barRenderer.setSeriesPaint(0, new Color(134, 39, 43));
-                barRenderer.setSeriesPaint(1, new Color(255, 193, 7));
+                barRenderer.setSeriesPaint(1, new Color(40, 167, 69));
+                barRenderer.setSeriesPaint(2, new Color(255, 193, 7));
             }
             
             ChartPanel panel = XChart.createChartPanel(chart);
@@ -2995,6 +3014,7 @@ public class ReportManagement extends javax.swing.JFrame {
         
         // Options
         chkShowForecast = new JCheckBox("Hiển thị dự báo");
+        chkShowMovingAvg = new JCheckBox("Đường trung bình");
         
         // Refresh button
         JButton btnRefresh = new JButton("Làm mới");
@@ -3010,6 +3030,7 @@ public class ReportManagement extends javax.swing.JFrame {
         controls.add(new JLabel("Loại biểu đồ:"));
         controls.add(cboChartType);
         controls.add(chkShowForecast);
+        controls.add(chkShowMovingAvg);
         controls.add(btnRefresh);
         
         // Chart container
@@ -3041,6 +3062,7 @@ public class ReportManagement extends javax.swing.JFrame {
         cboViewType.addActionListener(_ -> { refreshEnhancedTrendData(); });
         cboChartType.addActionListener(_ -> { refreshEnhancedTrendData(); });
         chkShowForecast.addActionListener(_ -> { refreshEnhancedTrendData(); });
+        chkShowMovingAvg.addActionListener(_ -> { refreshEnhancedTrendData(); });
         btnRefresh.addActionListener(_ -> { refreshEnhancedTrendData(); });
         
         // Initial load
