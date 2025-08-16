@@ -57,6 +57,8 @@ import java.io.FileOutputStream;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.chart.plot.CategoryPlot;
@@ -2431,52 +2433,22 @@ public class ReportManagement extends javax.swing.JFrame {
             List<Map.Entry<String, Double>> sortedByRevenue = new ArrayList<>(revenueByProductId.entrySet());
             sortedByRevenue.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
             
-            // Build pie dataset: only include top 10 products with revenue > 0
-            DefaultPieDataset<String> ds = new DefaultPieDataset<>();
-            int nonZeroCount = 0;
-            int top10Count = 0;
-            double otherRevenue = 0.0;
+            // Tạo KPI cards
+            createProductRevenueKPIs(revenueByProductId, quantityByProductId, productIdToName);
             
-            for (Map.Entry<String, Double> entry : sortedByRevenue) {
-                double value = entry.getValue() != null ? entry.getValue() : 0.0;
-                if (value > 0) {
-                    if (top10Count < 10) {
-                        String productId = entry.getKey();
-                        String name = productIdToName.getOrDefault(productId, productId);
-                        // Use a unique label to avoid overriding slices when names duplicate
-                        String uniqueLabel = name + " [" + productId + "]";
-                        ds.setValue(uniqueLabel, value);
-                        top10Count++;
-                    } else {
-                        // Add remaining products to "Others" category
-                        otherRevenue += value;
-                    }
-                    nonZeroCount++;
-                }
-            }
+            // Tạo biểu đồ tròn
+            createProductPieChart(sortedByRevenue, productIdToName);
             
-            // Add "Others" slice if there are more than 10 products with revenue
-            if (otherRevenue > 0) {
-                ds.setValue("Khác (" + (nonZeroCount - 10) + " món)", otherRevenue);
-            }
+            // Tạo biểu đồ cột
+            createProductBarChart(sortedByRevenue, productIdToName);
             
-            if (nonZeroCount == 0) {
-                ds.setValue("Không có dữ liệu", 1);
-            }
-
-            String title = "Top 10 món bán chạy nhất (" + (cboProdRange != null ? (String) cboProdRange.getSelectedItem() : "") + ")";
-            JFreeChart chart = XChart.createPieChart(title, ds);
-            ChartPanel panel = XChart.createChartPanel(chart);
-
-            prodChartContainer.removeAll();
-            prodChartContainer.add(panel, BorderLayout.CENTER);
-            prodChartContainer.revalidate();
-            prodChartContainer.repaint();
-
-            // Update table sorted by revenue desc (still list all products including zero)
+            // Tạo thống kê phân tích
+            createProductAnalytics(revenueByProductId, quantityByProductId);
+            
+            // Update table với dữ liệu cải tiến
             List<Map.Entry<String, Double>> sorted = new ArrayList<>(revenueByProductId.entrySet());
             sorted.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
-            updateProdTable(sorted, quantityByProductId, productIdToName);
+            updateEnhancedProdTable(sorted, quantityByProductId, productIdToName);
         } catch (Exception ex) {
             ex.printStackTrace();
             showErrorPanel(jPanel4, "Lỗi tải dữ liệu doanh thu theo món: " + ex.getMessage());
@@ -2493,6 +2465,233 @@ public class ReportManagement extends javax.swing.JFrame {
             double revenue = e.getValue() != null ? e.getValue() : 0.0;
             prodTableModel.addRow(new Object[] { name, qty, nf.format(revenue) });
         }
+    }
+    
+    // Tạo KPI cards cho doanh thu món ăn
+    private void createProductRevenueKPIs(Map<String, Double> revenueByProductId, Map<String, Integer> quantityByProductId, Map<String, String> productIdToName) {
+        // Tính toán các chỉ số
+        double totalRevenue = revenueByProductId.values().stream().mapToDouble(Double::doubleValue).sum();
+        int totalQuantity = quantityByProductId.values().stream().mapToInt(Integer::intValue).sum();
+        long activeProducts = revenueByProductId.values().stream().filter(v -> v > 0).count();
+        
+        // Tìm món bán chạy nhất
+        String topProduct = revenueByProductId.entrySet().stream()
+            .max(Map.Entry.comparingByValue())
+            .map(entry -> productIdToName.getOrDefault(entry.getKey(), entry.getKey()))
+            .orElse("N/A");
+        
+        // Tạo KPI panel
+        JPanel kpiPanel = new JPanel(new GridLayout(1, 4, 10, 0));
+        kpiPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        kpiPanel.add(createSimpleKPICard("Tổng doanh thu", formatCurrency(totalRevenue), new Color(46, 204, 113)));
+        kpiPanel.add(createSimpleKPICard("Tổng số lượng", formatNumber(totalQuantity), new Color(52, 152, 219)));
+        kpiPanel.add(createSimpleKPICard("Món có doanh thu", String.valueOf(activeProducts), new Color(230, 126, 34)));
+        kpiPanel.add(createSimpleKPICard("Món bán chạy", topProduct, new Color(231, 76, 60)));
+        
+        // Thêm vào container
+        if (prodChartContainer != null) {
+            prodChartContainer.removeAll();
+            prodChartContainer.setLayout(new BorderLayout());
+            prodChartContainer.add(kpiPanel, BorderLayout.NORTH);
+            prodChartContainer.revalidate();
+            prodChartContainer.repaint();
+        }
+    }
+    
+    // Tạo biểu đồ tròn cho doanh thu món ăn
+    private void createProductPieChart(List<Map.Entry<String, Double>> sortedByRevenue, Map<String, String> productIdToName) {
+        DefaultPieDataset<String> ds = new DefaultPieDataset<>();
+        int nonZeroCount = 0;
+        int top10Count = 0;
+        double otherRevenue = 0.0;
+        
+        for (Map.Entry<String, Double> entry : sortedByRevenue) {
+            double value = entry.getValue() != null ? entry.getValue() : 0.0;
+            if (value > 0) {
+                if (top10Count < 10) {
+                    String productId = entry.getKey();
+                    String name = productIdToName.getOrDefault(productId, productId);
+                    String uniqueLabel = name + " [" + productId + "]";
+                    ds.setValue(uniqueLabel, value);
+                    top10Count++;
+                } else {
+                    otherRevenue += value;
+                }
+                nonZeroCount++;
+            }
+        }
+        
+        if (otherRevenue > 0) {
+            ds.setValue("Khác (" + (nonZeroCount - 10) + " món)", otherRevenue);
+        }
+        
+        if (nonZeroCount == 0) {
+            ds.setValue("Không có dữ liệu", 1);
+        }
+
+        String title = "Top 10 món bán chạy nhất (" + (cboProdRange != null ? (String) cboProdRange.getSelectedItem() : "") + ")";
+        JFreeChart chart = XChart.createPieChart(title, ds);
+        ChartPanel panel = XChart.createChartPanel(chart);
+        
+        // Thêm vào container
+        if (prodChartContainer != null) {
+            JPanel chartPanel = new JPanel(new BorderLayout());
+            chartPanel.add(panel, BorderLayout.CENTER);
+            prodChartContainer.add(chartPanel, BorderLayout.CENTER);
+            prodChartContainer.revalidate();
+            prodChartContainer.repaint();
+        }
+    }
+    
+    // Tạo biểu đồ cột cho doanh thu món ăn
+    private void createProductBarChart(List<Map.Entry<String, Double>> sortedByRevenue, Map<String, String> productIdToName) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        
+        for (int i = 0; i < Math.min(10, sortedByRevenue.size()); i++) {
+            Map.Entry<String, Double> entry = sortedByRevenue.get(i);
+            String productName = productIdToName.getOrDefault(entry.getKey(), entry.getKey());
+            dataset.addValue(entry.getValue(), "Doanh thu", productName);
+        }
+        
+        JFreeChart barChart = ChartFactory.createBarChart(
+            "Top 10 Món Bán Chạy",
+            "Tên món",
+            "Doanh thu (VNĐ)",
+            dataset,
+            PlotOrientation.HORIZONTAL,
+            false, true, false
+        );
+        
+        // Tùy chỉnh màu sắc
+        BarRenderer renderer = (BarRenderer) barChart.getCategoryPlot().getRenderer();
+        renderer.setSeriesPaint(0, new Color(52, 152, 219));
+        
+        ChartPanel barPanel = new ChartPanel(barChart);
+        
+        // Thêm vào container riêng
+        if (prodTableContainer != null) {
+            prodTableContainer.removeAll();
+            prodTableContainer.setLayout(new BorderLayout());
+            prodTableContainer.add(barPanel, BorderLayout.CENTER);
+            prodTableContainer.revalidate();
+            prodTableContainer.repaint();
+        }
+    }
+    
+    // Tạo thống kê phân tích
+    private void createProductAnalytics(Map<String, Double> revenueByProductId, Map<String, Integer> quantityByProductId) {
+        double totalRevenue = revenueByProductId.values().stream().mapToDouble(Double::doubleValue).sum();
+        long activeProducts = revenueByProductId.values().stream().filter(v -> v > 0).count();
+        
+        if (activeProducts == 0) return;
+        
+        double avgRevenue = totalRevenue / activeProducts;
+        double maxRevenue = revenueByProductId.values().stream().mapToDouble(Double::doubleValue).max().orElse(0);
+        double minRevenue = revenueByProductId.values().stream().filter(v -> v > 0).mapToDouble(Double::doubleValue).min().orElse(0);
+        double variance = maxRevenue - minRevenue;
+        
+        JPanel analyticsPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        analyticsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        analyticsPanel.add(createStatCard("Doanh thu TB/món", formatCurrency(avgRevenue), new Color(46, 204, 113)));
+        analyticsPanel.add(createStatCard("Doanh thu cao nhất", formatCurrency(maxRevenue), new Color(52, 152, 219)));
+        analyticsPanel.add(createStatCard("Doanh thu thấp nhất", formatCurrency(minRevenue), new Color(230, 126, 34)));
+        analyticsPanel.add(createStatCard("Độ chênh lệch", formatCurrency(variance), new Color(231, 76, 60)));
+        
+        // Thêm vào container
+        if (prodTableContainer != null) {
+            prodTableContainer.add(analyticsPanel, BorderLayout.SOUTH);
+            prodTableContainer.revalidate();
+            prodTableContainer.repaint();
+        }
+    }
+    
+    // Cập nhật bảng với dữ liệu cải tiến
+    private void updateEnhancedProdTable(List<Map.Entry<String, Double>> sortedRevenueByProductId, Map<String, Integer> quantityByProductId, Map<String, String> productIdToName) {
+        // Tạo model mới với cột bổ sung
+        String[] columns = {"Tên món", "Số lượng", "Doanh thu", "Tỷ lệ (%)", "Xếp hạng", "Trạng thái"};
+        prodTableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+        
+        NumberFormat nf = NumberFormat.getInstance(Locale.forLanguageTag("vi-VN"));
+        double totalRevenue = sortedRevenueByProductId.stream().mapToDouble(e -> e.getValue()).sum();
+        int rank = 1;
+        
+        for (Map.Entry<String, Double> e : sortedRevenueByProductId) {
+            String productId = e.getKey();
+            String name = productIdToName.getOrDefault(productId, productId);
+            int qty = quantityByProductId.getOrDefault(productId, 0);
+            double revenue = e.getValue() != null ? e.getValue() : 0.0;
+            double percentage = totalRevenue > 0 ? (revenue / totalRevenue) * 100 : 0;
+            String status = getProductStatus(revenue, totalRevenue);
+            
+            prodTableModel.addRow(new Object[] { 
+                name, 
+                qty, 
+                nf.format(revenue), 
+                String.format("%.1f%%", percentage),
+                rank++,
+                status
+            });
+        }
+        
+        // Cập nhật table
+        if (tblProd != null) {
+            tblProd.setModel(prodTableModel);
+        }
+    }
+    
+    // Helper method để format currency
+    private String formatCurrency(double amount) {
+        NumberFormat nf = NumberFormat.getInstance(Locale.forLanguageTag("vi-VN"));
+        nf.setMaximumFractionDigits(0);
+        return nf.format(amount) + " VNĐ";
+    }
+    
+    // Helper method để format number
+    private String formatNumber(int number) {
+        NumberFormat nf = NumberFormat.getInstance(Locale.forLanguageTag("vi-VN"));
+        return nf.format(number);
+    }
+    
+    // Helper method để xác định trạng thái món ăn
+    private String getProductStatus(double revenue, double totalRevenue) {
+        if (revenue == 0) return "Không bán";
+        double percentage = (revenue / totalRevenue) * 100;
+        if (percentage >= 10) return "Bán chạy";
+        if (percentage >= 5) return "Bán tốt";
+        if (percentage >= 1) return "Bán ổn định";
+        return "Bán chậm";
+    }
+    
+    // Helper method để tạo KPI card đơn giản
+    private JPanel createSimpleKPICard(String label, String value, Color valueColor) {
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(valueColor, 2),
+            BorderFactory.createEmptyBorder(10, 15, 10, 15)
+        ));
+        card.setBackground(Color.WHITE);
+        
+        JLabel labelLbl = new JLabel(label);
+        labelLbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        labelLbl.setForeground(Color.GRAY);
+        labelLbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        JLabel valueLbl = new JLabel(value);
+        valueLbl.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        valueLbl.setForeground(valueColor);
+        valueLbl.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        card.add(labelLbl);
+        card.add(Box.createVerticalStrut(5));
+        card.add(valueLbl);
+        
+        return card;
     }
     
     /**
@@ -3027,18 +3226,18 @@ public class ReportManagement extends javax.swing.JFrame {
             
             JButton btnRefresh = XTheme.createBeButton("Làm mới", e -> { 
                 // HIỂN THỊ XDIALOG XÁC NHẬN TRƯỚC KHI LÀM MỚI
-                boolean confirm = XDialog.confirm(
-                    "Bạn có muốn làm mới dữ liệu không?", 
-                    "Xác nhận làm mới"
-                );
-                
-                if (confirm) {
-                    // NẾU NGƯỜI DÙNG CHỌN CÓ THÌ LÀM MỚI
+//                boolean confirm = XDialog.confirm(
+//                    "Bạn có muốn làm mới dữ liệu không?", 
+//                    "Xác nhận làm mới"
+//                );
+//                
+//                if (confirm) {
+//                    // NẾU NGƯỜI DÙNG CHỌN CÓ THÌ LÀM MỚI
                     resetEmployeeTabToDefault();
-                    
-                    // HIỂN THỊ XDIALOG THÔNG BÁO HOÀN THÀNH
-                    XDialog.success("Làm mới thành công!", "Thông báo");
-                }
+//                    
+//                    // HIỂN THỊ XDIALOG THÔNG BÁO HOÀN THÀNH
+//                    XDialog.success("Làm mới thành công!", "Thông báo");
+//                }
                 e.getSource(); 
             });
             
