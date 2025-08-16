@@ -5,23 +5,18 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.CategoryAxis;
-import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.block.BlockBorder;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.List;
 import java.util.Map;
 
@@ -77,7 +72,7 @@ public class XChart {
     /**
      * Tạo biểu đồ tròn đơn giản
      */
-    public static JFreeChart createPieChart(String title, DefaultPieDataset dataset) {
+    public static JFreeChart createPieChart(String title, DefaultPieDataset<String> dataset) {
         JFreeChart chart = ChartFactory.createPieChart(
             title,    // Tiêu đề biểu đồ
             dataset,  // Dữ liệu
@@ -95,7 +90,7 @@ public class XChart {
      * Tạo biểu đồ tròn từ Map data
      */
     public static JFreeChart createPieChartFromMap(String title, Map<String, Number> data) {
-        DefaultPieDataset dataset = new DefaultPieDataset();
+        DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
         
         for (Map.Entry<String, Number> entry : data.entrySet()) {
             dataset.setValue(entry.getKey(), entry.getValue());
@@ -130,6 +125,27 @@ public class XChart {
     }
     
     /**
+     * Tạo biểu đồ đường từ CategoryDataset (cho trend analysis)
+     */
+    public static JFreeChart createLineChart(String title, String categoryAxisLabel, 
+                                           String valueAxisLabel, DefaultCategoryDataset dataset) {
+        JFreeChart chart = ChartFactory.createLineChart(
+            title,           // Tiêu đề biểu đồ
+            categoryAxisLabel, // Nhãn trục X
+            valueAxisLabel,    // Nhãn trục Y
+            dataset,          // Dữ liệu
+            PlotOrientation.VERTICAL, // Hướng biểu đồ
+            true,            // Hiển thị legend
+            true,            // Hiển thị tooltips
+            false            // Hiển thị URLs
+        );
+        
+        // Tùy chỉnh giao diện
+        customizeChart(chart);
+        return chart;
+    }
+    
+    /**
      * Tạo biểu đồ đường từ List data
      */
     public static JFreeChart createLineChartFromList(String title, String xAxisLabel, 
@@ -142,6 +158,31 @@ public class XChart {
         
         XYSeriesCollection dataset = new XYSeriesCollection(series);
         return createLineChart(title, xAxisLabel, yAxisLabel, dataset);
+    }
+    
+    // ========================================
+    // BIỂU ĐỒ VÙNG (AREA CHART)
+    // ========================================
+    
+    /**
+     * Tạo biểu đồ vùng từ CategoryDataset
+     */
+    public static JFreeChart createAreaChart(String title, String categoryAxisLabel, 
+                                           String valueAxisLabel, DefaultCategoryDataset dataset) {
+        JFreeChart chart = ChartFactory.createAreaChart(
+            title,           // Tiêu đề biểu đồ
+            categoryAxisLabel, // Nhãn trục X
+            valueAxisLabel,    // Nhãn trục Y
+            dataset,          // Dữ liệu
+            PlotOrientation.VERTICAL, // Hướng biểu đồ
+            true,            // Hiển thị legend
+            true,            // Hiển thị tooltips
+            false            // Hiển thị URLs
+        );
+        
+        // Tùy chỉnh giao diện
+        customizeChart(chart);
+        return chart;
     }
     
     // ========================================
@@ -280,7 +321,7 @@ public class XChart {
      * Demo tạo biểu đồ tròn
      */
     public static JFreeChart createDemoPieChart() {
-        DefaultPieDataset dataset = new DefaultPieDataset();
+        DefaultPieDataset<String> dataset = new DefaultPieDataset<>();
         dataset.setValue("Mi cay", 35);
         dataset.setValue("Nuoc uong", 25);
         dataset.setValue("An vat", 20);
