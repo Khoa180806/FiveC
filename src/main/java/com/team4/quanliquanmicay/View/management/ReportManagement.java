@@ -188,7 +188,6 @@ private javax.swing.Timer searchTimer;
     private JComboBox<String> cboViewType;
     private JComboBox<String> cboChartType;
     private JCheckBox chkShowForecast;
-    private JCheckBox chkShowMovingAvg;
     private JPanel forecastPanel;
     private JTextArea advancedInsights;
     private JPanel kpiGrid;
@@ -3272,7 +3271,6 @@ private javax.swing.Timer searchTimer;
         
         // Options
         chkShowForecast = new JCheckBox("Hiển thị dự báo");
-        chkShowMovingAvg = new JCheckBox("Đường trung bình");
         
         // Refresh button
         JButton btnRefresh = new JButton("Làm mới");
@@ -3288,7 +3286,6 @@ private javax.swing.Timer searchTimer;
         controls.add(new JLabel("Loại biểu đồ:"));
         controls.add(cboChartType);
         controls.add(chkShowForecast);
-        controls.add(chkShowMovingAvg);
         controls.add(btnRefresh);
         
         // Chart container
@@ -3320,7 +3317,6 @@ private javax.swing.Timer searchTimer;
         cboViewType.addActionListener(_ -> { refreshEnhancedTrendData(); });
         cboChartType.addActionListener(_ -> { refreshEnhancedTrendData(); });
         chkShowForecast.addActionListener(_ -> { refreshEnhancedTrendData(); });
-        chkShowMovingAvg.addActionListener(_ -> { refreshEnhancedTrendData(); });
         btnRefresh.addActionListener(_ -> { refreshEnhancedTrendData(); });
         
         // Initial load
