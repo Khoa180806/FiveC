@@ -977,8 +977,18 @@ public class MainUI extends javax.swing.JFrame {
     }
     
     private void btnReportActionPerformed(java.awt.event.ActionEvent evt) {
-        XDialog.alert("Chức năng này đang được phát triển!\n\n" +
-                     "Vui lòng chờ phiên bản cập nhật.", "Thông báo");
+        try {
+            if (reportManagementUI == null || !reportManagementUI.isVisible()) {
+                reportManagementUI = new com.team4.quanliquanmicay.View.management.ReportManagement();
+                reportManagementUI.setVisible(true);
+            } else {
+                reportManagementUI.toFront();
+                reportManagementUI.requestFocus();
+            }
+        } catch (Exception ex) {
+            System.err.println("❌ Lỗi khi mở ReportManagement: " + ex.getMessage());
+            XDialog.error("Lỗi khi mở Thống kê & Báo cáo: " + ex.getMessage(), "Lỗi hệ thống");
+        }
     }
     
     private void btnChangePassWordActionPerformed(java.awt.event.ActionEvent evt) {
