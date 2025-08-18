@@ -97,7 +97,7 @@
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="pnlAdminFeature" max="32767" attributes="0"/>
-                                  <Component id="jspInfor" max="32767" attributes="0"/>
+                                  <Component id="lblTheme" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jPanel6" max="32767" attributes="0"/>
@@ -117,16 +117,14 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Component id="jPanel6" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="jPanel6" min="-2" max="-2" attributes="0"/>
                           <Group type="102" attributes="0">
                               <Component id="pnlAdminFeature" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="12" max="32767" attributes="0"/>
-                              <Component id="jspInfor" min="-2" pref="500" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="lblTheme" max="32767" attributes="0"/>
                           </Group>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -266,9 +264,6 @@
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="2b" green="27" red="86" type="rgb"/>
                         </Property>
-                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/icons_and_images/Statistics.png"/>
-                        </Property>
                         <Property name="text" type="java.lang.String" value="Th&#x1ed1;ng k&#xea;"/>
                         <Property name="toolTipText" type="java.lang.String" value=""/>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -293,9 +288,6 @@
                         </Property>
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="2b" green="27" red="86" type="rgb"/>
-                        </Property>
-                        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/icons_and_images/Unlock.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="&#x110;&#x1ed5;i m&#x1ead;t kh&#x1ea9;u"/>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -590,20 +582,6 @@
                 </Component>
               </SubComponents>
             </Container>
-            <Container class="javax.swing.JScrollPane" name="jspInfor">
-              <AuxValues>
-                <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-              </AuxValues>
-
-              <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-              <SubComponents>
-                <Component class="javax.swing.JTextArea" name="txtInfor">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="                                                                                                                 FIVE C &#x2013; V&#x1ecb; cay &#x111;&#x1ead;m ch&#x1ea5;t, h&#x1b0;&#x1a1;ng v&#x1ecb; &#x111;&#x1ead;m &#x111;&#xe0;!&#xa;&#xa;                                                        Ch&#xe0;o m&#x1eeb;ng b&#x1ea1;n &#x111;&#x1ebf;n v&#x1edb;i FIVE C, qu&#xe1;n m&#xec; cay mang &#x111;&#x1ead;m phong c&#xe1;ch H&#xe0;n Qu&#x1ed1;c, n&#x1a1;i m&#x1ed7;i t&#xf4; m&#xec; l&#xe0; m&#x1ed9;t tr&#x1ea3;i nghi&#x1ec7;m kh&#xf3; qu&#xea;n!&#xa;&#xa;&#xa;                  Ch&#xfa;ng t&#xf4;i kh&#xf4;ng ch&#x1ec9; mang &#x111;&#x1ebf;n m&#xf3;n &#x103;n ngon m&#xe0; c&#xf2;n mang &#x111;&#x1ebf;n c&#x1ea3;m x&#xfa;c &#x2013; t&#x1eeb; m&#x1ee9;c cay nh&#x1eb9; nh&#xe0;ng &#x111;&#x1ebf;n cay x&#xe9; l&#x1b0;&#x1ee1;i, m&#x1ed7;i kh&#xe1;ch h&#xe0;ng &#x111;&#x1ec1;u c&#xf3; th&#x1ec3; t&#xec;m th&#x1ea5;y c&#x1ea5;p &#x111;&#x1ed9; d&#xe0;nh ri&#xea;ng cho m&#xec;nh.&#xa;&#xa; V&#xec; sao ch&#x1ecd;n FIVE C ?&#xa;&#xa;             \ud83d\udd25 M&#xec; cay 7 c&#x1ea5;p &#x111;&#x1ed9; &#x2013; Th&#x1eed; th&#xe1;ch v&#x1ecb; gi&#xe1;c, chinh ph&#x1ee5;c &#x111;&#x1ec9;nh cay&#xa;             \ud83e\udd69 Nguy&#xea;n li&#x1ec7;u t&#x1b0;&#x1a1;i s&#x1ea1;ch &#x2013; &#x110;&#x1ea3;m b&#x1ea3;o v&#x1ec7; sinh, an to&#xe0;n s&#x1ee9;c kh&#x1ecf;e&#xa;             \ud83d\udc68&#x200d; Kh&#xf4;ng gian &#x1ea5;m c&#xfa;ng, hi&#x1ec7;n &#x111;&#x1ea1;i &#x2013; Ph&#xf9; h&#x1ee3;p nh&#xf3;m b&#x1ea1;n, gia &#x111;&#xec;nh, c&#x1eb7;p &#x111;&#xf4;i&#xa;             \ud83d\udcf1 Ph&#x1ee5;c v&#x1ee5; nhanh &#x2013; &#x110;&#x1eb7;t b&#xe0;n ti&#x1ec7;n l&#x1ee3;i &#x2013; Qu&#x1ea3;n l&#xfd; chuy&#xea;n nghi&#x1ec7;p&#xa;&#xa; TH&#x1ef0;C &#x110;&#x1a0;N &#x110;A D&#x1ea0;NG&#xa;&#xa;               M&#xec; cay b&#xf2; M&#x1ef9;, h&#x1ea3;i s&#x1ea3;n, kimchi, ph&#xf4; mai&#xa;               Tr&#xe0; s&#x1eef;a, soda H&#xe0;n, n&#x1b0;&#x1edb;c &#xe9;p tr&#xe1;i cay &#xa;                                                                                                                                   Th&#xf4;ng &#x111;i&#x1ec7;p t&#x1eeb; FIVE C&#xa;&#xa;                                                                                                                                 &#x201c;Spicy code. Hotter bowl.&#x201d;&#xa;&#xa;                                                                                              M&#x1ed7;i ng&#xe0;y l&#xe0; m&#x1ed9;t t&#xf4; cay m&#x1edb;i &#x2013; b&#xf9;ng n&#x1ed5; v&#x1ecb; gi&#xe1;c, ti&#x1ebf;p n&#x103;ng l&#x1b0;&#x1ee3;ng cho t&#xe2;m h&#x1ed3;n " containsInvalidXMLChars="true"/>
-                  </Properties>
-                </Component>
-              </SubComponents>
-            </Container>
             <Container class="javax.swing.JPanel" name="jPanel6">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
@@ -624,20 +602,24 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="jSeparator1" alignment="1" max="32767" attributes="0"/>
-                              <Component id="btnExit" alignment="1" max="32767" attributes="0"/>
-                              <Component id="pnlLogo" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="jSeparator1" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="btnExit" alignment="1" max="32767" attributes="0"/>
+                                      <Component id="pnlLogo" alignment="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="1" attributes="0">
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                                  <Group type="103" groupAlignment="1" attributes="0">
+                                      <Component id="btnPayUi" min="-2" pref="132" max="-2" attributes="0"/>
+                                      <Component id="btnChooseTable" min="-2" pref="132" max="-2" attributes="0"/>
+                                      <Component id="btnHelp" alignment="1" min="-2" pref="132" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="100" max="-2" attributes="0"/>
+                              </Group>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                      <Group type="102" alignment="1" attributes="0">
-                          <EmptySpace max="32767" attributes="0"/>
-                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                              <Component id="btnPayUi" max="32767" attributes="0"/>
-                              <Component id="btnChooseTable" max="32767" attributes="0"/>
-                              <Component id="btnHelp" min="-2" pref="132" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="120" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -652,7 +634,7 @@
                           <Component id="btnPayUi" min="-2" pref="75" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="btnHelp" min="-2" pref="75" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="119" max="32767" attributes="0"/>
                           <Component id="jSeparator1" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="btnExit" min="-2" pref="42" max="-2" attributes="0"/>
@@ -733,10 +715,10 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="99" max="-2" attributes="0"/>
-                              <Component id="lblLogo" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
                               <EmptySpace max="32767" attributes="0"/>
+                              <Component id="lblLogo" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="121" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -824,6 +806,8 @@
                 </Component>
               </SubComponents>
             </Container>
+            <Component class="javax.swing.JLabel" name="lblTheme">
+            </Component>
           </SubComponents>
         </Container>
       </SubComponents>
