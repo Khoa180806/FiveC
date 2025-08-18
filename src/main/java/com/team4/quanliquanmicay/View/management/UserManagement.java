@@ -41,23 +41,16 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         roleDAO = new RoleDAOImpl();
         roleMap = new HashMap<>();
         
-        // ✅ SIMPLIFIED: Basic setup without conflicting overrides
+        // ✅ OPTIMIZED: Fast initialization
         loadRoles();
-        setupComboBoxes(); // ✅ CONSOLIDATED: Single method for both ComboBoxes
-        fillToTable();
-        setOptimalColumnWidths(); // ✅ RENAMED: Less aggressive column sizing
+        setupComboBoxes();
         setupEventListeners();
-        setupPerformanceOptimizations();
         setupImageSelection();
-        lockImageSize(); // ✅ LOCK: Set initial image size from .form
+        lockImageSize();
         setupSearchFunctionality();
         
-        // ✅ RESPECT .FORM: Let .form constraints handle sizing
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            validate();
-            repaint();
-            System.out.println("✅ UserManagement initialized with .form constraints");
-        });
+        // Load data cuối cùng để tránh lag
+        fillToTable();
     }
     
     /**
@@ -93,12 +86,13 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
     
     /**
-     * ✅ SIMPLIFIED: Basic event listeners without complex protection
+     * ✅ OPTIMIZED: Fast event listeners with minimal overhead
      */
     private void setupEventListeners() {
-        tableInfo.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (evt.getClickCount() == 1) {
+        tableInfo.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedRow = tableInfo.getSelectedRow();
+                if (selectedRow >= 0) {
                     edit();
                 }
             }
@@ -765,40 +759,47 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
 
     /**
-     * Load tất cả dữ liệu nhân viên lên bảng (không filter)
+     * ✅ OPTIMIZED: Fast table loading with minimal overhead
      */
     @Override
     public void fillToTable() {
-        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
-        model.setRowCount(0);
-
         try {
-            // Lấy tất cả nhân viên từ database
+            // Tạm dừng table updates để tăng tốc
+            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+            
+            DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
+            model.setRowCount(0);
+
+            // Lấy dữ liệu từ database
             List<UserAccount> employees = userDAO.findAll();
 
-            // Đổ tất cả dữ liệu vào bảng
-            for (UserAccount emp : employees) {
-                Object[] row = {
-                    emp.getUser_id(), // Mã nhân viên
-                    emp.getUsername(), // Tài khoản
-                    emp.getPass(), // Mật khẩu
-                    emp.getFullName(), // Họ và tên
-                    getGenderDisplayText(emp.getGender()), // Giới tính
-                    emp.getPhone_number(), // SĐT
-                    emp.getEmail(), // Email
-                    emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động", // Trạng thái
-                    getRoleName(emp.getRole_id()), // Vai trò
-                    formatDate(emp.getCreated_date()) // Ngày tạo
+            // Tạo tất cả rows trước khi add vào model
+            Object[][] rows = new Object[employees.size()][10];
+            for (int i = 0; i < employees.size(); i++) {
+                UserAccount emp = employees.get(i);
+                rows[i] = new Object[]{
+                    emp.getUser_id(),
+                    emp.getUsername(),
+                    emp.getPass(),
+                    emp.getFullName(),
+                    emp.getGender() == 1 ? "Nam" : "Nữ",
+                    emp.getPhone_number(),
+                    emp.getEmail(),
+                    emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động",
+                    roleMap.getOrDefault(emp.getRole_id(), "N/A"),
+                    emp.getCreated_date() != null ? 
+                        new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(emp.getCreated_date()) : "N/A"
                 };
+            }
+
+            // Add tất cả rows cùng lúc
+            for (Object[] row : rows) {
                 model.addRow(row);
             }
 
-            System.out.println("Đã load " + employees.size() + " nhân viên lên bảng");
+            // Khôi phục table updates
+            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_LAST_COLUMN);
             
-            // ✅ SIMPLIFIED: Basic table refresh
-            tableInfo.revalidate();
-            tableInfo.repaint();
-
         } catch (Exception e) {
             XDialog.alert("Lỗi khi load dữ liệu: " + e.getMessage());
             e.printStackTrace();
@@ -849,51 +850,11 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         return displayText; // Fallback
     }
 
-    /**
-     * ✅ OPTIMIZED: Lấy tên vai trò từ cache
-     */
-    private String getRoleName(String roleId) {
-        return (roleId != null && roleMap.containsKey(roleId)) ? roleMap.get(roleId) : "N/A";
-    }
 
-    /**
-     * ✅ OPTIMIZED: Format ngày tháng để hiển thị trong bảng
-     */
-    private String formatDate(java.util.Date date) {
-        if (date == null) return "N/A";
-        try {
-            return new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(date);
-        } catch (Exception e) {
-            System.err.println("Lỗi format date: " + e.getMessage());
-            return date.toString();
-        }
-    }
 
-    /**
-     * ✅ OPTIMIZED: Set column widths respecting .form constraints
-     */
-    private void setOptimalColumnWidths() {
-        try {
-            // ✅ RESPECT .FORM: Use reasonable widths that work with .form table size (1450px)
-            tableInfo.getColumnModel().getColumn(0).setPreferredWidth(100);  // Mã NV 
-            tableInfo.getColumnModel().getColumn(1).setPreferredWidth(120);  // Tài khoản 
-            tableInfo.getColumnModel().getColumn(2).setPreferredWidth(90);   // Mật khẩu 
-            tableInfo.getColumnModel().getColumn(3).setPreferredWidth(180);  // Họ tên 
-            tableInfo.getColumnModel().getColumn(4).setPreferredWidth(70);   // Giới tính 
-            tableInfo.getColumnModel().getColumn(5).setPreferredWidth(110);  // SĐT 
-            tableInfo.getColumnModel().getColumn(6).setPreferredWidth(250);  // Email - Hợp lý cho .form size
-            tableInfo.getColumnModel().getColumn(7).setPreferredWidth(120);  // Trạng thái 
-            tableInfo.getColumnModel().getColumn(8).setPreferredWidth(80);   // Vai trò 
-            tableInfo.getColumnModel().getColumn(9).setPreferredWidth(130);  // Ngày tạo
-            
-            // ✅ MINIMAL: Only set auto resize mode - let .form handle the rest
-            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_LAST_COLUMN);
-            
-            System.out.println("✅ Column widths set optimally for .form constraints");
-        } catch (Exception e) {
-            System.err.println("❌ Lỗi set column width: " + e.getMessage());
-        }
-    }
+
+
+
 
     @Override
     public void open() {
@@ -979,6 +940,15 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             entity.setImage("default.jpg");
         }
 
+        return entity;
+    }
+
+    /**
+     * ✅ OPTIMIZED: Get form data for CREATE operation (with created_date)
+     */
+    private UserAccount getFormForCreate() {
+        UserAccount entity = getForm();
+        entity.setCreated_date(new java.util.Date());
         return entity;
     }
 
@@ -1164,13 +1134,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
      */
     private boolean isBlank(String str) { return str == null || str.trim().isEmpty(); }
     
-    /**
-     * ✅ HELPER: Convert gender value to display text
-     */
-    private String getGenderDisplayText(Integer gender) {
-        if (gender == null) return "N/A";
-        return gender == 1 ? "Nam" : (gender == 0 ? "Nữ" : "N/A");
-    }
+
     
     /**
      * ✅ HELPER: Set gender checkboxes based on gender value
@@ -1250,8 +1214,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             userDAO.deleteById(userId);
 
             // 7. Refresh bảng
-            // Cache invalidation removed - using direct database calls
-            fillToTableWithCache();
+            // Refresh table
+            fillToTable();
 
             // 8. Clear form
             clear();
@@ -1338,74 +1302,24 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 // PERFORMANCE OPTIMIZATION - THÊM VÀO CUỐI FILE (KHÔNG ĐỘNG VÀO CODE CŨ)
 // =============================================================================
 
-    // ✅ SIMPLIFIED: Basic variables only
-    private javax.swing.Timer debounceTimer;
 
 
 
 
 
-    /**
-     * ✅ SIMPLIFIED: Basic fillToTable without caching complexity
-     */
-    private void fillToTableWithCache() {
-        fillToTable(); // Delegate to original method
-    }
 
 
 
-    /**
-     * ✅ FAST: Filter matching logic
-     */
-    private boolean matchesFilters(UserAccount emp, String status, String role) {
-        // Status filter
-        if (status != null && !status.equals("Tất cả")) {
-            if (status.equals("Hoạt động") && (emp.getIs_enabled() != 1)) {
-                return false;
-            }
-            if (status.equals("Không hoạt động") && (emp.getIs_enabled() != 0)) {
-                return false;
-            }
-        }
 
-        // Role filter
-        if (role != null && !role.equals("Tất cả")) {
-            String roleId = role.contains(" - ") ? role.split(" - ")[0] : role;
-            if (!roleId.equals(emp.getRole_id())) {
-                return false;
-            }
-        }
 
-        return true;
-    }
+
+
+
+
+
 
     /**
-     * ✅ FAST: Create row data
-     */
-    private Object[] createRowData(UserAccount emp) {
-        return new Object[]{
-            emp.getUser_id(),
-            emp.getUsername(),
-            emp.getPass(),
-            emp.getFullName(),
-            getGenderDisplayText(emp.getGender()),
-            emp.getPhone_number(),
-            emp.getEmail(),
-            emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động",
-            roleMap.getOrDefault(emp.getRole_id(), "N/A"),
-            formatDateFast(emp.getCreated_date())
-        };
-    }
-
-    /**
-     * ✅ OPTIMIZED: Fast date formatting
-     */
-    private String formatDateFast(java.util.Date date) {
-        return date == null ? "N/A" : new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(date);
-    }
-
-    /**
-     * ✅ SIMPLIFIED: Basic edit without complex caching
+     * ✅ OPTIMIZED: Fast edit using UserDAOImpl
      */
     private void editWithCache() {
         int selectedRow = tableInfo.getSelectedRow();
@@ -1414,71 +1328,46 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             return;
         }
 
+        // Lấy userId từ table và query database để có đầy đủ thông tin
         String userId = (String) tableInfo.getValueAt(selectedRow, 0);
         UserAccount entity = userDAO.findById(userId);
 
         if (entity != null) {
-            setForm(entity);
+            // Fill form từ entity (bao gồm cả hình ảnh)
+            txtIdEmployee.setText(entity.getUser_id());
+            txtNameAccount.setText(entity.getUsername());
+            txtPassword.setText(entity.getPass());
+            txtNameEmployee.setText(entity.getFullName());
+            txtPhoneNumber.setText(entity.getPhone_number());
+            txtEmail.setText(entity.getEmail());
+
+            // Set gender
+            if (entity.getGender() != null) {
+                if (entity.getGender() == 1) {
+                    chkMale.setSelected(true);
+                    chkFemale.setSelected(false);
+                } else if (entity.getGender() == 0) {
+                    chkMale.setSelected(false);
+                    chkFemale.setSelected(true);
+                }
+            }
+
+            // Set status và role
+            setStatusComboBox(entity.getIs_enabled());
+            setRoleComboBox(entity.getRole_id());
+
+            // Disable ID field và enable others
             txtIdEmployee.setEditable(false);
             setAllFieldsEditable(true);
+
+            // Load hình ảnh từ entity
+            loadEmployeeImage(entity.getImage());
         } else {
             XDialog.alert("Không tìm thấy thông tin nhân viên!");
         }
     }
 
-    /**
-     * ✅ FAST: Enhanced image loading
-     */
-    private void loadImageFast(String imageName) {
-        if (imageName == null || imageName.trim().isEmpty()) {
-            setDefaultImageFast();
-            return;
-        }
 
-        // Try multiple paths quickly
-        String[] paths = {
-            "/icons_and_images/imageEmployee/" + imageName,
-                "/icons_and_images/" + imageName
-        };
-
-        for (String path : paths) {
-            try {
-                if (getClass().getResource(path) != null) {
-                    XImage.setImageToLabel(lblImage, path);
-                    lblImage.setText("");
-                    return;
-                }
-            } catch (Exception e) {
-                // Continue to next path
-            }
-        }
-
-        // Fallback
-        setPlaceholderImageFast(imageName);
-    }
-
-    /**
-     * ✅ FAST: Default and placeholder images
-     */
-    private void setDefaultImageFast() {
-        try {
-            XImage.setImageToLabel(lblImage, "/icons_and_images/User.png");
-            lblImage.setText("");
-        } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText("No Image");
-        }
-    }
-
-    private void setPlaceholderImageFast(String imageName) {
-        try {
-            XImage.setImageToLabel(lblImage, "/icons_and_images/Unknown person.png");
-            lblImage.setText("");
-        } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText(imageName);
-        }
-    }
 
 
 
@@ -1496,7 +1385,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             }
 
             validateEmployee();
-            UserAccount newEmployee = getForm();
+            UserAccount newEmployee = getFormForCreate();
             validateUniqueEmployeeId(newEmployee.getUser_id());
             validateUniqueUsername(newEmployee.getUsername());
             validateBusinessRules(newEmployee);
@@ -1568,37 +1457,9 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         }
     }
 
-    /**
-     * ✅ DEBOUNCED: Filter với debouncing để tránh lag - updated for search support
-     */
-    private void performFilterAndFill() {
-        // Check if there's an active search
-        String currentSearch = getCurrentSearchKeyword();
-        if (!currentSearch.isEmpty()) {
-            // Apply search filter instead of normal filter
-            if (debounceTimer != null && debounceTimer.isRunning()) {
-                debounceTimer.restart();
-            } else {
-                filterEmployeesByName(currentSearch);
-            }
-        } else {
-            // Normal table population
-            if (debounceTimer != null && debounceTimer.isRunning()) {
-                debounceTimer.restart();
-            } else {
-                                    fillToTable();
-            }
-        }
-    }
 
-    /**
-     * ✅ SIMPLIFIED: Basic performance setup
-     */
-    private void setupPerformanceOptimizations() {
-        // Basic debounce timer for search
-        debounceTimer = new javax.swing.Timer(300, e -> performFilterAndFill());
-        debounceTimer.setRepeats(false);
-    }
+
+
 
 
 
@@ -2242,58 +2103,61 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
     
     /**
-     * ✅ SEARCH: Perform search with debouncing
+     * ✅ OPTIMIZED: Fast search without debouncing
      */
     private void performSearch() {
-        // Chỉ search nếu không phải placeholder text
         String searchText = txtSearch.getText();
         if (!searchText.equals("Tìm theo tên nhân viên...")) {
-            // Debounce search để tránh lag khi gõ nhanh
-            if (debounceTimer != null) debounceTimer.stop();
-            
-            debounceTimer = new javax.swing.Timer(200, e -> {
-                filterEmployeesByName(searchText.trim());
-            });
-            debounceTimer.setRepeats(false);
-            debounceTimer.start();
+            filterEmployeesByName(searchText.trim());
         }
     }
     
     /**
-     * ✅ FILTER: Filter employees by name (basic version)
+     * ✅ OPTIMIZED: Fast search with cached data
      */
     private void filterEmployeesByName(String searchKeyword) {
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            try {
-                DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
-                model.setRowCount(0);
-                
-                // Get all employees
-                List<UserAccount> employees = userDAO.findAll();
-                
-                if (searchKeyword.isEmpty()) {
-                    // Hiển thị tất cả nếu không có từ khóa
-                    for (UserAccount emp : employees) {
-                        model.addRow(createRowData(emp));
-                    }
-                } else {
-                    // Filter theo tên
-                    for (UserAccount emp : employees) {
-                        if (emp.getFullName() != null && 
-                            emp.getFullName().toLowerCase().contains(searchKeyword.toLowerCase())) {
-                            model.addRow(createRowData(emp));
-                        }
+        try {
+            DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
+            model.setRowCount(0);
+            
+            // Get all employees (có thể cache để tăng tốc)
+            List<UserAccount> employees = userDAO.findAll();
+            
+            if (searchKeyword.isEmpty()) {
+                // Hiển thị tất cả nếu không có từ khóa
+                for (UserAccount emp : employees) {
+                    model.addRow(new Object[]{
+                        emp.getUser_id(), emp.getUsername(), emp.getPass(),
+                        emp.getFullName(), emp.getGender() == 1 ? "Nam" : "Nữ",
+                        emp.getPhone_number(), emp.getEmail(),
+                        emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động",
+                        roleMap.getOrDefault(emp.getRole_id(), "N/A"),
+                        emp.getCreated_date() != null ? 
+                            new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(emp.getCreated_date()) : "N/A"
+                    });
+                }
+            } else {
+                // Filter theo tên
+                String keyword = searchKeyword.toLowerCase();
+                for (UserAccount emp : employees) {
+                    if (emp.getFullName() != null && 
+                        emp.getFullName().toLowerCase().contains(keyword)) {
+                        model.addRow(new Object[]{
+                            emp.getUser_id(), emp.getUsername(), emp.getPass(),
+                            emp.getFullName(), emp.getGender() == 1 ? "Nam" : "Nữ",
+                            emp.getPhone_number(), emp.getEmail(),
+                            emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động",
+                            roleMap.getOrDefault(emp.getRole_id(), "N/A"),
+                            emp.getCreated_date() != null ? 
+                                new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(emp.getCreated_date()) : "N/A"
+                        });
                     }
                 }
-                
-                // ✅ SIMPLIFIED: Basic table refresh
-                tableInfo.revalidate();
-                tableInfo.repaint();
-                
-            } catch (Exception e) {
-                System.err.println("❌ Search error: " + e.getMessage());
             }
-        });
+            
+        } catch (Exception e) {
+            System.err.println("❌ Search error: " + e.getMessage());
+        }
     }
     
     /**

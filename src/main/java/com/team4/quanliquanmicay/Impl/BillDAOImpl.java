@@ -23,14 +23,13 @@ public class BillDAOImpl implements BillDAO {
     public Bill create(Bill entity) {
         if (entity == null || !entity.isValid()) return null;
         
-        // Use Integer status directly for database storage
+        // Convert status to DB text storage
         Integer statusValue = entity.getStatus();
-        if (statusValue == null) {
-            statusValue = 0; // Default value: Đang phục vụ
-        }
+        if (statusValue == null) statusValue = 0; // Default: Đang phục vụ
+        String statusText = mapStatusIntToText(statusValue);
         
         System.out.println("DEBUG BillDAO Create:");
-        System.out.println("  Status Value: " + statusValue);
+        System.out.println("  Status Value: " + statusValue + " => '" + statusText + "'");
         
         // Sử dụng SQL phù hợp tùy theo có payment_history_id hay không
         if (entity.getPayment_history_id() != null) {
@@ -42,7 +41,7 @@ public class BillDAOImpl implements BillDAO {
                 entity.getTotal_amount(),
                 convertToTimestamp(entity.getCheckin()),
                 convertToTimestamp(entity.getCheckout()),
-                statusValue
+                statusText
             };
             XJdbc.executeUpdate(CREATE_SQL, values);
         } else {
@@ -53,7 +52,7 @@ public class BillDAOImpl implements BillDAO {
                 entity.getTotal_amount(),
                 convertToTimestamp(entity.getCheckin()),
                 convertToTimestamp(entity.getCheckout()),
-                statusValue
+                statusText
             };
             XJdbc.executeUpdate(CREATE_SQL_NO_PAYMENT, values);
         }
@@ -64,11 +63,10 @@ public class BillDAOImpl implements BillDAO {
     public void update(Bill entity) {
         if (entity == null || entity.getBill_id() == null || !entity.isValid()) return;
         
-        // Use Integer status directly for database storage
+        // Convert status to DB text storage
         Integer statusValue = entity.getStatus();
-        if (statusValue == null) {
-            statusValue = 0; // Default value: Đang phục vụ
-        }
+        if (statusValue == null) statusValue = 0; // Default value
+        String statusText = mapStatusIntToText(statusValue);
         
         Object[] values = {
             entity.getUser_id(),
@@ -78,14 +76,14 @@ public class BillDAOImpl implements BillDAO {
             entity.getTotal_amount(),
             convertToTimestamp(entity.getCheckin()),
             convertToTimestamp(entity.getCheckout()),
-            statusValue,
+            statusText,
             entity.getBill_id()
         };
         
         // Debug: In ra thông tin trước khi update
         System.out.println("DEBUG BillDAO Update:");
         System.out.println("  Bill ID: " + entity.getBill_id());
-        System.out.println("  Status Value: " + statusValue);
+        System.out.println("  Status Value: " + statusValue + " => '" + statusText + "'");
         System.out.println("  SQL: " + UPDATE_SQL);
         
         int rowsAffected = XJdbc.executeUpdate(UPDATE_SQL, values);
@@ -119,11 +117,10 @@ public class BillDAOImpl implements BillDAO {
                     bill.setCheckin(rs.getDate("checkin"));
                     bill.setCheckout(rs.getDate("checkout"));
                     
-                    // Get Integer status from database directly
-                    Integer statusInt = rs.getInt("status");
-                    
-                    System.out.println("DEBUG BillDAO: Bill " + bill.getBill_id() + " - Status from DB: " + statusInt);
-                    
+                    // Map NVARCHAR2 status text to Integer
+                    String statusText = rs.getString("status");
+                    Integer statusInt = mapStatusTextToInt(statusText);
+                    System.out.println("DEBUG BillDAO: Bill " + bill.getBill_id() + " - Status from DB: '" + statusText + "' => " + statusInt);
                     bill.setStatus(statusInt);
                     
                     bills.add(bill);
@@ -154,10 +151,9 @@ public class BillDAOImpl implements BillDAO {
                     bill.setTotal_amount(rs.getDouble("total_amount"));
                     bill.setCheckin(rs.getDate("checkin"));
                     bill.setCheckout(rs.getDate("checkout"));
-                    
-                    // Get Integer status from database directly
-                    Integer statusInt = rs.getInt("status");
-                    bill.setStatus(statusInt);
+                    // Map status text to int
+                    String statusText = rs.getString("status");
+                    bill.setStatus(mapStatusTextToInt(statusText));
                     
                     return bill;
                 }
@@ -183,13 +179,12 @@ public class BillDAOImpl implements BillDAO {
                     b.setTotal_amount(rs.getDouble("total_amount"));
                     b.setCheckin(rs.getDate("checkin"));
                     b.setCheckout(rs.getDate("checkout"));
-                    // Get Integer status from database directly
-                    Integer statusInt = rs.getInt("status");
-                    b.setStatus(statusInt);
+                    String statusText = rs.getString("status");
+                    b.setStatus(mapStatusTextToInt(statusText));
                     return b;
                 }
                 return null;
-            }, tableNumber, 0); // Tìm status = 0 (Đang phục vụ)
+            }, tableNumber, mapStatusIntToText(0)); // Tìm status = 'Đang phục vụ'
         } catch (Exception e) {
             System.err.println("Error in findByTableNumber for table " + tableNumber + ": " + e.getMessage());
             return null;
@@ -211,9 +206,8 @@ public class BillDAOImpl implements BillDAO {
                     b.setTotal_amount(rs.getDouble("total_amount"));
                     b.setCheckin(rs.getDate("checkin"));
                     b.setCheckout(rs.getDate("checkout"));
-                    // Get Integer status from database directly
-                    Integer statusInt = rs.getInt("status");
-                    b.setStatus(statusInt);
+                    String statusText = rs.getString("status");
+                    b.setStatus(mapStatusTextToInt(statusText));
                     bills.add(b);
                 }
                 return bills;
@@ -227,6 +221,31 @@ public class BillDAOImpl implements BillDAO {
     // Helper method để convert Date to Timestamp
     private Timestamp convertToTimestamp(java.util.Date date) {
         return date != null ? new Timestamp(date.getTime()) : null;
+    }
+    
+    // Map status between Integer (app) and NVARCHAR2 (DB)
+    private String mapStatusIntToText(Integer status) {
+        if (status == null) return "Không xác định";
+        switch (status) {
+            case 0: return "Đang phục vụ";
+            case 1: return "Đã thanh toán";
+            case 2: return "Hủy";
+            default: return "Không xác định";
+        }
+    }
+    
+    private Integer mapStatusTextToInt(String text) {
+        if (text == null) return null;
+        text = text.trim();
+        if (text.equalsIgnoreCase("Đang phục vụ")) return 0;
+        if (text.equalsIgnoreCase("Đã thanh toán") || text.equalsIgnoreCase("Da thanh toan")) return 1;
+        if (text.equalsIgnoreCase("Hủy") || text.equalsIgnoreCase("Huy")) return 2;
+        // Try parse integer string fallback
+        try {
+            return Integer.valueOf(text);
+        } catch (Exception ignore) {
+            return null;
+        }
     }
     
 

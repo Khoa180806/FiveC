@@ -343,7 +343,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
         this.setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
         this.setVisible(true);
         SwingUtilities.invokeLater(() -> {
-            com.team4.quanliquanmicay.util.XImage.setImageToLabel(jLabel6, "/icons_and_images/anh-mi-cay-haseyo.jpg");
+            com.team4.quanliquanmicay.util.XImage.setImageToLabel(jLabel6, "/icons_and_images/icon/background_login.jpg");
         });
     }
     

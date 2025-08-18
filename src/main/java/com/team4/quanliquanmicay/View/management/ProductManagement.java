@@ -68,11 +68,15 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         createCategoryTabs(); // Tạo tabpanel cho từng loại món
         fillToTable();
         setupSearchFunctionality();
+        createResourceDirectories(); // Tạo thư mục resources nếu cần
         setupImageSelection(); // Thêm setup cho chọn ảnh
         initializeImageLabel(); // Khởi tạo label ảnh với kích thước cố định
         lockEntireLayout(); // Lock toàn bộ layout để tránh shift
         // Disable button update ban đầu
         btnUpdate.setEnabled(false);
+        
+        // Kiểm tra và sửa lỗi đường dẫn null
+        validateAndFixResourcePaths();
         // Đảm bảo khi đổi trạng thái thì có thể cập nhật
         cboStatus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -478,7 +482,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 409, Short.MAX_VALUE)
+            .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 437, Short.MAX_VALUE)
         );
 
         pack();
@@ -1525,16 +1529,17 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
             String newFileName = "prod_" + timestamp + "." + fileExtension;
             
-            // Create target directory in resources (for development)
+            // Create target directory in resources based on category
             // Note: In production, you might want to save to external directory
-            String resourcePath = "src/main/resources/icons_and_images/product/";
+            String categoryFolder = getCategoryFolderName();
+            String resourcePath = "src/main/resources/icons_and_images/" + categoryFolder + "/";
             java.io.File targetDir = new java.io.File(resourcePath);
             
             if (!targetDir.exists()) {
                 boolean created = targetDir.mkdirs();
                 if (!created) {
                     // Try alternative path
-                    targetDir = new java.io.File("resources/icons_and_images/product/");
+                    targetDir = new java.io.File("resources/icons_and_images/" + categoryFolder + "/");
                     if (!targetDir.exists()) {
                         targetDir.mkdirs();
                     }
@@ -1624,6 +1629,44 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     }
     
     /**
+     * ✅ GET CATEGORY FOLDER NAME: Map category name to folder name
+     */
+    private String getCategoryFolderName() {
+        String selectedCategory = (String) cboCate.getSelectedItem();
+        if (selectedCategory == null) {
+            return "product"; // Default fallback
+        }
+        
+        // Map category names to folder names
+        switch (selectedCategory.toLowerCase()) {
+            case "mì":
+            case "mi":
+                return "MI";
+            case "nước uống":
+            case "nuoc uong":
+                return "NUOCUONG";
+            case "ăn vặt":
+            case "an vat":
+                return "ANVAT";
+            case "khai vị":
+            case "khai vi":
+                return "KhaiVi";
+            case "lẩu":
+            case "lau":
+                return "LAU";
+            case "combo":
+                return "Combo";
+            case "thêm":
+            case "them":
+                return "Them";
+            case "pancha":
+                return "Pancha";
+            default:
+                return "product"; // Default fallback
+        }
+    }
+    
+    /**
      * ✅ SET CURRENT IMAGE: Set current image name
      */
     private void setCurrentImageName(String imageName) {
@@ -1678,38 +1721,44 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             absoluteLockImageSize();
             
             // Load and scale image to fit the fixed label size
-            java.net.URL imageURL = getClass().getResource(imagePath);
+            java.net.URL imageURL = safeGetResource(imagePath);
             if (imageURL != null) {
-                javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
-                
-                // ✅ VALIDATION: Check if image loaded successfully
-                if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
-                    // Scale image to EXACT fixed size với giới hạn nghiêm ngặt
-                    java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
-                        196, // Slightly smaller than container để tránh overflow
-                        196, 
-                        java.awt.Image.SCALE_SMOOTH
-                    );
+                try {
+                    javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
                     
-                    javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
-                    
-                    // LOCK SIZE lại trước khi set icon
-                    absoluteLockImageSize();
-                    
-                    // Set the scaled icon
-                    lblImage.setIcon(scaledIcon);
-                    lblImage.setText("");
-                    lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-                    lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
-                    
-                    // FINAL ABSOLUTE LOCK sau khi set icon
-                    absoluteLockImageSize();
-                } else {
-                    // Image không load được
+                    // ✅ VALIDATION: Check if image loaded successfully
+                    if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
+                        // Scale image to EXACT fixed size với giới hạn nghiêm ngặt
+                        java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
+                            196, // Slightly smaller than container để tránh overflow
+                            196, 
+                            java.awt.Image.SCALE_SMOOTH
+                        );
+                        
+                        javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
+                        
+                        // LOCK SIZE lại trước khi set icon
+                        absoluteLockImageSize();
+                        
+                        // Set the scaled icon
+                        lblImage.setIcon(scaledIcon);
+                        lblImage.setText("");
+                        lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                        lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+                        
+                        // FINAL ABSOLUTE LOCK sau khi set icon
+                        absoluteLockImageSize();
+                    } else {
+                        // Image không load được
+                        setNoImagePlaceholder();
+                    }
+                } catch (Exception iconException) {
+                    System.err.println("❌ Error loading image icon: " + iconException.getMessage());
                     setNoImagePlaceholder();
                 }
             } else {
                 // Fallback to text if image not found
+                System.err.println("❌ Image URL is null for path: " + imagePath);
                 setNoImagePlaceholder();
             }
             
@@ -1717,6 +1766,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             absoluteLockImageSize();
             
         } catch (Exception e) {
+            System.err.println("❌ Error in setImageWithFixedSize: " + e.getMessage());
             setNoImagePlaceholder();
             absoluteLockImageSize();
         }
@@ -1750,8 +1800,16 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             enforceFixedImageSize();
             
             if (imageName != null && !imageName.trim().isEmpty()) {
-                // Thử tìm ảnh trong các thư mục khác nhau
+                // Thử tìm ảnh trong các thư mục khác nhau - ưu tiên folder đồ ăn trực tiếp
                 String[] paths = {
+                    "/icons_and_images/MI/" + imageName,
+                    "/icons_and_images/NUOCUONG/" + imageName,
+                    "/icons_and_images/ANVAT/" + imageName,
+                    "/icons_and_images/KhaiVi/" + imageName,
+                    "/icons_and_images/LAU/" + imageName,
+                    "/icons_and_images/Combo/" + imageName,
+                    "/icons_and_images/Them/" + imageName,
+                    "/icons_and_images/Pancha/" + imageName,
                     "/icons_and_images/" + imageName,
                     "/icons_and_images/product/" + imageName,
                     "/icons_and_images/product/mi/" + imageName,
@@ -1762,12 +1820,18 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 boolean found = false;
                 for (String path : paths) {
                     System.out.println("🔍 Trying path: " + path);
-                    java.net.URL imageURL = getClass().getResource(path);
-                    if (imageURL != null) {
-                        System.out.println("✅ Found image at: " + path);
-                        setImageWithFixedSize(path);
-                        found = true;
-                        break;
+                    try {
+                        java.net.URL imageURL = safeGetResource(path);
+                        if (imageURL != null) {
+                            System.out.println("✅ Found image at: " + path);
+                            setImageWithFixedSize(path);
+                            found = true;
+                            break;
+                        } else {
+                            System.out.println("❌ Image URL is null for path: " + path);
+                        }
+                    } catch (Exception urlException) {
+                        System.err.println("❌ Error getting resource URL for path: " + path + " - " + urlException.getMessage());
                     }
                 }
                 
@@ -1805,10 +1869,32 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
      */
     private boolean tryLoadExternalImage(String imageName) {
         try {
-            // Thử các đường dẫn có thể có của file ảnh vừa lưu
+            // Thử các đường dẫn có thể có của file ảnh vừa lưu - cập nhật theo cấu trúc thư mục mới
             String[] externalPaths = {
+                "src/main/resources/icons_and_images/MI/" + imageName,
+                "src/main/resources/icons_and_images/NUOCUONG/" + imageName,
+                "src/main/resources/icons_and_images/ANVAT/" + imageName,
+                "src/main/resources/icons_and_images/KhaiVi/" + imageName,
+                "src/main/resources/icons_and_images/LAU/" + imageName,
+                "src/main/resources/icons_and_images/Combo/" + imageName,
+                "src/main/resources/icons_and_images/Them/" + imageName,
+                "src/main/resources/icons_and_images/Pancha/" + imageName,
                 "src/main/resources/icons_and_images/product/" + imageName,
+                "src/main/resources/icons_and_images/product/mi/" + imageName,
+                "src/main/resources/icons_and_images/product/drink/" + imageName,
+                "src/main/resources/icons_and_images/product/more/" + imageName,
+                "resources/icons_and_images/MI/" + imageName,
+                "resources/icons_and_images/NUOCUONG/" + imageName,
+                "resources/icons_and_images/ANVAT/" + imageName,
+                "resources/icons_and_images/KhaiVi/" + imageName,
+                "resources/icons_and_images/LAU/" + imageName,
+                "resources/icons_and_images/Combo/" + imageName,
+                "resources/icons_and_images/Them/" + imageName,
+                "resources/icons_and_images/Pancha/" + imageName,
                 "resources/icons_and_images/product/" + imageName,
+                "resources/icons_and_images/product/mi/" + imageName,
+                "resources/icons_and_images/product/drink/" + imageName,
+                "resources/icons_and_images/product/more/" + imageName,
                 "src/main/resources/icons_and_images/" + imageName,
                 "resources/icons_and_images/" + imageName
             };
@@ -1820,30 +1906,35 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 if (imageFile.exists() && imageFile.canRead()) {
                     System.out.println("✅ Found external image: " + path);
                     
-                    // Load image từ file system với size cố định
-                    java.awt.image.BufferedImage bufferedImage = javax.imageio.ImageIO.read(imageFile);
-                    if (bufferedImage != null) {
-                        
-                        // ABSOLUTE LOCK trước khi load ảnh
-                        absoluteLockImageSize();
-                        
-                        // Scale image nhỏ hơn để tránh overflow
-                        java.awt.Image scaledImage = bufferedImage.getScaledInstance(
-                            196, 196, java.awt.Image.SCALE_SMOOTH);
-                        javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
-                        
-                        // LOCK lại trước khi set icon
-                        absoluteLockImageSize();
-                        
-                        lblImage.setIcon(scaledIcon);
-                        lblImage.setText("");
-                        lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-                        lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
-                        
-                        // FINAL LOCK sau khi set icon
-                        absoluteLockImageSize();
-                        
-                        return true;
+                    try {
+                        // Load image từ file system với size cố định
+                        java.awt.image.BufferedImage bufferedImage = javax.imageio.ImageIO.read(imageFile);
+                        if (bufferedImage != null) {
+                            
+                            // ABSOLUTE LOCK trước khi load ảnh
+                            absoluteLockImageSize();
+                            
+                            // Scale image nhỏ hơn để tránh overflow
+                            java.awt.Image scaledImage = bufferedImage.getScaledInstance(
+                                196, 196, java.awt.Image.SCALE_SMOOTH);
+                            javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
+                            
+                            // LOCK lại trước khi set icon
+                            absoluteLockImageSize();
+                            
+                            lblImage.setIcon(scaledIcon);
+                            lblImage.setText("");
+                            lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                            lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+                            
+                            // FINAL LOCK sau khi set icon
+                            absoluteLockImageSize();
+                            
+                            return true;
+                        }
+                    } catch (Exception imageException) {
+                        System.err.println("❌ Error reading image file: " + imageException.getMessage());
+                        continue; // Thử file tiếp theo
                     }
                 }
             }
@@ -1851,7 +1942,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             return false;
             
         } catch (Exception e) {
-            System.out.println("❌ Error loading external image: " + e.getMessage());
+            System.err.println("❌ Error loading external image: " + e.getMessage());
             return false;
         }
     }
@@ -1868,20 +1959,111 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         lblImage.setMinimumSize(FIXED_SIZE);
         lblImage.setMaximumSize(FIXED_SIZE);
         
-        // Set alignment để ảnh luôn ở giữa
-        lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
-        
-        // Force layout update nhưng không làm thay đổi size
-        lblImage.invalidate();
-        
-        // Get parent container and force its layout
-        java.awt.Container parent = lblImage.getParent();
-        if (parent != null) {
-            parent.revalidate();
+        // Force revalidate và repaint
+        lblImage.revalidate();
+        lblImage.repaint();
+    }
+    
+    /**
+     * ✅ VALIDATE RESOURCE PATH: Kiểm tra và tạo thư mục resources nếu cần
+     */
+    private boolean validateResourcePath(String imagePath) {
+        try {
+            java.net.URL url = safeGetResource(imagePath);
+            return url != null;
+        } catch (Exception e) {
+            System.err.println("❌ Error validating resource path: " + imagePath + " - " + e.getMessage());
+            return false;
         }
-        
-        System.out.println("🔧 Enforced image size: " + lblImage.getSize());
+    }
+    
+    /**
+     * ✅ CREATE RESOURCE DIRECTORIES: Tạo thư mục resources nếu chưa có
+     */
+    private void createResourceDirectories() {
+        try {
+            String[] directories = {
+                "src/main/resources/icons_and_images/MI",
+                "src/main/resources/icons_and_images/NUOCUONG",
+                "src/main/resources/icons_and_images/ANVAT",
+                "src/main/resources/icons_and_images/KhaiVi",
+                "src/main/resources/icons_and_images/LAU",
+                "src/main/resources/icons_and_images/Combo",
+                "src/main/resources/icons_and_images/Them",
+                "src/main/resources/icons_and_images/Pancha",
+                "src/main/resources/icons_and_images/product",
+                "src/main/resources/icons_and_images/product/mi",
+                "src/main/resources/icons_and_images/product/drink",
+                "src/main/resources/icons_and_images/product/more"
+            };
+            
+            for (String dirPath : directories) {
+                java.io.File dir = new java.io.File(dirPath);
+                if (!dir.exists()) {
+                    boolean created = dir.mkdirs();
+                    if (created) {
+                        System.out.println("✅ Created directory: " + dirPath);
+                    } else {
+                        System.err.println("❌ Failed to create directory: " + dirPath);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error creating resource directories: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * ✅ SAFE RESOURCE LOADING: Load resource một cách an toàn, tránh lỗi null
+     */
+    private java.net.URL safeGetResource(String path) {
+        try {
+            if (path == null || path.trim().isEmpty()) {
+                System.err.println("❌ Resource path is null or empty");
+                return null;
+            }
+            
+            java.net.URL url = getClass().getResource(path);
+            if (url == null) {
+                System.err.println("❌ Resource not found: " + path);
+                return null;
+            }
+            
+            return url;
+        } catch (Exception e) {
+            System.err.println("❌ Error loading resource: " + path + " - " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * ✅ VALIDATE AND FIX RESOURCE PATHS: Kiểm tra và sửa lỗi đường dẫn null
+     */
+    private void validateAndFixResourcePaths() {
+        try {
+            System.out.println("🔍 Validating resource paths...");
+            
+            // Kiểm tra các đường dẫn icon quan trọng
+            String[] criticalPaths = {
+                "/icons_and_images/icon/Search.png",
+                "/icons_and_images/icon/Exit.png",
+                "/icons_and_images/icon/Help.png"
+            };
+            
+            for (String path : criticalPaths) {
+                java.net.URL url = safeGetResource(path);
+                if (url == null) {
+                    System.err.println("⚠️ Critical resource missing: " + path);
+                } else {
+                    System.out.println("✅ Resource found: " + path);
+                }
+            }
+            
+            System.out.println("✅ Resource validation completed");
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error during resource validation: " + e.getMessage());
+        }
     }
     
     /**

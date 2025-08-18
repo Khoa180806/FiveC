@@ -711,8 +711,16 @@ public class OrderUI extends javax.swing.JFrame {
         // Debug: Kiểm tra hình ảnh
         debugImageLoading(imageName);
         
-        // Thử các đường dẫn khác nhau - giống với MonAnJDialog
+        // Thử các đường dẫn khác nhau - ưu tiên folder đồ ăn trực tiếp
         String[] paths = {
+            "/icons_and_images/MI/" + imageName,
+            "/icons_and_images/NUOCUONG/" + imageName,
+            "/icons_and_images/ANVAT/" + imageName,
+            "/icons_and_images/KhaiVi/" + imageName,
+            "/icons_and_images/LAU/" + imageName,
+            "/icons_and_images/Combo/" + imageName,
+            "/icons_and_images/Them/" + imageName,
+            "/icons_and_images/Pancha/" + imageName,
             "/icons_and_images/" + imageName,
             "/icons_and_images/product/" + imageName,
             "/icons_and_images/product/mi/" + imageName,
@@ -833,6 +841,14 @@ public class OrderUI extends javax.swing.JFrame {
         }
         
         String[] paths = {
+            "/icons_and_images/MI/" + imageName,
+            "/icons_and_images/NUOCUONG/" + imageName,
+            "/icons_and_images/ANVAT/" + imageName,
+            "/icons_and_images/KhaiVi/" + imageName,
+            "/icons_and_images/LAU/" + imageName,
+            "/icons_and_images/Combo/" + imageName,
+            "/icons_and_images/Them/" + imageName,
+            "/icons_and_images/Pancha/" + imageName,
             "/icons_and_images/" + imageName,
             "/icons_and_images/product/" + imageName,
             "/icons_and_images/product/mi/" + imageName,

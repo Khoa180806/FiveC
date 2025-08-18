@@ -151,9 +151,10 @@ public class XTheme {
      */
     private static void setApplicationFonts() {
         try {
-            Font mainFont = new Font("Segoe UI", Font.PLAIN, 13);
-            Font titleFont = new Font("Segoe UI", Font.BOLD, 14);
-            Font smallFont = new Font("Segoe UI", Font.PLAIN, 11);
+            // Dùng font phù hợp tiếng Việt
+            Font mainFont = new Font("Tahoma", Font.PLAIN, 13);
+            Font titleFont = new Font("Tahoma", Font.BOLD, 15);
+            Font smallFont = new Font("Tahoma", Font.PLAIN, 11);
             
             UIManager.put("Label.font", mainFont);
             UIManager.put("Button.font", mainFont);
