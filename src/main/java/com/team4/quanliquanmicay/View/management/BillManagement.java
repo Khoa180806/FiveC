@@ -57,11 +57,118 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         // Khởi tạo date picker
         initDatePickers();
         
-        // Load dữ liệu ban đầu
+        // Kiểm tra kết nối database và load dữ liệu ban đầu
+        checkDatabaseConnection();
         loadBillData();
         addEventListeners();
     }
 
+    /**
+     * Kiểm tra kết nối database
+     */
+    private void checkDatabaseConnection() {
+        try {
+            List<Bill> bills = billDAO.findAll();
+            System.out.println("✅ Kết nối database thành công. Có " + bills.size() + " hóa đơn trong database");
+            
+            // Kiểm tra xem có bill nào không có chi tiết không
+            checkBillsWithoutDetails(bills);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi kết nối database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Kiểm tra các bill không có chi tiết
+     */
+    private void checkBillsWithoutDetails(List<Bill> bills) {
+        try {
+            int billsWithoutDetails = 0;
+            for (Bill bill : bills) {
+                List<BillDetails> details = billDetailsDAO.findByBillId(bill.getBill_id());
+                if (details.isEmpty()) {
+                    billsWithoutDetails++;
+                    System.out.println("⚠️ Bill " + bill.getBill_id() + " không có chi tiết món ăn");
+                }
+            }
+            
+            if (billsWithoutDetails > 0) {
+                System.out.println("📊 Có " + billsWithoutDetails + "/" + bills.size() + " bill không có chi tiết món ăn");
+                
+                // Hỏi người dùng có muốn tạo dữ liệu mẫu không
+                boolean createSampleData = XDialog.confirm(
+                    "Phát hiện " + billsWithoutDetails + " hóa đơn không có chi tiết món ăn.\n" +
+                    "Bạn có muốn tạo dữ liệu mẫu cho các hóa đơn này không?",
+                    "Tạo dữ liệu mẫu"
+                );
+                
+                if (createSampleData) {
+                    createSampleBillDetails(bills);
+                }
+            } else {
+                System.out.println("✅ Tất cả bill đều có chi tiết món ăn");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi khi kiểm tra chi tiết bill: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Tạo dữ liệu mẫu cho các bill không có chi tiết
+     */
+    private void createSampleBillDetails(List<Bill> bills) {
+        try {
+            // Lấy danh sách sản phẩm có sẵn
+            List<Product> products = productDAO.findAll();
+            if (products.isEmpty()) {
+                XDialog.warning("Không có sản phẩm nào trong database để tạo dữ liệu mẫu!", "Cảnh báo");
+                return;
+            }
+            
+            int createdCount = 0;
+            for (Bill bill : bills) {
+                List<BillDetails> details = billDetailsDAO.findByBillId(bill.getBill_id());
+                if (details.isEmpty()) {
+                    // Tạo 1-3 món ăn mẫu cho bill này
+                    int numItems = (int) (Math.random() * 3) + 1; // 1-3 món
+                    
+                    for (int i = 0; i < numItems; i++) {
+                        // Chọn ngẫu nhiên một sản phẩm
+                        Product randomProduct = products.get((int) (Math.random() * products.size()));
+                        
+                        // Tạo chi tiết bill
+                        BillDetails detail = new BillDetails();
+                        detail.setBill_id(bill.getBill_id());
+                        detail.setProduct_id(randomProduct.getProductId());
+                        detail.setAmount((int) (Math.random() * 3) + 1); // 1-3 phần
+                        detail.setPrice(randomProduct.getPrice());
+                        detail.setDiscount(0.0); // Không giảm giá
+                        
+                        // Lưu vào database
+                        billDetailsDAO.create(detail);
+                        createdCount++;
+                    }
+                    
+                    System.out.println("✅ Đã tạo " + numItems + " món ăn mẫu cho bill " + bill.getBill_id());
+                }
+            }
+            
+            if (createdCount > 0) {
+                XDialog.success("Đã tạo " + createdCount + " chi tiết món ăn mẫu cho các hóa đơn!", "Thành công");
+                // Reload dữ liệu
+                loadBillData();
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi khi tạo dữ liệu mẫu: " + e.getMessage());
+            e.printStackTrace();
+            XDialog.error("Lỗi khi tạo dữ liệu mẫu: " + e.getMessage(), "Lỗi");
+        }
+    }
+    
     /**
      * Khởi tạo date picker
      */
@@ -98,9 +205,15 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
     @Override
     public void loadBillData() {
         try {
+            // Load tất cả hóa đơn từ database
             List<Bill> bills = billDAO.findAll();
             DefaultTableModel model = (DefaultTableModel) tblBill.getModel();
             model.setRowCount(0);
+            
+            if (bills.isEmpty()) {
+                System.out.println("Không có hóa đơn nào trong database");
+                return;
+            }
             
             for (Bill bill : bills) {
                 // Chuyển đổi Integer status sang String để hiển thị
@@ -124,8 +237,12 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 };
                 model.addRow(row);
             }
+            
+            System.out.println("Đã load " + bills.size() + " hóa đơn từ database");
+            
         } catch (Exception e) {
             XDialog.error("Lỗi khi tải dữ liệu hóa đơn: " + e.getMessage(), "Lỗi");
+            e.printStackTrace();
         }
     }
 
@@ -135,13 +252,33 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
     @Override
     public void loadBillDetails(Integer billId) {
         try {
+            System.out.println("🔍 Đang load chi tiết cho bill_id: " + billId);
+            
             List<BillDetails> billDetails = billDetailsDAO.findByBillId(billId);
+            System.out.println("📋 Tìm thấy " + billDetails.size() + " chi tiết hóa đơn");
+            
             DefaultTableModel model = (DefaultTableModel) tblBillDetail.getModel();
             model.setRowCount(0);
+            
+            if (billDetails.isEmpty()) {
+                System.out.println("⚠️ Bill này không có chi tiết món ăn nào!");
+                // Hiển thị thông báo trong bảng
+                Object[] row = {
+                    "Không có món ăn nào",
+                    "",
+                    "",
+                    "",
+                    ""
+                };
+                model.addRow(row);
+                return;
+            }
             
             for (BillDetails detail : billDetails) {
                 Product product = productDAO.findById(detail.getProduct_id());
                 String productName = product != null ? product.getProductName() : "Không xác định";
+                
+                System.out.println("🍽️ Sản phẩm: " + productName + " - Số lượng: " + detail.getAmount());
                 
                 Object[] row = {
                     productName,
@@ -152,7 +289,12 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 };
                 model.addRow(row);
             }
+            
+            System.out.println("✅ Đã load " + billDetails.size() + " món ăn vào bảng chi tiết");
+            
         } catch (Exception e) {
+            System.err.println("❌ Lỗi khi tải chi tiết hóa đơn: " + e.getMessage());
+            e.printStackTrace();
             XDialog.error("Lỗi khi tải chi tiết hóa đơn: " + e.getMessage(), "Lỗi");
         }
     }
@@ -226,12 +368,31 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tblBill.getSelectedRow();
                 if (selectedRow >= 0) {
-                    Integer billId = (Integer) tblBill.getValueAt(selectedRow, 0);
-                    Bill bill = billDAO.findById(String.valueOf(billId));
-                    displayBillInfo(bill);
-                    
-                    // Load chi tiết hóa đơn ngay khi chọn row
-                    loadBillDetails(billId);
+                    try {
+                        Object billIdObj = tblBill.getValueAt(selectedRow, 0);
+                        System.out.println("🖱️ Click vào row " + selectedRow + " - billId: " + billIdObj);
+                        
+                        if (billIdObj != null) {
+                            Integer billId = (Integer) billIdObj;
+                            System.out.println("📄 Đang tìm bill với ID: " + billId);
+                            
+                            Bill bill = billDAO.findById(String.valueOf(billId));
+                            if (bill != null) {
+                                System.out.println("✅ Tìm thấy bill: " + bill.getBill_id());
+                                displayBillInfo(bill);
+                                
+                                // Load chi tiết hóa đơn ngay khi chọn row
+                                loadBillDetails(billId);
+                            } else {
+                                System.out.println("❌ Không tìm thấy bill với ID: " + billId);
+                            }
+                        } else {
+                            System.out.println("❌ billId là null");
+                        }
+                    } catch (Exception ex) {
+                        System.err.println("❌ Lỗi khi xử lý click vào table: " + ex.getMessage());
+                        ex.printStackTrace();
+                    }
                 }
             }
         });
