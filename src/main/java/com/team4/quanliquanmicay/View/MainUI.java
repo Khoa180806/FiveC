@@ -36,6 +36,16 @@ public class MainUI extends javax.swing.JFrame {
     private com.team4.quanliquanmicay.View.PayUI payUI;
     private com.team4.quanliquanmicay.View.ChangePassword changePasswordUI;
 
+    // Popup và menu item cho quản lý
+    private JPopupMenu popupQuanLyDanhMuc;
+    private JMenuItem itemLoaiMon;
+    private JMenuItem itemSanPham;
+
+    private JPopupMenu popupQuanLyHoaDon;
+    private JMenuItem itemHoaDon;
+    private JMenuItem itemPhuongThucThanhToan;
+    private JMenuItem itemLichSuThanhToan;
+
     /**
      * Creates new form MainForm
      */
@@ -62,9 +72,9 @@ public class MainUI extends javax.swing.JFrame {
      * Hàm tạo popup cho Quản Lý Danh Mục
      */
     private void setupCategoryManagementPopup() {
-        JPopupMenu popupQuanLyDanhMuc = new JPopupMenu();
-        JMenuItem itemLoaiMon = new JMenuItem("Loại món ăn");
-        JMenuItem itemSanPham = new JMenuItem("Sản phẩm");
+        popupQuanLyDanhMuc = new JPopupMenu();
+        itemLoaiMon = new JMenuItem("Loại món ăn");
+        itemSanPham = new JMenuItem("Sản phẩm");
 
         // CSS cho popup menu
         popupQuanLyDanhMuc.setBackground(new java.awt.Color(134, 39, 43));
@@ -149,6 +159,9 @@ public class MainUI extends javax.swing.JFrame {
         
         btnCategoryManagement.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (!btnCategoryManagement.isEnabled()) {
+                    return;
+                }
                 int width = btnCategoryManagement.getWidth();
                 for (Component comp : popupQuanLyDanhMuc.getComponents()) {
                     if (comp instanceof JMenuItem) {
@@ -166,10 +179,10 @@ public class MainUI extends javax.swing.JFrame {
     }
 
     private void setupBillManagementPopup() {
-        JPopupMenu popupQuanLyHoaDon = new JPopupMenu();
-        JMenuItem itemHoaDon = new JMenuItem("Hóa đơn");
-        JMenuItem itemPhuongThucThanhToan = new JMenuItem("Phương thức thanh toán");
-        JMenuItem itemLichSuThanhToan = new JMenuItem("Lịch sử");
+        popupQuanLyHoaDon = new JPopupMenu();
+        itemHoaDon = new JMenuItem("Hóa đơn");
+        itemPhuongThucThanhToan = new JMenuItem("Phương thức thanh toán");
+        itemLichSuThanhToan = new JMenuItem("Lịch sử");
 
         // CSS cho popup menu
         popupQuanLyHoaDon.setBackground(new java.awt.Color(134, 39, 43));
@@ -291,6 +304,9 @@ public class MainUI extends javax.swing.JFrame {
         
         btnBillManagement.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
+                if (!btnBillManagement.isEnabled()) {
+                    return;
+                }
                 int width = btnBillManagement.getWidth();
                 for (Component comp : popupQuanLyHoaDon.getComponents()) {
                     if (comp instanceof JMenuItem) {
@@ -692,7 +708,6 @@ public class MainUI extends javax.swing.JFrame {
 
         lblLogo.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         lblLogo.setForeground(new java.awt.Color(134, 39, 43));
-        lblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/icons8-five-64.png"))); // NOI18N
         lblLogo.setText("FIVE C ");
 
         javax.swing.GroupLayout pnlLogoLayout = new javax.swing.GroupLayout(pnlLogo);
@@ -1043,8 +1058,26 @@ public class MainUI extends javax.swing.JFrame {
     public void updateUIByRole(String roleId) {
         boolean isAdmin = "R001".equals(roleId);
         
-        // Ẩn/hiện panel chức năng admin
-        pnlAdminFeature.setVisible(isAdmin);
+        // Luôn hiển thị panel chức năng admin
+        pnlAdminFeature.setVisible(true);
+
+        // Vô hiệu hóa/khôi phục các nút admin theo role
+        btnCategoryManagement.setEnabled(isAdmin);
+        btnBillManagement.setEnabled(isAdmin);
+        btnTableManagement.setEnabled(isAdmin);
+        btnUserManagement.setEnabled(isAdmin);
+        btnCustomerManagement.setEnabled(isAdmin);
+
+        // Vô hiệu hóa các item trong popup theo role (nếu popup đã khởi tạo)
+        if (itemLoaiMon != null) itemLoaiMon.setEnabled(isAdmin);
+        if (itemSanPham != null) itemSanPham.setEnabled(isAdmin);
+        if (itemHoaDon != null) itemHoaDon.setEnabled(isAdmin);
+        if (itemPhuongThucThanhToan != null) itemPhuongThucThanhToan.setEnabled(isAdmin);
+        if (itemLichSuThanhToan != null) itemLichSuThanhToan.setEnabled(isAdmin);
+
+        // Vô hiệu hóa các nút Thống kê, Đổi mật khẩu theo role nếu cần
+        btnReport.setEnabled(isAdmin);
+        btnChangePassWord.setEnabled(isAdmin);
         
         // Cập nhật lại layout để điều chỉnh khoảng trống
         pnlMainTitle.revalidate();
