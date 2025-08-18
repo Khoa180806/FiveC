@@ -132,6 +132,23 @@ public class CustomerManagement extends javax.swing.JFrame {
         
         // Exit button functionality
 
+        // ✅ AUTO RANK: Tự động cập nhật hạng khi thay đổi điểm
+        txt_point_level.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                autoUpdateRankFromPoints();
+            }
+            
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                autoUpdateRankFromPoints();
+            }
+            
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                autoUpdateRankFromPoints();
+            }
+        });
         
         // Keyboard shortcuts
         setupKeyboardShortcuts();
@@ -300,11 +317,14 @@ public class CustomerManagement extends javax.swing.JFrame {
             
             int pointLevel = Integer.parseInt(pointLevelStr);
             
-            // Kiểm tra tính nhất quán dữ liệu
-            if (!XValidation.isCustomerDataConsistent(pointLevel, levelRanking)) {
-                XDialog.error("Điểm và hạng không tương thích!\nĐiểm 0-99: Bronze\nĐiểm 100-199: Silver\nĐiểm 200-499: Gold\nĐiểm 500+: Diamond");
-                return;
-            }
+            // ✅ Tự động set hạng dựa trên điểm
+            String autoLevelRanking = calculateRankFromPoints(pointLevel);
+            
+            // Cập nhật text field hạng với giá trị tự động
+            txt_level_ranking.setText(autoLevelRanking);
+            levelRanking = autoLevelRanking;
+            
+            System.out.println("✅ Tự động set hạng: " + pointLevel + " điểm -> " + autoLevelRanking);
             
             // Sanitize input
             phoneNumber = XValidation.sanitizeInput(phoneNumber);
@@ -864,4 +884,42 @@ public class CustomerManagement extends javax.swing.JFrame {
     private javax.swing.JTextField txt_point_level;
     private javax.swing.JTextField txt_search;
     // End of variables declaration//GEN-END:variables
+
+    /**
+     * ✅ AUTO RANK: Tự động cập nhật hạng khi thay đổi điểm trong text field
+     */
+    private void autoUpdateRankFromPoints() {
+        try {
+            String pointText = txt_point_level.getText().trim();
+            if (!pointText.isEmpty()) {
+                int points = Integer.parseInt(pointText);
+                String newRank = calculateRankFromPoints(points);
+                txt_level_ranking.setText(newRank);
+                System.out.println("🔄 Auto-update rank: " + points + " points -> " + newRank);
+            }
+        } catch (NumberFormatException e) {
+            // Nếu không phải số, không làm gì
+        } catch (Exception e) {
+            System.err.println("❌ Error in autoUpdateRankFromPoints: " + e.getMessage());
+        }
+    }
+
+    /**
+     * ✅ AUTO RANK: Tính hạng tự động dựa trên điểm
+     */
+    private String calculateRankFromPoints(int points) {
+        if (points < 0) {
+            return "Thường"; // Fallback cho điểm âm
+        } else if (points >= 0 && points <= 99) {
+            return "Bronze";
+        } else if (points >= 100 && points <= 199) {
+            return "Silver";
+        } else if (points >= 200 && points <= 499) {
+            return "Gold";
+        } else if (points >= 500) {
+            return "Diamond";
+        } else {
+            return "Thường"; // Fallback
+        }
+    }
 }
