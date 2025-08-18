@@ -15,9 +15,9 @@ import com.team4.quanliquanmicay.Impl.BillDAOImpl;
 import com.team4.quanliquanmicay.Impl.BillDetailsDAOImpl;
 import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
 import java.text.SimpleDateFormat;
-import java.util.List;
+import java.util.List;  
 import java.util.Date;
-import javax.swing.JOptionPane;
+
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -195,9 +195,6 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         } else {
             cboStatus.setSelectedIndex(0); // Mặc định "Đang phục vụ"
         }
-        
-        // Load chi tiết hóa đơn
-        loadBillDetails(bill.getBill_id());
     }
 
     /**
@@ -232,6 +229,9 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                     Integer billId = (Integer) tblBill.getValueAt(selectedRow, 0);
                     Bill bill = billDAO.findById(String.valueOf(billId));
                     displayBillInfo(bill);
+                    
+                    // Load chi tiết hóa đơn ngay khi chọn row
+                    loadBillDetails(billId);
                 }
             }
         });
@@ -243,6 +243,19 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         btnRemove.addActionListener(e -> removeBill());
 
         // Sự kiện nút Exit
+        btnExit.addActionListener(e -> {
+            if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) {
+                this.dispose();
+            }
+        });
+        
+        // Sự kiện thay đổi tab
+        jTabbedPane1.addChangeListener(new javax.swing.event.ChangeListener() {
+            @Override
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                tabbedPaneStateChanged(evt);
+            }
+        });
 
 
         // Sự kiện nút Filter
@@ -770,6 +783,21 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         } catch (Exception e) {
             XDialog.error("Lỗi khi lọc hóa đơn theo ngày: " + e.getMessage(), "Lỗi");
             return new java.util.ArrayList<>();
+        }
+    }
+    
+    /**
+     * Xử lý sự kiện thay đổi tab
+     */
+    private void tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {
+        int selectedIndex = jTabbedPane1.getSelectedIndex();
+        if (selectedIndex == 1) { // Tab "Chi tiết"
+            if (currentBill == null) {
+                XDialog.warning("Vui lòng chọn một hóa đơn để xem chi tiết!", "Thông báo");
+                // Chuyển về tab "Hóa đơn"
+                jTabbedPane1.setSelectedIndex(0);
+            }
+            // Chi tiết đã được load khi click vào table, không cần load lại
         }
     }
     
