@@ -404,11 +404,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         btnRemove.addActionListener(e -> removeBill());
 
         // Sự kiện nút Exit
-        btnExit.addActionListener(e -> {
-            if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) {
-                this.dispose();
-            }
-        });
+ 
         
         // Sự kiện thay đổi tab
         jTabbedPane1.addChangeListener(new javax.swing.event.ChangeListener() {

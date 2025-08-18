@@ -986,6 +986,11 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         btnPayment.setForeground(new java.awt.Color(0, 51, 51));
         btnPayment.setText("Thanh Toán");
         btnPayment.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnPayment.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPaymentActionPerformed(evt);
+            }
+        });
 
         jPanel2.setBackground(new java.awt.Color(204, 164, 133));
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
@@ -1152,6 +1157,10 @@ public class BillUI extends javax.swing.JFrame implements BillController {
 
         }
     }//GEN-LAST:event_btnExitActionPerformed
+
+    private void btnPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPaymentActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnPaymentActionPerformed
 
     /**
      * @param args the command line arguments

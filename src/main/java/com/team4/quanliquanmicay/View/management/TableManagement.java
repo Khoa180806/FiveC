@@ -603,7 +603,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         btnTable.setOpaque(true);             // Cho phép vẽ nền custom
         btnTable.setContentAreaFilled(true);  // Bật nền để hiển thị màu
         // THAY ĐỔI: Chỉ hiển thị số bàn với dấu #
-        btnTable.setText("Bàn #" + tableNumber);
+        btnTable.setText("#" + tableNumber);
         btnTable.setPreferredSize(new Dimension(90, 90)); // Kích thước 90x90
         btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 

@@ -13,6 +13,7 @@ import com.team4.quanliquanmicay.Impl.TableForCustomerDAOImpl;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.List;
 import javax.swing.JButton;
@@ -355,14 +356,28 @@ public class ChooseTableUI extends javax.swing.JFrame {
             // Cập nhật giao diện bàn
             loadTable();
             
-            // Hiển thị lại ChooseTableUI
-            this.setVisible(true);
+            // Hiển thị lại ChooseTableUI chỉ khi KHÔNG có PayUI nào đang mở
+            if (!isAnyPayUIVisible()) {
+                this.setVisible(true);
+            }
             
         } catch (Exception e) {
             System.err.println("Lỗi khi xử lý BillUI đóng: " + e.getMessage());
-            // Hiển thị lại ChooseTableUI ngay cả khi có lỗi
-            this.setVisible(true);
+            // Chỉ hiển thị lại khi không có PayUI
+            if (!isAnyPayUIVisible()) {
+                this.setVisible(true);
+            }
         }
+    }
+
+    // Kiểm tra có PayUI nào đang hiển thị không
+    private boolean isAnyPayUIVisible() {
+        for (Window w : Window.getWindows()) {
+            if (w instanceof com.team4.quanliquanmicay.View.PayUI && w.isShowing()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // Sửa lại hàm checkIfTableHasActiveBillWithItems để xử lý lỗi ORA-01722
@@ -498,7 +513,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
         JButton btnTable = new JButton();
         btnTable.setContentAreaFilled(false);
         btnTable.setOpaque(true);
-        btnTable.setText(String.format("Bàn #%d", tableNumber));
+        btnTable.setText(String.format("#%d", tableNumber));
         btnTable.setPreferredSize(new Dimension(120, 100)); // <-- Thêm dòng này để set height 100px
         btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
         btnTable.setOpaque(true);
