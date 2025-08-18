@@ -943,6 +943,15 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         return entity;
     }
 
+    /**
+     * ✅ OPTIMIZED: Get form data for CREATE operation (with created_date)
+     */
+    private UserAccount getFormForCreate() {
+        UserAccount entity = getForm();
+        entity.setCreated_date(new java.util.Date());
+        return entity;
+    }
+
     @Override
     public void edit() {
         editWithCache(); // Thay vì code cũ
@@ -1310,7 +1319,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 
 
     /**
-     * ✅ OPTIMIZED: Fast edit with direct table data
+     * ✅ OPTIMIZED: Fast edit using UserDAOImpl
      */
     private void editWithCache() {
         int selectedRow = tableInfo.getSelectedRow();
@@ -1319,44 +1328,43 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             return;
         }
 
-        // Lấy dữ liệu trực tiếp từ table thay vì query database
+        // Lấy userId từ table và query database để có đầy đủ thông tin
         String userId = (String) tableInfo.getValueAt(selectedRow, 0);
-        String username = (String) tableInfo.getValueAt(selectedRow, 1);
-        String password = (String) tableInfo.getValueAt(selectedRow, 2);
-        String fullName = (String) tableInfo.getValueAt(selectedRow, 3);
-        String gender = (String) tableInfo.getValueAt(selectedRow, 4);
-        String phone = (String) tableInfo.getValueAt(selectedRow, 5);
-        String email = (String) tableInfo.getValueAt(selectedRow, 6);
-        String status = (String) tableInfo.getValueAt(selectedRow, 7);
-        String role = (String) tableInfo.getValueAt(selectedRow, 8);
+        UserAccount entity = userDAO.findById(userId);
 
-        // Fill form trực tiếp từ table data
-        txtIdEmployee.setText(userId);
-        txtNameAccount.setText(username);
-        txtPassword.setText(password);
-        txtNameEmployee.setText(fullName);
-        txtPhoneNumber.setText(phone);
-        txtEmail.setText(email);
+        if (entity != null) {
+            // Fill form từ entity (bao gồm cả hình ảnh)
+            txtIdEmployee.setText(entity.getUser_id());
+            txtNameAccount.setText(entity.getUsername());
+            txtPassword.setText(entity.getPass());
+            txtNameEmployee.setText(entity.getFullName());
+            txtPhoneNumber.setText(entity.getPhone_number());
+            txtEmail.setText(entity.getEmail());
 
-        // Set gender
-        if ("Nam".equals(gender)) {
-            chkMale.setSelected(true);
-            chkFemale.setSelected(false);
-        } else if ("Nữ".equals(gender)) {
-            chkMale.setSelected(false);
-            chkFemale.setSelected(true);
+            // Set gender
+            if (entity.getGender() != null) {
+                if (entity.getGender() == 1) {
+                    chkMale.setSelected(true);
+                    chkFemale.setSelected(false);
+                } else if (entity.getGender() == 0) {
+                    chkMale.setSelected(false);
+                    chkFemale.setSelected(true);
+                }
+            }
+
+            // Set status và role
+            setStatusComboBox(entity.getIs_enabled());
+            setRoleComboBox(entity.getRole_id());
+
+            // Disable ID field và enable others
+            txtIdEmployee.setEditable(false);
+            setAllFieldsEditable(true);
+
+            // Load hình ảnh từ entity
+            loadEmployeeImage(entity.getImage());
+        } else {
+            XDialog.alert("Không tìm thấy thông tin nhân viên!");
         }
-
-        // Set status và role
-        cboStatus.setSelectedItem(status);
-        cboRole.setSelectedItem(role);
-
-        // Disable ID field và enable others
-        txtIdEmployee.setEditable(false);
-        setAllFieldsEditable(true);
-
-        // Load image nếu cần (sử dụng default image để tăng tốc)
-        setDefaultImageWithClickable();
     }
 
 
@@ -1377,7 +1385,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             }
 
             validateEmployee();
-            UserAccount newEmployee = getForm();
+            UserAccount newEmployee = getFormForCreate();
             validateUniqueEmployeeId(newEmployee.getUser_id());
             validateUniqueUsername(newEmployee.getUsername());
             validateBusinessRules(newEmployee);
