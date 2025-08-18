@@ -47,6 +47,7 @@ import java.awt.BasicStroke;
 import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 
 /**
  * Tab thống kê món ăn: biểu đồ + bảng doanh thu theo món trong khoảng thời gian.
@@ -318,6 +319,42 @@ public class TabProduct extends JPanel {
 		BarRenderer renderer = (BarRenderer) plot.getRenderer();
 		renderer.setSeriesPaint(0, new Color(134,39,43));
 		renderer.setItemMargin(0.1);
+		
+		// THÊM: Hiển thị số liệu trên cột
+		renderer.setDefaultItemLabelGenerator(
+			new StandardCategoryItemLabelGenerator(
+				"{2}", // Pattern để hiển thị giá trị
+				new java.text.DecimalFormat("#,##0") // Format làm tròn về số nguyên, dấu phẩy ngăn cách hàng nghìn
+			)
+		);
+		renderer.setDefaultItemLabelsVisible(true);
+		
+		// Tùy chỉnh font và vị trí label để số hiển thị rõ ràng
+		renderer.setDefaultItemLabelFont(new Font("Tahoma", Font.BOLD, 11));
+		renderer.setDefaultItemLabelPaint(Color.BLACK);
+		
+		// Tùy chỉnh vị trí label - đặt phía trên cột
+		renderer.setDefaultPositiveItemLabelPosition(
+			new org.jfree.chart.labels.ItemLabelPosition(
+				org.jfree.chart.labels.ItemLabelAnchor.OUTSIDE12,
+				org.jfree.chart.ui.TextAnchor.BOTTOM_CENTER,
+				org.jfree.chart.ui.TextAnchor.BOTTOM_CENTER,
+				0.0
+			)
+		);
+		
+		// Tự động scale trục Y để số không bị cắt
+		double maxValue = sortedRevenueByProductId.stream()
+			.mapToDouble(e -> e.getValue() != null ? e.getValue() : 0.0)
+			.max()
+			.orElse(0.0);
+		
+		if (maxValue > 0) {
+			double upperBound = maxValue * 1.2; // Tăng 20% so với giá trị cao nhất
+			plot.getRangeAxis().setUpperBound(upperBound);
+			plot.getRangeAxis().setLowerBound(0.0);
+		}
+		
 		// Legend bên ngoài biểu đồ
 		if (chart.getLegend() != null) {
 			chart.getLegend().setPosition(RectangleEdge.BOTTOM);

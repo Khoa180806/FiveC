@@ -1797,8 +1797,53 @@ private javax.swing.Timer searchTimer;
             
             // Create dataset
             DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-            for (Map.Entry<String, Double> e : dataByPeriod.entrySet()) {
-                dataset.addValue(e.getValue(), "Doanh thu", e.getKey());
+
+            // Sắp xếp trục thời gian theo thứ tự tăng dần trước khi add vào dataset
+            java.util.List<String> keys = new java.util.ArrayList<>(dataByPeriod.keySet());
+            String viewTypeSafe = viewType != null ? viewType : "Theo ngày";
+
+            if ("Theo tuần".equals(viewTypeSafe)) {
+                // Nhãn dạng: "Tuần 25", "Tuần 26"...
+                keys.sort(java.util.Comparator.comparingInt(k -> {
+                    try {
+                        String digits = k.replaceAll("\\D+", "");
+                        return Integer.parseInt(digits);
+                    } catch (Exception ex) {
+                        return Integer.MAX_VALUE;
+                    }
+                }));
+            } else if ("Theo tháng".equals(viewTypeSafe)) {
+                // Nhãn dạng: MM/yyyy
+                java.text.SimpleDateFormat monthFmt = new java.text.SimpleDateFormat("MM/yyyy");
+                keys.sort((a, b) -> {
+                    try {
+                        return monthFmt.parse(a).compareTo(monthFmt.parse(b));
+                    } catch (Exception ex) {
+                        return a.compareTo(b);
+                    }
+                });
+            } else if ("Theo giờ".equals(viewTypeSafe)) {
+                // Nhãn dạng: HH:00
+                keys.sort(java.util.Comparator.comparingInt(k -> {
+                    try {
+                        return Integer.parseInt(k.substring(0, 2));
+                    } catch (Exception ex) {
+                        return 0;
+                    }
+                }));
+            } else { // Theo ngày - nhãn dạng: dd/MM
+                java.text.SimpleDateFormat dayFmt = new java.text.SimpleDateFormat("dd/MM");
+                keys.sort((a, b) -> {
+                    try {
+                        return dayFmt.parse(a).compareTo(dayFmt.parse(b));
+                    } catch (Exception ex) {
+                        return a.compareTo(b);
+                    }
+                });
+            }
+
+            for (String k : keys) {
+                dataset.addValue(dataByPeriod.getOrDefault(k, 0.0), "Doanh thu", k);
             }
             
             // Add forecast if enabled
@@ -3017,7 +3062,7 @@ private javax.swing.Timer searchTimer;
             
             // Combo box khoảng thời gian chính
             cboEmpRange = new JComboBox<>(new String[] { 
-                "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm nay", "Khoảng tùy ý" 
+                "Hôm nay", "Tuần này", "Tháng này", "Quý này", "Năm này", "Khoảng tùy ý" 
             });
             cboEmpRange.setSelectedItem("Tháng này");
             
@@ -3212,7 +3257,7 @@ private javax.swing.Timer searchTimer;
                 return TimeRange.today();
             case "Tuần này":
                 return TimeRange.thisWeek();
-            case "Năm nay":
+            case "Năm này":
                 return TimeRange.thisYear();
             case "Khoảng tùy ý":
                 if (dcEmpFrom != null && dcEmpTo != null && dcEmpFrom.getDate() != null && dcEmpTo.getDate() != null) {
@@ -4323,6 +4368,29 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
     renderer.setSeriesPaint(0, new Color(134, 39, 43));
     renderer.setItemMargin(0.1);
     
+    // THÊM: Hiển thị số liệu trên cột
+    renderer.setDefaultItemLabelGenerator(
+        new StandardCategoryItemLabelGenerator(
+            "{2}", // Pattern để hiển thị giá trị
+            new java.text.DecimalFormat("#,##0") // Format làm tròn về số nguyên, dấu phẩy ngăn cách hàng nghìn
+        )
+    );
+    renderer.setDefaultItemLabelsVisible(true);
+    
+    // Tùy chỉnh font và vị trí label để số hiển thị rõ ràng
+    renderer.setDefaultItemLabelFont(new Font("Tahoma", Font.BOLD, 11));
+    renderer.setDefaultItemLabelPaint(Color.BLACK);
+    
+    // Tùy chỉnh vị trí label - đặt phía trên cột
+    renderer.setDefaultPositiveItemLabelPosition(
+        new org.jfree.chart.labels.ItemLabelPosition(
+            org.jfree.chart.labels.ItemLabelAnchor.OUTSIDE12,
+            org.jfree.chart.ui.TextAnchor.BOTTOM_CENTER,
+            org.jfree.chart.ui.TextAnchor.BOTTOM_CENTER,
+            0.0
+        )
+    );
+    
     // SỬA: Để nhãn nằm ngang cho cả tháng và quý
     if (useMonthly) {
         org.jfree.chart.axis.CategoryAxis domainAxis = plot.getDomainAxis();
@@ -4331,387 +4399,388 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
         domainAxis.setCategoryLabelPositions(org.jfree.chart.axis.CategoryLabelPositions.STANDARD);
     }
     
-    // SỬA: Tự động điều chỉnh chiều cao biểu đồ = max value + 10%
+    // SỬA: Tự động điều chỉnh chiều cao biểu đồ = max value + 20% để số không bị cắt
     double maxValue = revenueByPeriod.values().stream()
         .mapToDouble(Double::doubleValue)
         .max()
         .orElse(0.0);
     
     if (maxValue > 0) {
-        double upperBound = maxValue * 1.1; // Tăng 10% so với giá trị cao nhất
+        double upperBound = maxValue * 1.2; // Tăng từ 1.1 lên 1.2 (20% thay vì 10%)
         plot.getRangeAxis().setUpperBound(upperBound);
-        plot.getRangeAxis().setLowerBound(0.0);}
-    return chart;
+        plot.getRangeAxis().setLowerBound(0.0);
     }
+    
+    return chart;
+}
 
-    private JFreeChart createGeneralPieChart(List<Bill> bills, TimeRange range) {
-        DefaultPieDataset dataset = new DefaultPieDataset();
-        Map<String, Integer> statusCount = new HashMap<>();
-        
+private JFreeChart createGeneralPieChart(List<Bill> bills, TimeRange range) {
+    DefaultPieDataset dataset = new DefaultPieDataset();
+    Map<String, Integer> statusCount = new HashMap<>();
+    
     for (Bill b : bills) {
-            String status = getStatusText(b.getStatus());
-            statusCount.merge(status, 1, Integer::sum);
-        }
-        
-        if (statusCount.isEmpty()) return null;
-        
-        for (Map.Entry<String, Integer> entry : statusCount.entrySet()) {
-            dataset.setValue(entry.getKey(), entry.getValue());
-        }
-        
-        String title = "🥧 Phân bố trạng thái hóa đơn (" + getRangeLabel(range) + ")";
-        JFreeChart chart = XChart.createPieChart(title, dataset);
+        String status = getStatusText(b.getStatus());
+        statusCount.merge(status, 1, Integer::sum);
+    }
+    
+    if (statusCount.isEmpty()) return null;
+    
+    for (Map.Entry<String, Integer> entry : statusCount.entrySet()) {
+        dataset.setValue(entry.getKey(), entry.getValue());
+    }
+    
+    String title = "🥧 Phân bố trạng thái hóa đơn (" + getRangeLabel(range) + ")";
+    JFreeChart chart = XChart.createPieChart(title, dataset);
     
     return chart;
 }
     
-    private JFreeChart createGeneralAreaChart(List<Bill> bills, TimeRange range) {
-        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-        Map<String, Double> cumulativeRevenue = new TreeMap<>();
-        
-        // Xác định format dựa trên khoảng thời gian
-        boolean useMonthly = shouldUseMonthlyFormat(range);
-        SimpleDateFormat sdf = useMonthly ? new SimpleDateFormat("MM/yyyy") : new SimpleDateFormat("dd/MM");
-        
-        // Nếu hiển thị theo tháng và là năm này, khởi tạo 12 tháng
-        if (useMonthly && isThisYearRange(range)) {
-            Calendar cal = Calendar.getInstance();
-            int currentYear = cal.get(Calendar.YEAR);
-            for (int month = 1; month <= 12; month++) {
-                String monthKey = String.format("%02d/%d", month, currentYear);
-                cumulativeRevenue.put(monthKey, 0.0);
+private JFreeChart createGeneralAreaChart(List<Bill> bills, TimeRange range) {
+    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+    Map<String, Double> cumulativeRevenue = new TreeMap<>();
+    
+    // Xác định format dựa trên khoảng thời gian
+    boolean useMonthly = shouldUseMonthlyFormat(range);
+    SimpleDateFormat sdf = useMonthly ? new SimpleDateFormat("MM/yyyy") : new SimpleDateFormat("dd/MM");
+    
+    // Nếu hiển thị theo tháng và là năm này, khởi tạo 12 tháng
+    if (useMonthly && isThisYearRange(range)) {
+        Calendar cal = Calendar.getInstance();
+        int currentYear = cal.get(Calendar.YEAR);
+        for (int month = 1; month <= 12; month++) {
+            String monthKey = String.format("%02d/%d", month, currentYear);
+            cumulativeRevenue.put(monthKey, 0.0);
+        }
+    }
+    
+    // Tính doanh thu cộng dồn
+    double runningTotal = 0;
+    for (Bill b : bills) {
+        if (b.getStatus() != null && b.getStatus() == 1) {
+            java.util.Date dateToUse = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
+            if (dateToUse != null) {
+                String periodKey = sdf.format(dateToUse);
+                runningTotal += b.getTotal_amount();
+                cumulativeRevenue.put(periodKey, runningTotal);
             }
         }
+    }
+    
+    if (cumulativeRevenue.isEmpty()) return null;
+    
+    for (Map.Entry<String, Double> entry : cumulativeRevenue.entrySet()) {
+        dataset.addValue(entry.getValue(), "Doanh thu cộng dồn", entry.getKey());
+    }
+    
+    String periodLabel = useMonthly ? "tháng" : "ngày";
+    String axisLabel = useMonthly ? "Tháng" : "Ngày";
+    String title = "Doanh thu cộng dồn theo " + periodLabel + " (" + getRangeLabel(range) + ")";
+    JFreeChart chart = XChart.createAreaChart(title, axisLabel, "VNĐ", dataset);
+    
+    // Điều chỉnh hiển thị nhãn trục X khi có nhiều tháng
+    if (useMonthly) {
+        CategoryPlot plot = chart.getCategoryPlot();
+        org.jfree.chart.axis.CategoryAxis domainAxis = plot.getDomainAxis();
+        domainAxis.setCategoryLabelPositions(org.jfree.chart.axis.CategoryLabelPositions.UP_45);
+        domainAxis.setMaximumCategoryLabelWidthRatio(0.8f);
+    }
+    
+    return chart;
+}
+private JPanel createGeneralTableSection() {
+    JPanel tableSection = new JPanel(new BorderLayout());
+    tableSection.setBackground(Color.WHITE);
+    tableSection.setBorder(BorderFactory.createTitledBorder(
+        BorderFactory.createLineBorder(new Color(40, 167, 69), 2),
+        " CHI TIẾT HÓA ĐƠN",
+        javax.swing.border.TitledBorder.LEFT,
+        javax.swing.border.TitledBorder.TOP,
+        new Font("Segoe UI", Font.BOLD, 14),
+        new Color(40, 167, 69)
+    ));
+    tableSection.setPreferredSize(new Dimension(0, 350));
+    tableSection.setMinimumSize(new Dimension(0, 300));
+    
+    // Controls cho bảng
+    JPanel tableControls = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+    tableControls.setBackground(Color.WHITE);
+    
+    JComboBox<String> cboTableFilter = new JComboBox<>(new String[]{
+        "Tất cả hóa đơn", "Chỉ hoàn thành", "Đã hủy", "Đang phục vụ"
+    });
+    
+    JTextField txtSearch = new JTextField(15);
+    txtSearch.setToolTipText("Tìm kiếm theo mã hóa đơn, bàn, hoặc nhân viên...");
+    
+    JButton btnClearSearch = new JButton("Clear");
+    btnClearSearch.setToolTipText("Xóa tìm kiếm");
+    btnClearSearch.addActionListener(e -> {
+        txtSearch.setText("");
+        refreshGeneralTableWithFilters("", "Tất cả hóa đơn");
+    });
+    
+    tableControls.add(new JLabel(" Lọc:"));
+    tableControls.add(cboTableFilter);
+    tableControls.add(Box.createHorizontalStrut(15));
+    tableControls.add(new JLabel("Tìm kiếm:"));
+    tableControls.add(txtSearch);
+    tableControls.add(btnClearSearch);
+    
+    tableSection.add(tableControls, BorderLayout.NORTH);
+    
+    tableContainer = new JPanel(new BorderLayout());
+    tableContainer.setBackground(Color.WHITE);
+    initGeneralTable(); 
+    tableSection.add(tableContainer, BorderLayout.CENTER);
+    
+    // SỬA: Thêm listeners với timer để tránh spam
+    cboTableFilter.addActionListener(e -> {
+        String selectedFilter = (String) cboTableFilter.getSelectedItem();
+        String searchText = txtSearch.getText().trim();
+        refreshGeneralTableWithFilters(searchText, selectedFilter);
+    });
+    
+    txtSearch.addActionListener(e -> {
+        String searchText = txtSearch.getText().trim();
+        String selectedFilter = (String) cboTableFilter.getSelectedItem();
+        refreshGeneralTableWithFilters(searchText, selectedFilter);
+    });
+    
+    // SỬA: Thêm KeyListener với timer để tránh spam thông báo
+    txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
+        @Override
+        public void keyReleased(java.awt.event.KeyEvent evt) {
+            // Hủy timer cũ nếu có
+            if (searchTimer != null && searchTimer.isRunning()) {
+                searchTimer.stop();
+            }
+            
+            // Tạo timer mới với delay 800ms để tránh spam
+            searchTimer = new javax.swing.Timer(800, e -> {
+                String searchText = txtSearch.getText().trim();
+                String selectedFilter = (String) cboTableFilter.getSelectedItem();
+                refreshGeneralTableWithFiltersSilent(searchText, selectedFilter); // Dùng phiên bản silent
+            });
+            searchTimer.setRepeats(false);
+            searchTimer.start();
+        }
+    });
+    
+    return tableSection;
+}
+
+private void refreshGeneralTableWithFiltersSilent(String searchText, String filterType) {
+    try {
+        String selectedRange = cboFilterType != null ? (String) cboFilterType.getSelectedItem() : "Tháng này";
+        TimeRange range = getSelectedGeneralRange(selectedRange);
+
+        List<Bill> bills = billDAO.findAll();
+        List<UserAccount> users = userDAO.findAll();
+
+        if (bills == null) bills = new ArrayList<>();
+        if (users == null) users = new ArrayList<>();
+
+        Map<String, String> userIdToName = new HashMap<>();
+        for (UserAccount u : users) {
+            if (u != null && u.getUser_id() != null) {
+                String name = (u.getFullName() != null && !u.getFullName().trim().isEmpty()) ? 
+                    u.getFullName() : u.getUsername();
+                userIdToName.put(u.getUser_id(), name);
+            }
+        }
+
+        List<Bill> filteredBills = new ArrayList<>();
         
-        // Tính doanh thu cộng dồn
-        double runningTotal = 0;
         for (Bill b : bills) {
-            if (b.getStatus() != null && b.getStatus() == 1) {
-                java.util.Date dateToUse = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
-                if (dateToUse != null) {
-                    String periodKey = sdf.format(dateToUse);
-                    runningTotal += b.getTotal_amount();
-                    cumulativeRevenue.put(periodKey, runningTotal);
-                }
+            if (b == null) continue;
+            
+            java.util.Date when = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
+            if (when == null) continue;
+            if (!withinRange(when, range)) continue;
+
+            // Áp dụng filter theo trạng thái
+            boolean passFilter = true;
+            if ("Chỉ hoàn thành".equals(filterType) && (b.getStatus() == null || b.getStatus() != 1)) {
+                passFilter = false;
+            } else if ("Chỉ đã hủy".equals(filterType) && (b.getStatus() == null || b.getStatus() != 2)) {
+                passFilter = false;
+            } else if ("Chỉ đang xử lý".equals(filterType) && (b.getStatus() == null || b.getStatus() != 0)) {
+                passFilter = false;
             }
+            
+            if (!passFilter) continue;
+
+            // Áp dụng search
+            if (!searchText.isEmpty()) {
+                String billId = String.valueOf(b.getBill_id());
+                String tableNumber = String.valueOf(b.getTable_number());
+                String employeeName = userIdToName.getOrDefault(b.getUser_id(), b.getUser_id() != null ? b.getUser_id() : "");
+                
+                boolean matchSearch = billId.toLowerCase().contains(searchText.toLowerCase()) ||
+                                    tableNumber.toLowerCase().contains(searchText.toLowerCase()) ||
+                                    employeeName.toLowerCase().contains(searchText.toLowerCase());
+                
+                if (!matchSearch) continue;
+            }
+
+            filteredBills.add(b);
         }
         
-        if (cumulativeRevenue.isEmpty()) return null;
+        // SỬA: CHỈ HIỂN THỊ THÔNG BÁO KHI SEARCH TEXT DÀI HƠN 2 KÝ TỰ VÀ KHÔNG CÓ KẾT QUẢ
+        if (filteredBills.isEmpty() && searchText.length() > 2 && !searchText.isEmpty()) {
+            // Chỉ hiển thị thông báo khi gõ đủ ít nhất 3 ký tự
+            XDialog.warning("Không tìm thấy dữ liệu phù hợp với từ khóa: \"" + searchText + "\"", "Không có dữ liệu");
+        }
+
+        updateGeneralTable(filteredBills, userIdToName);
         
-        for (Map.Entry<String, Double> entry : cumulativeRevenue.entrySet()) {
-            dataset.addValue(entry.getValue(), "Doanh thu cộng dồn", entry.getKey());
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        XDialog.error("Lỗi khi lọc/tìm kiếm dữ liệu: " + ex.getMessage(), "Lỗi");
+    }
+}
+
+
+
+/**
+ * Khởi tạo bảng tổng quan
+ */
+private void initGeneralTable() {
+    billTableModel = new DefaultTableModel(new Object[] { 
+        "Mã HĐ", "Bàn", "Nhân viên", "Check-in", "Check-out", "Tổng tiền", "Trạng thái" 
+    }, 0) {
+        @Override
+        public boolean isCellEditable(int row, int column) { return false; }
+    };
+    
+    tblBills = new JTable(billTableModel);
+    tblBills.setRowHeight(25);
+    tblBills.setFont(new Font("Tahoma", Font.PLAIN, 11));
+    tblBills.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 11));
+
+    // Căn giữa các cột
+    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+    centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+    tblBills.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+    tblBills.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+    tblBills.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+    tblBills.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
+    tblBills.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
+    
+    // Căn phải cột tiền
+    DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+    rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
+    tblBills.getColumnModel().getColumn(5).setCellRenderer(rightRenderer);
+
+    // Set độ rộng cột
+    tblBills.getColumnModel().getColumn(0).setPreferredWidth(80);
+    tblBills.getColumnModel().getColumn(1).setPreferredWidth(50);
+    tblBills.getColumnModel().getColumn(2).setPreferredWidth(120);
+    tblBills.getColumnModel().getColumn(3).setPreferredWidth(100);
+    tblBills.getColumnModel().getColumn(4).setPreferredWidth(100);
+    tblBills.getColumnModel().getColumn(5).setPreferredWidth(120);
+    tblBills.getColumnModel().getColumn(6).setPreferredWidth(100);
+
+    JScrollPane sp = new JScrollPane(tblBills);
+    tableContainer.add(sp, BorderLayout.CENTER);
+}
+
+/**
+ * Làm mới dashboard tổng quan
+ */
+   private void refreshGeneralTableWithFilters(String searchText, String filterType) {
+    try {
+        String selectedRange = cboFilterType != null ? (String) cboFilterType.getSelectedItem() : "Tháng này";
+        TimeRange range = getSelectedGeneralRange(selectedRange);
+
+        List<Bill> bills = billDAO.findAll();
+        List<UserAccount> users = userDAO.findAll();
+
+        if (bills == null) bills = new ArrayList<>();
+        if (users == null) users = new ArrayList<>();
+
+        Map<String, String> userIdToName = new HashMap<>();
+        for (UserAccount u : users) {
+            if (u != null && u.getUser_id() != null) {
+                String name = (u.getFullName() != null && !u.getFullName().trim().isEmpty()) ? 
+                    u.getFullName() : u.getUsername();
+                userIdToName.put(u.getUser_id(), name);
+            }
+        }
+
+        List<Bill> filteredBills = new ArrayList<>();
+        
+        for (Bill b : bills) {
+            if (b == null) continue;
+            
+            java.util.Date when = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
+            if (when == null) continue;
+            if (!withinRange(when, range)) continue;
+
+            // Áp dụng filter theo trạng thái
+            boolean passFilter = true;
+            if ("Chỉ hoàn thành".equals(filterType) && (b.getStatus() == null || b.getStatus() != 1)) {
+                passFilter = false;
+            } else if ("Chỉ đã hủy".equals(filterType) && (b.getStatus() == null || b.getStatus() != 2)) {
+                passFilter = false;
+            } else if ("Chỉ đang xử lý".equals(filterType) && (b.getStatus() == null || b.getStatus() != 0)) {
+                passFilter = false;
+            }
+            
+            if (!passFilter) continue;
+
+            // Áp dụng search
+            if (!searchText.isEmpty()) {
+                String billId = String.valueOf(b.getBill_id());
+                String tableNumber = String.valueOf(b.getTable_number());
+                String employeeName = userIdToName.getOrDefault(b.getUser_id(), b.getUser_id() != null ? b.getUser_id() : "");
+                
+                boolean matchSearch = billId.toLowerCase().contains(searchText.toLowerCase()) ||
+                                    tableNumber.toLowerCase().contains(searchText.toLowerCase()) ||
+                                    employeeName.toLowerCase().contains(searchText.toLowerCase());
+                
+                if (!matchSearch) continue;
+            }
+
+            filteredBills.add(b);
         }
         
-        String periodLabel = useMonthly ? "tháng" : "ngày";
-        String axisLabel = useMonthly ? "Tháng" : "Ngày";
-        String title = "Doanh thu cộng dồn theo " + periodLabel + " (" + getRangeLabel(range) + ")";
-        JFreeChart chart = XChart.createAreaChart(title, axisLabel, "VNĐ", dataset);
+        // SỬA: CHỈ HIỂN THỊ THÔNG BÁO KHI THỰC SỰ CẦN THIẾT
+        // Không hiển thị thông báo khi chỉ mới bắt đầu gõ
         
-        // Điều chỉnh hiển thị nhãn trục X khi có nhiều tháng
-        if (useMonthly) {
-            CategoryPlot plot = chart.getCategoryPlot();
-            org.jfree.chart.axis.CategoryAxis domainAxis = plot.getDomainAxis();
-            domainAxis.setCategoryLabelPositions(org.jfree.chart.axis.CategoryLabelPositions.UP_45);
-            domainAxis.setMaximumCategoryLabelWidthRatio(0.8f);
+        updateGeneralTable(filteredBills, userIdToName);
+        
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        XDialog.error("Lỗi khi lọc/tìm kiếm dữ liệu: " + ex.getMessage(), "Lỗi");
+    }
+}
+
+private void resetTableFiltersAndSearch() {
+    try {
+        // Kiểm tra null trước khi sử dụng
+        if (tableContainer == null || tableContainer.getParent() == null) {
+            return;
         }
         
-        return chart;
-    }
-    private JPanel createGeneralTableSection() {
-        JPanel tableSection = new JPanel(new BorderLayout());
-        tableSection.setBackground(Color.WHITE);
-        tableSection.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(40, 167, 69), 2),
-            " CHI TIẾT HÓA ĐƠN",
-            javax.swing.border.TitledBorder.LEFT,
-            javax.swing.border.TitledBorder.TOP,
-            new Font("Segoe UI", Font.BOLD, 14),
-            new Color(40, 167, 69)
-        ));
-        tableSection.setPreferredSize(new Dimension(0, 350));
-        tableSection.setMinimumSize(new Dimension(0, 300));
-        
-        // Controls cho bảng
-        JPanel tableControls = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        tableControls.setBackground(Color.WHITE);
-        
-        JComboBox<String> cboTableFilter = new JComboBox<>(new String[]{
-            "Tất cả hóa đơn", "Chỉ hoàn thành", "Chỉ đã hủy", "Chỉ đang xử lý"
-        });
-        
-        JTextField txtSearch = new JTextField(15);
-        txtSearch.setToolTipText("Tìm kiếm theo mã hóa đơn, bàn, hoặc nhân viên...");
-        
-        JButton btnClearSearch = new JButton("");
-        btnClearSearch.setToolTipText("Xóa tìm kiếm");
-        btnClearSearch.addActionListener(e -> {
-            txtSearch.setText("");
-            refreshGeneralTableWithFilters("", "Tất cả hóa đơn");
-        });
-        
-        tableControls.add(new JLabel(" Lọc:"));
-        tableControls.add(cboTableFilter);
-        tableControls.add(Box.createHorizontalStrut(15));
-        tableControls.add(new JLabel("Tìm kiếm:"));
-        tableControls.add(txtSearch);
-        tableControls.add(btnClearSearch);
-        
-        tableSection.add(tableControls, BorderLayout.NORTH);
-        
-        tableContainer = new JPanel(new BorderLayout());
-        tableContainer.setBackground(Color.WHITE);
-        initGeneralTable(); 
-        tableSection.add(tableContainer, BorderLayout.CENTER);
-        
-        // SỬA: Thêm listeners với timer để tránh spam
-        cboTableFilter.addActionListener(e -> {
-            String selectedFilter = (String) cboTableFilter.getSelectedItem();
-            String searchText = txtSearch.getText().trim();
-            refreshGeneralTableWithFilters(searchText, selectedFilter);
-        });
-        
-        txtSearch.addActionListener(e -> {
-            String searchText = txtSearch.getText().trim();
-            String selectedFilter = (String) cboTableFilter.getSelectedItem();
-            refreshGeneralTableWithFilters(searchText, selectedFilter);
-        });
-        
-        // SỬA: Thêm KeyListener với timer để tránh spam thông báo
-        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                // Hủy timer cũ nếu có
-                if (searchTimer != null && searchTimer.isRunning()) {
-                    searchTimer.stop();
-                }
-                
-                // Tạo timer mới với delay 800ms để tránh spam
-                searchTimer = new javax.swing.Timer(800, e -> {
-                    String searchText = txtSearch.getText().trim();
-                    String selectedFilter = (String) cboTableFilter.getSelectedItem();
-                    refreshGeneralTableWithFiltersSilent(searchText, selectedFilter); // Dùng phiên bản silent
-                });
-                searchTimer.setRepeats(false);
-                searchTimer.start();
-            }
-        });
-        
-        return tableSection;
-    }
-
-    private void refreshGeneralTableWithFiltersSilent(String searchText, String filterType) {
-        try {
-            String selectedRange = cboFilterType != null ? (String) cboFilterType.getSelectedItem() : "Tháng này";
-            TimeRange range = getSelectedGeneralRange(selectedRange);
-
-            List<Bill> bills = billDAO.findAll();
-            List<UserAccount> users = userDAO.findAll();
-
-            if (bills == null) bills = new ArrayList<>();
-            if (users == null) users = new ArrayList<>();
-
-            Map<String, String> userIdToName = new HashMap<>();
-            for (UserAccount u : users) {
-                if (u != null && u.getUser_id() != null) {
-                    String name = (u.getFullName() != null && !u.getFullName().trim().isEmpty()) ? 
-                        u.getFullName() : u.getUsername();
-                    userIdToName.put(u.getUser_id(), name);
-                }
-            }
-
-            List<Bill> filteredBills = new ArrayList<>();
-            
-            for (Bill b : bills) {
-                if (b == null) continue;
-                
-                java.util.Date when = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
-                if (when == null) continue;
-                if (!withinRange(when, range)) continue;
-
-                // Áp dụng filter theo trạng thái
-                boolean passFilter = true;
-                if ("Chỉ hoàn thành".equals(filterType) && (b.getStatus() == null || b.getStatus() != 1)) {
-                    passFilter = false;
-                } else if ("Chỉ đã hủy".equals(filterType) && (b.getStatus() == null || b.getStatus() != 2)) {
-                    passFilter = false;
-                } else if ("Chỉ đang xử lý".equals(filterType) && (b.getStatus() == null || b.getStatus() != 0)) {
-                    passFilter = false;
-                }
-                
-                if (!passFilter) continue;
-
-                // Áp dụng search
-                if (!searchText.isEmpty()) {
-                    String billId = String.valueOf(b.getBill_id());
-                    String tableNumber = String.valueOf(b.getTable_number());
-                    String employeeName = userIdToName.getOrDefault(b.getUser_id(), b.getUser_id() != null ? b.getUser_id() : "");
-                    
-                    boolean matchSearch = billId.toLowerCase().contains(searchText.toLowerCase()) ||
-                                        tableNumber.toLowerCase().contains(searchText.toLowerCase()) ||
-                                        employeeName.toLowerCase().contains(searchText.toLowerCase());
-                    
-                    if (!matchSearch) continue;
-                }
-
-                filteredBills.add(b);
-            }
-            
-            // SỬA: CHỈ HIỂN THỊ THÔNG BÁO KHI SEARCH TEXT DÀI HƠN 2 KÝ TỰ VÀ KHÔNG CÓ KẾT QUẢ
-            if (filteredBills.isEmpty() && searchText.length() > 2 && !searchText.isEmpty()) {
-                // Chỉ hiển thị thông báo khi gõ đủ ít nhất 3 ký tự
-                XDialog.warning("Không tìm thấy dữ liệu phù hợp với từ khóa: \"" + searchText + "\"", "Không có dữ liệu");
-            }
-
-            updateGeneralTable(filteredBills, userIdToName);
-            
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            XDialog.error("Lỗi khi lọc/tìm kiếm dữ liệu: " + ex.getMessage(), "Lỗi");
-        }
-    }
-
-
-
- 
-    /**
-     * Khởi tạo bảng tổng quan
-     */
-    private void initGeneralTable() {
-        billTableModel = new DefaultTableModel(new Object[] { 
-            "Mã HĐ", "Bàn", "Nhân viên", "Check-in", "Check-out", "Tổng tiền", "Trạng thái" 
-        }, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
-        };
-        
-        tblBills = new JTable(billTableModel);
-        tblBills.setRowHeight(25);
-        tblBills.setFont(new Font("Tahoma", Font.PLAIN, 11));
-        tblBills.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 11));
-
-        // Căn giữa các cột
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        tblBills.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
-        tblBills.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
-        tblBills.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
-        tblBills.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
-        tblBills.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
-        
-        // Căn phải cột tiền
-        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-        rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
-        tblBills.getColumnModel().getColumn(5).setCellRenderer(rightRenderer);
-
-        // Set độ rộng cột
-        tblBills.getColumnModel().getColumn(0).setPreferredWidth(80);
-        tblBills.getColumnModel().getColumn(1).setPreferredWidth(50);
-        tblBills.getColumnModel().getColumn(2).setPreferredWidth(120);
-        tblBills.getColumnModel().getColumn(3).setPreferredWidth(100);
-        tblBills.getColumnModel().getColumn(4).setPreferredWidth(100);
-        tblBills.getColumnModel().getColumn(5).setPreferredWidth(120);
-        tblBills.getColumnModel().getColumn(6).setPreferredWidth(100);
-
-        JScrollPane sp = new JScrollPane(tblBills);
-        tableContainer.add(sp, BorderLayout.CENTER);
-    }
-
-    /**
-     * Làm mới dashboard tổng quan
-     */
-       private void refreshGeneralTableWithFilters(String searchText, String filterType) {
-        try {
-            String selectedRange = cboFilterType != null ? (String) cboFilterType.getSelectedItem() : "Tháng này";
-            TimeRange range = getSelectedGeneralRange(selectedRange);
-
-            List<Bill> bills = billDAO.findAll();
-            List<UserAccount> users = userDAO.findAll();
-
-            if (bills == null) bills = new ArrayList<>();
-            if (users == null) users = new ArrayList<>();
-
-            Map<String, String> userIdToName = new HashMap<>();
-            for (UserAccount u : users) {
-                if (u != null && u.getUser_id() != null) {
-                    String name = (u.getFullName() != null && !u.getFullName().trim().isEmpty()) ? 
-                        u.getFullName() : u.getUsername();
-                    userIdToName.put(u.getUser_id(), name);
-                }
-            }
-
-            List<Bill> filteredBills = new ArrayList<>();
-            
-            for (Bill b : bills) {
-                if (b == null) continue;
-                
-                java.util.Date when = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
-                if (when == null) continue;
-                if (!withinRange(when, range)) continue;
-
-                // Áp dụng filter theo trạng thái
-                boolean passFilter = true;
-                if ("Chỉ hoàn thành".equals(filterType) && (b.getStatus() == null || b.getStatus() != 1)) {
-                    passFilter = false;
-                } else if ("Chỉ đã hủy".equals(filterType) && (b.getStatus() == null || b.getStatus() != 2)) {
-                    passFilter = false;
-                } else if ("Chỉ đang xử lý".equals(filterType) && (b.getStatus() == null || b.getStatus() != 0)) {
-                    passFilter = false;
-                }
-                
-                if (!passFilter) continue;
-
-                // Áp dụng search
-                if (!searchText.isEmpty()) {
-                    String billId = String.valueOf(b.getBill_id());
-                    String tableNumber = String.valueOf(b.getTable_number());
-                    String employeeName = userIdToName.getOrDefault(b.getUser_id(), b.getUser_id() != null ? b.getUser_id() : "");
-                    
-                    boolean matchSearch = billId.toLowerCase().contains(searchText.toLowerCase()) ||
-                                        tableNumber.toLowerCase().contains(searchText.toLowerCase()) ||
-                                        employeeName.toLowerCase().contains(searchText.toLowerCase());
-                    
-                    if (!matchSearch) continue;
-                }
-
-                filteredBills.add(b);
-            }
-            
-            // SỬA: CHỈ HIỂN THỊ THÔNG BÁO KHI THỰC SỰ CẦN THIẾT
-            // Không hiển thị thông báo khi chỉ mới bắt đầu gõ
-            
-            updateGeneralTable(filteredBills, userIdToName);
-            
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            XDialog.error("Lỗi khi lọc/tìm kiếm dữ liệu: " + ex.getMessage(), "Lỗi");
-        }
-    }
-
-    private void resetTableFiltersAndSearch() {
-        try {
-            // Kiểm tra null trước khi sử dụng
-            if (tableContainer == null || tableContainer.getParent() == null) {
-                return;
-            }
-            
-            // Reset search và filter trong general table section
-            for (Component comp : tableContainer.getParent().getComponents()) {
-                if (comp instanceof JPanel) {
-                    JPanel panel = (JPanel) comp;
-                    for (Component subComp : panel.getComponents()) {
-                        if (subComp instanceof JTextField) {
-                            ((JTextField) subComp).setText("");
-                        } else if (subComp instanceof JComboBox) {
-                            ((JComboBox<?>) subComp).setSelectedItem("Tất cả hóa đơn");
-                        }
+        // Reset search và filter trong general table section
+        for (Component comp : tableContainer.getParent().getComponents()) {
+            if (comp instanceof JPanel) {
+                JPanel panel = (JPanel) comp;
+                for (Component subComp : panel.getComponents()) {
+                    if (subComp instanceof JTextField) {
+                        ((JTextField) subComp).setText("");
+                    } else if (subComp instanceof JComboBox) {
+                        ((JComboBox<?>) subComp).setSelectedItem("Tất cả hóa đơn");
                     }
                 }
             }
-        } catch (Exception ex) {
-            // Bỏ qua lỗi reset - không quan trọng
-            System.err.println("Reset filters warning: " + ex.getMessage());
         }
+    } catch (Exception ex) {
+        // Bỏ qua lỗi reset - không quan trọng
+        System.err.println("Reset filters warning: " + ex.getMessage());
     }
+}
 
 
     private void refreshGeneralDashboard() {
@@ -5003,7 +5072,7 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
         } else if (range.getFrom().equals(monthStart.getTime()) && range.getTo().equals(monthEnd.getTime())) {
             return "Tháng này";
         } else if (range.getFrom().equals(yearStart.getTime()) && range.getTo().equals(yearEnd.getTime())) {
-            return "Năm nay";
+            return "Năm này";
         } else {
             // Nếu không phải khoảng đặc biệt thì trả về ngày tháng
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -5523,6 +5592,24 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
             CategoryPlot ordersPlot = ordersChart.getCategoryPlot();
             BarRenderer ordersRenderer = (BarRenderer) ordersPlot.getRenderer();
             ordersRenderer.setSeriesPaint(0, new Color(52, 144, 220)); // Màu xanh dương
+            // HIỂN THỊ SỐ LIỆU TRÊN CỘT (orders)
+            ordersRenderer.setDefaultItemLabelGenerator(
+                new StandardCategoryItemLabelGenerator(
+                    "{2}",
+                    new java.text.DecimalFormat("#,##0")
+                )
+            );
+            ordersRenderer.setDefaultItemLabelsVisible(true);
+            ordersRenderer.setDefaultItemLabelFont(new Font("Tahoma", Font.BOLD, 11));
+            ordersRenderer.setDefaultItemLabelPaint(Color.BLACK);
+            ordersRenderer.setDefaultPositiveItemLabelPosition(
+                new org.jfree.chart.labels.ItemLabelPosition(
+                    org.jfree.chart.labels.ItemLabelAnchor.OUTSIDE12,
+                    org.jfree.chart.ui.TextAnchor.BOTTOM_CENTER,
+                    org.jfree.chart.ui.TextAnchor.BOTTOM_CENTER,
+                    0.0
+                )
+            );
             
             // Tự động scale trục Y cho biểu đồ số hóa đơn
             double maxOrders = ordersByEmployee.values().stream().mapToDouble(Integer::doubleValue).max().orElse(0.0);
