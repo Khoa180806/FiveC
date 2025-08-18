@@ -1091,33 +1091,33 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         // Tạo sẵn các scrollPane theo tên chuẩn hóa không dấu
         for (Category category : categoryCache) {
             if (category.getIs_available() != 1) continue;
-
-            // Tạo table cho tab này
-            javax.swing.JTable categoryTable = new javax.swing.JTable();
+                
+                // Tạo table cho tab này
+                javax.swing.JTable categoryTable = new javax.swing.JTable();
             categoryTable.setFont(new java.awt.Font("Segoe UI", 0, 13));
-            categoryTable.setModel(new javax.swing.table.DefaultTableModel(
-                new Object [][] {},
-                new String [] {
-                    "Mã món ăn", "Tên món ăn", "Giá", "Giảm giá", "Đơn vị", "Trạng thái"
-                }
-            ) {
+                categoryTable.setModel(new javax.swing.table.DefaultTableModel(
+                    new Object [][] {},
+                    new String [] {
+                        "Mã món ăn", "Tên món ăn", "Giá", "Giảm giá", "Đơn vị", "Trạng thái"
+                    }
+                ) {
                 boolean[] canEdit = new boolean [] { false, false, false, false, false, false };
                 public boolean isCellEditable(int rowIndex, int columnIndex) { return canEdit[columnIndex]; }
             });
 
-            categoryTable.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    int row = categoryTable.getSelectedRow();
-                    if (row >= 0) {
-                        String productId = (String) categoryTable.getValueAt(row, 0);
-                        Product product = getProductFromCache(productId);
+                categoryTable.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseClicked(java.awt.event.MouseEvent evt) {
+                        int row = categoryTable.getSelectedRow();
+                        if (row >= 0) {
+                            String productId = (String) categoryTable.getValueAt(row, 0);
+                            Product product = getProductFromCache(productId);
                         absoluteLockImageSize();
                         java.awt.EventQueue.invokeLater(() -> { absoluteLockImageSize(); setForm(product); });
+                        }
                     }
-                }
-            });
-
-            javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(categoryTable);
+                });
+                
+                javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(categoryTable);
             // Panel nhỏ lại ~ một nửa chiều cao hiện tại để đủ chỗ cho 8 tab theo chiều dọc
             scrollPane.setPreferredSize(new java.awt.Dimension(680, 180));
 
@@ -1757,32 +1757,32 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             java.net.URL imageURL = safeGetResource(imagePath);
             if (imageURL != null) {
                 try {
-                    javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
-                    
-                    // ✅ VALIDATION: Check if image loaded successfully
-                    if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
+                javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
+                
+                // ✅ VALIDATION: Check if image loaded successfully
+                if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
                         // Scale image to EXACT fixed size với giới hạn nghiêm ngặt
-                        java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
+                    java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
                             196, // Slightly smaller than container để tránh overflow
                             196, 
-                            java.awt.Image.SCALE_SMOOTH
-                        );
-                        
-                        javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
+                        java.awt.Image.SCALE_SMOOTH
+                    );
+                    
+                    javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
                         
                         // LOCK SIZE lại trước khi set icon
                         absoluteLockImageSize();
-                        
-                        // Set the scaled icon
-                        lblImage.setIcon(scaledIcon);
-                        lblImage.setText("");
+                    
+                    // Set the scaled icon
+                    lblImage.setIcon(scaledIcon);
+                    lblImage.setText("");
                         lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
                         lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
                         
                         // FINAL ABSOLUTE LOCK sau khi set icon
                         absoluteLockImageSize();
-                    } else {
-                        // Image không load được
+                } else {
+                    // Image không load được
                         setNoImagePlaceholder();
                     }
                 } catch (Exception iconException) {
@@ -1857,9 +1857,9 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                         java.net.URL imageURL = safeGetResource(path);
                         if (imageURL != null) {
                             System.out.println("✅ Found image at: " + path);
-                            setImageWithFixedSize(path);
-                            found = true;
-                            break;
+                        setImageWithFixedSize(path);
+                        found = true;
+                        break;
                         } else {
                             System.out.println("❌ Image URL is null for path: " + path);
                         }
@@ -1996,7 +1996,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         lblImage.revalidate();
         lblImage.repaint();
     }
-    
+
     /**
      * ✅ VALIDATE RESOURCE PATH: Kiểm tra và tạo thư mục resources nếu cần
      */

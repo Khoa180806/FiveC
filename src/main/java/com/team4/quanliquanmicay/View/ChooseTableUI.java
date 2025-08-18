@@ -358,15 +358,15 @@ public class ChooseTableUI extends javax.swing.JFrame {
             
             // Hiển thị lại ChooseTableUI chỉ khi KHÔNG có PayUI nào đang mở
             if (!isAnyPayUIVisible()) {
-                this.setVisible(true);
+            this.setVisible(true);
             }
             
         } catch (Exception e) {
             System.err.println("Lỗi khi xử lý BillUI đóng: " + e.getMessage());
             // Chỉ hiển thị lại khi không có PayUI
             if (!isAnyPayUIVisible()) {
-                this.setVisible(true);
-            }
+            this.setVisible(true);
+        }
         }
     }
 

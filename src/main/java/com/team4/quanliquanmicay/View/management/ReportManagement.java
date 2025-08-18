@@ -1461,7 +1461,7 @@ private javax.swing.Timer searchTimer;
     private void refreshProductRevenueData() {
         try {
             TimeRange range = getSelectedProdRange();
-            
+
             List<Bill> bills = billDAO.findAll();
             List<BillDetails> billDetails = billDetailsDAO.findAll();
             List<Product> products = productDAO.findAll();
@@ -2447,25 +2447,106 @@ private javax.swing.Timer searchTimer;
                 dataset.addValue(entry.getValue(), "Kỳ hiện tại", entry.getKey());
             }
             
-            // Add comparison periods based on selected checkboxes
-            if (chkCompareLastMonth != null && chkCompareLastMonth.isSelected()) {
-                Map<String, Double> lastMonthData = getComparisonData(currentFrom, currentTo, "month");
-                for (Map.Entry<String, Double> entry : lastMonthData.entrySet()) {
-                    dataset.addValue(entry.getValue(), "Tháng trước", entry.getKey());
-                }
-            }
-            
-            if (chkCompareLastQuarter != null && chkCompareLastQuarter.isSelected()) {
-                Map<String, Double> lastQuarterData = getComparisonData(currentFrom, currentTo, "quarter");
-                for (Map.Entry<String, Double> entry : lastQuarterData.entrySet()) {
-                    dataset.addValue(entry.getValue(), "Quý trước", entry.getKey());
-                }
-            }
-            
-            if (chkCompareLastYear != null && chkCompareLastYear.isSelected()) {
-                Map<String, Double> lastYearData = getComparisonData(currentFrom, currentTo, "year");
-                for (Map.Entry<String, Double> entry : lastYearData.entrySet()) {
-                    dataset.addValue(entry.getValue(), "Năm trước", entry.getKey());
+            // Add comparison periods based on selected dropdown (cboEmpCompare)
+            if (cboEmpCompare != null) {
+                String sel = (String) cboEmpCompare.getSelectedItem();
+                if (sel != null && !"Không so sánh".equals(sel)) {
+                    if ("Hôm qua".equals(sel)) {
+                        // Set thời gian hiện tại thành hôm nay
+                        java.util.Calendar cal = java.util.Calendar.getInstance();
+                        dcFromDate.setDate(normalizeStartOfDay(cal.getTime()));
+                        dcToDate.setDate(normalizeEndOfDay(cal.getTime()));
+                        
+                        Map<String, Double> d = getComparisonData(currentFrom, currentTo, "yesterday");
+                        for (Map.Entry<String, Double> e : d.entrySet()) dataset.addValue(e.getValue(), "Hôm qua", e.getKey());
+                    } else if ("Tuần trước".equals(sel)) {
+                        // Set thời gian hiện tại thành tuần này
+                        java.util.Calendar cal = java.util.Calendar.getInstance();
+                        cal.set(java.util.Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+                        dcFromDate.setDate(normalizeStartOfDay(cal.getTime()));
+                        
+                        cal.add(java.util.Calendar.DAY_OF_WEEK, 6);
+                        dcToDate.setDate(normalizeEndOfDay(cal.getTime()));
+                        
+                        Map<String, Double> d = getComparisonData(currentFrom, currentTo, "week");
+                        for (Map.Entry<String, Double> e : d.entrySet()) dataset.addValue(e.getValue(), "Tuần trước", e.getKey());
+                    } else if ("Tháng này".equals(sel)) {
+                        // Set thời gian hiện tại thành tháng này
+                        java.util.Calendar cal = java.util.Calendar.getInstance();
+                        cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+                        dcFromDate.setDate(normalizeStartOfDay(cal.getTime()));
+                        
+                        cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
+                        dcToDate.setDate(normalizeEndOfDay(cal.getTime()));
+                        
+                        Map<String, Double> d = getComparisonData(currentFrom, currentTo, "this_month");
+                        for (Map.Entry<String, Double> e : d.entrySet()) dataset.addValue(e.getValue(), "Tháng này", e.getKey());
+                    } else if ("Quý này".equals(sel)) {
+                        // Set thời gian hiện tại thành quý này
+                        java.util.Calendar cal = java.util.Calendar.getInstance();
+                        int month = cal.get(java.util.Calendar.MONTH);
+                        int currentQuarter = (month / 3) * 3;
+                        
+                        cal.set(java.util.Calendar.MONTH, currentQuarter);
+                        cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+                        dcFromDate.setDate(normalizeStartOfDay(cal.getTime()));
+                        
+                        cal.set(java.util.Calendar.MONTH, currentQuarter + 2);
+                        cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
+                        dcToDate.setDate(normalizeEndOfDay(cal.getTime()));
+                        
+                        Map<String, Double> d = getComparisonData(currentFrom, currentTo, "this_quarter");
+                        for (Map.Entry<String, Double> e : d.entrySet()) dataset.addValue(e.getValue(), "Quý này", e.getKey());
+                    } else if ("Năm này".equals(sel)) {
+                        // Set thời gian hiện tại thành năm này
+                        java.util.Calendar cal = java.util.Calendar.getInstance();
+                        cal.set(java.util.Calendar.DAY_OF_YEAR, 1);
+                        dcFromDate.setDate(normalizeStartOfDay(cal.getTime()));
+                        
+                        cal.set(java.util.Calendar.DAY_OF_YEAR, cal.getActualMaximum(java.util.Calendar.DAY_OF_YEAR));
+                        dcToDate.setDate(normalizeEndOfDay(cal.getTime()));
+                        
+                        Map<String, Double> d = getComparisonData(currentFrom, currentTo, "this_year");
+                        for (Map.Entry<String, Double> e : d.entrySet()) dataset.addValue(e.getValue(), "Năm này", e.getKey());
+                    } else if ("Tháng trước".equals(sel)) {
+                        // Set thời gian hiện tại thành tháng này
+                        java.util.Calendar cal = java.util.Calendar.getInstance();
+                        cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+                        dcFromDate.setDate(normalizeStartOfDay(cal.getTime()));
+                        
+                        cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
+                        dcToDate.setDate(normalizeEndOfDay(cal.getTime()));
+                        
+                        Map<String, Double> d = getComparisonData(currentFrom, currentTo, "month");
+                        for (Map.Entry<String, Double> e : d.entrySet()) dataset.addValue(e.getValue(), "Tháng trước", e.getKey());
+                    } else if ("Quý trước".equals(sel)) {
+                        // Set thời gian hiện tại thành quý này
+                        java.util.Calendar cal = java.util.Calendar.getInstance();
+                        int month = cal.get(java.util.Calendar.MONTH);
+                        int currentQuarter = (month / 3) * 3;
+                        
+                        cal.set(java.util.Calendar.MONTH, currentQuarter);
+                        cal.set(java.util.Calendar.DAY_OF_MONTH, 1);
+                        dcFromDate.setDate(normalizeStartOfDay(cal.getTime()));
+                        
+                        cal.set(java.util.Calendar.MONTH, currentQuarter + 2);
+                        cal.set(java.util.Calendar.DAY_OF_MONTH, cal.getActualMaximum(java.util.Calendar.DAY_OF_MONTH));
+                        dcToDate.setDate(normalizeEndOfDay(cal.getTime()));
+                        
+                        Map<String, Double> d = getComparisonData(currentFrom, currentTo, "quarter");
+                        for (Map.Entry<String, Double> e : d.entrySet()) dataset.addValue(e.getValue(), "Quý trước", e.getKey());
+                    } else if ("Năm trước".equals(sel)) {
+                        // Set thời gian hiện tại thành năm này
+                        java.util.Calendar cal = java.util.Calendar.getInstance();
+                        cal.set(java.util.Calendar.DAY_OF_YEAR, 1);
+                        dcFromDate.setDate(normalizeStartOfDay(cal.getTime()));
+                        
+                        cal.set(java.util.Calendar.DAY_OF_YEAR, cal.getActualMaximum(java.util.Calendar.DAY_OF_YEAR));
+                        dcToDate.setDate(normalizeEndOfDay(cal.getTime()));
+                        
+                        Map<String, Double> d = getComparisonData(currentFrom, currentTo, "year");
+                        for (Map.Entry<String, Double> e : d.entrySet()) dataset.addValue(e.getValue(), "Năm trước", e.getKey());
+                    }
                 }
             }
             
@@ -2496,6 +2577,32 @@ private javax.swing.Timer searchTimer;
         java.util.Date compareFrom, compareTo;
         
         switch (periodType) {
+            case "week":
+                cal.setTime(currentFrom);
+                cal.add(java.util.Calendar.DAY_OF_MONTH, -7);
+                compareFrom = cal.getTime();
+                cal.setTime(currentTo);
+                cal.add(java.util.Calendar.DAY_OF_MONTH, -7);
+                compareTo = cal.getTime();
+                break;
+            case "today":
+                return getDataByViewType(normalizeStartOfDay(com.team4.quanliquanmicay.util.TimeRange.today().getFrom()),
+                                          normalizeEndOfDay(com.team4.quanliquanmicay.util.TimeRange.today().getTo()));
+            case "yesterday":
+                return getDataByViewType(normalizeStartOfDay(com.team4.quanliquanmicay.util.TimeRange.yesterday().getFrom()),
+                                          normalizeEndOfDay(com.team4.quanliquanmicay.util.TimeRange.yesterday().getTo()));
+            case "this_week":
+                return getDataByViewType(normalizeStartOfDay(com.team4.quanliquanmicay.util.TimeRange.thisWeek().getFrom()),
+                                          normalizeEndOfDay(com.team4.quanliquanmicay.util.TimeRange.thisWeek().getTo()));
+            case "this_month":
+                return getDataByViewType(normalizeStartOfDay(com.team4.quanliquanmicay.util.TimeRange.thisMonth().getFrom()),
+                                          normalizeEndOfDay(com.team4.quanliquanmicay.util.TimeRange.thisMonth().getTo()));
+            case "this_quarter":
+                return getDataByViewType(normalizeStartOfDay(com.team4.quanliquanmicay.util.TimeRange.thisQuarter().getFrom()),
+                                          normalizeEndOfDay(com.team4.quanliquanmicay.util.TimeRange.thisQuarter().getTo()));
+            case "this_year":
+                return getDataByViewType(normalizeStartOfDay(com.team4.quanliquanmicay.util.TimeRange.thisYear().getFrom()),
+                                          normalizeEndOfDay(com.team4.quanliquanmicay.util.TimeRange.thisYear().getTo()));
             case "month":
                 cal.setTime(currentFrom);
                 cal.add(java.util.Calendar.MONTH, -1);
@@ -3066,9 +3173,9 @@ private javax.swing.Timer searchTimer;
             });
             cboEmpRange.setSelectedItem("Tháng này");
             
-            // Combo box so sánh với mốc thời gian khác
+            // Combo box so sánh với mốc thời gian khác (bổ sung Hôm qua, Tuần trước, và các mốc hiện tại)
             cboEmpCompare = new JComboBox<>(new String[] { 
-                "Không so sánh", "Tháng trước", "Quý trước", "Năm trước" 
+                "Không so sánh", "Hôm qua", "Tuần trước",  "Tháng trước", "Quý trước", "Năm trước" 
             });
             cboEmpCompare.setSelectedItem("Không so sánh");
             
@@ -3117,10 +3224,13 @@ private javax.swing.Timer searchTimer;
             
             cboEmpCompare.addActionListener(e -> {
                 // KHI CHỌN "KHÔNG SO SÁNH" THÌ TỰ ĐỘNG UNCHECK CHECKBOX SO SÁNH
-                if ("Không so sánh".equals(cboEmpCompare.getSelectedItem())) {
+                String sel = (String) cboEmpCompare.getSelectedItem();
+                if ("Không so sánh".equals(sel)) {
                     chkShowComparison.setSelected(false);
                 } else {
                     chkShowComparison.setSelected(true);
+                    // Tự động set khoảng thời gian tương ứng
+                    autoSetDateRangeForEmployee(sel);
                 }
                 refreshEmployeeRevenueData();
             });
@@ -4412,375 +4522,375 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
     }
     
     return chart;
-}
+    }
 
-private JFreeChart createGeneralPieChart(List<Bill> bills, TimeRange range) {
-    DefaultPieDataset dataset = new DefaultPieDataset();
-    Map<String, Integer> statusCount = new HashMap<>();
-    
+    private JFreeChart createGeneralPieChart(List<Bill> bills, TimeRange range) {
+        DefaultPieDataset dataset = new DefaultPieDataset();
+        Map<String, Integer> statusCount = new HashMap<>();
+        
     for (Bill b : bills) {
-        String status = getStatusText(b.getStatus());
-        statusCount.merge(status, 1, Integer::sum);
-    }
-    
-    if (statusCount.isEmpty()) return null;
-    
-    for (Map.Entry<String, Integer> entry : statusCount.entrySet()) {
-        dataset.setValue(entry.getKey(), entry.getValue());
-    }
-    
-    String title = "🥧 Phân bố trạng thái hóa đơn (" + getRangeLabel(range) + ")";
-    JFreeChart chart = XChart.createPieChart(title, dataset);
+            String status = getStatusText(b.getStatus());
+            statusCount.merge(status, 1, Integer::sum);
+        }
+        
+        if (statusCount.isEmpty()) return null;
+        
+        for (Map.Entry<String, Integer> entry : statusCount.entrySet()) {
+            dataset.setValue(entry.getKey(), entry.getValue());
+        }
+        
+        String title = "🥧 Phân bố trạng thái hóa đơn (" + getRangeLabel(range) + ")";
+        JFreeChart chart = XChart.createPieChart(title, dataset);
     
     return chart;
 }
     
-private JFreeChart createGeneralAreaChart(List<Bill> bills, TimeRange range) {
-    DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-    Map<String, Double> cumulativeRevenue = new TreeMap<>();
-    
-    // Xác định format dựa trên khoảng thời gian
-    boolean useMonthly = shouldUseMonthlyFormat(range);
-    SimpleDateFormat sdf = useMonthly ? new SimpleDateFormat("MM/yyyy") : new SimpleDateFormat("dd/MM");
-    
-    // Nếu hiển thị theo tháng và là năm này, khởi tạo 12 tháng
-    if (useMonthly && isThisYearRange(range)) {
-        Calendar cal = Calendar.getInstance();
-        int currentYear = cal.get(Calendar.YEAR);
-        for (int month = 1; month <= 12; month++) {
-            String monthKey = String.format("%02d/%d", month, currentYear);
-            cumulativeRevenue.put(monthKey, 0.0);
-        }
-    }
-    
-    // Tính doanh thu cộng dồn
-    double runningTotal = 0;
-    for (Bill b : bills) {
-        if (b.getStatus() != null && b.getStatus() == 1) {
-            java.util.Date dateToUse = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
-            if (dateToUse != null) {
-                String periodKey = sdf.format(dateToUse);
-                runningTotal += b.getTotal_amount();
-                cumulativeRevenue.put(periodKey, runningTotal);
-            }
-        }
-    }
-    
-    if (cumulativeRevenue.isEmpty()) return null;
-    
-    for (Map.Entry<String, Double> entry : cumulativeRevenue.entrySet()) {
-        dataset.addValue(entry.getValue(), "Doanh thu cộng dồn", entry.getKey());
-    }
-    
-    String periodLabel = useMonthly ? "tháng" : "ngày";
-    String axisLabel = useMonthly ? "Tháng" : "Ngày";
-    String title = "Doanh thu cộng dồn theo " + periodLabel + " (" + getRangeLabel(range) + ")";
-    JFreeChart chart = XChart.createAreaChart(title, axisLabel, "VNĐ", dataset);
-    
-    // Điều chỉnh hiển thị nhãn trục X khi có nhiều tháng
-    if (useMonthly) {
-        CategoryPlot plot = chart.getCategoryPlot();
-        org.jfree.chart.axis.CategoryAxis domainAxis = plot.getDomainAxis();
-        domainAxis.setCategoryLabelPositions(org.jfree.chart.axis.CategoryLabelPositions.UP_45);
-        domainAxis.setMaximumCategoryLabelWidthRatio(0.8f);
-    }
-    
-    return chart;
-}
-private JPanel createGeneralTableSection() {
-    JPanel tableSection = new JPanel(new BorderLayout());
-    tableSection.setBackground(Color.WHITE);
-    tableSection.setBorder(BorderFactory.createTitledBorder(
-        BorderFactory.createLineBorder(new Color(40, 167, 69), 2),
-        " CHI TIẾT HÓA ĐƠN",
-        javax.swing.border.TitledBorder.LEFT,
-        javax.swing.border.TitledBorder.TOP,
-        new Font("Segoe UI", Font.BOLD, 14),
-        new Color(40, 167, 69)
-    ));
-    tableSection.setPreferredSize(new Dimension(0, 350));
-    tableSection.setMinimumSize(new Dimension(0, 300));
-    
-    // Controls cho bảng
-    JPanel tableControls = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-    tableControls.setBackground(Color.WHITE);
-    
-    JComboBox<String> cboTableFilter = new JComboBox<>(new String[]{
-        "Tất cả hóa đơn", "Chỉ hoàn thành", "Đã hủy", "Đang phục vụ"
-    });
-    
-    JTextField txtSearch = new JTextField(15);
-    txtSearch.setToolTipText("Tìm kiếm theo mã hóa đơn, bàn, hoặc nhân viên...");
-    
-    JButton btnClearSearch = new JButton("Clear");
-    btnClearSearch.setToolTipText("Xóa tìm kiếm");
-    btnClearSearch.addActionListener(e -> {
-        txtSearch.setText("");
-        refreshGeneralTableWithFilters("", "Tất cả hóa đơn");
-    });
-    
-    tableControls.add(new JLabel(" Lọc:"));
-    tableControls.add(cboTableFilter);
-    tableControls.add(Box.createHorizontalStrut(15));
-    tableControls.add(new JLabel("Tìm kiếm:"));
-    tableControls.add(txtSearch);
-    tableControls.add(btnClearSearch);
-    
-    tableSection.add(tableControls, BorderLayout.NORTH);
-    
-    tableContainer = new JPanel(new BorderLayout());
-    tableContainer.setBackground(Color.WHITE);
-    initGeneralTable(); 
-    tableSection.add(tableContainer, BorderLayout.CENTER);
-    
-    // SỬA: Thêm listeners với timer để tránh spam
-    cboTableFilter.addActionListener(e -> {
-        String selectedFilter = (String) cboTableFilter.getSelectedItem();
-        String searchText = txtSearch.getText().trim();
-        refreshGeneralTableWithFilters(searchText, selectedFilter);
-    });
-    
-    txtSearch.addActionListener(e -> {
-        String searchText = txtSearch.getText().trim();
-        String selectedFilter = (String) cboTableFilter.getSelectedItem();
-        refreshGeneralTableWithFilters(searchText, selectedFilter);
-    });
-    
-    // SỬA: Thêm KeyListener với timer để tránh spam thông báo
-    txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
-        @Override
-        public void keyReleased(java.awt.event.KeyEvent evt) {
-            // Hủy timer cũ nếu có
-            if (searchTimer != null && searchTimer.isRunning()) {
-                searchTimer.stop();
-            }
-            
-            // Tạo timer mới với delay 800ms để tránh spam
-            searchTimer = new javax.swing.Timer(800, e -> {
-                String searchText = txtSearch.getText().trim();
-                String selectedFilter = (String) cboTableFilter.getSelectedItem();
-                refreshGeneralTableWithFiltersSilent(searchText, selectedFilter); // Dùng phiên bản silent
-            });
-            searchTimer.setRepeats(false);
-            searchTimer.start();
-        }
-    });
-    
-    return tableSection;
-}
-
-private void refreshGeneralTableWithFiltersSilent(String searchText, String filterType) {
-    try {
-        String selectedRange = cboFilterType != null ? (String) cboFilterType.getSelectedItem() : "Tháng này";
-        TimeRange range = getSelectedGeneralRange(selectedRange);
-
-        List<Bill> bills = billDAO.findAll();
-        List<UserAccount> users = userDAO.findAll();
-
-        if (bills == null) bills = new ArrayList<>();
-        if (users == null) users = new ArrayList<>();
-
-        Map<String, String> userIdToName = new HashMap<>();
-        for (UserAccount u : users) {
-            if (u != null && u.getUser_id() != null) {
-                String name = (u.getFullName() != null && !u.getFullName().trim().isEmpty()) ? 
-                    u.getFullName() : u.getUsername();
-                userIdToName.put(u.getUser_id(), name);
-            }
-        }
-
-        List<Bill> filteredBills = new ArrayList<>();
+    private JFreeChart createGeneralAreaChart(List<Bill> bills, TimeRange range) {
+        DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+        Map<String, Double> cumulativeRevenue = new TreeMap<>();
         
+        // Xác định format dựa trên khoảng thời gian
+        boolean useMonthly = shouldUseMonthlyFormat(range);
+        SimpleDateFormat sdf = useMonthly ? new SimpleDateFormat("MM/yyyy") : new SimpleDateFormat("dd/MM");
+        
+        // Nếu hiển thị theo tháng và là năm này, khởi tạo 12 tháng
+        if (useMonthly && isThisYearRange(range)) {
+            Calendar cal = Calendar.getInstance();
+            int currentYear = cal.get(Calendar.YEAR);
+            for (int month = 1; month <= 12; month++) {
+                String monthKey = String.format("%02d/%d", month, currentYear);
+                cumulativeRevenue.put(monthKey, 0.0);
+            }
+        }
+        
+        // Tính doanh thu cộng dồn
+        double runningTotal = 0;
         for (Bill b : bills) {
-            if (b == null) continue;
-            
-            java.util.Date when = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
-            if (when == null) continue;
-            if (!withinRange(when, range)) continue;
-
-            // Áp dụng filter theo trạng thái
-            boolean passFilter = true;
-            if ("Chỉ hoàn thành".equals(filterType) && (b.getStatus() == null || b.getStatus() != 1)) {
-                passFilter = false;
-            } else if ("Chỉ đã hủy".equals(filterType) && (b.getStatus() == null || b.getStatus() != 2)) {
-                passFilter = false;
-            } else if ("Chỉ đang xử lý".equals(filterType) && (b.getStatus() == null || b.getStatus() != 0)) {
-                passFilter = false;
-            }
-            
-            if (!passFilter) continue;
-
-            // Áp dụng search
-            if (!searchText.isEmpty()) {
-                String billId = String.valueOf(b.getBill_id());
-                String tableNumber = String.valueOf(b.getTable_number());
-                String employeeName = userIdToName.getOrDefault(b.getUser_id(), b.getUser_id() != null ? b.getUser_id() : "");
-                
-                boolean matchSearch = billId.toLowerCase().contains(searchText.toLowerCase()) ||
-                                    tableNumber.toLowerCase().contains(searchText.toLowerCase()) ||
-                                    employeeName.toLowerCase().contains(searchText.toLowerCase());
-                
-                if (!matchSearch) continue;
-            }
-
-            filteredBills.add(b);
-        }
-        
-        // SỬA: CHỈ HIỂN THỊ THÔNG BÁO KHI SEARCH TEXT DÀI HƠN 2 KÝ TỰ VÀ KHÔNG CÓ KẾT QUẢ
-        if (filteredBills.isEmpty() && searchText.length() > 2 && !searchText.isEmpty()) {
-            // Chỉ hiển thị thông báo khi gõ đủ ít nhất 3 ký tự
-            XDialog.warning("Không tìm thấy dữ liệu phù hợp với từ khóa: \"" + searchText + "\"", "Không có dữ liệu");
-        }
-
-        updateGeneralTable(filteredBills, userIdToName);
-        
-    } catch (Exception ex) {
-        ex.printStackTrace();
-        XDialog.error("Lỗi khi lọc/tìm kiếm dữ liệu: " + ex.getMessage(), "Lỗi");
-    }
-}
-
-
-
-/**
- * Khởi tạo bảng tổng quan
- */
-private void initGeneralTable() {
-    billTableModel = new DefaultTableModel(new Object[] { 
-        "Mã HĐ", "Bàn", "Nhân viên", "Check-in", "Check-out", "Tổng tiền", "Trạng thái" 
-    }, 0) {
-        @Override
-        public boolean isCellEditable(int row, int column) { return false; }
-    };
-    
-    tblBills = new JTable(billTableModel);
-    tblBills.setRowHeight(25);
-    tblBills.setFont(new Font("Tahoma", Font.PLAIN, 11));
-    tblBills.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 11));
-
-    // Căn giữa các cột
-    DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-    centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-    tblBills.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
-    tblBills.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
-    tblBills.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
-    tblBills.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
-    tblBills.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
-    
-    // Căn phải cột tiền
-    DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
-    rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
-    tblBills.getColumnModel().getColumn(5).setCellRenderer(rightRenderer);
-
-    // Set độ rộng cột
-    tblBills.getColumnModel().getColumn(0).setPreferredWidth(80);
-    tblBills.getColumnModel().getColumn(1).setPreferredWidth(50);
-    tblBills.getColumnModel().getColumn(2).setPreferredWidth(120);
-    tblBills.getColumnModel().getColumn(3).setPreferredWidth(100);
-    tblBills.getColumnModel().getColumn(4).setPreferredWidth(100);
-    tblBills.getColumnModel().getColumn(5).setPreferredWidth(120);
-    tblBills.getColumnModel().getColumn(6).setPreferredWidth(100);
-
-    JScrollPane sp = new JScrollPane(tblBills);
-    tableContainer.add(sp, BorderLayout.CENTER);
-}
-
-/**
- * Làm mới dashboard tổng quan
- */
-   private void refreshGeneralTableWithFilters(String searchText, String filterType) {
-    try {
-        String selectedRange = cboFilterType != null ? (String) cboFilterType.getSelectedItem() : "Tháng này";
-        TimeRange range = getSelectedGeneralRange(selectedRange);
-
-        List<Bill> bills = billDAO.findAll();
-        List<UserAccount> users = userDAO.findAll();
-
-        if (bills == null) bills = new ArrayList<>();
-        if (users == null) users = new ArrayList<>();
-
-        Map<String, String> userIdToName = new HashMap<>();
-        for (UserAccount u : users) {
-            if (u != null && u.getUser_id() != null) {
-                String name = (u.getFullName() != null && !u.getFullName().trim().isEmpty()) ? 
-                    u.getFullName() : u.getUsername();
-                userIdToName.put(u.getUser_id(), name);
-            }
-        }
-
-        List<Bill> filteredBills = new ArrayList<>();
-        
-        for (Bill b : bills) {
-            if (b == null) continue;
-            
-            java.util.Date when = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
-            if (when == null) continue;
-            if (!withinRange(when, range)) continue;
-
-            // Áp dụng filter theo trạng thái
-            boolean passFilter = true;
-            if ("Chỉ hoàn thành".equals(filterType) && (b.getStatus() == null || b.getStatus() != 1)) {
-                passFilter = false;
-            } else if ("Chỉ đã hủy".equals(filterType) && (b.getStatus() == null || b.getStatus() != 2)) {
-                passFilter = false;
-            } else if ("Chỉ đang xử lý".equals(filterType) && (b.getStatus() == null || b.getStatus() != 0)) {
-                passFilter = false;
-            }
-            
-            if (!passFilter) continue;
-
-            // Áp dụng search
-            if (!searchText.isEmpty()) {
-                String billId = String.valueOf(b.getBill_id());
-                String tableNumber = String.valueOf(b.getTable_number());
-                String employeeName = userIdToName.getOrDefault(b.getUser_id(), b.getUser_id() != null ? b.getUser_id() : "");
-                
-                boolean matchSearch = billId.toLowerCase().contains(searchText.toLowerCase()) ||
-                                    tableNumber.toLowerCase().contains(searchText.toLowerCase()) ||
-                                    employeeName.toLowerCase().contains(searchText.toLowerCase());
-                
-                if (!matchSearch) continue;
-            }
-
-            filteredBills.add(b);
-        }
-        
-        // SỬA: CHỈ HIỂN THỊ THÔNG BÁO KHI THỰC SỰ CẦN THIẾT
-        // Không hiển thị thông báo khi chỉ mới bắt đầu gõ
-        
-        updateGeneralTable(filteredBills, userIdToName);
-        
-    } catch (Exception ex) {
-        ex.printStackTrace();
-        XDialog.error("Lỗi khi lọc/tìm kiếm dữ liệu: " + ex.getMessage(), "Lỗi");
-    }
-}
-
-private void resetTableFiltersAndSearch() {
-    try {
-        // Kiểm tra null trước khi sử dụng
-        if (tableContainer == null || tableContainer.getParent() == null) {
-            return;
-        }
-        
-        // Reset search và filter trong general table section
-        for (Component comp : tableContainer.getParent().getComponents()) {
-            if (comp instanceof JPanel) {
-                JPanel panel = (JPanel) comp;
-                for (Component subComp : panel.getComponents()) {
-                    if (subComp instanceof JTextField) {
-                        ((JTextField) subComp).setText("");
-                    } else if (subComp instanceof JComboBox) {
-                        ((JComboBox<?>) subComp).setSelectedItem("Tất cả hóa đơn");
-                    }
+            if (b.getStatus() != null && b.getStatus() == 1) {
+                java.util.Date dateToUse = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
+                if (dateToUse != null) {
+                    String periodKey = sdf.format(dateToUse);
+                    runningTotal += b.getTotal_amount();
+                    cumulativeRevenue.put(periodKey, runningTotal);
                 }
             }
         }
-    } catch (Exception ex) {
-        // Bỏ qua lỗi reset - không quan trọng
-        System.err.println("Reset filters warning: " + ex.getMessage());
+        
+        if (cumulativeRevenue.isEmpty()) return null;
+        
+        for (Map.Entry<String, Double> entry : cumulativeRevenue.entrySet()) {
+            dataset.addValue(entry.getValue(), "Doanh thu cộng dồn", entry.getKey());
+        }
+        
+        String periodLabel = useMonthly ? "tháng" : "ngày";
+        String axisLabel = useMonthly ? "Tháng" : "Ngày";
+        String title = "Doanh thu cộng dồn theo " + periodLabel + " (" + getRangeLabel(range) + ")";
+        JFreeChart chart = XChart.createAreaChart(title, axisLabel, "VNĐ", dataset);
+        
+        // Điều chỉnh hiển thị nhãn trục X khi có nhiều tháng
+        if (useMonthly) {
+            CategoryPlot plot = chart.getCategoryPlot();
+            org.jfree.chart.axis.CategoryAxis domainAxis = plot.getDomainAxis();
+            domainAxis.setCategoryLabelPositions(org.jfree.chart.axis.CategoryLabelPositions.UP_45);
+            domainAxis.setMaximumCategoryLabelWidthRatio(0.8f);
+        }
+        
+        return chart;
     }
-}
+    private JPanel createGeneralTableSection() {
+        JPanel tableSection = new JPanel(new BorderLayout());
+        tableSection.setBackground(Color.WHITE);
+        tableSection.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createLineBorder(new Color(40, 167, 69), 2),
+            " CHI TIẾT HÓA ĐƠN",
+            javax.swing.border.TitledBorder.LEFT,
+            javax.swing.border.TitledBorder.TOP,
+            new Font("Segoe UI", Font.BOLD, 14),
+            new Color(40, 167, 69)
+        ));
+        tableSection.setPreferredSize(new Dimension(0, 350));
+        tableSection.setMinimumSize(new Dimension(0, 300));
+        
+        // Controls cho bảng
+        JPanel tableControls = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        tableControls.setBackground(Color.WHITE);
+        
+        JComboBox<String> cboTableFilter = new JComboBox<>(new String[]{
+        "Tất cả hóa đơn", "Chỉ hoàn thành", "Đã hủy", "Đang phục vụ"
+        });
+        
+        JTextField txtSearch = new JTextField(15);
+        txtSearch.setToolTipText("Tìm kiếm theo mã hóa đơn, bàn, hoặc nhân viên...");
+        
+    JButton btnClearSearch = new JButton("Clear");
+        btnClearSearch.setToolTipText("Xóa tìm kiếm");
+        btnClearSearch.addActionListener(e -> {
+            txtSearch.setText("");
+            refreshGeneralTableWithFilters("", "Tất cả hóa đơn");
+        });
+        
+        tableControls.add(new JLabel(" Lọc:"));
+        tableControls.add(cboTableFilter);
+        tableControls.add(Box.createHorizontalStrut(15));
+        tableControls.add(new JLabel("Tìm kiếm:"));
+        tableControls.add(txtSearch);
+        tableControls.add(btnClearSearch);
+        
+        tableSection.add(tableControls, BorderLayout.NORTH);
+        
+        tableContainer = new JPanel(new BorderLayout());
+        tableContainer.setBackground(Color.WHITE);
+        initGeneralTable(); 
+        tableSection.add(tableContainer, BorderLayout.CENTER);
+        
+        // SỬA: Thêm listeners với timer để tránh spam
+        cboTableFilter.addActionListener(e -> {
+            String selectedFilter = (String) cboTableFilter.getSelectedItem();
+            String searchText = txtSearch.getText().trim();
+            refreshGeneralTableWithFilters(searchText, selectedFilter);
+        });
+        
+        txtSearch.addActionListener(e -> {
+            String searchText = txtSearch.getText().trim();
+            String selectedFilter = (String) cboTableFilter.getSelectedItem();
+            refreshGeneralTableWithFilters(searchText, selectedFilter);
+        });
+        
+        // SỬA: Thêm KeyListener với timer để tránh spam thông báo
+        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                // Hủy timer cũ nếu có
+                if (searchTimer != null && searchTimer.isRunning()) {
+                    searchTimer.stop();
+                }
+                
+                // Tạo timer mới với delay 800ms để tránh spam
+                searchTimer = new javax.swing.Timer(800, e -> {
+                    String searchText = txtSearch.getText().trim();
+                    String selectedFilter = (String) cboTableFilter.getSelectedItem();
+                    refreshGeneralTableWithFiltersSilent(searchText, selectedFilter); // Dùng phiên bản silent
+                });
+                searchTimer.setRepeats(false);
+                searchTimer.start();
+            }
+        });
+        
+        return tableSection;
+    }
+
+    private void refreshGeneralTableWithFiltersSilent(String searchText, String filterType) {
+        try {
+            String selectedRange = cboFilterType != null ? (String) cboFilterType.getSelectedItem() : "Tháng này";
+            TimeRange range = getSelectedGeneralRange(selectedRange);
+
+            List<Bill> bills = billDAO.findAll();
+            List<UserAccount> users = userDAO.findAll();
+
+            if (bills == null) bills = new ArrayList<>();
+            if (users == null) users = new ArrayList<>();
+
+            Map<String, String> userIdToName = new HashMap<>();
+            for (UserAccount u : users) {
+                if (u != null && u.getUser_id() != null) {
+                    String name = (u.getFullName() != null && !u.getFullName().trim().isEmpty()) ? 
+                        u.getFullName() : u.getUsername();
+                    userIdToName.put(u.getUser_id(), name);
+                }
+            }
+
+            List<Bill> filteredBills = new ArrayList<>();
+            
+            for (Bill b : bills) {
+                if (b == null) continue;
+                
+                java.util.Date when = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
+                if (when == null) continue;
+                if (!withinRange(when, range)) continue;
+
+                // Áp dụng filter theo trạng thái
+                boolean passFilter = true;
+                if ("Chỉ hoàn thành".equals(filterType) && (b.getStatus() == null || b.getStatus() != 1)) {
+                    passFilter = false;
+                } else if ("Chỉ đã hủy".equals(filterType) && (b.getStatus() == null || b.getStatus() != 2)) {
+                    passFilter = false;
+                } else if ("Chỉ đang xử lý".equals(filterType) && (b.getStatus() == null || b.getStatus() != 0)) {
+                    passFilter = false;
+                }
+                
+                if (!passFilter) continue;
+
+                // Áp dụng search
+                if (!searchText.isEmpty()) {
+                    String billId = String.valueOf(b.getBill_id());
+                    String tableNumber = String.valueOf(b.getTable_number());
+                    String employeeName = userIdToName.getOrDefault(b.getUser_id(), b.getUser_id() != null ? b.getUser_id() : "");
+                    
+                    boolean matchSearch = billId.toLowerCase().contains(searchText.toLowerCase()) ||
+                                        tableNumber.toLowerCase().contains(searchText.toLowerCase()) ||
+                                        employeeName.toLowerCase().contains(searchText.toLowerCase());
+                    
+                    if (!matchSearch) continue;
+                }
+
+                filteredBills.add(b);
+            }
+            
+            // SỬA: CHỈ HIỂN THỊ THÔNG BÁO KHI SEARCH TEXT DÀI HƠN 2 KÝ TỰ VÀ KHÔNG CÓ KẾT QUẢ
+            if (filteredBills.isEmpty() && searchText.length() > 2 && !searchText.isEmpty()) {
+                // Chỉ hiển thị thông báo khi gõ đủ ít nhất 3 ký tự
+                XDialog.warning("Không tìm thấy dữ liệu phù hợp với từ khóa: \"" + searchText + "\"", "Không có dữ liệu");
+            }
+
+            updateGeneralTable(filteredBills, userIdToName);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            XDialog.error("Lỗi khi lọc/tìm kiếm dữ liệu: " + ex.getMessage(), "Lỗi");
+        }
+    }
+
+
+ 
+    /**
+     * Khởi tạo bảng tổng quan
+     */
+    private void initGeneralTable() {
+        billTableModel = new DefaultTableModel(new Object[] { 
+            "Mã HĐ", "Bàn", "Nhân viên", "Check-in", "Check-out", "Tổng tiền", "Trạng thái" 
+        }, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        };
+        
+        tblBills = new JTable(billTableModel);
+        tblBills.setRowHeight(25);
+        tblBills.setFont(new Font("Tahoma", Font.PLAIN, 11));
+        tblBills.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 11));
+
+        // Căn giữa các cột
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        tblBills.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+        tblBills.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+        tblBills.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+        tblBills.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
+        tblBills.getColumnModel().getColumn(6).setCellRenderer(centerRenderer);
+        
+        // Căn phải cột tiền
+        DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
+        rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
+        tblBills.getColumnModel().getColumn(5).setCellRenderer(rightRenderer);
+
+        // Set độ rộng cột
+        tblBills.getColumnModel().getColumn(0).setPreferredWidth(80);
+        tblBills.getColumnModel().getColumn(1).setPreferredWidth(50);
+        tblBills.getColumnModel().getColumn(2).setPreferredWidth(120);
+        tblBills.getColumnModel().getColumn(3).setPreferredWidth(100);
+        tblBills.getColumnModel().getColumn(4).setPreferredWidth(100);
+        tblBills.getColumnModel().getColumn(5).setPreferredWidth(120);
+        tblBills.getColumnModel().getColumn(6).setPreferredWidth(100);
+
+        JScrollPane sp = new JScrollPane(tblBills);
+        tableContainer.add(sp, BorderLayout.CENTER);
+    }
+
+    /**
+     * Làm mới dashboard tổng quan
+     */
+       private void refreshGeneralTableWithFilters(String searchText, String filterType) {
+        try {
+            String selectedRange = cboFilterType != null ? (String) cboFilterType.getSelectedItem() : "Tháng này";
+            TimeRange range = getSelectedGeneralRange(selectedRange);
+
+            List<Bill> bills = billDAO.findAll();
+            List<UserAccount> users = userDAO.findAll();
+
+            if (bills == null) bills = new ArrayList<>();
+            if (users == null) users = new ArrayList<>();
+
+            Map<String, String> userIdToName = new HashMap<>();
+            for (UserAccount u : users) {
+                if (u != null && u.getUser_id() != null) {
+                    String name = (u.getFullName() != null && !u.getFullName().trim().isEmpty()) ? 
+                        u.getFullName() : u.getUsername();
+                    userIdToName.put(u.getUser_id(), name);
+                }
+            }
+
+            List<Bill> filteredBills = new ArrayList<>();
+            
+            for (Bill b : bills) {
+                if (b == null) continue;
+                
+                java.util.Date when = b.getCheckout() != null ? b.getCheckout() : b.getCheckin();
+                if (when == null) continue;
+                if (!withinRange(when, range)) continue;
+
+                // Áp dụng filter theo trạng thái
+                boolean passFilter = true;
+                if ("Chỉ hoàn thành".equals(filterType) && (b.getStatus() == null || b.getStatus() != 1)) {
+                    passFilter = false;
+                } else if ("Chỉ đã hủy".equals(filterType) && (b.getStatus() == null || b.getStatus() != 2)) {
+                    passFilter = false;
+                } else if ("Chỉ đang xử lý".equals(filterType) && (b.getStatus() == null || b.getStatus() != 0)) {
+                    passFilter = false;
+                }
+                
+                if (!passFilter) continue;
+
+                // Áp dụng search
+                if (!searchText.isEmpty()) {
+                    String billId = String.valueOf(b.getBill_id());
+                    String tableNumber = String.valueOf(b.getTable_number());
+                    String employeeName = userIdToName.getOrDefault(b.getUser_id(), b.getUser_id() != null ? b.getUser_id() : "");
+                    
+                    boolean matchSearch = billId.toLowerCase().contains(searchText.toLowerCase()) ||
+                                        tableNumber.toLowerCase().contains(searchText.toLowerCase()) ||
+                                        employeeName.toLowerCase().contains(searchText.toLowerCase());
+                    
+                    if (!matchSearch) continue;
+                }
+
+                filteredBills.add(b);
+            }
+            
+            // SỬA: CHỈ HIỂN THỊ THÔNG BÁO KHI THỰC SỰ CẦN THIẾT
+            // Không hiển thị thông báo khi chỉ mới bắt đầu gõ
+            
+            updateGeneralTable(filteredBills, userIdToName);
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            XDialog.error("Lỗi khi lọc/tìm kiếm dữ liệu: " + ex.getMessage(), "Lỗi");
+        }
+    }
+
+    private void resetTableFiltersAndSearch() {
+        try {
+            // Kiểm tra null trước khi sử dụng
+            if (tableContainer == null || tableContainer.getParent() == null) {
+                return;
+            }
+            
+            // Reset search và filter trong general table section
+            for (Component comp : tableContainer.getParent().getComponents()) {
+                if (comp instanceof JPanel) {
+                    JPanel panel = (JPanel) comp;
+                    for (Component subComp : panel.getComponents()) {
+                        if (subComp instanceof JTextField) {
+                            ((JTextField) subComp).setText("");
+                        } else if (subComp instanceof JComboBox) {
+                            ((JComboBox<?>) subComp).setSelectedItem("Tất cả hóa đơn");
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            // Bỏ qua lỗi reset - không quan trọng
+            System.err.println("Reset filters warning: " + ex.getMessage());
+        }
+    }
 
 
     private void refreshGeneralDashboard() {
@@ -5171,8 +5281,20 @@ private void resetTableFiltersAndSearch() {
             boolean hasComparisonData = false;
             
             if (chkShowComparison != null && chkShowComparison.isSelected()) {
-                // Lấy khoảng thời gian so sánh dựa trên khoảng thời gian hiện tại
-                TimeRange comparisonRange = getComparisonTimeRange(range);
+                // Ưu tiên khoảng so sánh do người dùng chọn từ cboEmpCompare
+                TimeRange comparisonRange = null;
+                if (cboEmpCompare != null && cboEmpCompare.getSelectedItem() != null) {
+                    String sel = (String) cboEmpCompare.getSelectedItem();
+                    if (!"Không so sánh".equals(sel)) {
+                        comparisonRange = getExplicitComparisonRange(sel);
+                        comparisonLabel = sel; // dùng nhãn đúng như người dùng chọn
+                    }
+                }
+                // Nếu không chọn rõ ràng thì dùng suy luận từ khoảng hiện tại
+                if (comparisonRange == null) {
+                    comparisonRange = getComparisonTimeRange(range);
+                    comparisonLabel = getComparisonLabel(range);
+                }
                 
                 if (comparisonRange != null) {
                     // Tính toán dữ liệu cho khoảng thời gian so sánh
@@ -5191,18 +5313,7 @@ private void resetTableFiltersAndSearch() {
                         comparisonRevenueByEmployee.merge(userId, revenue, Double::sum);
                     }
                     
-                    // Kiểm tra xem có dữ liệu so sánh không
-                    if (!comparisonRevenueByEmployee.isEmpty()) {
-                        hasComparisonData = true;
-                        comparisonLabel = getComparisonLabel(range);
-                    } else {
-                        // Không có dữ liệu so sánh - hiển thị thông báo
-                        XDialog.warning("Không có dữ liệu để so sánh trong khoảng thời gian trước đó.\nVui lòng chọn khoảng thời gian khác.", "Thông báo so sánh");
-                        
-                        // Tắt checkbox so sánh
-                        chkShowComparison.setSelected(false);
-                        hasComparisonData = false;
-                    }
+                    hasComparisonData = !comparisonRevenueByEmployee.isEmpty();
                 }
             }
 
@@ -5226,6 +5337,11 @@ private void resetTableFiltersAndSearch() {
                 // Tạo biểu đồ so sánh THẬT SỰ
                 createComparisonEmployeeChart(sortedByRevenue, userIdToName, range, 
                     comparisonRevenueByEmployee, comparisonLabel);
+            } else if (cboEmpCompare != null && cboEmpCompare.getSelectedItem() != null &&
+                       !"Không so sánh".equals(cboEmpCompare.getSelectedItem())) {
+                // Người dùng đang chọn so sánh nhưng không có dữ liệu so sánh -> vẫn hiển thị "0" rõ ràng trong chart so sánh
+                createComparisonEmployeeChart(sortedByRevenue, userIdToName, range, 
+                    new java.util.HashMap<>(), String.valueOf(cboEmpCompare.getSelectedItem()));
             } else {
                 // Tạo biểu đồ đơn giản
                 createMainEmployeeChart(sortedByRevenue, userIdToName, range);
@@ -5872,14 +5988,10 @@ private void resetTableFiltersAndSearch() {
             // Tính toán khoảng thời gian so sánh dựa trên khoảng thời gian hiện tại
             long currentDays = (currentRange.getTo().getTime() - currentRange.getFrom().getTime()) / (24 * 60 * 60 * 1000) + 1;
             
-            // Nếu khoảng thời gian hiện tại là 1 tháng, so sánh với tháng trước
-            if (currentDays >= 28 && currentDays <= 31) {
-                cal.setTime(currentRange.getFrom());
-                cal.add(Calendar.MONTH, -1);
-                from = cal.getTime();
-                cal.setTime(currentRange.getTo());
-                cal.add(Calendar.MONTH, -1);
-                to = cal.getTime();
+            // Nếu khoảng thời gian hiện tại là 1 ngày (Hôm nay), so sánh với Hôm qua
+            if (currentDays == 1) {
+                from = com.team4.quanliquanmicay.util.TimeRange.yesterday().getFrom();
+                to = com.team4.quanliquanmicay.util.TimeRange.yesterday().getTo();
             }
             // Nếu khoảng thời gian hiện tại là 1 tuần, so sánh với tuần trước
             else if (currentDays >= 7 && currentDays <= 8) {
@@ -5888,6 +6000,15 @@ private void resetTableFiltersAndSearch() {
                 from = cal.getTime();
                 cal.setTime(currentRange.getTo());
                 cal.add(Calendar.WEEK_OF_YEAR, -1);
+                to = cal.getTime();
+            }
+            // Nếu khoảng thời gian hiện tại là 1 tháng, so sánh với tháng trước
+            else if (currentDays >= 28 && currentDays <= 31) {
+                cal.setTime(currentRange.getFrom());
+                cal.add(Calendar.MONTH, -1);
+                from = cal.getTime();
+                cal.setTime(currentRange.getTo());
+                cal.add(Calendar.MONTH, -1);
                 to = cal.getTime();
             }
             // Nếu khoảng thời gian hiện tại là 1 năm, so sánh với năm trước
@@ -5926,10 +6047,12 @@ private void resetTableFiltersAndSearch() {
             
             long currentDays = (currentRange.getTo().getTime() - currentRange.getFrom().getTime()) / (24 * 60 * 60 * 1000) + 1;
             
-            if (currentDays >= 28 && currentDays <= 31) {
-                return "Tháng trước";
+            if (currentDays == 1) {
+                return "Hôm qua";
             } else if (currentDays >= 7 && currentDays <= 8) {
                 return "Tuần trước";
+            } else if (currentDays >= 28 && currentDays <= 31) {
+                return "Tháng trước";
             } else if (currentDays >= 365 && currentDays <= 366) {
                 return "Năm trước";
             } else {
@@ -5940,9 +6063,112 @@ private void resetTableFiltersAndSearch() {
         }
     }
 
+    // Trả về TimeRange rõ ràng dựa trên nhãn người dùng chọn trong cboEmpCompare
+    private TimeRange getExplicitComparisonRange(String label) {
+        try {
+            if (label == null) return null;
+            switch (label) {
+                case "Hôm qua":
+                    return new TimeRange(
+                        normalizeStartOfDay(com.team4.quanliquanmicay.util.TimeRange.yesterday().getFrom()),
+                        normalizeEndOfDay(com.team4.quanliquanmicay.util.TimeRange.yesterday().getTo())
+                    );
+                case "Tuần trước": {
+                    java.util.Calendar cal = java.util.Calendar.getInstance();
+                    java.util.Date to = normalizeEndOfDay(com.team4.quanliquanmicay.util.TimeRange.thisWeek().getFrom());
+                    cal.setTime(to);
+                    cal.add(java.util.Calendar.DAY_OF_MONTH, -1); // ngày cuối của tuần trước
+                    java.util.Date end = cal.getTime();
+                    cal.add(java.util.Calendar.DAY_OF_MONTH, -6); // lùi 6 ngày về đầu tuần trước
+                    java.util.Date begin = normalizeStartOfDay(cal.getTime());
+                    return new TimeRange(begin, normalizeEndOfDay(end));
+                }
+                case "Tháng này":
+                    return new TimeRange(
+                        normalizeStartOfDay(com.team4.quanliquanmicay.util.TimeRange.thisMonth().getFrom()),
+                        normalizeEndOfDay(com.team4.quanliquanmicay.util.TimeRange.thisMonth().getTo())
+                    );
+                case "Quý này":
+                    return new TimeRange(
+                        normalizeStartOfDay(com.team4.quanliquanmicay.util.TimeRange.thisQuarter().getFrom()),
+                        normalizeEndOfDay(com.team4.quanliquanmicay.util.TimeRange.thisQuarter().getTo())
+                    );
+                case "Năm này":
+                    return new TimeRange(
+                        normalizeStartOfDay(com.team4.quanliquanmicay.util.TimeRange.thisYear().getFrom()),
+                        normalizeEndOfDay(com.team4.quanliquanmicay.util.TimeRange.thisYear().getTo())
+                    );
+                case "Tháng trước": {
+                    java.util.Date begin = normalizeStartOfDay(com.team4.quanliquanmicay.util.TimeRange.lastMonth().getFrom());
+                    java.util.Date end = normalizeEndOfDay(com.team4.quanliquanmicay.util.TimeRange.lastMonth().getTo());
+                    return new TimeRange(begin, end);
+                }
+                case "Quý trước": {
+                    java.util.Calendar cal = java.util.Calendar.getInstance();
+                    cal.setTime(com.team4.quanliquanmicay.util.TimeRange.thisQuarter().getFrom());
+                    cal.add(java.util.Calendar.MONTH, -3);
+                    java.util.Date begin = normalizeStartOfDay(cal.getTime());
+                    cal.setTime(com.team4.quanliquanmicay.util.TimeRange.thisQuarter().getTo());
+                    cal.add(java.util.Calendar.MONTH, -3);
+                    java.util.Date end = normalizeEndOfDay(cal.getTime());
+                    return new TimeRange(begin, end);
+                }
+                case "Năm trước": {
+                    java.util.Calendar cal = java.util.Calendar.getInstance();
+                    cal.setTime(com.team4.quanliquanmicay.util.TimeRange.thisYear().getFrom());
+                    cal.add(java.util.Calendar.YEAR, -1);
+                    java.util.Date begin = normalizeStartOfDay(cal.getTime());
+                    cal.setTime(com.team4.quanliquanmicay.util.TimeRange.thisYear().getTo());
+                    cal.add(java.util.Calendar.YEAR, -1);
+                    java.util.Date end = normalizeEndOfDay(cal.getTime());
+                    return new TimeRange(begin, end);
+                }
+                default:
+                    return null;
+            }
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     /**
      * Tạo biểu đồ so sánh doanh thu nhân viên giữa 2 khoảng thời gian
      */
+    /**
+     * Tự động set khoảng thời gian cho tab doanh thu nhân viên dựa trên lựa chọn so sánh
+     */
+    private void autoSetDateRangeForEmployee(String comparisonType) {
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        
+        switch (comparisonType) {
+            case "Hôm qua":
+                // Set khoảng thời gian là hôm nay
+                cal.setTime(new java.util.Date());
+                cboEmpRange.setSelectedItem("Hôm nay");
+                break;
+                
+            case "Tuần trước":
+                // Set khoảng thời gian là tuần này
+                cboEmpRange.setSelectedItem("Tuần này");
+                break;
+                
+            case "Tháng trước":
+                // Set khoảng thời gian là tháng này
+                cboEmpRange.setSelectedItem("Tháng này");
+                break;
+                
+            case "Quý trước":
+                // Set khoảng thời gian là quý này
+                cboEmpRange.setSelectedItem("Quý này");
+                break;
+                
+            case "Năm trước":
+                // Set khoảng thời gian là năm này
+                cboEmpRange.setSelectedItem("Năm này");
+                break;
+        }
+    }
+    
     private void createComparisonEmployeeChart(List<Map.Entry<String, Double>> currentRevenue, 
                                              Map<String, String> userIdToName, 
                                              TimeRange currentRange,
