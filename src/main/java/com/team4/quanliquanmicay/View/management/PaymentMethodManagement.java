@@ -405,6 +405,7 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
         });
 
         javax.swing.GroupLayout pnlFeatureLayout = new javax.swing.GroupLayout(pnlFeature);
+        pnlFeature.setLayout(pnlFeatureLayout);
         pnlFeatureLayout.setHorizontalGroup(
             pnlFeatureLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlFeatureLayout.createSequentialGroup()
