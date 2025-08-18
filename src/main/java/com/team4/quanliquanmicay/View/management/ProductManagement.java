@@ -18,6 +18,7 @@ import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XValidation;
 
 import java.util.List;
+import java.text.Normalizer;
 
 /**
  *
@@ -187,7 +188,10 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         jTabbedPane1.setBackground(new java.awt.Color(204, 164, 133));
         jTabbedPane1.setForeground(new java.awt.Color(255, 255, 255));
         jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.RIGHT);
-        jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        // Thu nhỏ font một chút để vừa 8 tab
+        jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        // Cho phép cuộn nếu tab nhiều
+        jTabbedPane1.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
 
         tableInfo.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         tableInfo.setModel(new javax.swing.table.DefaultTableModel(
@@ -1079,65 +1083,97 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             isCategoryCacheValid = true;
         }
         
-        // Tạo tab cho từng loại món
-        for (Category category : categoryCache) {
-            if (category.getIs_available() == 1) {
-                // Tạo panel cho tab
-                javax.swing.JPanel tabPanel = new javax.swing.JPanel();
-                tabPanel.setLayout(new java.awt.BorderLayout());
-                tabPanel.setBackground(new java.awt.Color(255, 255, 255));
-                
-                // Tạo table cho tab này
-                javax.swing.JTable categoryTable = new javax.swing.JTable();
-                categoryTable.setFont(new java.awt.Font("Segoe UI", 0, 14));
-                categoryTable.setModel(new javax.swing.table.DefaultTableModel(
-                    new Object [][] {},
-                    new String [] {
-                        "Mã món ăn", "Tên món ăn", "Giá", "Giảm giá", "Đơn vị", "Trạng thái"
-                    }
-                ) {
-                    boolean[] canEdit = new boolean [] {
-                        false, false, false, false, false, false
-                    };
+        // Sắp xếp theo thứ tự yêu cầu: MI, LAU, KhaiVi, ANVAT, Combo, Pancha, Them, NUOCUONG
+        final String[] desiredOrder = new String[] {
+            "mi", "lau", "khaivi", "anvat", "combo", "pancha", "them", "nuocuong"
+        };
 
-                    public boolean isCellEditable(int rowIndex, int columnIndex) {
-                        return canEdit [columnIndex];
+        java.util.Map<String, javax.swing.JScrollPane> nameToScrollPane = new java.util.HashMap<>();
+        java.util.Map<String, String> keyToOriginalTitle = new java.util.HashMap<>();
+
+        // Tạo sẵn các scrollPane theo tên chuẩn hóa không dấu
+        for (Category category : categoryCache) {
+            if (category.getIs_available() != 1) continue;
+
+            // Tạo table cho tab này
+            javax.swing.JTable categoryTable = new javax.swing.JTable();
+            categoryTable.setFont(new java.awt.Font("Segoe UI", 0, 13));
+            categoryTable.setModel(new javax.swing.table.DefaultTableModel(
+                new Object [][] {},
+                new String [] {
+                    "Mã món ăn", "Tên món ăn", "Giá", "Giảm giá", "Đơn vị", "Trạng thái"
+                }
+            ) {
+                boolean[] canEdit = new boolean [] { false, false, false, false, false, false };
+                public boolean isCellEditable(int rowIndex, int columnIndex) { return canEdit[columnIndex]; }
+            });
+
+            categoryTable.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    int row = categoryTable.getSelectedRow();
+                    if (row >= 0) {
+                        String productId = (String) categoryTable.getValueAt(row, 0);
+                        Product product = getProductFromCache(productId);
+                        absoluteLockImageSize();
+                        java.awt.EventQueue.invokeLater(() -> { absoluteLockImageSize(); setForm(product); });
                     }
-                });
-                
-                // Thêm mouse listener cho table
-                categoryTable.addMouseListener(new java.awt.event.MouseAdapter() {
-                    public void mouseClicked(java.awt.event.MouseEvent evt) {
-                        int row = categoryTable.getSelectedRow();
-                        if (row >= 0) {
-                            String productId = (String) categoryTable.getValueAt(row, 0);
-                            Product product = getProductFromCache(productId);
-                            
-                            // Đảm bảo ảnh không tràn TRƯỚC khi setForm
-                            absoluteLockImageSize();
-                            java.awt.EventQueue.invokeLater(() -> {
-                                absoluteLockImageSize();
-                            setForm(product);
-                            });
-                        }
-                    }
-                });
-                
-                // Tạo scroll pane cho table
-                javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(categoryTable);
-                scrollPane.setPreferredSize(new java.awt.Dimension(700, 250)); // Kích thước cố định
-                tabPanel.add(scrollPane, java.awt.BorderLayout.CENTER);
-                
-                // Thêm tab vào tabbed pane
-                jTabbedPane1.addTab(category.getCategory_name(), scrollPane);
+                }
+            });
+
+            javax.swing.JScrollPane scrollPane = new javax.swing.JScrollPane(categoryTable);
+            // Panel nhỏ lại ~ một nửa chiều cao hiện tại để đủ chỗ cho 8 tab theo chiều dọc
+            scrollPane.setPreferredSize(new java.awt.Dimension(680, 180));
+
+            String normalized = normalizeName(category.getCategory_name());
+            nameToScrollPane.put(normalized, scrollPane);
+            keyToOriginalTitle.put(normalized, category.getCategory_name());
+        }
+
+        // Thêm theo thứ tự mong muốn, nếu thiếu thì bỏ qua
+        for (String key : desiredOrder) {
+            javax.swing.JScrollPane sp = nameToScrollPane.get(key);
+            if (sp != null) {
+                String title = keyToOriginalTitle.getOrDefault(key, displayTitleForKey(key));
+                jTabbedPane1.addTab(title, sp);
             }
         }
         
-        // Set kích thước cố định cho tabbed pane
-        jTabbedPane1.setPreferredSize(new java.awt.Dimension(700, 250));
+        // Set kích thước cố định cho tabbed pane (nhỏ lại một nửa chiều cao)
+        jTabbedPane1.setPreferredSize(new java.awt.Dimension(700, 200));
         
         // Lock layout sau khi tạo tabs
         lockEntireLayout();
+    }
+
+    // Chuẩn hóa tên: bỏ dấu, khoảng trắng và lowercase để mapping ổn định
+    private String normalizeName(String input) {
+        if (input == null) return "";
+        String n = Normalizer.normalize(input, Normalizer.Form.NFD)
+            .replaceAll("\\p{InCombiningDiacriticalMarks}+", "")
+            .toLowerCase()
+            .replaceAll("\\s+", "");
+        // Một số tên có khoảng trắng/biến thể
+        if (n.equals("mi") || n.equals("micay") || n.equals("my") || n.equals("mycay")) return "mi";
+        if (n.equals("lau") || n.equals("laUcay") ) return "lau";
+        if (n.equals("khaivi") || n.equals("khaiv")) return "khaivi";
+        if (n.equals("anvat") || n.equals("doanvat") ) return "anvat";
+        if (n.equals("nuocuong") || n.equals("nuocuong")) return "nuocuong";
+        if (n.equals("them") || n.equals("doankem") ) return "them";
+        return n;
+    }
+
+    private String displayTitleForKey(String key) {
+        switch (key) {
+            case "mi": return "Mì";
+            case "lau": return "Lẩu";
+            case "khaivi": return "Khai Vị";
+            case "anvat": return "Ăn Vặt";
+            case "combo": return "Combo";
+            case "pancha": return "Pancha";
+            case "them": return "Thêm";
+            case "nuocuong": return "Nước Uống";
+            default: return key;
+        }
     }
 
     private void setupSearchFunctionality() {
