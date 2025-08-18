@@ -513,7 +513,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
         JButton btnTable = new JButton();
         btnTable.setContentAreaFilled(false);
         btnTable.setOpaque(true);
-        btnTable.setText(String.format("Bàn #%d", tableNumber));
+        btnTable.setText(String.format("#%d", tableNumber));
         btnTable.setPreferredSize(new Dimension(120, 100)); // <-- Thêm dòng này để set height 100px
         btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
         btnTable.setOpaque(true);

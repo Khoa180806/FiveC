@@ -588,7 +588,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         JButton btnTable = new JButton();
         btnTable.setContentAreaFilled(false);
         btnTable.setOpaque(true);
-        btnTable.setText(String.format("Bàn #%d", tableNumber));
+        btnTable.setText(String.format("#%d", tableNumber));
         btnTable.setPreferredSize(new Dimension(120, 120));
         btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
         btnTable.setOpaque(true);
