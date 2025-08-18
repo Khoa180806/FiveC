@@ -230,6 +230,9 @@ private javax.swing.Timer searchTimer;
     private JCheckBox chkMerge;
     private JTextField txtEmail;
     private File lastExportedFile;
+    private String lastExportLabel;
+    private String lastExportFormat;
+    private String lastExportSections;
     
     // Preview Section components
     private JPanel previewStatsContainer;
@@ -511,10 +514,11 @@ private javax.swing.Timer searchTimer;
             }
             
             // Kiểm tra kích thước file (giới hạn 25MB cho email)
-            long fileSizeInMB = lastExportedFile.length() / (1024 * 1024);
-            if (fileSizeInMB > 25) {
+            long fileSizeBytes = lastExportedFile.length();
+            double fileSizeInMB = fileSizeBytes / (1024.0 * 1024.0);
+            if (fileSizeInMB > 25.0) {
                 String message = String.format(
-                    "File báo cáo quá lớn (%d MB).\n" +
+                    "File báo cáo quá lớn (%.1f MB).\n" +
                     "Hầu hết email server giới hạn file đính kèm ≤ 25MB.\n" +
                     "Bạn có muốn tiếp tục gửi?", fileSizeInMB
                 );
@@ -525,16 +529,25 @@ private javax.swing.Timer searchTimer;
             
             // Tạo nội dung email chi tiết hơn
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-            String emailSubject = "Báo cáo doanh thu - " + new SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date());
+            String labelInfo = (lastExportLabel != null && !lastExportLabel.isEmpty()) ? lastExportLabel : new SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date());
+            String formatInfo = (lastExportFormat != null) ? lastExportFormat : (lastExportedFile.getName().toLowerCase().endsWith(".pdf") ? "PDF" : "Excel");
+            String sectionsInfo = (lastExportSections != null && !lastExportSections.isEmpty()) ? lastExportSections : "Tổng hợp";
+            String emailSubject = String.format("Báo cáo FiveC (%s) - %s", formatInfo, labelInfo);
             String emailBody = String.format(
                 "Kính gửi Anh/Chị,\n\n" +
                 "Đính kèm báo cáo doanh thu được tạo lúc %s.\n" +
+                "Khoảng thời gian: %s\n" +
+                "Loại báo cáo: %s\n" +
+                "Định dạng: %s\n" +
                 "File: %s (%.1f MB)\n\n" +
                 "Trân trọng,\n" +
                 "Hệ thống quản lý FiveC",
                 sdf.format(new java.util.Date()),
+                labelInfo,
+                sectionsInfo,
+                formatInfo,
                 lastExportedFile.getName(),
-                fileSizeInMB + (lastExportedFile.length() % (1024 * 1024)) / (1024.0 * 1024.0)
+                fileSizeInMB
             );
 
             Xmail.sendEmailWithAttachment(to, emailSubject, emailBody, lastExportedFile);
@@ -573,90 +586,447 @@ private javax.swing.Timer searchTimer;
      * Export single product report to PDF
      */
     private File exportSingleProductReportPDF(List<Bill> paid, String label, java.util.Date from, java.util.Date to) throws Exception {
-        // For now, fallback to comprehensive report - these methods need to be implemented
-        // TODO: Implement dedicated single product report export
-        return createComprehensivePDF(paid, label, from, to);
+        File out = new File("bao_cao_doanh_thu_theo_mon.pdf");
+        com.itextpdf.text.Document doc = new com.itextpdf.text.Document();
+        com.itextpdf.text.pdf.PdfWriter.getInstance(doc, new FileOutputStream(out));
+        doc.open();
+
+        com.itextpdf.text.Font titleFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 16, com.itextpdf.text.Font.BOLD);
+        com.itextpdf.text.Font sectionFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 14, com.itextpdf.text.Font.BOLD);
+        com.itextpdf.text.Font normalFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 12, com.itextpdf.text.Font.NORMAL);
+
+        try (java.io.InputStream is = getClass().getResourceAsStream("/fonts/DejaVuSans.ttf")) {
+            if (is != null) {
+                File tmpFont = File.createTempFile("dejavu-", ".ttf");
+                java.nio.file.Files.copy(is, tmpFont.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                com.itextpdf.text.pdf.BaseFont bf = com.itextpdf.text.pdf.BaseFont.createFont(tmpFont.getAbsolutePath(), com.itextpdf.text.pdf.BaseFont.IDENTITY_H, com.itextpdf.text.pdf.BaseFont.EMBEDDED);
+                titleFont = new com.itextpdf.text.Font(bf, 16, com.itextpdf.text.Font.BOLD);
+                sectionFont = new com.itextpdf.text.Font(bf, 14, com.itextpdf.text.Font.BOLD);
+                normalFont = new com.itextpdf.text.Font(bf, 12, com.itextpdf.text.Font.NORMAL);
+                tmpFont.delete();
+            }
+        } catch (Exception ignore) {}
+
+        doc.add(new com.itextpdf.text.Paragraph("BÁO CÁO DOANH THU THEO MÓN", titleFont));
+        doc.add(new com.itextpdf.text.Paragraph("Thời gian: " + label, normalFont));
+        doc.add(new com.itextpdf.text.Paragraph("Ngày xuất: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date()), normalFont));
+        doc.add(new com.itextpdf.text.Paragraph("\n"));
+
+        TimeRange range = new TimeRange(from, to);
+        List<BillDetails> billDetails = billDetailsDAO.findAll();
+        List<Product> products = productDAO.findAll();
+
+        Map<Integer, Bill> billIdToBill = new HashMap<>();
+        for (Bill b : paid) {
+            if (b != null && b.getBill_id() != null) billIdToBill.put(b.getBill_id(), b);
+        }
+        Map<String, String> productIdToName = new HashMap<>();
+        for (Product p : products) {
+            if (p != null && p.getProductId() != null) productIdToName.put(p.getProductId(), p.getProductName());
+        }
+
+        Map<String, Double> revenueByProductId = new HashMap<>();
+        Map<String, Integer> quantityByProductId = new HashMap<>();
+        for (BillDetails d : billDetails) {
+            if (d == null) continue;
+            Bill bill = billIdToBill.get(d.getBill_id());
+            if (bill == null || bill.getStatus() == null || bill.getStatus() != 1) continue;
+            java.util.Date when = bill.getCheckout() != null ? bill.getCheckout() : bill.getCheckin();
+            if (when == null || !withinRange(when, range)) continue;
+            String productId = d.getProduct_id();
+            if (productId != null) {
+                revenueByProductId.merge(productId, d.getTotalPrice(), Double::sum);
+                quantityByProductId.merge(productId, d.getAmount(), Integer::sum);
+            }
+        }
+
+        List<Map.Entry<String, Double>> sortedProducts = new ArrayList<>(revenueByProductId.entrySet());
+        sortedProducts.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
+
+        doc.add(new com.itextpdf.text.Paragraph("Top 10 món bán chạy nhất:", sectionFont));
+        int count = 0;
+        for (Map.Entry<String, Double> e : sortedProducts) {
+            if (count++ >= 10) break;
+            String name = productIdToName.getOrDefault(e.getKey(), e.getKey());
+            int qty = quantityByProductId.getOrDefault(e.getKey(), 0);
+            doc.add(new com.itextpdf.text.Paragraph("• " + name + ": " + String.format("%,.0f VNĐ", e.getValue()) + " (" + qty + " phần)", normalFont));
+        }
+        doc.add(new com.itextpdf.text.Paragraph("\n"));
+
+        org.jfree.data.general.DefaultPieDataset prodDs = new org.jfree.data.general.DefaultPieDataset();
+        count = 0;
+        for (Map.Entry<String, Double> e : sortedProducts) {
+            if (count++ >= 10) break;
+            String name = productIdToName.getOrDefault(e.getKey(), e.getKey());
+            prodDs.setValue(name, e.getValue());
+        }
+        org.jfree.chart.JFreeChart prodChart = XChart.createPieChart("Top 10 món bán chạy", prodDs);
+        addChartToPDF(doc, prodChart);
+
+        doc.close();
+        return out;
     }
     
     /**
      * Export single employee report to PDF
      */
     private File exportSingleEmployeeReportPDF(List<Bill> paid, String label, java.util.Date from, java.util.Date to) throws Exception {
-        // For now, fallback to comprehensive report - these methods need to be implemented
-        // TODO: Implement dedicated single employee report export
-        return createComprehensivePDF(paid, label, from, to);
+        File out = new File("bao_cao_doanh_thu_theo_nhan_vien.pdf");
+        com.itextpdf.text.Document doc = new com.itextpdf.text.Document();
+        com.itextpdf.text.pdf.PdfWriter.getInstance(doc, new FileOutputStream(out));
+        doc.open();
+
+        com.itextpdf.text.Font titleFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 16, com.itextpdf.text.Font.BOLD);
+        com.itextpdf.text.Font sectionFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 14, com.itextpdf.text.Font.BOLD);
+        com.itextpdf.text.Font normalFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 12, com.itextpdf.text.Font.NORMAL);
+        try (java.io.InputStream is = getClass().getResourceAsStream("/fonts/DejaVuSans.ttf")) {
+            if (is != null) {
+                File tmpFont = File.createTempFile("dejavu-", ".ttf");
+                java.nio.file.Files.copy(is, tmpFont.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                com.itextpdf.text.pdf.BaseFont bf = com.itextpdf.text.pdf.BaseFont.createFont(tmpFont.getAbsolutePath(), com.itextpdf.text.pdf.BaseFont.IDENTITY_H, com.itextpdf.text.pdf.BaseFont.EMBEDDED);
+                titleFont = new com.itextpdf.text.Font(bf, 16, com.itextpdf.text.Font.BOLD);
+                sectionFont = new com.itextpdf.text.Font(bf, 14, com.itextpdf.text.Font.BOLD);
+                normalFont = new com.itextpdf.text.Font(bf, 12, com.itextpdf.text.Font.NORMAL);
+                tmpFont.delete();
+            }
+        } catch (Exception ignore) {}
+
+        doc.add(new com.itextpdf.text.Paragraph("BÁO CÁO DOANH THU THEO NHÂN VIÊN", titleFont));
+        doc.add(new com.itextpdf.text.Paragraph("Thời gian: " + label, normalFont));
+        doc.add(new com.itextpdf.text.Paragraph("Ngày xuất: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date()), normalFont));
+        doc.add(new com.itextpdf.text.Paragraph("\n"));
+
+        Map<String, Double> empRevenue = new HashMap<>();
+        Map<String, Integer> empOrders = new HashMap<>();
+        Map<String, String> userIdToName = new HashMap<>();
+        try {
+            List<UserAccount> users = userDAO.findAll();
+            for (UserAccount u : users) {
+                if (u != null && u.getUser_id() != null) {
+                    String name = (u.getFullName() != null && !u.getFullName().trim().isEmpty()) ? u.getFullName() : u.getUsername();
+                    userIdToName.put(u.getUser_id(), name);
+                }
+            }
+        } catch (Exception ignore) { }
+        for (Bill b : paid) {
+            String uid = b.getUser_id();
+            if (uid == null) uid = "N/A";
+            empRevenue.merge(uid, b.getTotal_amount(), Double::sum);
+            empOrders.merge(uid, 1, Integer::sum);
+        }
+
+        List<Map.Entry<String, Double>> sortedEmp = new ArrayList<>(empRevenue.entrySet());
+        sortedEmp.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
+
+        doc.add(new com.itextpdf.text.Paragraph("Top nhân viên theo doanh thu:", sectionFont));
+        for (Map.Entry<String, Double> e : sortedEmp) {
+            String name = userIdToName.getOrDefault(e.getKey(), e.getKey());
+            int orders = empOrders.getOrDefault(e.getKey(), 0);
+            doc.add(new com.itextpdf.text.Paragraph("• " + name + ": " + String.format("%,.0f VNĐ", e.getValue()) + " (" + orders + " HĐ)", normalFont));
+        }
+        doc.add(new com.itextpdf.text.Paragraph("\n"));
+
+        org.jfree.data.category.DefaultCategoryDataset empDs = new org.jfree.data.category.DefaultCategoryDataset();
+        for (Map.Entry<String, Double> e : sortedEmp) {
+            String name = userIdToName.getOrDefault(e.getKey(), e.getKey());
+            empDs.addValue(e.getValue(), "Doanh thu", name);
+        }
+        org.jfree.chart.JFreeChart empChart = XChart.createBarChart("Doanh thu theo nhân viên", "Nhân viên", "VNĐ", empDs);
+        addChartToPDF(doc, empChart);
+
+        doc.close();
+        return out;
     }
     
     /**
      * Export single trend report to PDF
      */
     private File exportSingleTrendReportPDF(List<Bill> paid, String label, java.util.Date from, java.util.Date to) throws Exception {
-        // For now, fallback to comprehensive report - these methods need to be implemented
-        // TODO: Implement dedicated single trend report export
-        return createComprehensivePDF(paid, label, from, to);
+        File out = new File("bao_cao_xu_huong_doanh_thu.pdf");
+        com.itextpdf.text.Document doc = new com.itextpdf.text.Document();
+        com.itextpdf.text.pdf.PdfWriter.getInstance(doc, new FileOutputStream(out));
+        doc.open();
+
+        com.itextpdf.text.Font titleFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 16, com.itextpdf.text.Font.BOLD);
+        com.itextpdf.text.Font normalFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 12, com.itextpdf.text.Font.NORMAL);
+        try (java.io.InputStream is = getClass().getResourceAsStream("/fonts/DejaVuSans.ttf")) {
+            if (is != null) {
+                File tmpFont = File.createTempFile("dejavu-", ".ttf");
+                java.nio.file.Files.copy(is, tmpFont.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                com.itextpdf.text.pdf.BaseFont bf = com.itextpdf.text.pdf.BaseFont.createFont(tmpFont.getAbsolutePath(), com.itextpdf.text.pdf.BaseFont.IDENTITY_H, com.itextpdf.text.pdf.BaseFont.EMBEDDED);
+                titleFont = new com.itextpdf.text.Font(bf, 16, com.itextpdf.text.Font.BOLD);
+                normalFont = new com.itextpdf.text.Font(bf, 12, com.itextpdf.text.Font.NORMAL);
+                tmpFont.delete();
+            }
+        } catch (Exception ignore) {}
+
+        doc.add(new com.itextpdf.text.Paragraph("BÁO CÁO XU HƯỚNG DOANH THU", titleFont));
+        doc.add(new com.itextpdf.text.Paragraph("Thời gian: " + label, normalFont));
+        doc.add(new com.itextpdf.text.Paragraph("Ngày xuất: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date()), normalFont));
+        doc.add(new com.itextpdf.text.Paragraph("\n"));
+
+        org.jfree.data.category.DefaultCategoryDataset dataset = new org.jfree.data.category.DefaultCategoryDataset();
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM");
+        java.util.Map<String, Double> byDay = new java.util.TreeMap<>();
+        for (Bill b : paid) {
+            if (b.getCheckout() != null) {
+                byDay.merge(sdf.format(b.getCheckout()), b.getTotal_amount(), Double::sum);
+            }
+        }
+        for (java.util.Map.Entry<String, Double> e : byDay.entrySet()) dataset.addValue(e.getValue(), "Doanh thu", e.getKey());
+        org.jfree.chart.JFreeChart chart = XChart.createLineChart("Xu hướng theo ngày", "Ngày", "VNĐ", dataset);
+        addChartToPDF(doc, chart);
+
+        doc.close();
+        return out;
     }
     
     /**
      * Export single top products report to PDF
      */
     private File exportSingleTopProductsReportPDF(List<Bill> paid, String label, java.util.Date from, java.util.Date to) throws Exception {
-        // For now, fallback to comprehensive report - these methods need to be implemented
-        // TODO: Implement dedicated single top products report export
-        return createComprehensivePDF(paid, label, from, to);
+        return exportSingleProductReportPDF(paid, label, from, to);
     }
     
     /**
      * Export single hourly stats report to PDF
      */
     private File exportSingleHourlyReportPDF(List<Bill> paid, String label, java.util.Date from, java.util.Date to) throws Exception {
-        // For now, fallback to comprehensive report - these methods need to be implemented
-        // TODO: Implement dedicated single hourly stats report export
-        return createComprehensivePDF(paid, label, from, to);
+        File out = new File("bao_cao_theo_gio.pdf");
+        com.itextpdf.text.Document doc = new com.itextpdf.text.Document();
+        com.itextpdf.text.pdf.PdfWriter.getInstance(doc, new FileOutputStream(out));
+        doc.open();
+
+        com.itextpdf.text.Font titleFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 16, com.itextpdf.text.Font.BOLD);
+        com.itextpdf.text.Font normalFont = new com.itextpdf.text.Font(com.itextpdf.text.Font.FontFamily.HELVETICA, 12, com.itextpdf.text.Font.NORMAL);
+        try (java.io.InputStream is = getClass().getResourceAsStream("/fonts/DejaVuSans.ttf")) {
+            if (is != null) {
+                File tmpFont = File.createTempFile("dejavu-", ".ttf");
+                java.nio.file.Files.copy(is, tmpFont.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                com.itextpdf.text.pdf.BaseFont bf = com.itextpdf.text.pdf.BaseFont.createFont(tmpFont.getAbsolutePath(), com.itextpdf.text.pdf.BaseFont.IDENTITY_H, com.itextpdf.text.pdf.BaseFont.EMBEDDED);
+                titleFont = new com.itextpdf.text.Font(bf, 16, com.itextpdf.text.Font.BOLD);
+                normalFont = new com.itextpdf.text.Font(bf, 12, com.itextpdf.text.Font.NORMAL);
+                tmpFont.delete();
+            }
+        } catch (Exception ignore) {}
+
+        doc.add(new com.itextpdf.text.Paragraph("BÁO CÁO THỐNG KÊ THEO GIỜ", titleFont));
+        doc.add(new com.itextpdf.text.Paragraph("Thời gian: " + label, normalFont));
+        doc.add(new com.itextpdf.text.Paragraph("Ngày xuất: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date()), normalFont));
+        doc.add(new com.itextpdf.text.Paragraph("\n"));
+
+        java.util.Map<Integer, Double> revenueByHour = new java.util.TreeMap<>();
+        for (int h = 0; h < 24; h++) revenueByHour.put(h, 0.0);
+        for (Bill b : paid) {
+            if (b.getCheckout() != null) {
+                java.util.Calendar cal = java.util.Calendar.getInstance();
+                cal.setTime(b.getCheckout());
+                int hour = cal.get(java.util.Calendar.HOUR_OF_DAY);
+                revenueByHour.merge(hour, b.getTotal_amount(), Double::sum);
+            }
+        }
+
+        org.jfree.data.category.DefaultCategoryDataset dataset = new org.jfree.data.category.DefaultCategoryDataset();
+        for (java.util.Map.Entry<Integer, Double> e : revenueByHour.entrySet()) {
+            dataset.addValue(e.getValue(), "Doanh thu", String.format("%02d:00", e.getKey()));
+        }
+        org.jfree.chart.JFreeChart chart = XChart.createBarChart("Doanh thu theo giờ", "Giờ", "VNĐ", dataset);
+        addChartToPDF(doc, chart);
+
+        doc.close();
+        return out;
     }
     
     /**
      * Export single product report to Excel
      */
     private File exportSingleProductReportExcel(List<Bill> paid, String label, java.util.Date from, java.util.Date to) throws Exception {
-        // For now, fallback to comprehensive report - these methods need to be implemented
-        // TODO: Implement dedicated single product report export
-        return createComprehensiveExcel(paid, label, from, to);
+        org.apache.poi.hssf.usermodel.HSSFWorkbook wb = new org.apache.poi.hssf.usermodel.HSSFWorkbook();
+        org.apache.poi.hssf.usermodel.HSSFSheet s = wb.createSheet("Theo mon");
+        int r = 0;
+        s.createRow(r++).createCell(0).setCellValue("DOANH THU THEO MÓN");
+        s.createRow(r++).createCell(0).setCellValue("Thời gian: " + label);
+        r++;
+
+        TimeRange range = new TimeRange(from, to);
+        List<BillDetails> billDetails = billDetailsDAO.findAll();
+        List<Product> products = productDAO.findAll();
+        java.util.Map<Integer, Bill> billIdToBill = new java.util.HashMap<>();
+        for (Bill b : paid) {
+            if (b != null && b.getBill_id() != null) billIdToBill.put(b.getBill_id(), b);
+        }
+        java.util.Map<String, String> productIdToName = new java.util.HashMap<>();
+        for (Product p : products) {
+            if (p != null && p.getProductId() != null) productIdToName.put(p.getProductId(), p.getProductName());
+        }
+        java.util.Map<String, Double> revenueByProductId = new java.util.HashMap<>();
+        java.util.Map<String, Integer> quantityByProductId = new java.util.HashMap<>();
+        for (BillDetails d : billDetails) {
+            if (d == null) continue;
+            Bill bill = billIdToBill.get(d.getBill_id());
+            if (bill == null || bill.getStatus() == null || bill.getStatus() != 1) continue;
+            java.util.Date when = bill.getCheckout() != null ? bill.getCheckout() : bill.getCheckin();
+            if (when == null || !withinRange(when, range)) continue;
+            String productId = d.getProduct_id();
+            if (productId != null) {
+                revenueByProductId.merge(productId, d.getTotalPrice(), Double::sum);
+                quantityByProductId.merge(productId, d.getAmount(), Integer::sum);
+            }
+        }
+        java.util.List<java.util.Map.Entry<String, Double>> sorted = new java.util.ArrayList<>(revenueByProductId.entrySet());
+        sorted.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
+
+        org.apache.poi.hssf.usermodel.HSSFRow h = s.createRow(r++);
+        h.createCell(0).setCellValue("Tên món");
+        h.createCell(1).setCellValue("Số lượng");
+        h.createCell(2).setCellValue("Doanh thu");
+        int c = 0;
+        for (java.util.Map.Entry<String, Double> e : sorted) {
+            if (c++ >= 10) break;
+            org.apache.poi.hssf.usermodel.HSSFRow row = s.createRow(r++);
+            String name = productIdToName.getOrDefault(e.getKey(), e.getKey());
+            int qty = quantityByProductId.getOrDefault(e.getKey(), 0);
+            row.createCell(0).setCellValue(name);
+            row.createCell(1).setCellValue(qty);
+            row.createCell(2).setCellValue(e.getValue());
+        }
+        for (int i = 0; i < 3; i++) s.autoSizeColumn(i);
+        File out = new File("bao_cao_theo_mon.xls");
+        try (FileOutputStream fos = new FileOutputStream(out)) { wb.write(fos); }
+        wb.close();
+        return out;
     }
     
     /**
      * Export single employee report to Excel
      */
     private File exportSingleEmployeeReportExcel(List<Bill> paid, String label, java.util.Date from, java.util.Date to) throws Exception {
-        // For now, fallback to comprehensive report - these methods need to be implemented
-        // TODO: Implement dedicated single employee report export
-        return createComprehensiveExcel(paid, label, from, to);
+        org.apache.poi.hssf.usermodel.HSSFWorkbook wb = new org.apache.poi.hssf.usermodel.HSSFWorkbook();
+        org.apache.poi.hssf.usermodel.HSSFSheet s = wb.createSheet("Theo nhan vien");
+        int r = 0;
+        s.createRow(r++).createCell(0).setCellValue("DOANH THU THEO NHÂN VIÊN");
+        s.createRow(r++).createCell(0).setCellValue("Thời gian: " + label);
+        r++;
+
+        org.apache.poi.hssf.usermodel.HSSFRow h = s.createRow(r++);
+        h.createCell(0).setCellValue("Nhân viên");
+        h.createCell(1).setCellValue("Số HĐ");
+        h.createCell(2).setCellValue("Doanh thu");
+        h.createCell(3).setCellValue("TB/HĐ");
+
+        java.util.Map<String, Double> empRevenue = new java.util.HashMap<>();
+        java.util.Map<String, Integer> empOrders = new java.util.HashMap<>();
+        java.util.Map<String, String> userIdToName = new java.util.HashMap<>();
+        try {
+            java.util.List<UserAccount> users = userDAO.findAll();
+            for (UserAccount u : users) {
+                if (u != null && u.getUser_id() != null) {
+                    String name = (u.getFullName() != null && !u.getFullName().trim().isEmpty()) ? u.getFullName() : u.getUsername();
+                    userIdToName.put(u.getUser_id(), name);
+                }
+            }
+        } catch (Exception ignore) { }
+        for (Bill b : paid) {
+            String uid = b.getUser_id();
+            if (uid == null) uid = "N/A";
+            empRevenue.merge(uid, b.getTotal_amount(), Double::sum);
+            empOrders.merge(uid, 1, Integer::sum);
+        }
+        java.util.List<java.util.Map.Entry<String, Double>> sorted = new java.util.ArrayList<>(empRevenue.entrySet());
+        sorted.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
+        for (java.util.Map.Entry<String, Double> e : sorted) {
+            org.apache.poi.hssf.usermodel.HSSFRow row = s.createRow(r++);
+            String name = userIdToName.getOrDefault(e.getKey(), e.getKey());
+            int orders = empOrders.getOrDefault(e.getKey(), 0);
+            double revenue = e.getValue();
+            double avg = orders > 0 ? (revenue / orders) : 0.0;
+            row.createCell(0).setCellValue(name);
+            row.createCell(1).setCellValue(orders);
+            row.createCell(2).setCellValue(revenue);
+            row.createCell(3).setCellValue(avg);
+        }
+        for (int i = 0; i < 4; i++) s.autoSizeColumn(i);
+        File out = new File("bao_cao_theo_nhan_vien.xls");
+        try (FileOutputStream fos = new FileOutputStream(out)) { wb.write(fos); }
+        wb.close();
+        return out;
     }
     
     /**
      * Export single trend report to Excel
      */
     private File exportSingleTrendReportExcel(List<Bill> paid, String label, java.util.Date from, java.util.Date to) throws Exception {
-        // For now, fallback to comprehensive report - these methods need to be implemented
-        // TODO: Implement dedicated single trend report export
-        return createComprehensiveExcel(paid, label, from, to);
+        org.apache.poi.hssf.usermodel.HSSFWorkbook wb = new org.apache.poi.hssf.usermodel.HSSFWorkbook();
+        org.apache.poi.hssf.usermodel.HSSFSheet s = wb.createSheet("Xu huong");
+        int r = 0;
+        s.createRow(r++).createCell(0).setCellValue("XU HƯỚNG DOANH THU");
+        s.createRow(r++).createCell(0).setCellValue("Thời gian: " + label);
+        r++;
+
+        org.apache.poi.hssf.usermodel.HSSFRow h = s.createRow(r++);
+        h.createCell(0).setCellValue("Ngày");
+        h.createCell(1).setCellValue("Doanh thu");
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM");
+        java.util.Map<String, Double> byDay = new java.util.TreeMap<>();
+        for (Bill b : paid) {
+            if (b.getCheckout() != null) {
+                byDay.merge(sdf.format(b.getCheckout()), b.getTotal_amount(), Double::sum);
+            }
+        }
+        for (java.util.Map.Entry<String, Double> e : byDay.entrySet()) {
+            org.apache.poi.hssf.usermodel.HSSFRow row = s.createRow(r++);
+            row.createCell(0).setCellValue(e.getKey());
+            row.createCell(1).setCellValue(e.getValue());
+        }
+        for (int i = 0; i < 2; i++) s.autoSizeColumn(i);
+        File out = new File("bao_cao_xu_huong.xls");
+        try (FileOutputStream fos = new FileOutputStream(out)) { wb.write(fos); }
+        wb.close();
+        return out;
     }
     
     /**
      * Export single top products report to Excel
      */
     private File exportSingleTopProductsReportExcel(List<Bill> paid, String label, java.util.Date from, java.util.Date to) throws Exception {
-        // For now, fallback to comprehensive report - these methods need to be implemented
-        // TODO: Implement dedicated single top products report export
-        return createComprehensiveExcel(paid, label, from, to);
+        return exportSingleProductReportExcel(paid, label, from, to);
     }
     
     /**
      * Export single hourly stats report to Excel
      */
     private File exportSingleHourlyReportExcel(List<Bill> paid, String label, java.util.Date from, java.util.Date to) throws Exception {
-        // For now, fallback to comprehensive report - these methods need to be implemented
-        // TODO: Implement dedicated single hourly stats report export
-        return createComprehensiveExcel(paid, label, from, to);
+        org.apache.poi.hssf.usermodel.HSSFWorkbook wb = new org.apache.poi.hssf.usermodel.HSSFWorkbook();
+        org.apache.poi.hssf.usermodel.HSSFSheet s = wb.createSheet("Theo gio");
+        int r = 0;
+        s.createRow(r++).createCell(0).setCellValue("THỐNG KÊ THEO GIỜ");
+        s.createRow(r++).createCell(0).setCellValue("Thời gian: " + label);
+        r++;
+
+        org.apache.poi.hssf.usermodel.HSSFRow h = s.createRow(r++);
+        h.createCell(0).setCellValue("Giờ");
+        h.createCell(1).setCellValue("Doanh thu");
+
+        java.util.Map<Integer, Double> revenueByHour = new java.util.TreeMap<>();
+        for (int hr = 0; hr < 24; hr++) revenueByHour.put(hr, 0.0);
+        for (Bill b : paid) {
+            if (b.getCheckout() != null) {
+                java.util.Calendar cal = java.util.Calendar.getInstance();
+                cal.setTime(b.getCheckout());
+                int hour = cal.get(java.util.Calendar.HOUR_OF_DAY);
+                revenueByHour.merge(hour, b.getTotal_amount(), Double::sum);
+            }
+        }
+        for (java.util.Map.Entry<Integer, Double> e : revenueByHour.entrySet()) {
+            org.apache.poi.hssf.usermodel.HSSFRow row = s.createRow(r++);
+            row.createCell(0).setCellValue(String.format("%02d:00", e.getKey()));
+            row.createCell(1).setCellValue(e.getValue());
+        }
+        for (int i = 0; i < 2; i++) s.autoSizeColumn(i);
+        File out = new File("bao_cao_theo_gio.xls");
+        try (FileOutputStream fos = new FileOutputStream(out)) { wb.write(fos); }
+        wb.close();
+        return out;
     }
     
     // ========================================
@@ -996,7 +1366,7 @@ private javax.swing.Timer searchTimer;
      */
     private File createComprehensivePDF(List<Bill> paid, String label, java.util.Date from, java.util.Date to) throws Exception {
         File out = new File("bao_cao_tong_hop.pdf");
-        com.itextpdf.text.Document doc = new com.itextpdf.text.Document();
+        com.itextpdf.text.Document doc = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4, 36, 36, 54, 54);
         com.itextpdf.text.pdf.PdfWriter.getInstance(doc, new FileOutputStream(out));
         doc.open();
 
@@ -1018,22 +1388,72 @@ private javax.swing.Timer searchTimer;
             }
         } catch (Exception ignore) {}
         
-        doc.add(new com.itextpdf.text.Paragraph("BÁO CÁO TỔNG HỢP DOANH THU", titleFont));
-        doc.add(new com.itextpdf.text.Paragraph("Thời gian: " + label, normalFont));
-        doc.add(new com.itextpdf.text.Paragraph("Ngày xuất: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date()), normalFont));
+        // Header với logo + tiêu đề
+        try {
+            java.io.InputStream logoIs = getClass().getResourceAsStream("/icons_and_images/icon/FiveCLogo.png");
+            if (logoIs != null) {
+                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+                byte[] buf = new byte[4096];
+                int n;
+                while ((n = logoIs.read(buf)) > 0) baos.write(buf, 0, n);
+                com.itextpdf.text.Image logo = com.itextpdf.text.Image.getInstance(baos.toByteArray());
+                logo.scaleToFit(60, 60);
+                com.itextpdf.text.pdf.PdfPTable headerTable = new com.itextpdf.text.pdf.PdfPTable(new float[]{1f, 4f});
+                headerTable.setWidthPercentage(100);
+                com.itextpdf.text.pdf.PdfPCell logoCell = new com.itextpdf.text.pdf.PdfPCell(logo, true);
+                logoCell.setBorder(com.itextpdf.text.Rectangle.NO_BORDER);
+                logoCell.setRowspan(2);
+                headerTable.addCell(logoCell);
+                com.itextpdf.text.pdf.PdfPCell titleCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase("BÁO CÁO TỔNG HỢP DOANH THU", titleFont));
+                titleCell.setBorder(com.itextpdf.text.Rectangle.NO_BORDER);
+                titleCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_LEFT);
+                headerTable.addCell(titleCell);
+                com.itextpdf.text.pdf.PdfPCell subCell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase("Thời gian: " + label + "    |    Ngày xuất: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date()), normalFont));
+                subCell.setBorder(com.itextpdf.text.Rectangle.NO_BORDER);
+                headerTable.addCell(subCell);
+                doc.add(headerTable);
+            } else {
+                doc.add(new com.itextpdf.text.Paragraph("BÁO CÁO TỔNG HỢP DOANH THU", titleFont));
+                doc.add(new com.itextpdf.text.Paragraph("Thời gian: " + label, normalFont));
+                doc.add(new com.itextpdf.text.Paragraph("Ngày xuất: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date()), normalFont));
+            }
+        } catch (Exception ignore) {
+            doc.add(new com.itextpdf.text.Paragraph("BÁO CÁO TỔNG HỢP DOANH THU", titleFont));
+            doc.add(new com.itextpdf.text.Paragraph("Thời gian: " + label, normalFont));
+            doc.add(new com.itextpdf.text.Paragraph("Ngày xuất: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date()), normalFont));
+        }
+
+        doc.add(new com.itextpdf.text.Paragraph("\n"));
+        doc.add(new com.itextpdf.text.Paragraph("TÓM TẮT", sectionFont));
+        // Bảng tóm tắt
+        double totalRevenueSummary = paid.stream().mapToDouble(Bill::getTotal_amount).sum();
+        int totalBillsSummary = paid.size();
+        double avgBillSummary = totalBillsSummary > 0 ? totalRevenueSummary / totalBillsSummary : 0;
+        java.util.Set<String> uniqueEmp = new java.util.HashSet<>();
+        for (Bill b : paid) if (b.getUser_id() != null) uniqueEmp.add(b.getUser_id());
+        int empCountSummary = uniqueEmp.size();
+        com.itextpdf.text.pdf.PdfPTable summaryTable = new com.itextpdf.text.pdf.PdfPTable(new float[]{3f, 2f});
+        summaryTable.setWidthPercentage(60);
+        addSummaryRow(summaryTable, "Tổng doanh thu", String.format("%,.0f VNĐ", totalRevenueSummary), normalFont);
+        addSummaryRow(summaryTable, "Số hóa đơn", String.valueOf(totalBillsSummary), normalFont);
+        addSummaryRow(summaryTable, "Giá trị TB/HĐ", String.format("%,.0f VNĐ", avgBillSummary), normalFont);
+        addSummaryRow(summaryTable, "Số nhân viên", String.valueOf(empCountSummary), normalFont);
+        doc.add(summaryTable);
         doc.add(new com.itextpdf.text.Paragraph("\n"));
 
         if (chkGeneralRevenue.isSelected()) {
             doc.add(new com.itextpdf.text.Paragraph("1. DOANH THU TỔNG QUÁT", sectionFont));
             
-            // Summary stats
+            // Summary stats table
             double totalRevenue = paid.stream().mapToDouble(Bill::getTotal_amount).sum();
             int totalBills = paid.size();
             double avgBill = totalBills > 0 ? totalRevenue / totalBills : 0;
-            
-            doc.add(new com.itextpdf.text.Paragraph("• Tổng doanh thu: " + String.format("%,.0f VNĐ", totalRevenue), normalFont));
-            doc.add(new com.itextpdf.text.Paragraph("• Số hóa đơn: " + totalBills, normalFont));
-            doc.add(new com.itextpdf.text.Paragraph("• Giá trị trung bình/hóa đơn: " + String.format("%,.0f VNĐ", avgBill), normalFont));
+            com.itextpdf.text.pdf.PdfPTable genTable = new com.itextpdf.text.pdf.PdfPTable(new float[]{3f, 2f});
+            genTable.setWidthPercentage(60);
+            addSummaryRow(genTable, "Tổng doanh thu", String.format("%,.0f VNĐ", totalRevenue), normalFont);
+            addSummaryRow(genTable, "Số hóa đơn", String.valueOf(totalBills), normalFont);
+            addSummaryRow(genTable, "Giá trị TB/HĐ", String.format("%,.0f VNĐ", avgBill), normalFont);
+            doc.add(genTable);
             doc.add(new com.itextpdf.text.Paragraph("\n"));
             
             // Chart
@@ -1072,14 +1492,18 @@ private javax.swing.Timer searchTimer;
             List<Map.Entry<String, Double>> sortedEmp = new ArrayList<>(empRevenue.entrySet());
             sortedEmp.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
             
-            doc.add(new com.itextpdf.text.Paragraph("Top 5 nhân viên có doanh thu cao nhất:", normalFont));
+            // Bảng Top nhân viên
+            com.itextpdf.text.pdf.PdfPTable empTop = new com.itextpdf.text.pdf.PdfPTable(new float[]{4f, 2f, 2f});
+            empTop.setWidthPercentage(100);
+            addHeaderRow(empTop, new String[]{"Nhân viên", "Số HĐ", "Doanh thu"}, sectionFont);
             int count = 0;
             for (Map.Entry<String, Double> e : sortedEmp) {
                 if (count++ >= 5) break;
                 String name = userIdToName.getOrDefault(e.getKey(), e.getKey());
                 int orders = empOrders.getOrDefault(e.getKey(), 0);
-                doc.add(new com.itextpdf.text.Paragraph("• " + name + ": " + String.format("%,.0f VNĐ", e.getValue()) + " (" + orders + " HĐ)", normalFont));
+                addBodyRow(empTop, new String[]{name, String.valueOf(orders), String.format("%,.0f", e.getValue())}, normalFont);
             }
+            doc.add(empTop);
             doc.add(new com.itextpdf.text.Paragraph("\n"));
             
             DefaultCategoryDataset empDs = new DefaultCategoryDataset();
@@ -1125,14 +1549,18 @@ private javax.swing.Timer searchTimer;
             List<Map.Entry<String, Double>> sortedProducts = new ArrayList<>(revenueByProductId.entrySet());
             sortedProducts.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
             
-            doc.add(new com.itextpdf.text.Paragraph("Top 10 món bán chạy nhất:", normalFont));
+            // Bảng Top sản phẩm
+            com.itextpdf.text.pdf.PdfPTable prodTop = new com.itextpdf.text.pdf.PdfPTable(new float[]{5f, 2f, 2f});
+            prodTop.setWidthPercentage(100);
+            addHeaderRow(prodTop, new String[]{"Tên món", "Số lượng", "Doanh thu"}, sectionFont);
             int count = 0;
             for (Map.Entry<String, Double> e : sortedProducts) {
                 if (count++ >= 10) break;
                 String name = productIdToName.getOrDefault(e.getKey(), e.getKey());
                 int qty = quantityByProductId.getOrDefault(e.getKey(), 0);
-                doc.add(new com.itextpdf.text.Paragraph("• " + name + ": " + String.format("%,.0f VNĐ", e.getValue()) + " (" + qty + " phần)", normalFont));
+                addBodyRow(prodTop, new String[]{name, String.valueOf(qty), String.format("%,.0f", e.getValue())}, normalFont);
             }
+            doc.add(prodTop);
             doc.add(new com.itextpdf.text.Paragraph("\n"));
             
             DefaultPieDataset prodDs = new DefaultPieDataset();
@@ -1212,6 +1640,37 @@ private javax.swing.Timer searchTimer;
                     doc.close();
         return out;
     }
+
+    // Helpers for PDF tables
+    private void addHeaderRow(com.itextpdf.text.pdf.PdfPTable table, String[] headers, com.itextpdf.text.Font font) {
+        for (String h : headers) {
+            com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(h, font));
+            cell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+            cell.setBackgroundColor(new com.itextpdf.text.BaseColor(240, 240, 240));
+            cell.setPadding(6f);
+            table.addCell(cell);
+        }
+    }
+
+    private void addBodyRow(com.itextpdf.text.pdf.PdfPTable table, String[] values, com.itextpdf.text.Font font) {
+        for (String v : values) {
+            com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(v, font));
+            cell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_LEFT);
+            cell.setPadding(5f);
+            table.addCell(cell);
+        }
+    }
+
+    private void addSummaryRow(com.itextpdf.text.pdf.PdfPTable table, String label, String value, com.itextpdf.text.Font font) {
+        com.itextpdf.text.pdf.PdfPCell l = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(label, font));
+        l.setPadding(5f);
+        l.setBackgroundColor(new com.itextpdf.text.BaseColor(250, 250, 250));
+        table.addCell(l);
+        com.itextpdf.text.pdf.PdfPCell v = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(value, font));
+        v.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_RIGHT);
+        v.setPadding(5f);
+        table.addCell(v);
+    }
     
     /**
      * Helper method to add chart to PDF
@@ -1232,68 +1691,82 @@ private javax.swing.Timer searchTimer;
      */
     private File createComprehensiveExcel(List<Bill> paid, String label, java.util.Date from, java.util.Date to) throws Exception {
         org.apache.poi.hssf.usermodel.HSSFWorkbook wb = new org.apache.poi.hssf.usermodel.HSSFWorkbook();
-        
+
+        // Tạo style dùng chung
+        org.apache.poi.hssf.usermodel.HSSFCellStyle headerStyle = wb.createCellStyle();
+        org.apache.poi.hssf.usermodel.HSSFFont headerFont = wb.createFont();
+        headerFont.setBold(true); headerFont.setFontHeightInPoints((short)11);
+        headerStyle.setFont(headerFont);
+        headerStyle.setFillForegroundColor((short)22); // GREY_25_PERCENT
+        headerStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+        headerStyle.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
+        headerStyle.setBorderBottom(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        headerStyle.setBorderTop(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        headerStyle.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        headerStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+
+        org.apache.poi.hssf.usermodel.HSSFCellStyle moneyStyle = wb.createCellStyle();
+        org.apache.poi.hssf.usermodel.HSSFDataFormat df = wb.createDataFormat();
+        moneyStyle.setDataFormat(df.getFormat("#,##0"));
+
+        // Sheet 1: Tổng quát
         if (chkGeneralRevenue.isSelected()) {
-            org.apache.poi.hssf.usermodel.HSSFSheet s1 = wb.createSheet("Doanh thu tong quat");
+            org.apache.poi.hssf.usermodel.HSSFSheet s1 = wb.createSheet("Tong quat");
             int r = 0;
-            s1.createRow(r++).createCell(0).setCellValue("BÁO CÁO DOANH THU TỔNG QUÁT");
+            s1.createRow(r++).createCell(0).setCellValue("BÁO CÁO TỔNG HỢP DOANH THU");
             org.apache.poi.hssf.usermodel.HSSFRow row1 = s1.createRow(r++);
             row1.createCell(0).setCellValue("Thời gian:");
             row1.createCell(1).setCellValue(label);
             org.apache.poi.hssf.usermodel.HSSFRow row2 = s1.createRow(r++);
             row2.createCell(0).setCellValue("Ngày xuất:");
             row2.createCell(1).setCellValue(new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date()));
-            
-            r++; // Empty row
-            
-            // Summary stats
+
+            r++;
             double totalRevenue = paid.stream().mapToDouble(Bill::getTotal_amount).sum();
             int totalBills = paid.size();
             double avgBill = totalBills > 0 ? totalRevenue / totalBills : 0;
-            
-            s1.createRow(r++).createCell(0).setCellValue("TỔNG QUAN:");
-            org.apache.poi.hssf.usermodel.HSSFRow summaryRow1 = s1.createRow(r++);
-            summaryRow1.createCell(0).setCellValue("Tổng doanh thu:");
-            summaryRow1.createCell(1).setCellValue(totalRevenue);
-            org.apache.poi.hssf.usermodel.HSSFRow summaryRow2 = s1.createRow(r++);
-            summaryRow2.createCell(0).setCellValue("Số hóa đơn:");
-            summaryRow2.createCell(1).setCellValue(totalBills);
-            org.apache.poi.hssf.usermodel.HSSFRow summaryRow3 = s1.createRow(r++);
-            summaryRow3.createCell(0).setCellValue("Giá trị TB/HĐ:");
-            summaryRow3.createCell(1).setCellValue(avgBill);
-            
-            r++; // Empty row
-            
-            // Detailed bills
-            s1.createRow(r++).createCell(0).setCellValue("CHI TIẾT HÓA ĐƠN:");
-            org.apache.poi.hssf.usermodel.HSSFRow header = s1.createRow(r++);
-            header.createCell(0).setCellValue("Bill ID");
-            header.createCell(1).setCellValue("Bàn");
-            header.createCell(2).setCellValue("Checkout");
-            header.createCell(3).setCellValue("Tổng tiền");
+
+            s1.createRow(r++).createCell(0).setCellValue("TÓM TẮT:");
+            org.apache.poi.hssf.usermodel.HSSFRow t1 = s1.createRow(r++);
+            t1.createCell(0).setCellValue("Tổng doanh thu");
+            t1.createCell(1).setCellValue(totalRevenue); t1.getCell(1).setCellStyle(moneyStyle);
+            org.apache.poi.hssf.usermodel.HSSFRow t2 = s1.createRow(r++);
+            t2.createCell(0).setCellValue("Số hóa đơn");
+            t2.createCell(1).setCellValue(totalBills);
+            org.apache.poi.hssf.usermodel.HSSFRow t3 = s1.createRow(r++);
+            t3.createCell(0).setCellValue("Giá trị TB/HĐ");
+            t3.createCell(1).setCellValue(avgBill); t3.getCell(1).setCellStyle(moneyStyle);
+
+            r++;
+            s1.createRow(r++).createCell(0).setCellValue("CHI TIẾT HÓA ĐƠN");
+            org.apache.poi.hssf.usermodel.HSSFRow h = s1.createRow(r++);
+            String[] cols = {"Bill ID","Bàn","Checkout","Tổng tiền"};
+            for (int i=0;i<cols.length;i++){ org.apache.poi.hssf.usermodel.HSSFCell c = h.createCell(i); c.setCellValue(cols[i]); c.setCellStyle(headerStyle);}    
             SimpleDateFormat sdf2 = new SimpleDateFormat("dd/MM/yyyy HH:mm");
             for (Bill b : paid) {
                 org.apache.poi.hssf.usermodel.HSSFRow rr = s1.createRow(r++);
                 rr.createCell(0).setCellValue(b.getBill_id());
                 rr.createCell(1).setCellValue(b.getTable_number());
                 rr.createCell(2).setCellValue(b.getCheckout() != null ? sdf2.format(b.getCheckout()) : "");
-                rr.createCell(3).setCellValue(b.getTotal_amount());
+                rr.createCell(3).setCellValue(b.getTotal_amount()); rr.getCell(3).setCellStyle(moneyStyle);
             }
-            for (int i = 0; i < 4; i++) s1.autoSizeColumn(i);
+            for (int i = 0; i < cols.length; i++) s1.autoSizeColumn(i);
+            s1.createFreezePane(0, 6);
+            s1.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(6, Math.max(6, r-1), 0, cols.length-1));
         }
 
+        // Sheet 2: Nhân viên
         if (chkEmployeeRevenue.isSelected()) {
-            org.apache.poi.hssf.usermodel.HSSFSheet s2 = wb.createSheet("Theo nhan vien");
-            int r2 = 0;
-            s2.createRow(r2++).createCell(0).setCellValue("DOANH THU THEO NHÂN VIÊN");
-            s2.createRow(r2++).createCell(0).setCellValue("Thời gian: " + label);
-            r2++; // Empty row
-            
-            org.apache.poi.hssf.usermodel.HSSFRow h2 = s2.createRow(r2++);
-            h2.createCell(0).setCellValue("Nhân viên");
-            h2.createCell(1).setCellValue("Số HĐ");
-            h2.createCell(2).setCellValue("Doanh thu");
-            
+            org.apache.poi.hssf.usermodel.HSSFSheet s2 = wb.createSheet("Nhan vien");
+            int r = 0;
+            s2.createRow(r++).createCell(0).setCellValue("DOANH THU THEO NHÂN VIÊN");
+            s2.createRow(r++).createCell(0).setCellValue("Thời gian: " + label);
+            r++;
+            org.apache.poi.hssf.usermodel.HSSFRow h = s2.createRow(r++);
+            String[] cols = {"Nhân viên","Số HĐ","Doanh thu"};
+            for (int i=0;i<cols.length;i++){ org.apache.poi.hssf.usermodel.HSSFCell c = h.createCell(i); c.setCellValue(cols[i]); c.setCellStyle(headerStyle);}    
+
             Map<String, Double> empRevenue = new HashMap<>();
             Map<String, Integer> empOrders = new HashMap<>();
             Map<String, String> userIdToName = new HashMap<>();
@@ -1312,42 +1785,36 @@ private javax.swing.Timer searchTimer;
                 empRevenue.merge(uid, b.getTotal_amount(), Double::sum);
                 empOrders.merge(uid, 1, Integer::sum);
             }
-            
-            // Sort by revenue desc
             List<Map.Entry<String, Double>> sortedEmp = new ArrayList<>(empRevenue.entrySet());
             sortedEmp.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
-            
             for (Map.Entry<String, Double> e : sortedEmp) {
-                org.apache.poi.hssf.usermodel.HSSFRow row = s2.createRow(r2++);
+                org.apache.poi.hssf.usermodel.HSSFRow row = s2.createRow(r++);
                 String name = userIdToName.getOrDefault(e.getKey(), e.getKey());
                 row.createCell(0).setCellValue(name);
                 row.createCell(1).setCellValue(empOrders.getOrDefault(e.getKey(), 0));
-                row.createCell(2).setCellValue(e.getValue());
+                org.apache.poi.hssf.usermodel.HSSFCell v = row.createCell(2); v.setCellValue(e.getValue()); v.setCellStyle(moneyStyle);
             }
-            for (int i = 0; i < 3; i++) s2.autoSizeColumn(i);
+            for (int i = 0; i < cols.length; i++) s2.autoSizeColumn(i);
+            s2.createFreezePane(0, 3);
+            s2.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(3, Math.max(3, r-1), 0, cols.length-1));
         }
-        
+
+        // Sheet 3: Món
         if (chkProductRevenue.isSelected()) {
-            org.apache.poi.hssf.usermodel.HSSFSheet s3 = wb.createSheet("Theo món ăn");
-            int r3 = 0;
-            s3.createRow(r3++).createCell(0).setCellValue("DOANH THU THEO MÓN");
-            s3.createRow(r3++).createCell(0).setCellValue("Thời gian: " + label);
-            r3++; // Empty row
-            
-            // Get product data
+            org.apache.poi.hssf.usermodel.HSSFSheet s3 = wb.createSheet("Mon an");
+            int r = 0;
+            s3.createRow(r++).createCell(0).setCellValue("DOANH THU THEO MÓN");
+            s3.createRow(r++).createCell(0).setCellValue("Thời gian: " + label);
+            r++;
+
             TimeRange range = new TimeRange(from, to);
             List<BillDetails> billDetails = billDetailsDAO.findAll();
             List<Product> products = productDAO.findAll();
-            
             Map<Integer, Bill> billIdToBill = new HashMap<>();
-            for (Bill b : paid) {
-                if (b != null && b.getBill_id() != null) billIdToBill.put(b.getBill_id(), b);
-            }
+            for (Bill b : paid) { if (b != null && b.getBill_id() != null) billIdToBill.put(b.getBill_id(), b);}            
             Map<String, String> productIdToName = new HashMap<>();
-            for (Product p : products) {
-                if (p != null && p.getProductId() != null) productIdToName.put(p.getProductId(), p.getProductName());
-            }
-            
+            for (Product p : products) { if (p != null && p.getProductId() != null) productIdToName.put(p.getProductId(), p.getProductName()); }
+
             Map<String, Double> revenueByProductId = new HashMap<>();
             Map<String, Integer> quantityByProductId = new HashMap<>();
             for (BillDetails d : billDetails) {
@@ -1362,24 +1829,23 @@ private javax.swing.Timer searchTimer;
                     quantityByProductId.merge(productId, d.getAmount(), Integer::sum);
                 }
             }
-            
             List<Map.Entry<String, Double>> sortedProducts = new ArrayList<>(revenueByProductId.entrySet());
             sortedProducts.sort((a, b) -> Double.compare(b.getValue(), a.getValue()));
-            
-            org.apache.poi.hssf.usermodel.HSSFRow h3 = s3.createRow(r3++);
-            h3.createCell(0).setCellValue("Tên món");
-            h3.createCell(1).setCellValue("Số lượng");
-            h3.createCell(2).setCellValue("Doanh thu");
-            
+
+            org.apache.poi.hssf.usermodel.HSSFRow hh = s3.createRow(r++);
+            String[] cols = {"Tên món","Số lượng","Doanh thu"};
+            for (int i=0;i<cols.length;i++){ org.apache.poi.hssf.usermodel.HSSFCell c = hh.createCell(i); c.setCellValue(cols[i]); c.setCellStyle(headerStyle);}    
             for (Map.Entry<String, Double> e : sortedProducts) {
-                org.apache.poi.hssf.usermodel.HSSFRow row = s3.createRow(r3++);
+                org.apache.poi.hssf.usermodel.HSSFRow row = s3.createRow(r++);
                 String name = productIdToName.getOrDefault(e.getKey(), e.getKey());
                 int qty = quantityByProductId.getOrDefault(e.getKey(), 0);
                 row.createCell(0).setCellValue(name);
                 row.createCell(1).setCellValue(qty);
-                row.createCell(2).setCellValue(e.getValue());
+                org.apache.poi.hssf.usermodel.HSSFCell v = row.createCell(2); v.setCellValue(e.getValue()); v.setCellStyle(moneyStyle);
             }
-            for (int i = 0; i < 3; i++) s3.autoSizeColumn(i);
+            for (int i = 0; i < cols.length; i++) s3.autoSizeColumn(i);
+            s3.createFreezePane(0, 3);
+            s3.setAutoFilter(new org.apache.poi.ss.util.CellRangeAddress(3, Math.max(3, r-1), 0, cols.length-1));
         }
 
         File out = new File("bao_cao_tong_hop.xls");
@@ -3089,6 +3555,17 @@ private javax.swing.Timer searchTimer;
                 }
                 
                 if (lastExportedFile != null && lastExportedFile.exists()) {
+                    // Lưu metadata phục vụ email
+                    lastExportLabel = label;
+                    lastExportFormat = "PDF";
+                    StringBuilder sectionsBuilder = new StringBuilder();
+                    if (chkGeneralRevenue.isSelected()) sectionsBuilder.append("Doanh thu tổng quát, ");
+                    if (chkProductRevenue.isSelected()) sectionsBuilder.append("Theo món, ");
+                    if (chkEmployeeRevenue.isSelected()) sectionsBuilder.append("Theo nhân viên, ");
+                    if (chkTrendAnalysis.isSelected()) sectionsBuilder.append("Xu hướng, ");
+                    if (chkTopProducts.isSelected()) sectionsBuilder.append("Top sản phẩm, ");
+                    if (chkHourlyStats.isSelected()) sectionsBuilder.append("Theo giờ, ");
+                    lastExportSections = sectionsBuilder.length() > 2 ? sectionsBuilder.substring(0, sectionsBuilder.length() - 2) : "Tổng hợp";
                     hideProgressBar();
                     XDialog.success("Xuất báo cáo PDF thành công!\nFile: " + lastExportedFile.getName(), "Thành công");
                 } else {
@@ -3120,6 +3597,17 @@ private javax.swing.Timer searchTimer;
                 }
                 
                 if (lastExportedFile != null && lastExportedFile.exists()) {
+                    // Lưu metadata phục vụ email
+                    lastExportLabel = label;
+                    lastExportFormat = "Excel";
+                    StringBuilder sectionsBuilder = new StringBuilder();
+                    if (chkGeneralRevenue.isSelected()) sectionsBuilder.append("Doanh thu tổng quát, ");
+                    if (chkProductRevenue.isSelected()) sectionsBuilder.append("Theo món, ");
+                    if (chkEmployeeRevenue.isSelected()) sectionsBuilder.append("Theo nhân viên, ");
+                    if (chkTrendAnalysis.isSelected()) sectionsBuilder.append("Xu hướng, ");
+                    if (chkTopProducts.isSelected()) sectionsBuilder.append("Top sản phẩm, ");
+                    if (chkHourlyStats.isSelected()) sectionsBuilder.append("Theo giờ, ");
+                    lastExportSections = sectionsBuilder.length() > 2 ? sectionsBuilder.substring(0, sectionsBuilder.length() - 2) : "Tổng hợp";
                     hideProgressBar();
                     XDialog.success("Xuất báo cáo Excel thành công!\nFile: " + lastExportedFile.getName(), "Thành công");
                 } else {
