@@ -1529,16 +1529,17 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
             String newFileName = "prod_" + timestamp + "." + fileExtension;
             
-            // Create target directory in resources (for development)
+            // Create target directory in resources based on category
             // Note: In production, you might want to save to external directory
-            String resourcePath = "src/main/resources/icons_and_images/product/";
+            String categoryFolder = getCategoryFolderName();
+            String resourcePath = "src/main/resources/icons_and_images/" + categoryFolder + "/";
             java.io.File targetDir = new java.io.File(resourcePath);
             
             if (!targetDir.exists()) {
                 boolean created = targetDir.mkdirs();
                 if (!created) {
                     // Try alternative path
-                    targetDir = new java.io.File("resources/icons_and_images/product/");
+                    targetDir = new java.io.File("resources/icons_and_images/" + categoryFolder + "/");
                     if (!targetDir.exists()) {
                         targetDir.mkdirs();
                     }
@@ -1625,6 +1626,44 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
      */
     private String getCurrentImageName() {
         return currentImageName;
+    }
+    
+    /**
+     * ✅ GET CATEGORY FOLDER NAME: Map category name to folder name
+     */
+    private String getCategoryFolderName() {
+        String selectedCategory = (String) cboCate.getSelectedItem();
+        if (selectedCategory == null) {
+            return "product"; // Default fallback
+        }
+        
+        // Map category names to folder names
+        switch (selectedCategory.toLowerCase()) {
+            case "mì":
+            case "mi":
+                return "MI";
+            case "nước uống":
+            case "nuoc uong":
+                return "NUOCUONG";
+            case "ăn vặt":
+            case "an vat":
+                return "ANVAT";
+            case "khai vị":
+            case "khai vi":
+                return "KhaiVi";
+            case "lẩu":
+            case "lau":
+                return "LAU";
+            case "combo":
+                return "Combo";
+            case "thêm":
+            case "them":
+                return "Them";
+            case "pancha":
+                return "Pancha";
+            default:
+                return "product"; // Default fallback
+        }
     }
     
     /**
@@ -1761,8 +1800,16 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             enforceFixedImageSize();
             
             if (imageName != null && !imageName.trim().isEmpty()) {
-                // Thử tìm ảnh trong các thư mục khác nhau
+                // Thử tìm ảnh trong các thư mục khác nhau - ưu tiên folder đồ ăn trực tiếp
                 String[] paths = {
+                    "/icons_and_images/MI/" + imageName,
+                    "/icons_and_images/NUOCUONG/" + imageName,
+                    "/icons_and_images/ANVAT/" + imageName,
+                    "/icons_and_images/KhaiVi/" + imageName,
+                    "/icons_and_images/LAU/" + imageName,
+                    "/icons_and_images/Combo/" + imageName,
+                    "/icons_and_images/Them/" + imageName,
+                    "/icons_and_images/Pancha/" + imageName,
                     "/icons_and_images/" + imageName,
                     "/icons_and_images/product/" + imageName,
                     "/icons_and_images/product/mi/" + imageName,
@@ -1822,10 +1869,32 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
      */
     private boolean tryLoadExternalImage(String imageName) {
         try {
-            // Thử các đường dẫn có thể có của file ảnh vừa lưu
+            // Thử các đường dẫn có thể có của file ảnh vừa lưu - cập nhật theo cấu trúc thư mục mới
             String[] externalPaths = {
+                "src/main/resources/icons_and_images/MI/" + imageName,
+                "src/main/resources/icons_and_images/NUOCUONG/" + imageName,
+                "src/main/resources/icons_and_images/ANVAT/" + imageName,
+                "src/main/resources/icons_and_images/KhaiVi/" + imageName,
+                "src/main/resources/icons_and_images/LAU/" + imageName,
+                "src/main/resources/icons_and_images/Combo/" + imageName,
+                "src/main/resources/icons_and_images/Them/" + imageName,
+                "src/main/resources/icons_and_images/Pancha/" + imageName,
                 "src/main/resources/icons_and_images/product/" + imageName,
+                "src/main/resources/icons_and_images/product/mi/" + imageName,
+                "src/main/resources/icons_and_images/product/drink/" + imageName,
+                "src/main/resources/icons_and_images/product/more/" + imageName,
+                "resources/icons_and_images/MI/" + imageName,
+                "resources/icons_and_images/NUOCUONG/" + imageName,
+                "resources/icons_and_images/ANVAT/" + imageName,
+                "resources/icons_and_images/KhaiVi/" + imageName,
+                "resources/icons_and_images/LAU/" + imageName,
+                "resources/icons_and_images/Combo/" + imageName,
+                "resources/icons_and_images/Them/" + imageName,
+                "resources/icons_and_images/Pancha/" + imageName,
                 "resources/icons_and_images/product/" + imageName,
+                "resources/icons_and_images/product/mi/" + imageName,
+                "resources/icons_and_images/product/drink/" + imageName,
+                "resources/icons_and_images/product/more/" + imageName,
                 "src/main/resources/icons_and_images/" + imageName,
                 "resources/icons_and_images/" + imageName
             };
@@ -1914,6 +1983,14 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     private void createResourceDirectories() {
         try {
             String[] directories = {
+                "src/main/resources/icons_and_images/MI",
+                "src/main/resources/icons_and_images/NUOCUONG",
+                "src/main/resources/icons_and_images/ANVAT",
+                "src/main/resources/icons_and_images/KhaiVi",
+                "src/main/resources/icons_and_images/LAU",
+                "src/main/resources/icons_and_images/Combo",
+                "src/main/resources/icons_and_images/Them",
+                "src/main/resources/icons_and_images/Pancha",
                 "src/main/resources/icons_and_images/product",
                 "src/main/resources/icons_and_images/product/mi",
                 "src/main/resources/icons_and_images/product/drink",
