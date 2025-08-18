@@ -490,12 +490,12 @@ public class MainUI extends javax.swing.JFrame {
 
         jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(134, 39, 43));
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Calendar.png"))); // NOI18N
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Calendar.png"))); // NOI18N
         jLabel2.setText("Ngày :");
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(134, 39, 43));
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Alarm.png"))); // NOI18N
+        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Alarm.png"))); // NOI18N
         jLabel3.setText("Giờ :");
 
         txtDay.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -560,7 +560,7 @@ public class MainUI extends javax.swing.JFrame {
         btnCategoryManagement.setBackground(new java.awt.Color(134, 39, 43));
         btnCategoryManagement.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnCategoryManagement.setForeground(new java.awt.Color(255, 255, 255));
-        btnCategoryManagement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Closed folder.png"))); // NOI18N
+        btnCategoryManagement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Closed folder.png"))); // NOI18N
         btnCategoryManagement.setText("Quản Lí Thực Phẩm");
         btnCategoryManagement.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
         btnCategoryManagement.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -577,7 +577,7 @@ public class MainUI extends javax.swing.JFrame {
         btnBillManagement.setBackground(new java.awt.Color(134, 39, 43));
         btnBillManagement.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         btnBillManagement.setForeground(new java.awt.Color(255, 255, 255));
-        btnBillManagement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Closed folder.png"))); // NOI18N
+        btnBillManagement.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Closed folder.png"))); // NOI18N
         btnBillManagement.setText("Quản Lí Hóa Đơn");
         btnBillManagement.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
         btnBillManagement.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -670,7 +670,7 @@ public class MainUI extends javax.swing.JFrame {
         btnChooseTable.setBackground(new java.awt.Color(204, 204, 204));
         btnChooseTable.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnChooseTable.setForeground(new java.awt.Color(122, 82, 0));
-        btnChooseTable.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Address book.png"))); // NOI18N
+        btnChooseTable.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Address book.png"))); // NOI18N
         btnChooseTable.setText("CHỌN BÀN");
         btnChooseTable.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnChooseTable.addActionListener(new java.awt.event.ActionListener() {
@@ -682,7 +682,7 @@ public class MainUI extends javax.swing.JFrame {
         btnPayUi.setBackground(new java.awt.Color(204, 204, 204));
         btnPayUi.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnPayUi.setForeground(new java.awt.Color(30, 122, 30));
-        btnPayUi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Price list.png"))); // NOI18N
+        btnPayUi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Price list.png"))); // NOI18N
         btnPayUi.setText("THANH TOÁN");
         btnPayUi.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnPayUi.addActionListener(new java.awt.event.ActionListener() {
@@ -696,7 +696,7 @@ public class MainUI extends javax.swing.JFrame {
 
         lblLogo.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         lblLogo.setForeground(new java.awt.Color(134, 39, 43));
-        lblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-five-64.png"))); // NOI18N
+        lblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/icons8-five-64.png"))); // NOI18N
         lblLogo.setText("FIVE C ");
 
         javax.swing.GroupLayout pnlLogoLayout = new javax.swing.GroupLayout(pnlLogo);
@@ -716,7 +716,7 @@ public class MainUI extends javax.swing.JFrame {
         btnHelp.setBackground(new java.awt.Color(204, 204, 204));
         btnHelp.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnHelp.setForeground(new java.awt.Color(102, 102, 102));
-        btnHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Help.png"))); // NOI18N
+        btnHelp.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Help.png"))); // NOI18N
         btnHelp.setText("Hỗ trợ");
         btnHelp.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnHelp.addActionListener(new java.awt.event.ActionListener() {

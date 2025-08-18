@@ -364,7 +364,7 @@
                           <Color blue="2b" green="27" red="86" type="rgb"/>
                         </Property>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/icons_and_images/Calendar.png"/>
+                          <Image iconType="3" name="/icons_and_images/icon/Calendar.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Ng&#xe0;y :"/>
                       </Properties>
@@ -378,7 +378,7 @@
                           <Color blue="2b" green="27" red="86" type="rgb"/>
                         </Property>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/icons_and_images/Alarm.png"/>
+                          <Image iconType="3" name="/icons_and_images/icon/Alarm.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="Gi&#x1edd; :"/>
                       </Properties>
@@ -462,7 +462,7 @@
                       <Color blue="ff" green="ff" red="ff" type="rgb"/>
                     </Property>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/icons_and_images/Closed folder.png"/>
+                      <Image iconType="3" name="/icons_and_images/icon/Closed folder.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Qu&#x1ea3;n L&#xed; Th&#x1ef1;c Ph&#x1ea9;m"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -490,7 +490,7 @@
                       <Color blue="ff" green="ff" red="ff" type="rgb"/>
                     </Property>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/icons_and_images/Closed folder.png"/>
+                      <Image iconType="3" name="/icons_and_images/icon/Closed folder.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Qu&#x1ea3;n L&#xed; H&#xf3;a &#x110;&#x1a1;n"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -656,7 +656,7 @@
                       <Color blue="0" green="52" red="7a" type="rgb"/>
                     </Property>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/icons_and_images/Address book.png"/>
+                      <Image iconType="3" name="/icons_and_images/icon/Address book.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="CH&#x1ecc;N B&#xc0;N"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -683,7 +683,7 @@
                       <Color blue="1e" green="7a" red="1e" type="rgb"/>
                     </Property>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/icons_and_images/Price list.png"/>
+                      <Image iconType="3" name="/icons_and_images/icon/Price list.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="THANH TO&#xc1;N"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -738,7 +738,7 @@
                           <Color blue="2b" green="27" red="86" type="rgb"/>
                         </Property>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/icons_and_images/icons8-five-64.png"/>
+                          <Image iconType="3" name="/icons_and_images/icon/icons8-five-64.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="FIVE C "/>
                       </Properties>
@@ -757,7 +757,7 @@
                       <Color blue="66" green="66" red="66" type="rgb"/>
                     </Property>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/icons_and_images/Help.png"/>
+                      <Image iconType="3" name="/icons_and_images/icon/Help.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="H&#x1ed7; tr&#x1ee3;"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
