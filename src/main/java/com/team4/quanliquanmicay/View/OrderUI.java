@@ -7,8 +7,6 @@ package com.team4.quanliquanmicay.View;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XJdbc;
-import com.team4.quanliquanmicay.util.XValidation;
-import com.team4.quanliquanmicay.util.XStr;
 import com.team4.quanliquanmicay.Entity.Product;
 import com.team4.quanliquanmicay.Entity.Bill;
 import com.team4.quanliquanmicay.Entity.BillDetails;
@@ -16,6 +14,8 @@ import com.team4.quanliquanmicay.DAO.ProductDAO;
 import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
 import com.team4.quanliquanmicay.DAO.BillDetailsDAO;
 import com.team4.quanliquanmicay.Impl.BillDetailsDAOImpl;
+import com.team4.quanliquanmicay.DAO.BillDAO;
+import com.team4.quanliquanmicay.Impl.BillDAOImpl;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.*;
 import java.awt.*;
@@ -26,7 +26,6 @@ import javax.swing.BoxLayout;
 import com.team4.quanliquanmicay.Entity.Category;
 import com.team4.quanliquanmicay.DAO.CategoryDAO;
 import com.team4.quanliquanmicay.Impl.CategoryDAOImpl;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.SwingConstants;
 
 
@@ -39,6 +38,7 @@ public class OrderUI extends javax.swing.JFrame {
     // DAO objects
     private ProductDAO productDAO = new ProductDAOImpl();
     private BillDetailsDAO billDetailsDAO = new BillDetailsDAOImpl();
+    private BillDAO billDAO = new BillDAOImpl();
     private CategoryDAO categoryDAO = new CategoryDAOImpl();
     
     // Current bill
@@ -129,7 +129,7 @@ public class OrderUI extends javax.swing.JFrame {
      */
     private void setupEventHandlers() {
         // Nút Exit
-        btnExit.addActionListener(e -> dispose());
+
         
         // Nút Xóa món
         btnRemove.addActionListener(e -> removeSelectedItem());
@@ -620,92 +620,74 @@ public class OrderUI extends javax.swing.JFrame {
      * Đặt món
      */
     private void placeOrder() {
-        if (cartItems.isEmpty()) {
-            XDialog.alert("Giỏ hàng trống! Vui lòng chọn món ăn.");
-            return;
-        }
-        
-        if (currentBill == null) {
-            XDialog.alert("Không tìm thấy hóa đơn!");
-            return;
-        }
-        
-        if (!currentBill.isValid()) {
-            XDialog.alert("Hóa đơn không hợp lệ!");
-            return;
-        }
-        
         try {
-            // Thêm từng món vào bill details
-            for (CartItem item : cartItems) {
-                // Validation cho Product
-                if (item.getProduct() == null) {
-                    XDialog.alert("Thông tin sản phẩm không hợp lệ!");
-                    return;
-                }
-                
-                // Validation cho quantity
-                if (item.getQuantity() <= 0) {
-                    XDialog.alert("Số lượng phải lớn hơn 0!");
-                    return;
-                }
-                
-                // Validation cho price và discount
-                if (item.getProduct().getPrice() <= 0) {
-                    XDialog.alert("Giá sản phẩm không hợp lệ!");
-                    return;
-                }
-                
-                if (item.getProduct().getDiscount() < 0 || item.getProduct().getDiscount() > 1) {
-                    XDialog.alert("Giảm giá không hợp lệ!");
-                    return;
-                }
-                
-                // Validation cho bill_id
-                if (currentBill.getBill_id() == null || currentBill.getBill_id() <= 0) {
-                    XDialog.alert("ID hóa đơn không hợp lệ!");
-                    return;
-                }
-                
-                // Validation cho product_id
-                if (XValidation.isEmpty(item.getProduct().getProductId())) {
-                    XDialog.alert("ID sản phẩm không hợp lệ!");
-                    return;
-                }
-                
-                BillDetails billDetail = new BillDetails();
-
-                billDetail.setBill_id(currentBill.getBill_id());
-                billDetail.setProduct_id(item.getProduct().getProductId());
-                billDetail.setAmount(item.getQuantity());
-                billDetail.setPrice(item.getProduct().getPrice());
-                billDetail.setDiscount(item.getProduct().getDiscount());
-                
-                // Validation trước khi tạo
-                if (billDetail.isValid()) {
-                    billDetailsDAO.create(billDetail);
-                } else {
-                    XDialog.alert("Dữ liệu bill detail không hợp lệ!");
-                    return;
-                }
+            // Validate cart không rỗng
+            if (cartItems.isEmpty()) {
+                XDialog.warning("Giỏ hàng trống! Vui lòng chọn món ăn.", "Cảnh báo");
+                return;
             }
             
-            XDialog.alert("Đặt món thành công!");
-            
-            // Refresh parent dialog
-            if (parentDialog != null) {
-
-                parentDialog.loadBillDetails(currentBill.getBill_id());
-
+            // Validate current bill
+            if (currentBill == null) {
+                XDialog.error("Không tìm thấy thông tin hóa đơn!", "Lỗi");
+                return;
             }
             
-            // Clear cart and close dialog
-            cartItems.clear();
-            updateCartDisplay();
-            dispose();
+            // Tính tổng tiền
+            final double totalAmount = cartItems.stream()
+                .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
+                .sum();
             
+            // Hiển thị dialog xác nhận đặt món
+            String[] options = {"Đặt món", "Hủy"};
+            Runnable[] actions = {
+                () -> {
+                    try {
+                        // Lưu bill details
+                        for (CartItem item : cartItems) {
+                            BillDetails detail = new BillDetails();
+                            detail.setBill_id(currentBill.getBill_id());
+                            detail.setProduct_id(item.getProduct().getProductId());
+                            detail.setAmount(item.getQuantity());
+                            detail.setPrice(item.getProduct().getPrice());
+                            detail.setDiscount(item.getProduct().getDiscount());
+                            
+                            billDetailsDAO.create(detail);
+                        }
+                        
+                        // Cập nhật tổng tiền cho bill
+                        currentBill.setTotal_amount(currentBill.getTotal_amount() + totalAmount);
+                        billDAO.update(currentBill);
+                        
+                        XDialog.success("Đặt món thành công! Tổng tiền: " + formatCurrency(totalAmount), "Thành công");
+                        
+                        // Clear cart và đóng dialog
+                        cartItems.clear();
+                        updateCartDisplay();
+                        this.dispose();
+                        
+                        // Refresh parent dialog nếu có
+                        if (parentDialog != null) {
+                            parentDialog.refreshBillDetails();
+                        }
+                        
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        XDialog.error("Lỗi khi lưu đơn hàng: " + e.getMessage(), "Lỗi hệ thống");
+                    }
+                },
+                () -> {
+                    // Hủy - không làm gì
+                }
+            };
+            
+            XDialog.showCustomDialog(this, "Xác nhận đặt món", 
+                "Bạn có chắc chắn muốn đặt " + cartItems.size() + " món với tổng tiền " + formatCurrency(totalAmount) + "?",
+                options, actions);
+                
         } catch (Exception e) {
-            XDialog.alert("Lỗi khi đặt món: " + e.getMessage());
+            e.printStackTrace();
+            XDialog.error("Lỗi khi đặt món: " + e.getMessage(), "Lỗi hệ thống");
         }
     }
     
@@ -729,8 +711,16 @@ public class OrderUI extends javax.swing.JFrame {
         // Debug: Kiểm tra hình ảnh
         debugImageLoading(imageName);
         
-        // Thử các đường dẫn khác nhau - giống với MonAnJDialog
+        // Thử các đường dẫn khác nhau - ưu tiên folder đồ ăn trực tiếp
         String[] paths = {
+            "/icons_and_images/MI/" + imageName,
+            "/icons_and_images/NUOCUONG/" + imageName,
+            "/icons_and_images/ANVAT/" + imageName,
+            "/icons_and_images/KhaiVi/" + imageName,
+            "/icons_and_images/LAU/" + imageName,
+            "/icons_and_images/Combo/" + imageName,
+            "/icons_and_images/Them/" + imageName,
+            "/icons_and_images/Pancha/" + imageName,
             "/icons_and_images/" + imageName,
             "/icons_and_images/product/" + imageName,
             "/icons_and_images/product/mi/" + imageName,
@@ -766,7 +756,7 @@ public class OrderUI extends javax.swing.JFrame {
      */
     private ImageIcon getDefaultImage(int size) {
         try {
-            ImageIcon defaultIcon = new ImageIcon(getClass().getResource("/icons_and_images/icons8-plate-50.png"));
+            ImageIcon defaultIcon = new ImageIcon(getClass().getResource("/icons_and_images/icon/icons8-plate-50.png"));
             if (defaultIcon.getImage() != null) {
                 Image img = defaultIcon.getImage().getScaledInstance(size, size, Image.SCALE_SMOOTH);
                 return new ImageIcon(img);
@@ -851,6 +841,14 @@ public class OrderUI extends javax.swing.JFrame {
         }
         
         String[] paths = {
+            "/icons_and_images/MI/" + imageName,
+            "/icons_and_images/NUOCUONG/" + imageName,
+            "/icons_and_images/ANVAT/" + imageName,
+            "/icons_and_images/KhaiVi/" + imageName,
+            "/icons_and_images/LAU/" + imageName,
+            "/icons_and_images/Combo/" + imageName,
+            "/icons_and_images/Them/" + imageName,
+            "/icons_and_images/Pancha/" + imageName,
             "/icons_and_images/" + imageName,
             "/icons_and_images/product/" + imageName,
             "/icons_and_images/product/mi/" + imageName,
@@ -1036,9 +1034,8 @@ public class OrderUI extends javax.swing.JFrame {
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Search.png"))); // NOI18N
+        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Search.png"))); // NOI18N
 
-        jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
         jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 
         jScrollPane4.setPreferredSize(new java.awt.Dimension(660, 393));
@@ -1109,6 +1106,8 @@ public class OrderUI extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        tblOrder.getTableHeader().setResizingAllowed(false);
+        tblOrder.getTableHeader().setReorderingAllowed(false);
         jScrollPane3.setViewportView(tblOrder);
         if (tblOrder.getColumnModel().getColumnCount() > 0) {
             tblOrder.getColumnModel().getColumn(0).setResizable(false);
@@ -1128,6 +1127,11 @@ public class OrderUI extends javax.swing.JFrame {
         btnExit.setForeground(new java.awt.Color(153, 153, 153));
         btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         btnAdd.setBackground(new java.awt.Color(204, 204, 204));
         btnAdd.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -1232,7 +1236,7 @@ public class OrderUI extends javax.swing.JFrame {
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 494, Short.MAX_VALUE))
+                .addGap(0, 498, Short.MAX_VALUE))
             .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
                     .addGap(0, 58, Short.MAX_VALUE)
@@ -1264,6 +1268,13 @@ public class OrderUI extends javax.swing.JFrame {
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnAddActionPerformed
+
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+      if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) 
+          this.dispose(); // Đóng cửa sổ hiện tại
+
+
+    }//GEN-LAST:event_btnExitActionPerformed
 
     /**
      * @param args the command line arguments

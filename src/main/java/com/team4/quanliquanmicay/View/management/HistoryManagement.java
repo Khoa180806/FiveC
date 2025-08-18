@@ -153,12 +153,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         });
         
         // THÊM EVENT HANDLER CHO NÚT EXIT
-        jButton1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleExit();
-            }
-        });
+
     }
     
     /**
@@ -418,11 +413,8 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                 String checkinTime = bill.getCheckin() != null ? dateFormat.format(bill.getCheckin()) : "N/A";
                 String checkoutTime = bill.getCheckout() != null ? dateFormat.format(bill.getCheckout()) : "N/A";
                 
-                // Sửa lại logic xử lý status - status là Boolean, cần convert sang String
-                String status = "N/A";
-                if (bill.getStatus() != null) {
-                    status = bill.getStatus() ? "Đã thanh toán" : "Đang phục vụ";
-                }
+                // Sửa lại logic xử lý status - status là Integer, cần convert sang String
+                String status = bill.getStatusText();
                 
                 String employeeName = getEmployeeName(bill.getUser_id()); // Lấy tên nhân viên
                 
@@ -710,7 +702,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
         jspPayment = new javax.swing.JScrollPane();
         tblPayment = new javax.swing.JTable();
         jSeparator1 = new javax.swing.JSeparator();
-        jButton1 = new javax.swing.JButton();
+        btnExit = new javax.swing.JButton();
 
         jLabel3.setText("jLabel3");
 
@@ -767,8 +759,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
 
         btnFilter.setBackground(new java.awt.Color(204, 204, 204));
         btnFilter.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        btnFilter.setForeground(new java.awt.Color(153, 153, 153));
-        btnFilter.setText("LỌC");
+        btnFilter.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/icons8-sort-24.png"))); // NOI18N
         btnFilter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
 
         jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
@@ -789,6 +780,8 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                 return canEdit [columnIndex];
             }
         });
+        tblBills.getTableHeader().setResizingAllowed(false);
+        tblBills.getTableHeader().setReorderingAllowed(false);
         jpsBIlls.setViewportView(tblBills);
         if (tblBills.getColumnModel().getColumnCount() > 0) {
             tblBills.getColumnModel().getColumn(0).setResizable(false);
@@ -859,11 +852,16 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
-        jButton1.setBackground(new java.awt.Color(185, 163, 147));
-        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton1.setForeground(new java.awt.Color(255, 255, 255));
-        jButton1.setText("Thoát");
-        jButton1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
+        btnExit.setBackground(new java.awt.Color(185, 163, 147));
+        btnExit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnExit.setForeground(new java.awt.Color(255, 255, 255));
+        btnExit.setText("Thoát");
+        btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout pnlUiLayout = new javax.swing.GroupLayout(pnlUi);
         pnlUi.setLayout(pnlUiLayout);
@@ -891,7 +889,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                         .addComponent(btnFilter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(jTabbedPane1)
                     .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         pnlUiLayout.setVerticalGroup(
@@ -913,7 +911,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
+                .addComponent(btnExit)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -930,6 +928,12 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+       if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) 
+          this.dispose(); // Đóng cửa sổ hiện tại
+
+    }//GEN-LAST:event_btnExitActionPerformed
 
     /**
      * @param args the command line arguments
@@ -970,9 +974,9 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCheckin;
     private javax.swing.JButton btnCheckout;
+    private javax.swing.JButton btnExit;
     private javax.swing.JButton btnFilter;
     private javax.swing.JComboBox<String> cboFilter;
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JSeparator jSeparator1;
@@ -1075,7 +1079,7 @@ public class HistoryManagement extends javax.swing.JFrame implements PaymentHist
      */
     private void handleExit() {
         if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng?", "Xác nhận thoát")) {
-            System.exit(0);
+            this.dispose();
         }
         // Nếu chọn NO thì không làm gì cả, tiếp tục sử dụng ứng dụng
     }

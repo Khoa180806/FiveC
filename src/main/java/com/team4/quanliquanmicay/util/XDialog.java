@@ -7,6 +7,15 @@ import java.awt.event.WindowEvent;
 
 public class XDialog {
     
+    // Constants for dialog options
+    public static final int YES_OPTION = JOptionPane.YES_OPTION;
+    public static final int NO_OPTION = JOptionPane.NO_OPTION;
+    public static final int CANCEL_OPTION = JOptionPane.CANCEL_OPTION;
+    public static final int OK_OPTION = JOptionPane.OK_OPTION;
+    public static final int YES_NO_OPTION = JOptionPane.YES_NO_OPTION;
+    public static final int YES_NO_CANCEL_OPTION = JOptionPane.YES_NO_CANCEL_OPTION;
+    public static final int OK_CANCEL_OPTION = JOptionPane.OK_CANCEL_OPTION;
+    
     /**
      * Hiển thị thông báo với title mặc định
      */
@@ -191,6 +200,50 @@ public class XDialog {
     
     public static String selection(String message, String title, String[] options) {
         return selection(null, message, title, options);
+    }
+    
+    /**
+     * Hiển thị hộp thoại xác nhận với các tùy chọn tùy chỉnh
+     */
+    public static int showConfirm(Window parent, String message, String title, int optionType) {
+        final int[] result = {CANCEL_OPTION};
+        
+        showDialogWithParent(parent, () -> {
+            XTheme.customizeDialogs();
+            JOptionPane optionPane = new JOptionPane(message, JOptionPane.QUESTION_MESSAGE, optionType);
+            optionPane.setIcon(createDialogIcon("question"));
+            JDialog dialog = optionPane.createDialog(parent, title);
+            dialog.setVisible(true);
+            
+            Object value = optionPane.getValue();
+            if (value != null) {
+                if (value.equals(JOptionPane.YES_OPTION)) {
+                    result[0] = YES_OPTION;
+                } else if (value.equals(JOptionPane.NO_OPTION)) {
+                    result[0] = NO_OPTION;
+                } else if (value.equals(JOptionPane.CANCEL_OPTION)) {
+                    result[0] = CANCEL_OPTION;
+                } else if (value.equals(JOptionPane.OK_OPTION)) {
+                    result[0] = OK_OPTION;
+                }
+            }
+        });
+        
+        return result[0];
+    }
+    
+    /**
+     * Hiển thị hộp thoại xác nhận với title mặc định
+     */
+    public static int showConfirm(String message, String title) {
+        return showConfirm(null, message, title, YES_NO_OPTION);
+    }
+    
+    /**
+     * Hiển thị hộp thoại xác nhận với title và option type tùy chỉnh
+     */
+    public static int showConfirm(String message, String title, int optionType) {
+        return showConfirm(null, message, title, optionType);
     }
     
     // === ADVANCED DIALOG VỚI CUSTOM LAYOUT ===
@@ -385,7 +438,7 @@ public class XDialog {
                 break;
             case "success":
                 iconColor = new Color(40, 167, 69);
-                symbol = "✓";
+                symbol = "S";
                 break;
             case "question":
                 iconColor = new Color(134, 39, 43); // Đỏ mì cay
@@ -452,7 +505,7 @@ public class XDialog {
                 break;
             case "success":
                 iconColor = new Color(40, 167, 69);
-                symbol = "✓";
+                symbol = "S";
                 break;
             case "question":
                 iconColor = new Color(134, 39, 43); // Đỏ mì cay

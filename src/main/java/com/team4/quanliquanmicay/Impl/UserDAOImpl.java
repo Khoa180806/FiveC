@@ -9,9 +9,9 @@ import java.util.List;
 public class UserDAOImpl implements UserDAO {
 
     // Sửa lại SQL để khớp với cấu trúc bảng USER_ACCOUNT
-    String createSql = "INSERT INTO USER_ACCOUNT(user_id, username, pass, fullName, email, phone_number, image, is_enabled, role_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    String createSql = "INSERT INTO USER_ACCOUNT(user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, created_date, role_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
-    String updateSql = "UPDATE USER_ACCOUNT SET username=?, pass=?, fullName=?, email=?, phone_number=?, image=?, is_enabled=?, role_id=? WHERE user_id=?";
+    String updateSql = "UPDATE USER_ACCOUNT SET username=?, pass=?, fullName=?, gender=?, email=?, phone_number=?, image=?, is_enabled=?, created_date=?, role_id=? WHERE user_id=?";
     
     String deleteSql = "DELETE FROM USER_ACCOUNT WHERE user_id=?";
     String findAllSql = "SELECT user_id, username, pass, fullName, gender, email, phone_number, image, is_enabled, created_date, role_id FROM USER_ACCOUNT";
@@ -25,10 +25,12 @@ public class UserDAOImpl implements UserDAO {
             entity.getUsername(),
             entity.getPass(),
             entity.getFullName(),
+            entity.getGender(),
             entity.getEmail(),
             entity.getPhone_number(),
             entity.getImage(),
             entity.getIs_enabled(),
+            entity.getCreated_date() != null ? entity.getCreated_date() : new java.util.Date(),
             entity.getRole_id()
         };
         
@@ -42,10 +44,12 @@ public class UserDAOImpl implements UserDAO {
             entity.getUsername(),
             entity.getPass(),
             entity.getFullName(),
+            entity.getGender(),
             entity.getEmail(),
             entity.getPhone_number(),
             entity.getImage(),
             entity.getIs_enabled(),
+            entity.getCreated_date() != null ? entity.getCreated_date() : new java.util.Date(),
             entity.getRole_id(),
             entity.getUser_id()
         };

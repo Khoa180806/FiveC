@@ -14,9 +14,12 @@ import com.team4.quanliquanmicay.Entity.Product;
 import com.team4.quanliquanmicay.DAO.BillDAO;
 import com.team4.quanliquanmicay.DAO.BillDetailsDAO;
 import com.team4.quanliquanmicay.DAO.ProductDAO;
+import com.team4.quanliquanmicay.DAO.PaymentHistoryDAO;
 import com.team4.quanliquanmicay.Impl.BillDAOImpl;
 import com.team4.quanliquanmicay.Impl.BillDetailsDAOImpl;
 import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
+import com.team4.quanliquanmicay.Impl.PaymentHistoryDAOImpl;
+
 import com.team4.quanliquanmicay.util.XAuth;
 import com.team4.quanliquanmicay.Controller.BillController;
 import javax.swing.table.DefaultTableModel;
@@ -36,6 +39,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
     private final BillDAO billDAO = new BillDAOImpl();
     private final BillDetailsDAO billDetailsDAO = new BillDetailsDAOImpl();
     private final ProductDAO productDAO = new ProductDAOImpl();
+
     
     // Current bill data
     private Bill currentBill;
@@ -97,7 +101,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         btnOrder.addActionListener(e -> openDatMonDialog());
         btnUnOrder.addActionListener(e -> deleteSelectedItem());
         btnUnBill.addActionListener(e -> cancelBill());
-        btnExit.addActionListener(e -> dispose());
+
         btnPayment.addActionListener(e -> openPaymentDialog());
         
         // Double click để xem chi tiết
@@ -141,6 +145,15 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         }
         
         OrderUI datMonDialog = new OrderUI(this, currentBill);
+        
+        // Thêm window listener để refresh khi dialog đóng
+        datMonDialog.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosed(java.awt.event.WindowEvent windowEvent) {
+                refreshBillDetails();
+            }
+        });
+        
         datMonDialog.setVisible(true);
     }
     
@@ -151,36 +164,31 @@ public class BillUI extends javax.swing.JFrame implements BillController {
     public void deleteSelectedItem() {
         int selectedRow = tbBill.getSelectedRow();
         if (selectedRow == -1) {
-            XDialog.alert("Vui lòng chọn món cần xóa!");
+            XDialog.warning("Vui lòng chọn món cần xóa!", "Cảnh báo");
             return;
         }
-        
-        if (XDialog.confirm("Bạn có chắc muốn xóa món này?")) {
+        if (XDialog.confirm("Bạn có chắc muốn xóa món này?", "Xác nhận")) {
             try {
-                // Lấy dữ liệu từ table một cách an toàn
                 Object productNameObj = tbBill.getValueAt(selectedRow, 1);
                 Object amountObj = tbBill.getValueAt(selectedRow, 3);
-                
                 if (productNameObj == null || amountObj == null) {
-                    XDialog.alert("Dữ liệu không hợp lệ!");
+                    XDialog.error("Dữ liệu không hợp lệ!", "Lỗi");
                     return;
                 }
-                
                 String productName = XStr.valueOf(productNameObj);
                 if (XValidation.isEmpty(productName)) {
-                    XDialog.alert("Tên món không hợp lệ!");
+                    XDialog.error("Tên món không hợp lệ!", "Lỗi");
                     return;
                 }
-                
                 int amount;
                 try {
                     amount = Integer.parseInt(XStr.valueOf(amountObj));
                     if (amount <= 0) {
-                        XDialog.alert("Số lượng phải lớn hơn 0!");
+                        XDialog.warning("Số lượng phải lớn hơn 0!", "Cảnh báo");
                         return;
                     }
                 } catch (NumberFormatException e) {
-                    XDialog.alert("Số lượng không hợp lệ!");
+                    XDialog.error("Số lượng không hợp lệ!", "Lỗi");
                     return;
                 }
                 
@@ -204,7 +212,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
                 }
                 
             } catch (Exception e) {
-                XDialog.alert("Lỗi khi xóa món: " + e.getMessage());
+                XDialog.error("Lỗi khi xóa món: " + e.getMessage(), "Lỗi");
             }
         }
     }
@@ -221,7 +229,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         
         if (XDialog.confirm("Bạn có chắc muốn hủy hóa đơn này?")) {
             try {
-                currentBill.setStatus(false);
+                currentBill.setStatus(2); // Hủy
                 currentBill.setCheckout(new Date());
                 billDAO.update(currentBill);
                 
@@ -272,7 +280,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         txtBill_Id.setText(String.valueOf(bill.getBill_id()));
         txtName_Employee.setText(getEmployeeName(bill.getUser_id()));
         txtTable_Name.setText("Bàn " + bill.getTable_number());
-        txtStatus.setText(bill.getStatus() ? "Đang phục vụ" : "Đã hủy");
+        txtStatus.setText(bill.getStatusText());
         
         // Hiển thị thời gian tạo
         if (bill.getCheckin() != null) {
@@ -299,6 +307,15 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             fillTableWithBillDetails(currentBillDetails);
         } catch (Exception e) {
             XDialog.alert("Lỗi khi tải chi tiết hóa đơn: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Refresh bill details - reload lại chi tiết hóa đơn hiện tại
+     */
+    public void refreshBillDetails() {
+        if (currentBill != null) {
+            loadBillDetails(currentBill.getBill_id());
         }
     }
     
@@ -517,11 +534,11 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             List<Bill> bills;
             if ("Đang phục vụ".equals(status)) {
                 bills = billDAO.findAll().stream()
-                    .filter(bill -> bill.getStatus())
+                    .filter(bill -> "Đang phục vụ".equals(bill.getStatus()))
                     .collect(java.util.stream.Collectors.toList());
             } else if ("Đã thanh toán".equals(status)) {
                 bills = billDAO.findAll().stream()
-                    .filter(bill -> !bill.getStatus())
+                    .filter(bill -> bill.getStatus() != null && bill.getStatus() == 1)
                     .collect(java.util.stream.Collectors.toList());
             } else {
                 bills = billDAO.findAll();
@@ -565,7 +582,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             sb.append("Danh sách hóa đơn bàn ").append(tableNumber).append(":\n\n");
             
             for (Bill bill : bills) {
-                String status = bill.getStatus() ? "Đang phục vụ" : "Đã thanh toán";
+                String status = bill.getStatusText();
                 sb.append("Mã HD: ").append(bill.getBill_id())
                   .append(" | Trạng thái: ").append(status)
                   .append(" | Tổng: ").append(formatCurrency(bill.getTotal_amount()))
@@ -595,7 +612,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             sb.append("Danh sách hóa đơn của nhân viên:\n\n");
             
             for (Bill bill : bills) {
-                String status = bill.getStatus() ? "Đang phục vụ" : "Đã thanh toán";
+                String status = bill.getStatusText();
                 sb.append("Mã HD: ").append(bill.getBill_id())
                   .append(" | Bàn: ").append(bill.getTable_number())
                   .append(" | Trạng thái: ").append(status)
@@ -630,7 +647,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
               .append(" đến ").append(XDate.format(toDate, "HH:mm:ss dd/MM/yyyy")).append(":\n\n");
             
             for (Bill bill : bills) {
-                String status = bill.getStatus() ? "Đang phục vụ" : "Đã thanh toán";
+                String status = bill.getStatusText();
                 sb.append("Mã HD: ").append(bill.getBill_id())
                   .append(" | Bàn: ").append(bill.getTable_number())
                   .append(" | Trạng thái: ").append(status)
@@ -687,15 +704,31 @@ public class BillUI extends javax.swing.JFrame implements BillController {
      */
     public void setTableInfo(int tableNumber) {
         try {
+            System.out.println("DEBUG: setTableInfo called for table " + tableNumber);
             txtTable_Name.setText("Bàn " + tableNumber);
+            
+            System.out.println("DEBUG: Finding current bill for table...");
             Bill currentBillForTable = findCurrentBillByTable(tableNumber);
+            
             if (currentBillForTable != null) {
+                System.out.println("DEBUG: Found existing bill: " + currentBillForTable.getBill_id());
                 loadBill(String.valueOf(currentBillForTable.getBill_id()));
             } else {
+                System.out.println("DEBUG: No active bill found for table " + tableNumber);
+                System.out.println("DEBUG: Checking if table has any bills (paid or cancelled)...");
+                
+                // Kiểm tra xem bàn có bills đã thanh toán không
+                Bill lastBillForTable = findLastBillByTable(tableNumber);
+                if (lastBillForTable != null) {
+                    System.out.println("DEBUG: Found last bill " + lastBillForTable.getBill_id() + " with status " + lastBillForTable.getStatus());
+                    System.out.println("DEBUG: Creating new bill for table " + tableNumber);
+                }
+                
                 createNewBillForTable(tableNumber, XAuth.user.getUser_id());
             }
         } catch (Exception e) {
             System.err.println("Lỗi khi set thông tin bàn: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -704,13 +737,54 @@ public class BillUI extends javax.swing.JFrame implements BillController {
      */
     private Bill findCurrentBillByTable(int tableNumber) {
         try {
+            System.out.println("DEBUG: Finding bills from database...");
             List<Bill> allBills = billDAO.findAll();
-            return allBills.stream()
-                .filter(bill -> bill.getTable_number() == tableNumber && bill.getStatus())
+            System.out.println("DEBUG: Found " + allBills.size() + " bills in database");
+            
+            // Debug: Print all bills for this table
+            for (Bill bill : allBills) {
+                if (bill.getTable_number() == tableNumber) {
+                    System.out.println("DEBUG: Bill for table " + tableNumber + " - ID: " + bill.getBill_id() + ", Status: '" + bill.getStatus() + "'");
+                }
+            }
+            
+            Bill result = allBills.stream()
+                .filter(bill -> {
+                    boolean tableMatch = bill.getTable_number() == tableNumber;
+                    // Xử lý cả status string và số cũ để tương thích  
+                    // Kiểm tra status = 0 (Đang phục vụ)
+                    boolean statusMatch = bill.getStatus() != null && bill.getStatus() == 0;
+                    System.out.println("DEBUG: Bill " + bill.getBill_id() + 
+                        " - Table: " + bill.getTable_number() + 
+                        " (match: " + tableMatch + "), Status: '" + bill.getStatus() + 
+                        "' (type: " + (bill.getStatus() != null ? bill.getStatus().getClass().getSimpleName() : "null") + ") " +
+                        "(match: " + statusMatch + ")");
+                    return tableMatch && statusMatch;
+                })
                 .findFirst()
                 .orElse(null);
+                
+            System.out.println("DEBUG: Filter result: " + (result != null ? "Found bill " + result.getBill_id() : "No bill found"));
+            return result;
         } catch (Exception e) {
             System.err.println("Lỗi khi tìm hóa đơn của bàn: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * Tìm hóa đơn cuối cùng của bàn (bất kể status)
+     */
+    private Bill findLastBillByTable(int tableNumber) {
+        try {
+            List<Bill> allBills = billDAO.findAll();
+            return allBills.stream()
+                .filter(bill -> bill.getTable_number() == tableNumber)
+                .max((b1, b2) -> b1.getBill_id().compareTo(b2.getBill_id()))
+                .orElse(null);
+        } catch (Exception e) {
+            System.err.println("Lỗi khi tìm hóa đơn cuối cùng của bàn: " + e.getMessage());
             return null;
         }
     }
@@ -720,23 +794,53 @@ public class BillUI extends javax.swing.JFrame implements BillController {
      */
     public void createNewBillForTable(int tableNumber, String userId) {
         try {
+            System.out.println("DEBUG: Starting createNewBillForTable for table " + tableNumber);
+            
+            // Tạo PaymentHistory tạm thời để có payment_history_id hợp lệ
+            String createPaymentSql = "INSERT INTO PAYMENT_HISTORY(payment_method_id, total_amount, status, note) VALUES(?, ?, ?, ?)";
+            Object[] paymentValues = {
+                1, // Tiền mặt (default)
+                0.0,
+                "Chưa thanh toán",
+                "Hóa đơn bàn " + tableNumber + " - Chưa thanh toán"
+            };
+            
+            System.out.println("DEBUG: Inserting payment history...");
+            XJdbc.executeUpdate(createPaymentSql, paymentValues);
+            
+            // Lấy payment_history_id vừa tạo (ID cao nhất)
+            System.out.println("DEBUG: Getting last payment_history_id...");
+            String getLastIdSql = "SELECT MAX(payment_history_id) FROM PAYMENT_HISTORY";
+            
+            // Use the new safe type conversion method
+            Integer lastPaymentId = XJdbc.getValue(getLastIdSql, Integer.class);
+            System.out.println("DEBUG: Got payment_history_id: " + lastPaymentId);
+            
+            // Tạo Bill mới với payment_history_id vừa tạo
             Bill newBill = new Bill();
             newBill.setUser_id(userId);
             newBill.setTable_number(tableNumber);
-            newBill.setStatus(true);
+            newBill.setStatus(0); // Đang phục vụ
             newBill.setCheckin(new Date());
-            newBill.setTotal_amount(0);
-            newBill.setPayment_history_id(null);
+            newBill.setTotal_amount(0.0);
             newBill.setPhone_number(null);
+            // Use fallback if lastPaymentId is null
+            newBill.setPayment_history_id(lastPaymentId != null ? lastPaymentId : 1);
+            
+            System.out.println("DEBUG: Creating bill with status: " + newBill.getStatus() + " (type: " + newBill.getStatus().getClass().getSimpleName() + ")");
             
             billDAO.create(newBill);
             loadBillFromDatabase(tableNumber, userId);
             updateTableStatus(tableNumber, TABLE_SERVING);
             
         } catch (Exception e) {
+            System.err.println("DEBUG: Exception in createNewBillForTable: " + e.getMessage());
+            e.printStackTrace();
             XDialog.alert("Lỗi khi tạo hóa đơn mới: " + e.getMessage());
         }
     }
+    
+
     
     /**
      * Load hóa đơn từ database sau khi tạo
@@ -770,16 +874,16 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         btnUnBill = new javax.swing.JButton();
         btnPayment = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
+        lblBillId = new javax.swing.JLabel();
+        lblEmployee = new javax.swing.JLabel();
         txtName_Employee = new javax.swing.JTextField();
         txtBill_Id = new javax.swing.JTextField();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel14 = new javax.swing.JLabel();
+        lblTable = new javax.swing.JLabel();
+        lblStatus = new javax.swing.JLabel();
         txtStatus = new javax.swing.JTextField();
         txtTable_Name = new javax.swing.JTextField();
-        jLabel15 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
+        lblCreateAt = new javax.swing.JLabel();
+        lblDoneTime = new javax.swing.JLabel();
         txtEnd = new javax.swing.JTextField();
         txtBegin = new javax.swing.JTextField();
 
@@ -805,6 +909,8 @@ public class BillUI extends javax.swing.JFrame implements BillController {
                 return canEdit [columnIndex];
             }
         });
+        tbBill.getTableHeader().setResizingAllowed(false);
+        tbBill.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tbBill);
         if (tbBill.getColumnModel().getColumnCount() > 0) {
             tbBill.getColumnModel().getColumn(0).setResizable(false);
@@ -844,7 +950,11 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         btnUnOrder.setForeground(new java.awt.Color(102, 102, 102));
         btnUnOrder.setText("Xóa món");
         btnUnOrder.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-
+        btnUnOrder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUnOrderActionPerformed(evt);
+            }
+        });
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
@@ -853,6 +963,11 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         btnExit.setForeground(new java.awt.Color(153, 0, 0));
         btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         btnOrder.setBackground(new java.awt.Color(204, 204, 204));
         btnOrder.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -875,37 +990,37 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         jPanel2.setBackground(new java.awt.Color(204, 164, 133));
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
 
-        jLabel11.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel11.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel11.setText("MÃ HÓA ĐƠN :");
+        lblBillId.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblBillId.setForeground(new java.awt.Color(255, 255, 255));
+        lblBillId.setText("MÃ HÓA ĐƠN :");
 
-        jLabel12.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel12.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel12.setText("NHÂN VIÊN :");
+        lblEmployee.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblEmployee.setForeground(new java.awt.Color(255, 255, 255));
+        lblEmployee.setText("NHÂN VIÊN :");
 
         txtName_Employee.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         txtBill_Id.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jLabel13.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel13.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel13.setText("BÀN SỐ :");
+        lblTable.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblTable.setForeground(new java.awt.Color(255, 255, 255));
+        lblTable.setText("BÀN SỐ :");
 
-        jLabel14.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel14.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel14.setText("TRẠNG THÁI");
+        lblStatus.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblStatus.setForeground(new java.awt.Color(255, 255, 255));
+        lblStatus.setText("TRẠNG THÁI");
 
         txtStatus.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         txtTable_Name.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
-        jLabel15.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel15.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel15.setText("THỜI ĐIỂM TẠO :");
+        lblCreateAt.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblCreateAt.setForeground(new java.awt.Color(255, 255, 255));
+        lblCreateAt.setText("THỜI ĐIỂM TẠO :");
 
-        jLabel16.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jLabel16.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel16.setText("THỜI ĐIỂM THANH TOÁN :");
+        lblDoneTime.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        lblDoneTime.setForeground(new java.awt.Color(255, 255, 255));
+        lblDoneTime.setText("THỜI ĐIỂM THANH TOÁN :");
 
         txtEnd.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
@@ -918,16 +1033,16 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(53, 53, 53)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel11)
-                    .addComponent(jLabel12))
+                    .addComponent(lblBillId)
+                    .addComponent(lblEmployee))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(txtBill_Id)
                     .addComponent(txtName_Employee, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel14)
-                    .addComponent(jLabel13))
+                    .addComponent(lblStatus)
+                    .addComponent(lblTable))
                 .addGap(12, 12, 12)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(txtStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -935,11 +1050,11 @@ public class BillUI extends javax.swing.JFrame implements BillController {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel15)
+                        .addComponent(lblCreateAt)
                         .addGap(74, 74, 74)
                         .addComponent(txtBegin))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel16)
+                        .addComponent(lblDoneTime)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -949,19 +1064,19 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
+                    .addComponent(lblBillId)
                     .addComponent(txtBill_Id, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel13)
+                    .addComponent(lblTable)
                     .addComponent(txtTable_Name, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel15)
+                    .addComponent(lblCreateAt)
                     .addComponent(txtBegin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel12)
+                    .addComponent(lblEmployee)
                     .addComponent(txtName_Employee, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel14)
+                    .addComponent(lblStatus)
                     .addComponent(txtStatus, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel16)
+                    .addComponent(lblDoneTime)
                     .addComponent(txtEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -1031,6 +1146,13 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         deleteSelectedItem();
     }//GEN-LAST:event_btnUnOrderActionPerformed
 
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+      if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) {
+          this.dispose(); // Đóng cửa sổ hiện tại
+
+        }
+    }//GEN-LAST:event_btnExitActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -1074,17 +1196,17 @@ public class BillUI extends javax.swing.JFrame implements BillController {
     private javax.swing.JButton btnUnBill;
     private javax.swing.JButton btnUnOrder;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel lblBillId;
+    private javax.swing.JLabel lblCreateAt;
+    private javax.swing.JLabel lblDoneTime;
+    private javax.swing.JLabel lblEmployee;
+    private javax.swing.JLabel lblStatus;
+    private javax.swing.JLabel lblTable;
     private javax.swing.JTable tbBill;
     private javax.swing.JTextField txtBegin;
     private javax.swing.JTextField txtBill_Id;

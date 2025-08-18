@@ -10,6 +10,7 @@ import com.team4.quanliquanmicay.Impl.UserDAOImpl;
 import com.team4.quanliquanmicay.util.XAuth;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XTheme;
+import com.team4.quanliquanmicay.util.XValidation;
 import com.team4.quanliquanmicay.Entity.UserAccount;
 import java.awt.Color;
 /**
@@ -63,17 +64,17 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(102, 102, 102));
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Unknown person.png"))); // NOI18N
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Unknown person.png"))); // NOI18N
         jLabel2.setText("Tên Tài Khoản :");
 
         jLabel3.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(204, 204, 204));
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Lock.png"))); // NOI18N
+        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Lock.png"))); // NOI18N
         jLabel3.setText("Mật Khẩu Mới :");
 
         jLabel4.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(204, 204, 204));
-        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Open lock.png"))); // NOI18N
+        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Open lock.png"))); // NOI18N
         jLabel4.setText("Xác Nhận Mật Khẩu Mới :");
 
         txtUsername.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
@@ -201,7 +202,9 @@ this.save();        // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-this.close();        // TODO add your handling code here:
+      if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) {
+         this.dispose();
+        }
     }//GEN-LAST:event_jButton2ActionPerformed
 
     /**
@@ -267,34 +270,31 @@ public void close() {
 }
 @Override
 public void save() {
-    // Màu gốc của các trường
     Color defaultBg = Color.WHITE;
-    Color errorBg = new Color(255, 204, 204); // Màu đỏ nhạt
+    Color errorBg = new Color(255, 204, 204);
 
     String username = txtUsername.getText();
     String newpass = txtNewpass.getText();
     String confirm = txtConfirm.getText();
 
-    // Reset màu trước khi kiểm tra
     txtUsername.setBackground(defaultBg);
     txtNewpass.setBackground(defaultBg);
     txtConfirm.setBackground(defaultBg);
 
-    // Kiểm tra trường trống và tạo thông báo chi tiết
     StringBuilder missingFields = new StringBuilder();
     boolean hasError = false;
 
-    if (username.trim().isEmpty()) {
+    if (XValidation.isEmpty(username)) {
         missingFields.append("• Vui lòng điền thông tin tên tài khoản\n");
         txtUsername.setBackground(errorBg);
         hasError = true;
     }
-    if (newpass.trim().isEmpty()) {
+    if (XValidation.isEmpty(newpass)) {
         missingFields.append("• Vui lòng điền thông tin mật khẩu mới\n");
         txtNewpass.setBackground(errorBg);
         hasError = true;
     }
-    if (confirm.trim().isEmpty()) {
+    if (XValidation.isEmpty(confirm)) {
         missingFields.append("• Vui lòng điền thông tin xác nhận mật khẩu mới\n");
         txtConfirm.setBackground(errorBg);
         hasError = true;
@@ -302,33 +302,36 @@ public void save() {
 
     if (hasError) {
         String errorMessage = "Các trường thông tin bị thiếu:\n" + missingFields.toString();
-        XDialog.alert(errorMessage);
+        XDialog.error(errorMessage, "Thiếu thông tin");
         return;
     }
 
     if (!newpass.equals(confirm)) {
-        XDialog.alert("Xác nhận mật khẩu không đúng!");
+        XDialog.warning("Xác nhận mật khẩu không đúng!", "Cảnh báo");
+        return;
+    }
+    if (!XValidation.isPassword(newpass)) {
+        XDialog.warning("Mật khẩu mới phải tối thiểu 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt!", "Cảnh báo");
+        txtNewpass.setBackground(errorBg);
         return;
     }
     if (XAuth.user == null) {
-        // Trường hợp quên mật khẩu
         UserAccount user = dao.findByUsername(username.trim());
         if (user == null) {
-            XDialog.alert("Tên tài khoản không tồn tại!");
+            XDialog.error("Tên tài khoản không tồn tại!", "Lỗi");
         } else {
             user.setPass(newpass);
             dao.update(user);
-            XDialog.alert("Đổi mật khẩu thành công!");
+            XDialog.success("Đổi mật khẩu thành công!", "Thành công");
             this.close();
         }
     } else {
-        // Trường hợp đã đăng nhập
         if (!username.trim().equalsIgnoreCase(XAuth.user.getUsername().trim())) {
-            XDialog.alert("Sai tên tài khoản!");
+            XDialog.error("Sai tên tài khoản!", "Lỗi");
         } else {
             XAuth.user.setPass(newpass);
             dao.update(XAuth.user);
-            XDialog.alert("Đổi mật khẩu thành công!");
+            XDialog.success("Đổi mật khẩu thành công!", "Thành công");
             this.close();
         }
     }

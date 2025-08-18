@@ -149,6 +149,39 @@ public class XJdbc {
     }
 
     /**
+     * Truy vấn lấy giá trị đầu tiên với chuyển đổi kiểu an toàn
+     */
+    public static <T> T getValue(String sql, Class<T> type, Object... values) {
+        return executeQuery(sql, rs -> {
+            if (rs.next()) {
+                Object result = rs.getObject(1);
+                if (result == null) return null;
+                
+                // Handle number conversions safely
+                if (type == Integer.class) {
+                    if (result instanceof Number) {
+                        return (T) Integer.valueOf(((Number) result).intValue());
+                    }
+                } else if (type == Long.class) {
+                    if (result instanceof Number) {
+                        return (T) Long.valueOf(((Number) result).longValue());
+                    }
+                } else if (type == java.math.BigDecimal.class) {
+                    if (result instanceof Number) {
+                        return (T) new java.math.BigDecimal(result.toString());
+                    }
+                } else if (type == String.class) {
+                    return (T) result.toString();
+                }
+                
+                // Default: try direct cast
+                return (T) result;
+            }
+            return null;
+        }, values);
+    }
+
+    /**
      * Truy vấn trả về list object (dùng cho mapping entity)
      * @param sql câu lệnh SQL
      * @param mapper lambda map 1 row -> object

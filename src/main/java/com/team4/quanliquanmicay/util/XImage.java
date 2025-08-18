@@ -16,7 +16,7 @@ public class XImage {
             java.net.URL imageURL = XImage.class.getResource(imagePath);
             if (imageURL == null) {
                 // Nếu không tìm thấy ảnh, dùng ảnh mặc định
-                imageURL = XImage.class.getResource("/icons_and_images/Unknown person.png");
+                imageURL = XImage.class.getResource("/icons_and_images/icon/Unknown person.png");
                 if (imageURL == null) {
                     // Nếu không có ảnh mặc định, xóa icon hiện tại
                     label.setIcon(null);

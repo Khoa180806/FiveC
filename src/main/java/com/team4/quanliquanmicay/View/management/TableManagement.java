@@ -18,7 +18,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.border.LineBorder;
 import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
 import javax.swing.ButtonModel;
 
 /**
@@ -30,6 +29,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
     /**
      * Creates new form BanJDialog
      */
+    
     public TableManagement() {
         this.setUndecorated(true);
         XTheme.applyFullTheme();
@@ -75,7 +75,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         btnExit = new javax.swing.JButton();
 
         jButton5.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
-        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/refresh.png"))); // NOI18N
+        jButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/refresh.png"))); // NOI18N
         jButton5.setText("THÊM");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -332,8 +332,11 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-        // Xóa bàn
-        delete();
+        // COMMENT: Xóa bàn
+        // delete();
+        
+        // THAY THẾ BẰNG THÔNG BÁO
+        XDialog.alert("Tính năng đang được phát triển!", "Thông báo");
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
@@ -348,7 +351,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
         // Hỏi xác nhận trước khi thoát
         if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) {
-            System.exit(0);
+          this.dispose();
         }
         // Nếu chọn "Không" thì không làm gì cả
     }//GEN-LAST:event_btnExitActionPerformed
@@ -362,8 +365,11 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
     }//GEN-LAST:event_formWindowOpened
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
-        // Thêm bàn mới
-        create();
+        // COMMENT: Thêm bàn mới
+        // create();
+        
+        // THAY THẾ BẰNG THÔNG BÁO
+        XDialog.alert("Tính năng đang được phát triển!", "Thông báo");
     }//GEN-LAST:event_btnAddActionPerformed
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
@@ -373,7 +379,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
 
     /**
      * @param args the command line arguments
-     */
+     */ 
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -517,9 +523,9 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
     // Hàm lấy màu đậm khi chọn
     private Color getBaseColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#A8E6A1"); // Trống - xanh nhạt
-            case 1: return Color.decode("#FFB347"); // Đang phục vụ - cam
-            case 2: return Color.decode("#D3D3D3"); // Ngưng hoạt động - xám
+            case 0: return Color.decode("#CCCCCC"); // Trống - xám nhạt
+            case 1: return Color.decode("#D6F5D6"); // Đang phục vụ - xanh nhạt
+            case 2: return Color.decode("#FFCCCC"); // Ngưng hoạt động - đỏ nhạt
             default: return Color.GRAY;
         }
     }
@@ -540,15 +546,20 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
     
     // Hover: làm sáng 15%
     private Color getHoverColorByStatus(int status) {
-        return brightenColor(getBaseColorByStatus(status), 0.15f);
+        switch (status) {
+            case 0: return Color.decode("#999999"); // Trống - xám đậm hơn
+            case 1: return Color.decode("#ADEBAD"); // Đang phục vụ - xanh đậm hơn
+            case 2: return Color.decode("#990000"); // Ngưng hoạt động - đỏ đậm
+            default: return Color.GRAY;
+        }
     }
     
     // Chọn: làm tối 20%
     private Color getSelectedColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#87D68B"); // Trống - xanh đậm hơn 20%
-            case 1: return Color.decode("#E69A3D"); // Đang phục vụ - cam đậm hơn 20%
-            case 2: return Color.decode("#A9A9A9"); // Ngưng hoạt động - xám đậm hơn 20%
+            case 0: return Color.decode("#666666"); // Trống - xám đậm nhất
+            case 1: return Color.decode("#85E085"); // Đang phục vụ - xanh đậm nhất
+            case 2: return Color.decode("#660000"); // Ngưng hoạt động - đỏ đậm pha nâu
             default: return Color.GRAY;
         }
     }
@@ -591,7 +602,8 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         // Thiết lập thuộc tính cơ bản
         btnTable.setOpaque(true);             // Cho phép vẽ nền custom
         btnTable.setContentAreaFilled(true);  // Bật nền để hiển thị màu
-        btnTable.setText(String.format("Bàn #%d", tableNumber));
+        // THAY ĐỔI: Chỉ hiển thị số bàn với dấu #
+        btnTable.setText("Bàn #" + tableNumber);
         btnTable.setPreferredSize(new Dimension(90, 90)); // Kích thước 90x90
         btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 18));
 
@@ -619,10 +631,8 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
                 ));
                 btnTable.setBorderPainted(true);
                 selectedButton = btnTable;
-                // Button đã chọn sẽ có màu đậm hơn 20% của màu gốc
-                Color baseColor = getBaseColorByStatus(buttonStatus);
-                Color activeColor = darkenColor(baseColor, 0.20f);
-                btnTable.setBackground(activeColor);
+                // Button đã chọn sẽ có màu đậm nhất theo status
+                btnTable.setBackground(getSelectedColorByStatus(buttonStatus));
             } else {
                 btnTable.setBackground(getBaseColorByStatus(buttonStatus));
             }
@@ -637,7 +647,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
 
             // Lưu màu gốc của button
             final Color originalButtonColor = getBaseColorByStatus(buttonStatus);
-            final Color selectedButtonColor = darkenColor(originalButtonColor, 0.20f);
+            final Color selectedButtonColor = getSelectedColorByStatus(buttonStatus);
 
             // Sử dụng ButtonModel để xử lý hiệu ứng pressed (màu PINK)
             btnTable.getModel().addChangeListener(e -> {
@@ -653,7 +663,7 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
                 } else {
                     // Khi thả chuột - trở về màu ban đầu
                     if (btnTable == selectedButton) {
-                        // Nếu là button đã chọn thì về màu đậm hơn 20%
+                        // Nếu là button đã chọn thì về màu đậm nhất
                         btnTable.setBackground(selectedButtonColor);
                     } else {
                         // Nếu không phải button đã chọn thì về màu gốc
@@ -662,8 +672,22 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
                 }
             });
 
-            // Áp dụng hiệu ứng hover từ XTheme cho button bàn
-    
+            // THÊM HIỆU ỨNG HOVER
+            btnTable.addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    if (btnTable != selectedButton && btnTable.isEnabled()) {
+                        btnTable.setBackground(getHoverColorByStatus(buttonStatus));
+                    }
+                }
+                
+                @Override
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    if (btnTable != selectedButton && btnTable.isEnabled()) {
+                        btnTable.setBackground(originalButtonColor);
+                    }
+                }
+            });
         }
         return btnTable;
     }
@@ -695,13 +719,11 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
             ));
             btnTable.setBorderPainted(true);
 
-            // Đổi màu nền button được chọn thành màu đậm hơn 20% theo status
+            // Đổi màu nền button được chọn thành màu đậm nhất theo status
             TableForCustomer table = tableDAO.findById(tableNumber);
             if (table != null) {
-                // Sử dụng màu đậm hơn thay vì màu tối
-                Color baseColor = getBaseColorByStatus(table.getStatus());
-                Color activeColor = darkenColor(baseColor, 0.20f);
-                btnTable.setBackground(activeColor);
+                // Sử dụng màu đậm nhất theo status
+                btnTable.setBackground(getSelectedColorByStatus(table.getStatus()));
             }
 
             selectedButton = btnTable;
@@ -731,8 +753,8 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
     private int convertStatusToInt(String status) {
         switch (status) {
             case "Trống": return 0;
-            case "Hoạt Động": return 1;
-            case "Ngưng Phục Vụ": return 2;
+            case "Đang Phục Vụ": return 1;
+            case "Không hoạt động": return 2;
             default: return 0;
         }
     }
@@ -740,9 +762,8 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
     private String convertIntToStatus(int status) {
         switch (status) {
             case 0: return "Trống";
-            case 1: return "Hoạt Động";
-
-            case 2: return "Ngưng Phục Vụ";
+            case 1: return "Đang Phục Vụ";
+            case 2: return "Không hoạt động";
             default: return "Trống";
         }
     }
@@ -794,130 +815,118 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
     // Cập nhật phương thức create để không kiểm tra trùng lặp nữa
     @Override
     public void create() {
-        // Lấy dữ liệu từ form
-        String tableNumberStr = txtTable_Number.getText().trim();
-        String amountStr = txtAmount.getText().trim();
-        String statusText = (String) cboTable_Status.getSelectedItem();
-
-        // Kiểm tra trống thông tin
-        if (tableNumberStr.isEmpty() || amountStr.isEmpty() || statusText == null || statusText.trim().isEmpty()) {
-            XDialog.alert("Vui lòng nhập đầy đủ thông tin bàn!");
-            return;
-        }
-
-        int tableNumber, amount;
         try {
-            tableNumber = Integer.parseInt(tableNumberStr);
-            amount = Integer.parseInt(amountStr);
-        } catch (NumberFormatException e) {
-            XDialog.alert("Số bàn và số chỗ ngồi phải là số nguyên!");
-            return;
-        }
-
-        // Kiểm tra trùng số bàn
-        if (tableDAO.findById(tableNumber) != null) {
-            XDialog.alert("Số bàn này đã tồn tại! Vui lòng nhập số bàn khác.");
-            return;
-        }
-
-        // Tạo mới bàn
-        TableForCustomer table = new TableForCustomer();
-        table.setTable_number(tableNumber);
-        table.setAmount(amount);
-        table.setStatus(convertStatusToInt(statusText));
-
-        try {
-            tableDAO.create(table);
-            XDialog.alert("Thêm bàn thành công!");
-            loadTable(); // Reload lại để hiển thị bàn mới
-            clear();
-        } catch (Exception ex) {
-            XDialog.alert("Có lỗi xảy ra khi thêm bàn: " + ex.getMessage());
+            // Validate form data
+            String validationError = validateFormData();
+            if (validationError != null) {
+                XDialog.error(validationError, "Lỗi dữ liệu");
+                return;
+            }
+            
+            TableForCustomer table = (TableForCustomer) getForm();
+            
+            // Kiểm tra số bàn đã tồn tại chưa
+            if (isTableExists(table.getTable_number())) {
+                XDialog.warning("Số bàn đã tồn tại!", "Cảnh báo");
+                return;
+            }
+            
+            // Hiển thị dialog xác nhận thêm
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn thêm bàn số " + table.getTable_number() + "?", 
+                "Xác nhận thêm"
+            );
+            
+            if (confirm) {
+                tableDAO.create(table);
+                XDialog.success("Thêm bàn thành công!", "Thành công");
+                fillToTable();
+                clear();
+            }
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi thêm bàn: " + e.getMessage(), "Lỗi");
         }
     }
 
     // Cập nhật phương thức update
     @Override
     public void update() {
-        // Lấy thông tin mới từ form
-        TableForCustomer newTable = (TableForCustomer) getForm();
-
-        // Lấy thông tin cũ từ DB
-        TableForCustomer oldTable = tableDAO.findById(newTable.getTable_number());
-        if (oldTable == null) {
-            XDialog.alert("Không tìm thấy bàn này trong hệ thống!");
-            return;
-        }
-
-        // So sánh và tạo thông tin hiển thị
-        StringBuilder message = new StringBuilder();
-        message.append("Bạn có chắc chắn muốn cập nhật bàn này không?\n\n");
-        message.append("THÔNG TIN CŨ:\n");
-        message.append("Số bàn: ").append(oldTable.getTable_number()).append("\n");
-        message.append("Số chỗ ngồi: ").append(oldTable.getAmount()).append("\n");
-        message.append("Trạng thái: ").append(convertIntToStatus(oldTable.getStatus())).append("\n\n");
-        message.append("THÔNG TIN MỚI:\n");
-        message.append("Số bàn: ").append(newTable.getTable_number()).append("\n");
-        message.append("Số chỗ ngồi: ").append(newTable.getAmount()).append("\n");
-        message.append("Trạng thái: ").append(convertIntToStatus(newTable.getStatus())).append("\n");
-
-        if (XDialog.confirm(message.toString(), "Xác nhận cập nhật")) {
-            try {
-                tableDAO.update(newTable);
-                XDialog.alert("Cập nhật bàn thành công!");
-                loadTable();
-                clear();
-            } catch (Exception ex) {
-                XDialog.alert("Cập nhật bàn thất bại!\n" + ex.getMessage());
+        try {
+            // Validate form data
+            String validationError = validateFormData();
+            if (validationError != null) {
+                XDialog.error(validationError, "Lỗi dữ liệu");
+                return;
             }
+            
+            // Kiểm tra xem có đang chọn bàn nào không
+            if (selectedTableNumber == -1) {
+                XDialog.error("Vui lòng chọn bàn cần cập nhật!", "Lỗi");
+                return;
+            }
+            
+            TableForCustomer table = (TableForCustomer) getForm();
+            
+            // Kiểm tra số bàn đã tồn tại chưa (trừ bàn đang được chọn)
+            List<TableForCustomer> existingTables = tableDAO.findAll();
+            boolean tableExists = existingTables.stream()
+                .anyMatch(t -> t.getTable_number() == table.getTable_number() 
+                              && t.getTable_number() != selectedTableNumber);
+            
+            if (tableExists) {
+                XDialog.warning("Số bàn đã tồn tại!", "Cảnh báo");
+                return;
+            }
+            
+            // Hiển thị dialog xác nhận cập nhật
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn cập nhật bàn số " + table.getTable_number() + "?", 
+                "Xác nhận cập nhật"
+            );
+            
+            if (confirm) {
+                tableDAO.update(table);
+                XDialog.success("Cập nhật bàn thành công!", "Thành công");
+                fillToTable();
+                clear();
+            }
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi cập nhật bàn: " + e.getMessage(), "Lỗi");
         }
-        // Nếu chọn "Không" thì không làm gì cả
     }
 
     // Cập nhật phương thức delete
     @Override
     public void delete() {
-        String tableNumberStr = txtTable_Number.getText().trim();
-
-        // 1. Kiểm tra đã nhập số bàn chưa
-        if (tableNumberStr.isEmpty()) {
-            XDialog.alert("Vui lòng nhập số bàn cần xóa!");
-            return;
-        }
-
-        int tableNumber;
         try {
-            tableNumber = Integer.parseInt(tableNumberStr);
-        } catch (NumberFormatException e) {
-            XDialog.alert("Số bàn phải là số nguyên!");
-            return;
-        }
-
-        // 2. Kiểm tra bàn có tồn tại không
-        TableForCustomer table = tableDAO.findById(tableNumber);
-        if (table == null) {
-            XDialog.alert("Không tìm thấy bàn số " + tableNumber + " trong hệ thống!");
-            return;
-        }
-
-        // 3. Hiển thị thông tin bàn và xác nhận xóa
-        StringBuilder message = new StringBuilder();
-        message.append("Bạn có chắc chắn muốn xóa bàn này không?\n\n");
-        message.append("Số bàn: ").append(table.getTable_number()).append("\n");
-        message.append("Số chỗ ngồi: ").append(table.getAmount()).append("\n");
-        message.append("Trạng thái: ").append(convertIntToStatus(table.getStatus())).append("\n");
-
-        if (XDialog.confirm(message.toString(), "Xác nhận xóa bàn")) {
-            try {
-                tableDAO.deleteById(tableNumber);
-                XDialog.alert("Xóa bàn thành công!");
-                loadTable();
-                clear();
-            } catch (Exception ex) {
-                XDialog.alert("Xóa bàn thất bại!\n" + ex.getMessage());
+            TableForCustomer table = (TableForCustomer) getForm();
+            if (table == null || table.getTable_number() == 0) {
+                XDialog.error("Vui lòng chọn bàn cần xóa!", "Lỗi");
+                return;
             }
+            
+            // Kiểm tra bàn có đang sử dụng không
+            if (table.getStatus() == 1) {
+                XDialog.warning("Không thể xóa bàn đang được sử dụng!", "Cảnh báo");
+                return;
+            }
+            
+            // Hiển thị dialog xác nhận xóa
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn xóa bàn số " + table.getTable_number() + "?\n" +
+                "Hành động này không thể hoàn tác!", 
+                "Xác nhận xóa"
+            );
+            
+            if (confirm) {
+                tableDAO.deleteById(table.getTable_number());
+                XDialog.success("Xóa bàn thành công!", "Thành công");
+                fillToTable();
+                clear();
+            }
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi xóa bàn: " + e.getMessage(), "Lỗi");
         }
-        // Nếu chọn "Không" thì không làm gì cả
     }
 
     // Cập nhật phương thức clear
@@ -1062,5 +1071,23 @@ public class TableManagement extends javax.swing.JFrame implements TableControll
         addMousePressEffect(btnClear);
         addMousePressEffect(btnDelete);
         addMousePressEffect(btnExit);
+    }
+
+    private String validateFormData() {
+        TableForCustomer table = (TableForCustomer) getForm();
+        
+        if (table.getTable_number() <= 0) {
+            return "Số bàn phải lớn hơn 0!";
+        }
+        
+        if (table.getAmount() <= 0) {
+            return "Số lượng chỗ ngồi phải lớn hơn 0!";
+        }
+        
+        if (table.getAmount() > 20) {
+            return "Số lượng chỗ ngồi không được quá 20!";
+        }
+        
+        return null; // Không có lỗi
     }
 }

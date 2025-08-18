@@ -12,6 +12,7 @@ import javax.swing.SwingUtilities;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XAuth;
+import com.team4.quanliquanmicay.util.XValidation;
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
@@ -85,7 +86,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Unknown person.png"))); // NOI18N
+        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Unknown person.png"))); // NOI18N
         jLabel3.setText("Tên đăng nhập :");
 
         txtUsername.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
@@ -97,7 +98,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Lock.png"))); // NOI18N
+        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Lock.png"))); // NOI18N
         jLabel4.setText("Mật Khẩu :");
 
         txtPassword.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
@@ -342,7 +343,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
         this.setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
         this.setVisible(true);
         SwingUtilities.invokeLater(() -> {
-            com.team4.quanliquanmicay.util.XImage.setImageToLabel(jLabel6, "/icons_and_images/anh-mi-cay-haseyo.jpg");
+            com.team4.quanliquanmicay.util.XImage.setImageToLabel(jLabel6, "/icons_and_images/icon/background_login.jpg");
         });
     }
     
@@ -352,17 +353,23 @@ public class Login extends javax.swing.JFrame implements LoginController{
             String username = txtUsername.getText().trim();
             String password = new String(txtPassword.getPassword());
             
-            // Kiểm tra username có rỗng không
-            if (username.isEmpty()) {
+            // Sử dụng XValidation để kiểm tra
+            if (XValidation.isEmpty(username)) {
                 XDialog.error("Vui lòng nhập tên đăng nhập!", "Lỗi đăng nhập");
                 txtUsername.requestFocus();
                 return;
             }
             
-            // Kiểm tra password có rỗng không
-            if (password.isEmpty()) {
+            if (XValidation.isEmpty(password)) {
                 XDialog.error("Vui lòng nhập mật khẩu!", "Lỗi đăng nhập");
                 txtPassword.requestFocus();
+                return;
+            }
+            
+            // Validate username format
+            if (!XValidation.isUsername(username)) {
+                XDialog.warning("Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới (3-20 ký tự)", "Cảnh báo");
+                txtUsername.requestFocus();
                 return;
             }
             
@@ -375,18 +382,24 @@ public class Login extends javax.swing.JFrame implements LoginController{
             } else if (!password.equals(user.getPass())) {
                 XDialog.error("Sai mật khẩu đăng nhập!", "Lỗi đăng nhập");
                 txtPassword.requestFocus();
-            } else if (!(user.getIs_enabled() == 0)) {
+            } else if ((user.getIs_enabled() == 0)) {
                 XDialog.warning("Tài khoản của bạn đang tạm dừng!", "Cảnh báo");
             } else {
                 XAuth.user = user;
+                String roleMessage = "R001".equals(user.getRole_id()) ? 
+                    "Quản trị viên" : "Nhân viên";
+                XDialog.success("Đăng nhập thành công! Chào mừng " + roleMessage + " " + user.getUsername(), "Thành công");
                 this.dispose();
-                new MainUI().setVisible(true);
+                MainUI mainUI = new MainUI();
+                // Kiểm tra role và cập nhật giao diện
+                mainUI.updateUIByRole(user.getRole_id());
+                mainUI.setVisible(true);
             }
             password = null;
             txtPassword.setText("");
         } catch (Exception e) {
             e.printStackTrace();
-            XDialog.error("Có lỗi xảy ra: " + e.getMessage(), "Lỗi");
+            XDialog.error("Có lỗi xảy ra: " + e.getMessage(), "Lỗi hệ thống");
         }
     }
 

@@ -19,6 +19,7 @@ import javax.swing.JButton;
 import javax.swing.border.LineBorder;
 import javax.swing.border.CompoundBorder;
 import java.awt.GridLayout;
+import com.team4.quanliquanmicay.View.BillUI;
 
 
 /**
@@ -46,7 +47,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         
         // Đặt tab 1-12 làm tab mặc định
-        jTabbedPane1.setSelectedIndex(0);
+        pnlTable.setSelectedIndex(0);
         
         // Xóa các dòng ép buộc kích thước button
         // ÉP BUỘC KÍCH THƯỚC KHÁC NHAU CHO HAI NÚT
@@ -62,18 +63,13 @@ public class ChooseTableUI extends javax.swing.JFrame {
         loadTable();
         
         // Thêm event listener cho các button
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnTranferTable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
         
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-        
+  
         // Đảm bảo giao diện hiển thị đúng theo thiết kế
         pack();
     }
@@ -90,12 +86,12 @@ public class ChooseTableUI extends javax.swing.JFrame {
         pnlTitle = new javax.swing.JPanel();
         lblTitle = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel2 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
+        pnlTable = new javax.swing.JTabbedPane();
+        pnlTable1to12 = new javax.swing.JPanel();
+        pnlTable13to24 = new javax.swing.JPanel();
+        btnExit = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
-        jButton1 = new javax.swing.JButton();
+        btnTranferTable = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -107,50 +103,50 @@ public class ChooseTableUI extends javax.swing.JFrame {
 
         jPanel5.setBackground(new java.awt.Color(204, 164, 133));
 
-        jTabbedPane1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        pnlTable.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout pnlTable1to12Layout = new javax.swing.GroupLayout(pnlTable1to12);
+        pnlTable1to12.setLayout(pnlTable1to12Layout);
+        pnlTable1to12Layout.setHorizontalGroup(
+            pnlTable1to12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 0, Short.MAX_VALUE)
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
-        jTabbedPane1.addTab("1-12", jPanel2);
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        pnlTable1to12Layout.setVerticalGroup(
+            pnlTable1to12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 0, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("13-24", jPanel3);
+        pnlTable.addTab("1-12", pnlTable1to12);
 
-        jButton2.setBackground(new java.awt.Color(119, 50, 5));
-        jButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Exit.png"))); // NOI18N
-        jButton2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        javax.swing.GroupLayout pnlTable13to24Layout = new javax.swing.GroupLayout(pnlTable13to24);
+        pnlTable13to24.setLayout(pnlTable13to24Layout);
+        pnlTable13to24Layout.setHorizontalGroup(
+            pnlTable13to24Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        pnlTable13to24Layout.setVerticalGroup(
+            pnlTable13to24Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+
+        pnlTable.addTab("13-24", pnlTable13to24);
+
+        btnExit.setBackground(new java.awt.Color(119, 50, 5));
+        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Exit.png"))); // NOI18N
+        btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btnExitActionPerformed(evt);
             }
         });
 
         jSeparator1.setForeground(new java.awt.Color(255, 255, 255));
 
-        jButton1.setBackground(new java.awt.Color(204, 255, 204));
-        jButton1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jButton1.setForeground(new java.awt.Color(0, 153, 0));
-        jButton1.setText("Chuyển bàn");
-        jButton1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnTranferTable.setBackground(new java.awt.Color(204, 255, 204));
+        btnTranferTable.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
+        btnTranferTable.setForeground(new java.awt.Color(0, 153, 0));
+        btnTranferTable.setText("Chuyển bàn");
+        btnTranferTable.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -159,25 +155,26 @@ public class ChooseTableUI extends javax.swing.JFrame {
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTabbedPane1)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(pnlTable)
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 351, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jSeparator1)
+                            .addComponent(btnTranferTable, javax.swing.GroupLayout.PREFERRED_SIZE, 351, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(pnlTable, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnExit, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnTranferTable))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -186,10 +183,10 @@ public class ChooseTableUI extends javax.swing.JFrame {
         pnlTitleLayout.setHorizontalGroup(
             pnlTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlTitleLayout.createSequentialGroup()
-                .addContainerGap(258, Short.MAX_VALUE)
+            .addGroup(pnlTitleLayout.createSequentialGroup()
+                .addGap(251, 251, 251)
                 .addComponent(lblTitle)
-                .addGap(249, 249, 249))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pnlTitleLayout.setVerticalGroup(
             pnlTitleLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -223,15 +220,247 @@ public class ChooseTableUI extends javax.swing.JFrame {
     private JButton lastClickedButton = null;
     private static final long DOUBLE_CLICK_TIME = 300; // milliseconds
     
+    // Thêm biến để theo dõi BillUI
+    private BillUI currentBillUI = null;
+
+    // XÓA HOÀN TOÀN hàm openHoaDonDialog cũ ở dòng 559-572
+    // CHỈ GIỮ LẠI hàm này
+    /**
+     * Mở BillUI với thông tin bàn đã chọn
+     */
+    private void openHoaDonDialog(int tableNumber) {
+        try {
+            // Kiểm tra trạng thái bàn trước khi mở
+            TableForCustomer table = tableDAO.findById(tableNumber);
+            if (table == null) {
+                XDialog.alert("Không tìm thấy thông tin bàn!", "Lỗi");
+                return;
+            }
+            
+            // Tạo BillUI mới
+            currentBillUI = new BillUI();
+            
+            // Set thông tin bàn vào dialog
+            currentBillUI.setTableInfo(tableNumber);
+            
+            // COMMENT DÒNG NÀY VÌ BillUI CHƯA CÓ METHOD setTableStatusCallback
+            // TODO: Cần thêm method này vào BillUI để callback hoạt động
+            // currentBillUI.setTableStatusCallback(new TableStatusCallback() {
+            //     @Override
+            //     public void onItemAdded(int tableNum) {
+            //         // Khi có món được thêm, cập nhật trạng thái bàn thành "đang hoạt động"
+            //         updateTableStatusToActive(tableNum);
+            //     }
+            //     
+            //     @Override
+            //     public void onBillPaid(int tableNum) {
+            //         // Khi thanh toán xong, cập nhật trạng thái bàn thành "trống"
+            //         updateTableStatusToEmpty(tableNum);
+            //     }
+            // });
+            
+            // Thêm listener để xử lý khi BillUI đóng
+            currentBillUI.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosed(java.awt.event.WindowEvent evt) {
+                    handleBillUIClosed(tableNumber, table);
+                }
+            });
+            
+            // Ẩn ChooseTableUI
+            this.setVisible(false);
+            
+            // Hiển thị BillUI
+            currentBillUI.setVisible(true);
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi khi mở HoaDonJDialog: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    // THÊM MỚI: Interface callback để BillUI có thể thông báo về thay đổi
+    public interface TableStatusCallback {
+        void onItemAdded(int tableNumber);
+        void onBillPaid(int tableNumber);
+    }
+
+    // THÊM MỚI: Cập nhật trạng thái bàn thành "đang hoạt động" khi có món được thêm
+    public void updateTableStatusToActive(int tableNumber) {
+        try {
+            TableForCustomer table = tableDAO.findById(tableNumber);
+            if (table != null && table.getStatus() != 1) {
+                table.setStatus(1); // Đang hoạt động
+                tableDAO.update(table);
+                System.out.println("✅ Cập nhật trạng thái bàn " + tableNumber + " thành ĐANG HOẠT ĐỘNG (có món được thêm)");
+                
+                // Cập nhật giao diện nếu ChooseTableUI đang hiển thị
+                if (this.isVisible()) {
+                    loadTable();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cập nhật trạng thái bàn thành đang hoạt động: " + e.getMessage());
+        }
+    }
+
+    // THÊM MỚI: Cập nhật trạng thái bàn thành "trống" khi thanh toán xong
+    public void updateTableStatusToEmpty(int tableNumber) {
+        try {
+            TableForCustomer table = tableDAO.findById(tableNumber);
+            if (table != null && table.getStatus() != 0) {
+                table.setStatus(0); // Trống
+                tableDAO.update(table);
+                System.out.println("✅ Cập nhật trạng thái bàn " + tableNumber + " thành TRỐNG (đã thanh toán)");
+                
+                // Cập nhật giao diện nếu ChooseTableUI đang hiển thị
+                if (this.isVisible()) {
+                    loadTable();
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Lỗi khi cập nhật trạng thái bàn thành trống: " + e.getMessage());
+        }
+    }
+
+    // Sửa lại hàm handleBillUIClosed để chỉ cập nhật khi thực sự cần thiết
+    private void handleBillUIClosed(int tableNumber, TableForCustomer originalTable) {
+        try {
+            // Kiểm tra lại trạng thái bàn sau khi BillUI đóng
+            TableForCustomer currentTable = tableDAO.findById(tableNumber);
+            if (currentTable == null) {
+                System.err.println("Không tìm thấy bàn sau khi BillUI đóng");
+                return;
+            }
+            
+            // Kiểm tra xem có bill nào đang hoạt động VÀ có đồ ăn/đồ uống không
+            boolean hasActiveBillWithItems = checkIfTableHasActiveBillWithItems(tableNumber);
+            
+            if (hasActiveBillWithItems) {
+                // Có bill đang hoạt động VÀ có đồ ăn/đồ uống - đảm bảo trạng thái bàn là "đang hoạt động"
+                if (currentTable.getStatus() != 1) {
+                    currentTable.setStatus(1);
+                    tableDAO.update(currentTable);
+                    System.out.println("🔄 Sync: Cập nhật trạng thái bàn " + tableNumber + " thành đang hoạt động");
+                }
+            } else {
+                // Không có bill hoặc bill không có đồ ăn/đồ uống - đảm bảo trạng thái bàn là "trống"
+                if (currentTable.getStatus() != 0) {
+                    currentTable.setStatus(0);
+                    tableDAO.update(currentTable);
+                    System.out.println("🔄 Sync: Cập nhật trạng thái bàn " + tableNumber + " thành trống");
+                }
+            }
+            
+            // Cập nhật giao diện bàn
+            loadTable();
+            
+            // Hiển thị lại ChooseTableUI
+            this.setVisible(true);
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi khi xử lý BillUI đóng: " + e.getMessage());
+            // Hiển thị lại ChooseTableUI ngay cả khi có lỗi
+            this.setVisible(true);
+        }
+    }
+
+    // Sửa lại hàm checkIfTableHasActiveBillWithItems để xử lý lỗi ORA-01722
+    private boolean checkIfTableHasActiveBillWithItems(int tableNumber) {
+        try {
+            // Thử với status dưới dạng string trước
+            String billSql = "SELECT bill_id FROM BILL WHERE table_number = ? AND status = '0'";
+            String billIdStr = com.team4.quanliquanmicay.util.XJdbc.executeQuery(billSql, rs -> {
+                if (rs.next()) {
+                    return rs.getString("bill_id");
+                }
+                return null;
+            }, tableNumber);
+            
+            if (billIdStr == null || billIdStr.trim().isEmpty()) {
+                // Không có bill đang hoạt động
+                System.out.println("Bàn " + tableNumber + " - Không có bill đang hoạt động");
+                return false;
+            }
+            
+            // Chuyển đổi bill_id từ String sang Integer một cách an toàn
+            Integer billId;
+            try {
+                billId = Integer.parseInt(billIdStr.trim());
+            } catch (NumberFormatException e) {
+                System.err.println("Lỗi chuyển đổi bill_id: " + billIdStr + " - " + e.getMessage());
+                return false;
+            }
+            
+            // Kiểm tra xem bill này có đồ ăn/đồ uống không
+            Integer itemCount = null;
+            try {
+                final String ITEMS_TABLE = "BILL_DETAIL"; // Tên bảng đúng theo DAO
+                String itemsSql = "SELECT COUNT(*) FROM " + ITEMS_TABLE + " WHERE bill_id = ?";
+                itemCount = com.team4.quanliquanmicay.util.XJdbc.executeQuery(itemsSql, rs -> {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                    return 0;
+                }, billId);
+            } catch (Exception ex) {
+                String msg = ex.getMessage();
+                if (msg != null && msg.contains("ORA-00942")) {
+                    // Bảng chi tiết không tồn tại trong schema hiện tại → coi như 0 món để tránh crash
+                    System.err.println("[WARN] Thiếu bảng BILL_DETAIL. Bỏ qua đếm món và xem như 0 món.");
+                    itemCount = 0;
+                } else {
+                    throw ex;
+                }
+            }
+
+            // Chỉ trả về true nếu có bill đang hoạt động VÀ có ít nhất 1 món
+            boolean hasItems = itemCount != null && itemCount > 0;
+            System.out.println("Bàn " + tableNumber + " - Bill ID: " + billId + " - Số món: " + itemCount + " - Có đồ ăn: " + hasItems);
+
+            return hasItems;
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi khi kiểm tra bill: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Fallback: kiểm tra đơn giản hơn
+            return checkIfTableHasActiveBillSimple(tableNumber);
+        }
+    }
+
+    // THÊM MỚI: Hàm fallback để kiểm tra đơn giản hơn
+    private boolean checkIfTableHasActiveBillSimple(int tableNumber) {
+        try {
+            // Kiểm tra đơn giản: chỉ xem có bill nào của bàn này không
+            String simpleSql = "SELECT COUNT(*) FROM BILL WHERE table_number = ?";
+            Integer billCount = com.team4.quanliquanmicay.util.XJdbc.executeQuery(simpleSql, rs -> {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+                return 0;
+            }, tableNumber);
+             
+            boolean hasBill = billCount != null && billCount > 0;
+            System.out.println("Bàn " + tableNumber + " - Fallback check: Có " + billCount + " bill");
+            
+            return hasBill;
+            
+        } catch (Exception e) {
+            System.err.println("Lỗi fallback check: " + e.getMessage());
+            return false;
+        }
+    }
+
     // Hàm fill dữ liệu bàn lên 2 panel
     public void loadTable() {
         List<TableForCustomer> tables = tableDAO.findAll();
-        jPanel2.removeAll();
-        jPanel3.removeAll();
+        pnlTable1to12.removeAll();
+        pnlTable13to24.removeAll();
 
         // PHẢI set layout cho panel để add button động!
-        jPanel2.setLayout(new GridLayout(2, 6, 15, 15));
-        jPanel3.setLayout(new GridLayout(2, 6, 15, 15));
+        pnlTable1to12.setLayout(new GridLayout(2, 6, 15, 15));
+        pnlTable13to24.setLayout(new GridLayout(2, 6, 15, 15));
 
         // Tạo map để tra cứu nhanh
         java.util.Map<Integer, TableForCustomer> tableMap = new java.util.HashMap<>();
@@ -245,7 +474,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
             JButton btn = createButton(i, table);
             btn.setMaximumSize(new Dimension(120, 800));
             btn.setPreferredSize(new Dimension(120, 800));
-            jPanel2.add(btn);
+            pnlTable1to12.add(btn);
         }
 
         // 13-24: VIP
@@ -254,14 +483,14 @@ public class ChooseTableUI extends javax.swing.JFrame {
             JButton btn = createButton(i, table);
             btn.setMaximumSize(new Dimension(120, 100));
             btn.setPreferredSize(new Dimension(120, 100));
-            jPanel3.add(btn);
+            pnlTable13to24.add(btn);
         }
 
         // Cập nhật giao diện
-        jPanel2.revalidate();
-        jPanel2.repaint();
-        jPanel3.revalidate();
-        jPanel3.repaint();
+        pnlTable1to12.revalidate();
+        pnlTable1to12.repaint();
+        pnlTable13to24.revalidate();
+        pnlTable13to24.repaint();
     }
 
     // Hàm tạo button cho từng bàn
@@ -339,7 +568,17 @@ public class ChooseTableUI extends javax.swing.JFrame {
                                 lastClickedButton == btnTable) {
                                 // Double click vào cùng button - mở BillUI
                                 int num = Integer.parseInt(btnTable.getActionCommand());
-                                openHoaDonDialog(num);
+                                 
+                                // Kiểm tra trạng thái bàn trước khi mở
+                                TableForCustomer table = tableDAO.findById(num);
+                                if (table != null) {
+                                    // Chỉ cho phép mở BillUI nếu bàn không ngưng hoạt động
+                                    if (table.getStatus() != 2) {
+                                        openHoaDonDialog(num);
+                                    } else {
+                                        XDialog.alert("Bàn này tạm ngưng hoạt động!", "Thông báo");
+                                    }
+                                }
                             } else {
                                 // Single click hoặc click vào button khác - chỉ chọn bàn
                                 int num = Integer.parseInt(btnTable.getActionCommand());
@@ -365,12 +604,12 @@ public class ChooseTableUI extends javax.swing.JFrame {
         return btnTable;
     }
 
-    // Thêm các hàm màu giống TableManagement
+    // Cập nhật các hàm màu theo yêu cầu cụ thể
     private Color getBaseColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#A8E6A1"); // Trống - xanh nhạt
-            case 1: return Color.decode("#FFB347"); // Đang phục vụ - cam
-            case 2: return Color.decode("#D3D3D3"); // Ngưng hoạt động - xám
+            case 0: return Color.decode("#CCCCCC"); // Trống - xám nhạt
+            case 1: return Color.decode("#D6F5D6"); // Đang hoạt động - xanh nhạt
+            case 2: return Color.decode("#FFCCCC"); // Ngưng hoạt động - đỏ nhạt
             default: return Color.GRAY;
         }
     }
@@ -389,22 +628,27 @@ public class ChooseTableUI extends javax.swing.JFrame {
         return new Color(r, g, b);
     }
     
-    // Hover: làm sáng 15%
+    // Hover: màu khi đưa chuột tới
     private Color getHoverColorByStatus(int status) {
-        return brightenColor(getBaseColorByStatus(status), 0.15f);
-    }
-    
-    // Chọn: làm tối 20%
-    private Color getSelectedColorByStatus(int status) {
         switch (status) {
-            case 0: return Color.decode("#87D68B"); // Trống - xanh đậm hơn 20%
-            case 1: return Color.decode("#E69A3D"); // Đang phục vụ - cam đậm hơn 20%
-            case 2: return Color.decode("#A9A9A9"); // Ngưng hoạt động - xám đậm hơn 20%
+            case 0: return Color.decode("#999999"); // Trống - xám đậm hơn
+            case 1: return Color.decode("#ADEBAD"); // Đang hoạt động - xanh đậm hơn
+            case 2: return Color.decode("#990000"); // Ngưng hoạt động - đỏ đậm
             default: return Color.GRAY;
         }
     }
     
-    // Nhấn chuột: làm tối 30%
+    // Chọn: màu khi được nhấp vào
+    private Color getSelectedColorByStatus(int status) {
+        switch (status) {
+            case 0: return Color.decode("#666666"); // Trống - xám đậm nhất
+            case 1: return Color.decode("#85E085"); // Đang hoạt động - xanh đậm nhất
+            case 2: return Color.decode("#660000"); // Ngưng hoạt động - đỏ đậm pha nâu
+            default: return Color.GRAY;
+        }
+    }
+    
+    // Nhấn chuột: màu khi bấm giữ
     private Color getPressedColorByStatus(int status) {
         return darkenColor(getBaseColorByStatus(status), 0.30f);
     }
@@ -413,7 +657,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
     private void selectTable(int tableNumber, JButton btnTable) {
         // Đổi border và màu button cũ về mặc định
         if (selectedButton != null && selectedButton != btnTable) {
-            selectedButton.setBorder(javax.swing.BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
+            selectedButton.setBorder(javax.swing.BorderFactory.createLineBorder(Color.WHITE, 2));
             selectedButton.setBorderPainted(true);
             TableForCustomer oldTable = tableDAO.findById(selectedTableNumber);
             if (oldTable != null) {
@@ -428,7 +672,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
         ));
         btnTable.setBorderPainted(true);
 
-        // Đổi màu nền button được chọn thành màu đậm hơn theo status
+        // Đổi màu nền button được chọn thành màu đậm nhất theo status
         TableForCustomer table = tableDAO.findById(tableNumber);
         if (table != null) {
             btnTable.setBackground(getSelectedColorByStatus(table.getStatus()));
@@ -441,26 +685,6 @@ public class ChooseTableUI extends javax.swing.JFrame {
     /**
      * Mở BillUI với thông tin bàn đã chọn
      */
-    private void openHoaDonDialog(int tableNumber) {
-        try {
-            // Tạo BillUI mới
-//            BillUI hoaDonDialog = new BillUI();
-            BillUI hoaDonDialog = new BillUI();
-            
-            // Set thông tin bàn vào dialog
-            hoaDonDialog.setTableInfo(tableNumber);
-            
-            // Ẩn ChooseTableUI
-            this.setVisible(false);
-            
-            // Hiển thị BillUI
-            hoaDonDialog.setVisible(true);
-            
-        } catch (Exception e) {
-            System.err.println("Lỗi khi mở HoaDonJDialog: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
 
     // Event handlers cho các button
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
@@ -478,7 +702,7 @@ public class ChooseTableUI extends javax.swing.JFrame {
                 XDialog.alert("Bàn này tạm ngưng hoạt động!", "Thông báo");
                 return;
             }
-            
+
             // Kiểm tra xem bàn có phải bàn trống không
             if (selectedTable.getStatus() == 0) {
                 XDialog.alert("Chỉ có thể chuyển bàn đang hoạt động!", "Thông báo");
@@ -501,7 +725,15 @@ public class ChooseTableUI extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {
         // Xử lý sự kiện cho button Exit với xác nhận
         if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng?", "Xác nhận thoát")) {
-            System.exit(0);
+            this.dispose();
+        }
+        // Nếu chọn NO thì không làm gì cả, tiếp tục sử dụng ứng dụng
+    }
+    
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {
+        // Xử lý sự kiện cho button Exit với xác nhận
+        if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng?", "Xác nhận thoát")) {
+            this.dispose();
         }
         // Nếu chọn NO thì không làm gì cả, tiếp tục sử dụng ứng dụng
     }
@@ -543,14 +775,14 @@ public class ChooseTableUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
+    private javax.swing.JButton btnExit;
+    private javax.swing.JButton btnTranferTable;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JLabel lblTitle;
+    private javax.swing.JTabbedPane pnlTable;
+    private javax.swing.JPanel pnlTable13to24;
+    private javax.swing.JPanel pnlTable1to12;
     private javax.swing.JPanel pnlTitle;
     // End of variables declaration//GEN-END:variables
 

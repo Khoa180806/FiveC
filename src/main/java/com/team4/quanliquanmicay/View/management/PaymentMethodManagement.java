@@ -6,6 +6,7 @@ package com.team4.quanliquanmicay.View.management;
 
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XValidation;
 import com.team4.quanliquanmicay.Entity.PaymentMethod;
 import com.team4.quanliquanmicay.DAO.PaymentMethodDAO;
 import com.team4.quanliquanmicay.Impl.PaymentMethodDAOImpl;
@@ -318,9 +319,11 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return false; // Không cho phép edit bất kỳ cột nào
+                return canEdit [columnIndex];
             }
         });
+        tblPaymentMethod.getTableHeader().setResizingAllowed(false);
+        tblPaymentMethod.getTableHeader().setReorderingAllowed(false);
         jspPaymentMethod.setViewportView(tblPaymentMethod);
         if (tblPaymentMethod.getColumnModel().getColumnCount() > 0) {
             tblPaymentMethod.getColumnModel().getColumn(0).setResizable(false);
@@ -362,12 +365,22 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
         btnCreate.setForeground(new java.awt.Color(255, 255, 255));
         btnCreate.setText("Thêm");
         btnCreate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
+        btnCreate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCreateActionPerformed(evt);
+            }
+        });
 
         btnUpdate.setBackground(new java.awt.Color(185, 163, 147));
         btnUpdate.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnUpdate.setForeground(new java.awt.Color(255, 255, 255));
         btnUpdate.setText("Cập Nhật");
         btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
 
         btnRemove.setBackground(new java.awt.Color(185, 163, 147));
         btnRemove.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
@@ -385,9 +398,13 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
         btnClear.setForeground(new java.awt.Color(255, 255, 255));
         btnClear.setText("Làm mới");
         btnClear.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout pnlFeatureLayout = new javax.swing.GroupLayout(pnlFeature);
-        pnlFeature.setLayout(pnlFeatureLayout);
         pnlFeatureLayout.setHorizontalGroup(
             pnlFeatureLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlFeatureLayout.createSequentialGroup()
@@ -448,6 +465,11 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
         btnExit.setForeground(new java.awt.Color(255, 255, 255));
         btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -472,7 +494,7 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jspPaymentMethod, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE))
+                        .addComponent(btnExit, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(pnlFeature, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -520,35 +542,33 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
      */
     private void createPaymentMethod() {
         try {
-            // Validate dữ liệu cho chức năng tạo mới
+            // Validate form data
             if (!validateFormForCreate()) {
                 return;
             }
             
-            String methodName = txtPayMethod_Name.getText().trim();
+            PaymentMethod paymentMethod = getCurrentFormData();
             
             // Kiểm tra tên phương thức đã tồn tại chưa
-            if (isMethodNameExists(methodName, 0)) {
-                XDialog.error("Tên phương thức thanh toán '" + methodName + "' đã tồn tại!\nVui lòng nhập tên khác.", "Dữ liệu đã tồn tại");
-                txtPayMethod_Name.requestFocus();
+            if (isMethodNameExists(paymentMethod.getMethod_name(), 0)) {
+                XDialog.warning("Tên phương thức thanh toán đã tồn tại!", "Cảnh báo");
                 return;
             }
             
-            // Tạo đối tượng PaymentMethod mới
-            PaymentMethod newMethod = getCurrentFormData();
+            // Hiển thị dialog xác nhận thêm
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn thêm phương thức thanh toán '" + paymentMethod.getMethod_name() + "'?", 
+                "Xác nhận thêm"
+            );
             
-            // Lưu vào database
-            paymentMethodDAO.create(newMethod);
-            
-            // Refresh dữ liệu và thông báo
-            loadPaymentMethods();
-            clearForm();
-            hasUnsavedChanges = false;
-            XDialog.success("Thêm phương thức thanh toán thành công!");
-            
+            if (confirm) {
+                paymentMethodDAO.create(paymentMethod);
+                XDialog.success("Thêm phương thức thanh toán thành công!", "Thành công");
+                loadPaymentMethods();
+                clearForm();
+            }
         } catch (Exception e) {
-            e.printStackTrace();
-            XDialog.error("Lỗi: " + e.getMessage());
+            XDialog.error("Lỗi khi thêm phương thức thanh toán: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -557,60 +577,33 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
      */
     private void updatePaymentMethod() {
         try {
-            // Kiểm tra có dòng nào được chọn không
-            if (tblPaymentMethod.getSelectedRow() == -1) {
-                XDialog.error("Vui lòng chọn một phương thức thanh toán để cập nhật!");
-                return;
-            }
-            
-            // Validate dữ liệu cho chức năng cập nhật
+            // Validate form data
             if (!validateForm()) {
                 return;
             }
             
-            int selectedRow = tblPaymentMethod.getSelectedRow();
-            int paymentMethodId = (Integer) tableModel.getValueAt(selectedRow, 0);
-            String oldMethodName = (String) tableModel.getValueAt(selectedRow, 1);
-            String oldStatus = (String) tableModel.getValueAt(selectedRow, 2);
-            
-            String newMethodName = txtPayMethod_Name.getText().trim();
+            PaymentMethod paymentMethod = getCurrentFormData();
             
             // Kiểm tra tên phương thức đã tồn tại chưa (trừ chính nó)
-            if (isMethodNameExists(newMethodName, paymentMethodId)) {
-                XDialog.error("Tên phương thức thanh toán '" + newMethodName + "' đã tồn tại!\nVui lòng nhập tên khác.", "Dữ liệu đã tồn tại");
-                txtPayMethod_Name.requestFocus();
+            if (isMethodNameExists(paymentMethod.getMethod_name(), paymentMethod.getPayment_method_id())) {
+                XDialog.warning("Tên phương thức thanh toán đã tồn tại!", "Cảnh báo");
                 return;
             }
             
-            // Lấy thông tin mới
-            PaymentMethod newData = getCurrentFormData();
+            // Hiển thị dialog xác nhận cập nhật
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn cập nhật phương thức thanh toán '" + paymentMethod.getMethod_name() + "'?", 
+                "Xác nhận cập nhật"
+            );
             
-            // Tạo thông tin cũ để so sánh
-            PaymentMethod oldData = PaymentMethod.builder()
-                    .payment_method_id(paymentMethodId)
-                    .method_name(oldMethodName)
-                    .is_enable("Hoạt động".equals(oldStatus) ? 1 : 0)
-                    .build();
-            
-            // Hiển thị dialog xác nhận với thông tin so sánh
-            String message = "Bạn có muốn thay đổi thông tin phương thức thanh toán?\n\n" +
-                           "THÔNG TIN HIỆN TẠI:\n" + formatPaymentMethodInfo(oldData) + "\n\n" +
-                           "THÔNG TIN MỚI:\n" + formatPaymentMethodInfo(newData);
-            
-            if (XDialog.confirm(message, "Xác nhận cập nhật")) {
-                // Cập nhật vào database
-                paymentMethodDAO.update(newData);
-                
-                // Refresh dữ liệu và thông báo
+            if (confirm) {
+                paymentMethodDAO.update(paymentMethod);
+                XDialog.success("Cập nhật phương thức thanh toán thành công!", "Thành công");
                 loadPaymentMethods();
                 clearForm();
-                hasUnsavedChanges = false;
-                XDialog.success("Cập nhật phương thức thanh toán thành công!");
             }
-            
         } catch (Exception e) {
-            e.printStackTrace();
-            XDialog.error("Lỗi: " + e.getMessage());
+            XDialog.error("Lỗi khi cập nhật phương thức thanh toán: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -619,42 +612,27 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
      */
     private void deletePaymentMethod() {
         try {
-            // Kiểm tra có dòng nào được chọn không
-            if (tblPaymentMethod.getSelectedRow() == -1) {
-                XDialog.error("Vui lòng chọn một phương thức thanh toán để xóa!");
+            PaymentMethod paymentMethod = getCurrentFormData();
+            if (paymentMethod == null || paymentMethod.getPayment_method_id() == 0) {
+                XDialog.error("Vui lòng chọn phương thức thanh toán cần xóa!", "Lỗi");
                 return;
             }
             
-            int selectedRow = tblPaymentMethod.getSelectedRow();
-            int paymentMethodId = (Integer) tableModel.getValueAt(selectedRow, 0);
-            String methodName = (String) tableModel.getValueAt(selectedRow, 1);
-            String status = (String) tableModel.getValueAt(selectedRow, 2);
+            // Hiển thị dialog xác nhận xóa
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn xóa phương thức thanh toán '" + paymentMethod.getMethod_name() + "'?\n" +
+                "Hành động này không thể hoàn tác!", 
+                "Xác nhận xóa"
+            );
             
-            // Tạo thông tin để hiển thị
-            PaymentMethod toDelete = PaymentMethod.builder()
-                    .payment_method_id(paymentMethodId)
-                    .method_name(methodName)
-                    .is_enable("Hoạt động".equals(status) ? 1 : 0)
-                    .build();
-            
-            // Hiển thị dialog xác nhận với thông tin chi tiết
-            String message = "Bạn có chắc chắn muốn xóa phương thức thanh toán này?\n\n" +
-                           "THÔNG TIN SẼ BỊ XÓA:\n" + formatPaymentMethodInfo(toDelete);
-            
-            if (XDialog.confirm(message, "Xác nhận xóa")) {
-                // Xóa từ database
-                paymentMethodDAO.deleteById(paymentMethodId);
-                
-                // Refresh dữ liệu và thông báo
+            if (confirm) {
+                paymentMethodDAO.deleteById(paymentMethod.getPayment_method_id());
+                XDialog.success("Xóa phương thức thanh toán thành công!", "Thành công");
                 loadPaymentMethods();
                 clearForm();
-                hasUnsavedChanges = false;
-                XDialog.success("Xóa phương thức thanh toán thành công!");
             }
-            
         } catch (Exception e) {
-            e.printStackTrace();
-            XDialog.error("Lỗi: " + e.getMessage());
+            XDialog.error("Lỗi khi xóa phương thức thanh toán: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -688,27 +666,33 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
      * Xử lý thoát ứng dụng với kiểm tra thay đổi chi tiết
      */
     private void handleExit() {
-        if (hasUnsavedChanges) {
-            String message = "Bạn có thay đổi chưa lưu trên form.\n\n" +
-                           "Các thay đổi có thể bao gồm:\n" +
-                           "• Thay đổi mã phương thức\n" +
-                           "• Thay đổi tên phương thức\n" +
-                           "• Thay đổi trạng thái\n\n" +
-                           "Bạn có muốn:\n" +
-                           "• Hủy bỏ thay đổi và thoát\n" +
-                           "• Tiếp tục chỉnh sửa";
-            
-            String[] options = {"Hủy bỏ thay đổi", "Tiếp tục chỉnh sửa"};
-            String choice = XDialog.selection(message, "Xác nhận thoát", options);
-            
-            if ("Hủy bỏ thay đổi".equals(choice)) {
-                this.dispose();
+        try {
+            if (hasUnsavedChanges) {
+                String message = "Bạn có thay đổi chưa lưu trên form.\n\n" +
+                               "Các thay đổi có thể bao gồm:\n" +
+                               "• Thay đổi mã phương thức\n" +
+                               "• Thay đổi tên phương thức\n" +
+                               "• Thay đổi trạng thái\n\n" +
+                               "Bạn có chắc chắn muốn thoát?\n" +
+                               "Tất cả thay đổi sẽ bị mất.";
+                
+                boolean confirm = XDialog.confirm(message, "Xác nhận thoát");
+                if (confirm) {
+                    dispose();
+                }
+            } else {
+                // Hiển thị thông báo xác nhận thoát ngay cả khi không có thay đổi
+                boolean confirm = XDialog.confirm(
+                    "Bạn có chắc chắn muốn thoát khỏi quản lý phương thức thanh toán?", 
+                    "Xác nhận thoát"
+                );
+                if (confirm) {
+                    dispose();
+                }
             }
-            // Nếu chọn "Tiếp tục chỉnh sửa" thì không làm gì cả
-        } else {
-            if (XDialog.confirm("Bạn có chắc chắn muốn thoát?", "Xác nhận thoát")) {
-                this.dispose();
-            }
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi thoát: " + e.getMessage(), "Lỗi");
+            dispose();
         }
     }
 

@@ -15,14 +15,17 @@ import com.team4.quanliquanmicay.Impl.BillDAOImpl;
 import com.team4.quanliquanmicay.Impl.BillDetailsDAOImpl;
 import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
 import java.text.SimpleDateFormat;
-import java.util.List;
+import java.util.List;  
 import java.util.Date;
-import javax.swing.JOptionPane;
+
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import com.toedter.calendar.JDateChooser;
 import com.team4.quanliquanmicay.Controller.BillManagementController;
+import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XValidation;
+import com.team4.quanliquanmicay.util.XAuth;
 
 /**
  *
@@ -54,11 +57,118 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         // Khởi tạo date picker
         initDatePickers();
         
-        // Load dữ liệu ban đầu
+        // Kiểm tra kết nối database và load dữ liệu ban đầu
+        checkDatabaseConnection();
         loadBillData();
         addEventListeners();
     }
 
+    /**
+     * Kiểm tra kết nối database
+     */
+    private void checkDatabaseConnection() {
+        try {
+            List<Bill> bills = billDAO.findAll();
+            System.out.println("✅ Kết nối database thành công. Có " + bills.size() + " hóa đơn trong database");
+            
+            // Kiểm tra xem có bill nào không có chi tiết không
+            checkBillsWithoutDetails(bills);
+            
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi kết nối database: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Kiểm tra các bill không có chi tiết
+     */
+    private void checkBillsWithoutDetails(List<Bill> bills) {
+        try {
+            int billsWithoutDetails = 0;
+            for (Bill bill : bills) {
+                List<BillDetails> details = billDetailsDAO.findByBillId(bill.getBill_id());
+                if (details.isEmpty()) {
+                    billsWithoutDetails++;
+                    System.out.println("⚠️ Bill " + bill.getBill_id() + " không có chi tiết món ăn");
+                }
+            }
+            
+            if (billsWithoutDetails > 0) {
+                System.out.println("📊 Có " + billsWithoutDetails + "/" + bills.size() + " bill không có chi tiết món ăn");
+                
+                // Hỏi người dùng có muốn tạo dữ liệu mẫu không
+                boolean createSampleData = XDialog.confirm(
+                    "Phát hiện " + billsWithoutDetails + " hóa đơn không có chi tiết món ăn.\n" +
+                    "Bạn có muốn tạo dữ liệu mẫu cho các hóa đơn này không?",
+                    "Tạo dữ liệu mẫu"
+                );
+                
+                if (createSampleData) {
+                    createSampleBillDetails(bills);
+                }
+            } else {
+                System.out.println("✅ Tất cả bill đều có chi tiết món ăn");
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi khi kiểm tra chi tiết bill: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Tạo dữ liệu mẫu cho các bill không có chi tiết
+     */
+    private void createSampleBillDetails(List<Bill> bills) {
+        try {
+            // Lấy danh sách sản phẩm có sẵn
+            List<Product> products = productDAO.findAll();
+            if (products.isEmpty()) {
+                XDialog.warning("Không có sản phẩm nào trong database để tạo dữ liệu mẫu!", "Cảnh báo");
+                return;
+            }
+            
+            int createdCount = 0;
+            for (Bill bill : bills) {
+                List<BillDetails> details = billDetailsDAO.findByBillId(bill.getBill_id());
+                if (details.isEmpty()) {
+                    // Tạo 1-3 món ăn mẫu cho bill này
+                    int numItems = (int) (Math.random() * 3) + 1; // 1-3 món
+                    
+                    for (int i = 0; i < numItems; i++) {
+                        // Chọn ngẫu nhiên một sản phẩm
+                        Product randomProduct = products.get((int) (Math.random() * products.size()));
+                        
+                        // Tạo chi tiết bill
+                        BillDetails detail = new BillDetails();
+                        detail.setBill_id(bill.getBill_id());
+                        detail.setProduct_id(randomProduct.getProductId());
+                        detail.setAmount((int) (Math.random() * 3) + 1); // 1-3 phần
+                        detail.setPrice(randomProduct.getPrice());
+                        detail.setDiscount(0.0); // Không giảm giá
+                        
+                        // Lưu vào database
+                        billDetailsDAO.create(detail);
+                        createdCount++;
+                    }
+                    
+                    System.out.println("✅ Đã tạo " + numItems + " món ăn mẫu cho bill " + bill.getBill_id());
+                }
+            }
+            
+            if (createdCount > 0) {
+                XDialog.success("Đã tạo " + createdCount + " chi tiết món ăn mẫu cho các hóa đơn!", "Thành công");
+                // Reload dữ liệu
+                loadBillData();
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Lỗi khi tạo dữ liệu mẫu: " + e.getMessage());
+            e.printStackTrace();
+            XDialog.error("Lỗi khi tạo dữ liệu mẫu: " + e.getMessage(), "Lỗi");
+        }
+    }
+    
     /**
      * Khởi tạo date picker
      */
@@ -85,10 +195,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             cboTime.setSelectedItem("Hôm nay");
             
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Lỗi khi thiết lập ngày mặc định: " + e.getMessage(), 
-                "Lỗi", 
-                JOptionPane.ERROR_MESSAGE);
+            XDialog.error("Lỗi khi thiết lập ngày mặc định: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -98,19 +205,25 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
     @Override
     public void loadBillData() {
         try {
+            // Load tất cả hóa đơn từ database
             List<Bill> bills = billDAO.findAll();
             DefaultTableModel model = (DefaultTableModel) tblBill.getModel();
             model.setRowCount(0);
             
+            if (bills.isEmpty()) {
+                System.out.println("Không có hóa đơn nào trong database");
+                return;
+            }
+            
             for (Bill bill : bills) {
-                // Chuyển đổi Boolean status sang String để hiển thị
-                String statusText = "Đang phục vụ";
-                if (bill.getStatus() != null) {
-                    if (bill.getStatus()) {
-                        statusText = "Đã thanh toán";
-                    } else {
-                        statusText = "Đang phục vụ";
-                    }
+                // Chuyển đổi Integer status sang String để hiển thị
+                String statusText = bill.getStatusText();
+                
+                // Debug: In ra status của từng bill khi load
+                if (bill.getBill_id() == 10000) {
+                    System.out.println("DEBUG loadBillData - Bill 10000:");
+                    System.out.println("  Status String: " + bill.getStatus());
+                    System.out.println("  Status Text: " + statusText);
                 }
                 
                 Object[] row = {
@@ -124,8 +237,12 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 };
                 model.addRow(row);
             }
+            
+            System.out.println("Đã load " + bills.size() + " hóa đơn từ database");
+            
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tải dữ liệu hóa đơn: " + e.getMessage());
+            XDialog.error("Lỗi khi tải dữ liệu hóa đơn: " + e.getMessage(), "Lỗi");
+            e.printStackTrace();
         }
     }
 
@@ -135,13 +252,33 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
     @Override
     public void loadBillDetails(Integer billId) {
         try {
+            System.out.println("🔍 Đang load chi tiết cho bill_id: " + billId);
+            
             List<BillDetails> billDetails = billDetailsDAO.findByBillId(billId);
+            System.out.println("📋 Tìm thấy " + billDetails.size() + " chi tiết hóa đơn");
+            
             DefaultTableModel model = (DefaultTableModel) tblBillDetail.getModel();
             model.setRowCount(0);
+            
+            if (billDetails.isEmpty()) {
+                System.out.println("⚠️ Bill này không có chi tiết món ăn nào!");
+                // Hiển thị thông báo trong bảng
+                Object[] row = {
+                    "Không có món ăn nào",
+                    "",
+                    "",
+                    "",
+                    ""
+                };
+                model.addRow(row);
+                return;
+            }
             
             for (BillDetails detail : billDetails) {
                 Product product = productDAO.findById(detail.getProduct_id());
                 String productName = product != null ? product.getProductName() : "Không xác định";
+                
+                System.out.println("🍽️ Sản phẩm: " + productName + " - Số lượng: " + detail.getAmount());
                 
                 Object[] row = {
                     productName,
@@ -152,8 +289,13 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 };
                 model.addRow(row);
             }
+            
+            System.out.println("✅ Đã load " + billDetails.size() + " món ăn vào bảng chi tiết");
+            
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tải chi tiết hóa đơn: " + e.getMessage());
+            System.err.println("❌ Lỗi khi tải chi tiết hóa đơn: " + e.getMessage());
+            e.printStackTrace();
+            XDialog.error("Lỗi khi tải chi tiết hóa đơn: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -175,20 +317,26 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         txtCheckin.setText(bill.getCheckin() != null ? dateFormat.format(bill.getCheckin()) : "");
         txtCheckout.setText(bill.getCheckout() != null ? dateFormat.format(bill.getCheckout()) : "");
         
-        // Set status trong combobox - chuyển đổi Boolean sang String
-        Boolean status = bill.getStatus();
+        // Set status trong combobox - chuyển đổi Integer sang String
+        Integer status = bill.getStatus();
         if (status != null) {
-            if (status) {
-                cboStatus.setSelectedIndex(1); // "Đã thanh toán"
-            } else {
-                cboStatus.setSelectedIndex(0); // "Đang phục vụ"
+            switch (status) {
+                case 0:
+                    cboStatus.setSelectedIndex(0); // "Đang phục vụ"
+                    break;
+                case 1:
+                    cboStatus.setSelectedIndex(1); // "Đã thanh toán"
+                    break;
+                case 2:
+                    cboStatus.setSelectedIndex(2); // "Hủy"
+                    break;
+                default:
+                    cboStatus.setSelectedIndex(0); // Mặc định "Đang phục vụ"
+                    break;
             }
         } else {
             cboStatus.setSelectedIndex(0); // Mặc định "Đang phục vụ"
         }
-        
-        // Load chi tiết hóa đơn
-        loadBillDetails(bill.getBill_id());
     }
 
     /**
@@ -220,9 +368,31 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tblBill.getSelectedRow();
                 if (selectedRow >= 0) {
-                    Integer billId = (Integer) tblBill.getValueAt(selectedRow, 0);
-                    Bill bill = billDAO.findById(String.valueOf(billId));
-                    displayBillInfo(bill);
+                    try {
+                        Object billIdObj = tblBill.getValueAt(selectedRow, 0);
+                        System.out.println("🖱️ Click vào row " + selectedRow + " - billId: " + billIdObj);
+                        
+                        if (billIdObj != null) {
+                            Integer billId = (Integer) billIdObj;
+                            System.out.println("📄 Đang tìm bill với ID: " + billId);
+                            
+                            Bill bill = billDAO.findById(String.valueOf(billId));
+                            if (bill != null) {
+                                System.out.println("✅ Tìm thấy bill: " + bill.getBill_id());
+                                displayBillInfo(bill);
+                                
+                                // Load chi tiết hóa đơn ngay khi chọn row
+                                loadBillDetails(billId);
+                            } else {
+                                System.out.println("❌ Không tìm thấy bill với ID: " + billId);
+                            }
+                        } else {
+                            System.out.println("❌ billId là null");
+                        }
+                    } catch (Exception ex) {
+                        System.err.println("❌ Lỗi khi xử lý click vào table: " + ex.getMessage());
+                        ex.printStackTrace();
+                    }
                 }
             }
         });
@@ -234,7 +404,20 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         btnRemove.addActionListener(e -> removeBill());
 
         // Sự kiện nút Exit
-        btnExit.addActionListener(e -> dispose());
+        btnExit.addActionListener(e -> {
+            if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) {
+                this.dispose();
+            }
+        });
+        
+        // Sự kiện thay đổi tab
+        jTabbedPane1.addChangeListener(new javax.swing.event.ChangeListener() {
+            @Override
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                tabbedPaneStateChanged(evt);
+            }
+        });
+
 
         // Sự kiện nút Filter
         btnFilter.addActionListener(e -> filterBills());
@@ -255,35 +438,68 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
     @Override
     public void updateBill() {
         if (currentBill == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn cần cập nhật!");
+            XDialog.warning("Vui lòng chọn hóa đơn cần cập nhật!", "Cảnh báo");
             return;
         }
-
+        
         try {
-            // Cập nhật trạng thái - chuyển đổi String sang Boolean
+            // Cập nhật trạng thái - chuyển đổi String sang Integer
             String selectedStatus = (String) cboStatus.getSelectedItem();
-            Boolean status = false; // Mặc định "Đang phục vụ"
+            Integer status = 0; // Mặc định "Đang phục vụ"
             
-            if (selectedStatus.equals("Đã thanh toán")) {
-                status = true;
-            } else if (selectedStatus.equals("Hủy")) {
-                status = null; // Hoặc có thể set một giá trị khác tùy logic
+            // Debug: In ra trạng thái được chọn
+            System.out.println("DEBUG: Selected status from combo: '" + selectedStatus + "'");
+            
+            // Debug: In ra tất cả items trong combo
+            System.out.println("DEBUG: All combo items:");
+            for (int i = 0; i < cboStatus.getItemCount(); i++) {
+                System.out.println("  [" + i + "] '" + cboStatus.getItemAt(i) + "'");
             }
+            
+            // Trim và so sánh ignore case để tránh lỗi do space và chữ hoa/thường
+            String trimmedStatus = selectedStatus.trim();
+            
+            // Kiểm tra quyền hủy đơn - chỉ Manager mới được hủy
+            if ("Hủy".equalsIgnoreCase(trimmedStatus)) {
+                if (!"R001".equals(XAuth.user.getRole_id())) {
+                    XDialog.warning("Chỉ Manager mới được phép hủy đơn!", "Không có quyền");
+                    return;
+                }
+                status = 2;
+            } else if ("Đã Thanh Toán".equalsIgnoreCase(trimmedStatus)) {
+                status = 1;
+            } else {
+                status = 0;
+            }
+            
+            System.out.println("DEBUG: Final status Integer: " + status);
             
             currentBill.setStatus(status);
             
             // Nếu trạng thái là "Đã thanh toán" thì set checkout time
-            if (selectedStatus.equals("Đã thanh toán") && currentBill.getCheckout() == null) {
+            if ("Đã Thanh Toán".equalsIgnoreCase(trimmedStatus) && currentBill.getCheckout() == null) {
                 currentBill.setCheckout(new java.util.Date());
                 txtCheckout.setText(dateFormat.format(currentBill.getCheckout()));
             }
 
             billDAO.update(currentBill);
-            JOptionPane.showMessageDialog(this, "Cập nhật hóa đơn thành công!");
+            
+            // Debug: In ra thông tin bill sau khi update
+            System.out.println("DEBUG: Updated bill status: " + currentBill.getStatus());
+            
+            XDialog.success("Cập nhật hóa đơn thành công!", "Thành công");
+            
+            // Force refresh table
             loadBillData();
             
+            // Debug: Verify bill đã được update trong database
+            Bill verifyBill = billDAO.findById(String.valueOf(currentBill.getBill_id()));
+            if (verifyBill != null) {
+                System.out.println("DEBUG: Bill from DB after update - Status: " + verifyBill.getStatus());
+            }
+            
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi cập nhật hóa đơn: " + e.getMessage());
+            XDialog.error("Lỗi khi cập nhật hóa đơn: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -293,16 +509,13 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
     @Override
     public void removeBill() {
         if (currentBill == null) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn hóa đơn cần xóa!");
+            XDialog.warning("Vui lòng chọn hóa đơn cần xóa!", "Cảnh báo");
             return;
         }
 
-        int confirm = JOptionPane.showConfirmDialog(this, 
-            "Bạn có chắc chắn muốn xóa hóa đơn này?", 
-            "Xác nhận xóa", 
-            JOptionPane.YES_NO_OPTION);
+        boolean confirm = XDialog.confirm("Bạn có chắc chắn muốn xóa hóa đơn này?", "Xác nhận xóa");
             
-        if (confirm == JOptionPane.YES_OPTION) {
+        if (confirm) {
             try {
                 // Xóa chi tiết hóa đơn trước
                 List<BillDetails> billDetails = billDetailsDAO.findByBillId(currentBill.getBill_id());
@@ -312,13 +525,13 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 
                 // Xóa hóa đơn
                 billDAO.deleteById(String.valueOf(currentBill.getBill_id()));
-                JOptionPane.showMessageDialog(this, "Xóa hóa đơn thành công!");
+                XDialog.success("Xóa hóa đơn thành công!", "Thành công");
                 
                 clearForm();
                 loadBillData();
                 
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Lỗi khi xóa hóa đơn: " + e.getMessage());
+                XDialog.error("Lỗi khi xóa hóa đơn: " + e.getMessage(), "Lỗi");
             }
         }
     }
@@ -399,10 +612,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                     java.util.Date endDate = sdf.parse(txtEnd.getText());
                     
                     if (selectedDate.after(endDate)) {
-                        JOptionPane.showMessageDialog(this, 
-                            "Ngày bắt đầu không được lớn hơn ngày kết thúc!", 
-                            "Lỗi Validation", 
-                            JOptionPane.ERROR_MESSAGE);
+                        XDialog.warning("Ngày bắt đầu không được lớn hơn ngày kết thúc!", "Lỗi Validation");
                         return false;
                     }
                 }
@@ -415,10 +625,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                     java.util.Date beginDate = sdf.parse(txtBegin.getText());
                     
                     if (selectedDate.before(beginDate)) {
-                        JOptionPane.showMessageDialog(this, 
-                            "Ngày kết thúc phải lớn hơn ngày bắt đầu!", 
-                            "Lỗi Validation", 
-                            JOptionPane.ERROR_MESSAGE);
+                        XDialog.warning("Ngày kết thúc phải lớn hơn ngày bắt đầu!", "Lỗi Validation");
                         return false;
                     }
                 }
@@ -426,10 +633,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             
             return true;
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Lỗi khi kiểm tra ngày: " + e.getMessage(), 
-                "Lỗi", 
-                JOptionPane.ERROR_MESSAGE);
+            XDialog.error("Lỗi khi kiểm tra ngày: " + e.getMessage(), "Lỗi");
             return false;
         }
     }
@@ -544,10 +748,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             }
             
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
-                "Lỗi khi cập nhật khoảng thời gian: " + e.getMessage(), 
-                "Lỗi", 
-                JOptionPane.ERROR_MESSAGE);
+            XDialog.error("Lỗi khi cập nhật khoảng thời gian: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -655,15 +856,8 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             model.setRowCount(0);
             
             for (Bill bill : filteredBills) {
-                // Chuyển đổi Boolean status sang String để hiển thị
-                String statusText = "Đang phục vụ";
-                if (bill.getStatus() != null) {
-                    if (bill.getStatus()) {
-                        statusText = "Đã thanh toán";
-                    } else {
-                        statusText = "Đang phục vụ";
-                    }
-                }
+                // Chuyển đổi Integer status sang String để hiển thị
+                String statusText = bill.getStatusText();
                 
                 Object[] row = {
                     bill.getBill_id(),
@@ -683,10 +877,10 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             } else {
                 message = "Đã lọc được " + filteredBills.size() + " hóa đơn cho " + selectedTime + "!";
             }
-            JOptionPane.showMessageDialog(this, message);
+            XDialog.success(message, "Thông báo");
             
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi lọc hóa đơn: " + e.getMessage());
+            XDialog.error("Lỗi khi lọc hóa đơn: " + e.getMessage(), "Lỗi");
         }
     }
     
@@ -699,7 +893,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         try {
             return billDAO.findAll();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi lấy danh sách hóa đơn: " + e.getMessage());
+            XDialog.error("Lỗi khi lấy danh sách hóa đơn: " + e.getMessage(), "Lỗi");
             return new java.util.ArrayList<>();
         }
     }
@@ -714,7 +908,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         try {
             return billDAO.findById(billId);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi tìm hóa đơn: " + e.getMessage());
+            XDialog.error("Lỗi khi tìm hóa đơn: " + e.getMessage(), "Lỗi");
             return null;
         }
     }
@@ -748,8 +942,23 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             
             return filteredBills;
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi lọc hóa đơn theo ngày: " + e.getMessage());
+            XDialog.error("Lỗi khi lọc hóa đơn theo ngày: " + e.getMessage(), "Lỗi");
             return new java.util.ArrayList<>();
+        }
+    }
+    
+    /**
+     * Xử lý sự kiện thay đổi tab
+     */
+    private void tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {
+        int selectedIndex = jTabbedPane1.getSelectedIndex();
+        if (selectedIndex == 1) { // Tab "Chi tiết"
+            if (currentBill == null) {
+                XDialog.warning("Vui lòng chọn một hóa đơn để xem chi tiết!", "Thông báo");
+                // Chuyển về tab "Hóa đơn"
+                jTabbedPane1.setSelectedIndex(0);
+            }
+            // Chi tiết đã được load khi click vào table, không cần load lại
         }
     }
     
@@ -828,7 +1037,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             
             return filteredBills;
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi khi lọc hóa đơn theo thời gian: " + e.getMessage());
+            XDialog.error("Lỗi khi lọc hóa đơn theo thời gian: " + e.getMessage(), "Lỗi");
             return new java.util.ArrayList<>();
         }
     }
@@ -1103,9 +1312,8 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                         .addComponent(btnBegin, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(txtBegin, javax.swing.GroupLayout.Alignment.LEADING))
-                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(btnFilter)
-                        .addComponent(cboTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(btnFilter)
+                    .addComponent(cboTime, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -1129,6 +1337,8 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                 return canEdit [columnIndex];
             }
         });
+        tblBill.getTableHeader().setResizingAllowed(false);
+        tblBill.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tblBill);
         if (tblBill.getColumnModel().getColumnCount() > 0) {
             tblBill.getColumnModel().getColumn(0).setResizable(false);
@@ -1199,6 +1409,11 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         btnExit.setForeground(new java.awt.Color(102, 102, 102));
         btnExit.setText("Thoát");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnExit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExitActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -1254,6 +1469,11 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
     private void btnFilterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFilterActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnFilterActionPerformed
+
+    private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
+   if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) 
+          this.dispose(); // Đóng cửa sổ hiện tại
+    }//GEN-LAST:event_btnExitActionPerformed
 
     /**
      * @param args the command line arguments

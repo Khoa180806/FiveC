@@ -6,8 +6,8 @@ public interface LoginController {
     void open();
     void login();
     
-    default void exit(){
-        if (XDialog.confirm("Bạn muốn kết thúc?")) {
+    default void exit(){      
+      if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát"))  {
             System.exit(0);
         }
     }

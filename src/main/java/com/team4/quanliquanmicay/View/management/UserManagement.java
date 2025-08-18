@@ -16,10 +16,6 @@ import java.util.List;
 import javax.swing.table.DefaultTableModel;
 import java.util.*;
 import com.team4.quanliquanmicay.util.*;
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import javax.swing.event.*;
 
 /**
  *
@@ -45,109 +41,59 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         roleDAO = new RoleDAOImpl();
         roleMap = new HashMap<>();
         
-        // ✅ EARLY CAPTURE: Capture initial image size ngay sau initComponents
-        captureInitialImageSize();
-        
-        // Setup all functionality
+        // ✅ OPTIMIZED: Fast initialization
         loadRoles();
-        setupStatusComboBox(); // ✅ SAFE: Protected by disableComboBoxUpdates flag
-        setupRoleComboBox();   // ✅ SAFE: Protected by disableComboBoxUpdates flag
-        fillToTable();
-        setColumnWidths();
+        setupComboBoxes();
         setupEventListeners();
-        setupPerformanceOptimizations();
-        preloadDefaultImages();
         setupImageSelection();
+        lockImageSize();
         setupSearchFunctionality();
         
-        // ✅ FINAL: Capture and freeze initial layout size
+        // Load data cuối cùng để tránh lag
+        fillToTable();
+    }
+    
+    /**
+     * ✅ NEW: Lock image size to prevent expansion when loading images
+     */
+    private void lockImageSize() {
+        // Get current size from .form layout (114x153 from .form file)
+        java.awt.Dimension formSize = new java.awt.Dimension(114, 153);
+        
+        // Lock all size properties
+        lblImage.setSize(formSize);
+        lblImage.setPreferredSize(formSize);
+        lblImage.setMinimumSize(formSize);
+        lblImage.setMaximumSize(formSize);
+        
+        System.out.println("🔒 Image size locked to: " + formSize);
+    }
+    
+    /**
+     * ✅ NEW: Load employee image with size protection
+     */
+    private void loadEmployeeImageWithSizeProtection(String imageName) {
+        // Lock size before loading
+        lockImageSize();
+        
+        // Load image using existing method
+        loadEmployeeImage(imageName);
+        
+        // Lock size again after loading to ensure it stays fixed
         javax.swing.SwingUtilities.invokeLater(() -> {
-            validate();
-            repaint();
-            
-            // ✅ CAPTURE: Store initial table size to prevent expansion
-            if (frozenTableSize == null) {
-                frozenTableSize = new java.awt.Dimension(jScrollPane1.getSize());
-                System.out.println("📐 Captured initial table size: " + frozenTableSize);
-                
-                // ✅ VERIFY: Re-capture image size if needed
-                if (originalImageSize == null) {
-                    captureInitialImageSize();
-                }
-                
-                // ✅ SETUP: Periodic size enforcement timer
-                setupSizeEnforcementTimer();
-                
-                // ✅ FIX: Immediately enforce table size and column widths
-                enforceTableSize();
-                setColumnWidths();
-            }
+            lockImageSize();
         });
     }
     
     /**
-     * ✅ NEW: Capture initial image label size immediately
-     */
-    private void captureInitialImageSize() {
-        try {
-            // Force layout validation to get correct size
-            lblImage.validate();
-            java.awt.Dimension currentSize = lblImage.getSize();
-            
-            // Set default size if not properly initialized
-            if (currentSize.width <= 0 || currentSize.height <= 0) {
-                currentSize = new java.awt.Dimension(116, 167); // From layout manager
-            }
-            
-            originalImageSize = new java.awt.Dimension(currentSize);
-            System.out.println("🖼️ Captured initial image size: " + originalImageSize);
-            
-            // Set border to indicate clickable area với size cố định
-            lblImage.setBorder(javax.swing.BorderFactory.createTitledBorder(
-                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(100, 149, 237), 2),
-                "Click để chọn ảnh",
-                javax.swing.border.TitledBorder.CENTER,
-                javax.swing.border.TitledBorder.BOTTOM,
-                new java.awt.Font("Arial", java.awt.Font.ITALIC, 10),
-                new java.awt.Color(100, 149, 237)
-            ));
-            
-        } catch (Exception e) {
-            // Fallback to default size
-            originalImageSize = new java.awt.Dimension(116, 167);
-            System.out.println("⚠️ Using fallback image size: " + originalImageSize);
-        }
-    }
-    
-    /**
-     * ✅ OPTIMIZED: Setup all event listeners với debouncing
+     * ✅ OPTIMIZED: Fast event listeners with minimal overhead
      */
     private void setupEventListeners() {
-        tableInfo.addMouseListener(new java.awt.event.MouseAdapter() {
-            private long lastClickTime = 0;
-            
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                long currentTime = System.currentTimeMillis();
-                // Debounce clicks - chỉ cho phép 1 click mỗi 300ms
-                if (evt.getClickCount() == 1 && (currentTime - lastClickTime) > 300) {
-                    lastClickTime = currentTime;
-                    
-                    // ✅ PROTECT: Enforce table size before edit
-                    enforceTableSize();
-                    
+        tableInfo.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedRow = tableInfo.getSelectedRow();
+                if (selectedRow >= 0) {
                     edit();
-                    
-                    // ✅ PROTECT: Enforce table size after edit with multiple attempts
-                    javax.swing.SwingUtilities.invokeLater(() -> {
-                        enforceTableSize();
-                        // Double-check after a short delay
-                        javax.swing.Timer delayTimer = new javax.swing.Timer(100, e -> {
-                            enforceTableSize();
-                            ((javax.swing.Timer)e.getSource()).stop();
-                        });
-                        delayTimer.setRepeats(false);
-                        delayTimer.start();
-                    });
                 }
             }
         });
@@ -184,7 +130,6 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         jLabel11 = new javax.swing.JLabel();
         txtPassword = new javax.swing.JTextField();
         jLabel12 = new javax.swing.JLabel();
-        txtEmail = new javax.swing.JTextField();
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
         cboStatus = new javax.swing.JComboBox<>();
@@ -196,6 +141,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         txtSearch = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         btnExit = new javax.swing.JButton();
+        txtEmail = new javax.swing.JTextField();
         jScrollPane1 = new javax.swing.JScrollPane();
         tableInfo = new javax.swing.JTable();
 
@@ -211,7 +157,6 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         jPanel3.setBackground(new java.awt.Color(204, 164, 133));
 
         jPanel5.setBackground(new java.awt.Color(204, 164, 133));
-        jPanel5.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
 
         jLabel3.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
@@ -261,7 +206,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addGap(9, 9, 9)
-                .addComponent(lblImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lblImage, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -276,12 +221,15 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         jLabel11.setText("Mật khẩu :");
 
         txtPassword.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
+        txtPassword.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtPasswordActionPerformed(evt);
+            }
+        });
 
         jLabel12.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel12.setForeground(new java.awt.Color(255, 255, 255));
         jLabel12.setText("Email :");
-
-        txtEmail.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         jLabel13.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel13.setForeground(new java.awt.Color(255, 255, 255));
@@ -311,7 +259,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         btnUpdate.setBackground(new java.awt.Color(185, 163, 147));
         btnUpdate.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         btnUpdate.setForeground(new java.awt.Color(255, 255, 255));
-        btnUpdate.setText("Làm mới ");
+        btnUpdate.setText("Cập Nhật");
         btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -322,7 +270,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         btnClear.setBackground(new java.awt.Color(185, 163, 147));
         btnClear.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         btnClear.setForeground(new java.awt.Color(255, 255, 255));
-        btnClear.setText("Xóa");
+        btnClear.setText("Làm mới");
         btnClear.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
         btnClear.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -333,7 +281,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         btnDelete.setBackground(new java.awt.Color(185, 163, 147));
         btnDelete.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         btnDelete.setForeground(new java.awt.Color(255, 255, 255));
-        btnDelete.setText("Cập Nhật");
+        btnDelete.setText("Xóa");
         btnDelete.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(204, 204, 204), 2));
         btnDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -341,7 +289,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             }
         });
 
-        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Search.png"))); // NOI18N
+        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Search.png"))); // NOI18N
         jLabel6.setText("jLabel6");
 
         btnExit.setBackground(new java.awt.Color(185, 163, 147));
@@ -354,6 +302,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                 btnExitActionPerformed(evt);
             }
         });
+
+        txtEmail.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
         javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
         jPanel5.setLayout(jPanel5Layout);
@@ -379,10 +329,10 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                         .addComponent(chkMale)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(chkFemale))
-                    .addComponent(txtPhoneNumber)
-                    .addComponent(txtIdEmployee)
-                    .addComponent(txtNameEmployee)
-                    .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtIdEmployee, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                    .addComponent(txtNameEmployee, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                    .addComponent(txtPhoneNumber, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+                    .addComponent(txtEmail, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE))
                 .addGap(72, 72, 72)
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(jPanel5Layout.createSequentialGroup()
@@ -395,14 +345,14 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(txtPassword)
-                                    .addComponent(txtNameAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(txtNameAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(jPanel5Layout.createSequentialGroup()
                                 .addGap(5, 5, 5)
-                                .addComponent(cboRole, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addComponent(cboRole, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE))))
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addComponent(jLabel14)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 151, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
                 .addComponent(btnSave)
                 .addGap(18, 18, 18)
@@ -418,52 +368,23 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                     .addGroup(jPanel5Layout.createSequentialGroup()
                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(14, 14, 14))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel8))
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addGap(9, 9, 9)
                         .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel3)
-                                    .addComponent(txtNameAccount, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel11)
-                                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel14))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(cboRole, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(txtIdEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel10))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel4)
-                                    .addComponent(txtNameEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(chkMale)
-                                    .addComponent(chkFemale)
-                                    .addComponent(jLabel5))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(jLabel7)
-                                    .addComponent(txtPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(jPanel5Layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addGap(0, 50, Short.MAX_VALUE)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -474,16 +395,48 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                                 .addGap(18, 18, 18)
                                 .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                     .addComponent(jLabel6)
-                                    .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel12)
-                            .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                    .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(jPanel5Layout.createSequentialGroup()
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(jPanel5Layout.createSequentialGroup()
+                                        .addGap(6, 6, 6)
+                                        .addComponent(jLabel3))
+                                    .addComponent(txtNameAccount, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel11)
+                                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(9, 9, 9)
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(cboStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel14))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(cboRole, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addGap(44, 44, 44))
                     .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addGap(182, 182, 182)
-                .addComponent(jLabel8))
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtIdEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel10))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel4)
+                            .addComponent(txtNameEmployee, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(chkMale)
+                            .addComponent(chkFemale)
+                            .addComponent(jLabel5))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel7)
+                            .addComponent(txtPhoneNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtEmail, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel12))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
 
         tableInfo.setModel(new javax.swing.table.DefaultTableModel(
@@ -505,6 +458,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                 return canEdit [columnIndex];
             }
         });
+        tableInfo.getTableHeader().setResizingAllowed(false);
+        tableInfo.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(tableInfo);
         if (tableInfo.getColumnModel().getColumnCount() > 0) {
             tableInfo.getColumnModel().getColumn(0).setResizable(false);
@@ -530,16 +485,16 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1364, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1450, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 300, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -656,6 +611,10 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         delete();
     }//GEN-LAST:event_btnDeleteActionPerformed
 
+    private void txtPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtPasswordActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtPasswordActionPerformed
+
     /**
      * Event handler cho nút EXIT ở dòng 496
      */
@@ -670,12 +629,12 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         try {
             boolean hasData = hasUnsavedChanges();
             String message = hasData ? 
-                "⚠️ Còn dữ liệu trong form!\n\nBạn có muốn thoát không?\n(Dữ liệu sẽ bị mất nếu chưa lưu)" :
+                "Còn dữ liệu trong form!\n\nBạn có muốn thoát không?\n(Dữ liệu sẽ bị mất nếu chưa lưu)" :
                 "Bạn có muốn thoát ứng dụng không?";
             
             if (XDialog.confirm(message, "Xác nhận thoát")) {
                 System.out.println("Đang thoát ứng dụng Quản lý Nhân viên...");
-                System.exit(0);
+                this.dispose();
             }
         } catch (Exception e) {
             XDialog.alert("Lỗi khi thoát ứng dụng: " + e.getMessage(), "Lỗi hệ thống");
@@ -800,44 +759,47 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
 
     /**
-     * Load tất cả dữ liệu nhân viên lên bảng (không filter)
+     * ✅ OPTIMIZED: Fast table loading with minimal overhead
      */
     @Override
     public void fillToTable() {
-        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
-        model.setRowCount(0);
-
         try {
-            // Lấy tất cả nhân viên từ database
+            // Tạm dừng table updates để tăng tốc
+            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+            
+            DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
+            model.setRowCount(0);
+
+            // Lấy dữ liệu từ database
             List<UserAccount> employees = userDAO.findAll();
 
-            // Đổ tất cả dữ liệu vào bảng
-            for (UserAccount emp : employees) {
-                Object[] row = {
-                    emp.getUser_id(), // Mã nhân viên
-                    emp.getUsername(), // Tài khoản
-                    emp.getPass(), // Mật khẩu
-                    emp.getFullName(), // Họ và tên
-                    getGenderDisplayText(emp.getGender()), // Giới tính
-                    emp.getPhone_number(), // SĐT
-                    emp.getEmail(), // Email
-                    emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động", // Trạng thái
-                    getRoleName(emp.getRole_id()), // Vai trò
-                    formatDate(emp.getCreated_date()) // Ngày tạo
+            // Tạo tất cả rows trước khi add vào model
+            Object[][] rows = new Object[employees.size()][10];
+            for (int i = 0; i < employees.size(); i++) {
+                UserAccount emp = employees.get(i);
+                rows[i] = new Object[]{
+                    emp.getUser_id(),
+                    emp.getUsername(),
+                    emp.getPass(),
+                    emp.getFullName(),
+                    emp.getGender() == 1 ? "Nam" : "Nữ",
+                    emp.getPhone_number(),
+                    emp.getEmail(),
+                    emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động",
+                    roleMap.getOrDefault(emp.getRole_id(), "N/A"),
+                    emp.getCreated_date() != null ? 
+                        new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(emp.getCreated_date()) : "N/A"
                 };
+            }
+
+            // Add tất cả rows cùng lúc
+            for (Object[] row : rows) {
                 model.addRow(row);
             }
 
-            System.out.println("Đã load " + employees.size() + " nhân viên lên bảng");
+            // Khôi phục table updates
+            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_LAST_COLUMN);
             
-            // ✅ FIX: Re-apply column widths after filling data
-            setColumnWidths();
-            
-            // ✅ FIX: Ensure table size is maintained
-            if (frozenTableSize != null) {
-                enforceTableSize();
-            }
-
         } catch (Exception e) {
             XDialog.alert("Lỗi khi load dữ liệu: " + e.getMessage());
             e.printStackTrace();
@@ -888,56 +850,11 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         return displayText; // Fallback
     }
 
-    /**
-     * ✅ OPTIMIZED: Lấy tên vai trò từ cache
-     */
-    private String getRoleName(String roleId) {
-        return (roleId != null && roleMap.containsKey(roleId)) ? roleMap.get(roleId) : "N/A";
-    }
 
-    /**
-     * ✅ OPTIMIZED: Format ngày tháng để hiển thị trong bảng
-     */
-    private String formatDate(java.util.Date date) {
-        if (date == null) return "N/A";
-        try {
-            return new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(date);
-        } catch (Exception e) {
-            System.err.println("Lỗi format date: " + e.getMessage());
-            return date.toString();
-        }
-    }
 
-    /**
-     * Set độ rộng cột cho bảng
-     */
-    private void setColumnWidths() {
-        try {
-            // ✅ FIX: Tăng độ rộng tất cả các cột để đảm bảo hiển thị đầy đủ
-            tableInfo.getColumnModel().getColumn(0).setPreferredWidth(150);  // Mã NV
-            tableInfo.getColumnModel().getColumn(1).setPreferredWidth(120);  // Tài khoản
-            tableInfo.getColumnModel().getColumn(2).setPreferredWidth(100);  // Mật khẩu
-            tableInfo.getColumnModel().getColumn(3).setPreferredWidth(180);  // Họ tên
-            tableInfo.getColumnModel().getColumn(4).setPreferredWidth(120);  // Giới tính
-            tableInfo.getColumnModel().getColumn(5).setPreferredWidth(120);  // SĐT
-            tableInfo.getColumnModel().getColumn(6).setPreferredWidth(250);  // Email - Tăng độ rộng lớn hơn
-            tableInfo.getColumnModel().getColumn(7).setPreferredWidth(120);  // Trạng thái
-            tableInfo.getColumnModel().getColumn(8).setPreferredWidth(80);  // Vai trò
-            tableInfo.getColumnModel().getColumn(9).setPreferredWidth(120);  // Ngày tạo
-            
-            // ✅ FIX: Đảm bảo table không tự động resize
-            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-            
-            // ✅ FIX: Set minimum width cho từng cột để tránh bị cắt
-            for (int i = 0; i < tableInfo.getColumnCount(); i++) {
-                tableInfo.getColumnModel().getColumn(i).setMinWidth(80);
-            }
-            
-            System.out.println("✅ Column widths set successfully");
-        } catch (Exception e) {
-            System.err.println("Lỗi set column width: " + e.getMessage());
-        }
-    }
+
+
+
 
     @Override
     public void open() {
@@ -1026,6 +943,15 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         return entity;
     }
 
+    /**
+     * ✅ OPTIMIZED: Get form data for CREATE operation (with created_date)
+     */
+    private UserAccount getFormForCreate() {
+        UserAccount entity = getForm();
+        entity.setCreated_date(new java.util.Date());
+        return entity;
+    }
+
     @Override
     public void edit() {
         editWithCache(); // Thay vì code cũ
@@ -1105,40 +1031,26 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
     
     /**
-     * ✅ ENHANCED: Set default image but keep clickable với size cố định
+     * ✅ FIXED: Set default image with size protection
      */
     private void setDefaultImageWithClickable() {
+        // Lock size first
+        lockImageSize();
+        
         try {
-            // ✅ ENFORCE SIZE: Sử dụng phương thức với size cố định
-            if (originalImageSize != null) {
-                setImageWithFixedSize("/icons_and_images/User.png");
-            } else {
-                // Fallback nếu originalImageSize chưa sẵn sàng
-                XImage.setImageToLabel(lblImage, "/icons_and_images/User.png");
-                // Force capture size ngay sau khi set image
-                captureInitialImageSize();
-                // Set lại image với size cố định
-                setImageWithFixedSize("/icons_and_images/User.png");
-            }
-            
+            XImage.setImageToLabel(lblImage, "/icons_and_images/User.png");
             lblImage.setText("");
-            
-            // Ensure tooltip is set
             lblImage.setToolTipText("Click để chọn ảnh nhân viên");
-            
         } catch (Exception e) {
             lblImage.setIcon(null);
             lblImage.setText("Click để chọn ảnh");
             lblImage.setToolTipText("Click để chọn ảnh nhân viên");
-            
-            // ✅ ENFORCE: Keep size even on error
-            if (originalImageSize != null) {
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-            }
         }
+        
+        // Lock size again after setting image
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            lockImageSize();
+        });
     }
 
     /**
@@ -1192,9 +1104,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         // Reset gender selection
         groupGioiTinh.clearSelection();
 
-        // Clear table selection và reset tracking
+        // Clear table selection
         tableInfo.clearSelection();
-        lastSelectedRow = -1; // ✅ RESET: Clear row tracking
         
         // Enable ID field for next create
         txtIdEmployee.setEditable(true);
@@ -1223,13 +1134,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
      */
     private boolean isBlank(String str) { return str == null || str.trim().isEmpty(); }
     
-    /**
-     * ✅ HELPER: Convert gender value to display text
-     */
-    private String getGenderDisplayText(Integer gender) {
-        if (gender == null) return "N/A";
-        return gender == 1 ? "Nam" : (gender == 0 ? "Nữ" : "N/A");
-    }
+
     
     /**
      * ✅ HELPER: Set gender checkboxes based on gender value
@@ -1274,7 +1179,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                     "Bạn có chắc chắn muốn xóa nhân viên:\n"
                     + "Mã: " + userId + "\n"
                     + "Tên: " + fullName + "\n\n"
-                    + "⚠️ Hành động này không thể hoàn tác!",
+                    + "Hành động này không thể hoàn tác!",
                     "Xác nhận xóa"
             );
 
@@ -1309,15 +1214,15 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             userDAO.deleteById(userId);
 
             // 7. Refresh bảng
-            invalidateCache(); // Invalidate cache after deletion
-            fillToTableWithCache();
+            // Refresh table
+            fillToTable();
 
             // 8. Clear form
             clear();
 
             // 9. Thông báo thành công
             XDialog.alert(
-                    "✅ Đã xóa nhân viên thành công!\n"
+                    "Đã xóa nhân viên thành công!\n"
                     + "Mã: " + userId + "\n"
                     + "Tên: " + fullName,
                     "Xóa thành công"
@@ -1326,7 +1231,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         } catch (Exception e) {
             // 10. Xử lý lỗi
             XDialog.alert(
-                    "❌ Lỗi khi xóa nhân viên: " + e.getMessage(),
+                    "Lỗi khi xóa nhân viên: " + e.getMessage(),
                     "Lỗi hệ thống"
             );
             e.printStackTrace();
@@ -1397,261 +1302,74 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 // PERFORMANCE OPTIMIZATION - THÊM VÀO CUỐI FILE (KHÔNG ĐỘNG VÀO CODE CŨ)
 // =============================================================================
 
-    // ✅ CACHE: Performance variables
-    private List<UserAccount> employeeCache = new ArrayList<>();
-    private boolean isCacheValid = false;
-    private javax.swing.Timer debounceTimer;
-    private boolean isProcessingEdit = false; // ✅ PROTECT: Prevent multiple edit calls
-    private int lastSelectedRow = -1; // ✅ TRACK: Last selected row to avoid redundant calls
-    private boolean layoutFrozen = false; // ✅ FREEZE: Layout protection flag
-    private java.awt.Dimension frozenTableSize = null; // ✅ STORE: Original table size
-    private javax.swing.Timer sizeEnforcementTimer; // ✅ PERIODIC: Size enforcement timer
-    private java.awt.Dimension originalImageSize = null; // ✅ STORE: Original image label size
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
-     * ✅ OPTIMIZED: Initialize performance cache
-     */
-    private void initializePerformanceCache() {
-        // Setup debounce timer for filtering
-        debounceTimer = new javax.swing.Timer(300, e -> performFilterAndFill());
-        debounceTimer.setRepeats(false);
-        
-        // Pre-size cache
-        employeeCache = new ArrayList<>(100);
-    }
-
-    /**
-     * ✅ FAST: Enhanced loadRoles với caching
-     */
-    private void loadRolesWithCache() {
-        if (roleMap.isEmpty()) {
-            try {
-                List<UserRole> roles = roleDAO.findAll();
-                for (UserRole role : roles) {
-                    roleMap.put(role.getRole_id(), role.getName_role());
-                }
-            } catch (Exception e) {
-                System.err.println("Load roles error: " + e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * ✅ FAST: Enhanced fillToTable với smart caching và search support
-     */
-    private void fillToTableWithCache() {
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            try {
-                // Use cache if valid
-                if (!isCacheValid || employeeCache.isEmpty()) {
-                    employeeCache = userDAO.findAll();
-                    isCacheValid = true;
-                    System.out.println("✅ Loaded " + employeeCache.size() + " employees to cache");
-                }
-                
-                // Check if there's an active search
-                String currentSearch = getCurrentSearchKeyword();
-                if (!currentSearch.isEmpty()) {
-                    // Apply current search filter
-                    filterEmployeesByName(currentSearch);
-                } else {
-                    // Fast table population (show all)
-                    populateTableFromCache();
-                }
-                
-            } catch (Exception e) {
-                System.err.println("Fill table error: " + e.getMessage());
-                XDialog.alert("Lỗi load dữ liệu: " + e.getMessage());
-            }
-        });
-    }
-
-    /**
-     * ✅ FAST: Populate table from cache
-     */
-    private void populateTableFromCache() {
-        DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
-        model.setRowCount(0);
-
-        // Không filter nữa, hiển thị tất cả
-        for (UserAccount emp : employeeCache) {
-            model.addRow(createRowData(emp));
-        }
-        
-        // ✅ FIX: Re-apply column widths after populating data
-        setColumnWidths();
-        
-        // ✅ FIX: Ensure table size is maintained
-        if (frozenTableSize != null) {
-            enforceTableSize();
-        }
-    }
-
-    /**
-     * ✅ FAST: Filter matching logic
-     */
-    private boolean matchesFilters(UserAccount emp, String status, String role) {
-        // Status filter
-        if (status != null && !status.equals("Tất cả")) {
-            if (status.equals("Hoạt động") && (emp.getIs_enabled() != 1)) {
-                return false;
-            }
-            if (status.equals("Không hoạt động") && (emp.getIs_enabled() != 0)) {
-                return false;
-            }
-        }
-
-        // Role filter
-        if (role != null && !role.equals("Tất cả")) {
-            String roleId = role.contains(" - ") ? role.split(" - ")[0] : role;
-            if (!roleId.equals(emp.getRole_id())) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * ✅ FAST: Create row data
-     */
-    private Object[] createRowData(UserAccount emp) {
-        return new Object[]{
-            emp.getUser_id(),
-            emp.getUsername(),
-            emp.getPass(),
-            emp.getFullName(),
-            getGenderDisplayText(emp.getGender()),
-            emp.getPhone_number(),
-            emp.getEmail(),
-            emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động",
-            roleMap.getOrDefault(emp.getRole_id(), "N/A"),
-            formatDateFast(emp.getCreated_date())
-        };
-    }
-
-    /**
-     * ✅ OPTIMIZED: Fast date formatting
-     */
-    private String formatDateFast(java.util.Date date) {
-        return date == null ? "N/A" : new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(date);
-    }
-
-    /**
-     * ✅ OPTIMIZED: Enhanced edit với cache lookup và protection
+     * ✅ OPTIMIZED: Fast edit using UserDAOImpl
      */
     private void editWithCache() {
-        if (isProcessingEdit) return; // ✅ PROTECT: Tránh multiple calls
-        
         int selectedRow = tableInfo.getSelectedRow();
         if (selectedRow < 0) {
             XDialog.alert("Vui lòng chọn một dòng để chỉnh sửa!");
             return;
         }
-        
-        // ✅ OPTIMIZE: Skip nếu click cùng row liên tục
-        if (selectedRow == lastSelectedRow) {
-            return;
-        }
-        
-        isProcessingEdit = true; // ✅ LOCK: Set flag
-        lastSelectedRow = selectedRow; // ✅ TRACK: Remember selected row
 
+        // Lấy userId từ table và query database để có đầy đủ thông tin
         String userId = (String) tableInfo.getValueAt(selectedRow, 0);
-
-        // Try cache first (much faster)
-        UserAccount entity = null;
-        for (UserAccount emp : employeeCache) {
-            if (userId.equals(emp.getUser_id())) {
-                entity = emp;
-                break;
-            }
-        }
-
-        // Fallback to database if not in cache
-        if (entity == null) {
-            entity = userDAO.findById(userId);
-        }
+        UserAccount entity = userDAO.findById(userId);
 
         if (entity != null) {
-            final UserAccount finalEntity = entity; // ✅ FIX: Make final for lambda
-            // ✅ SAFE: Run on EDT để tránh layout issues
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                try {
-                    setForm(finalEntity);
-                    txtIdEmployee.setEditable(false);
-                    setAllFieldsEditable(true);
-                } finally {
-                    isProcessingEdit = false; // ✅ UNLOCK: Release flag
+            // Fill form từ entity (bao gồm cả hình ảnh)
+            txtIdEmployee.setText(entity.getUser_id());
+            txtNameAccount.setText(entity.getUsername());
+            txtPassword.setText(entity.getPass());
+            txtNameEmployee.setText(entity.getFullName());
+            txtPhoneNumber.setText(entity.getPhone_number());
+            txtEmail.setText(entity.getEmail());
+
+            // Set gender
+            if (entity.getGender() != null) {
+                if (entity.getGender() == 1) {
+                    chkMale.setSelected(true);
+                    chkFemale.setSelected(false);
+                } else if (entity.getGender() == 0) {
+                    chkMale.setSelected(false);
+                    chkFemale.setSelected(true);
                 }
-            });
+            }
+
+            // Set status và role
+            setStatusComboBox(entity.getIs_enabled());
+            setRoleComboBox(entity.getRole_id());
+
+            // Disable ID field và enable others
+            txtIdEmployee.setEditable(false);
+            setAllFieldsEditable(true);
+
+            // Load hình ảnh từ entity
+            loadEmployeeImage(entity.getImage());
         } else {
             XDialog.alert("Không tìm thấy thông tin nhân viên!");
-            isProcessingEdit = false; // ✅ UNLOCK: Release flag
         }
     }
 
-    /**
-     * ✅ FAST: Enhanced image loading
-     */
-    private void loadImageFast(String imageName) {
-        if (imageName == null || imageName.trim().isEmpty()) {
-            setDefaultImageFast();
-            return;
-        }
 
-        // Try multiple paths quickly
-        String[] paths = {
-            "/icons_and_images/imageEmployee/" + imageName,
-                "/icons_and_images/" + imageName
-        };
 
-        for (String path : paths) {
-            try {
-                if (getClass().getResource(path) != null) {
-                    XImage.setImageToLabel(lblImage, path);
-                    lblImage.setText("");
-                    return;
-                }
-            } catch (Exception e) {
-                // Continue to next path
-            }
-        }
 
-        // Fallback
-        setPlaceholderImageFast(imageName);
-    }
-
-    /**
-     * ✅ FAST: Default and placeholder images
-     */
-    private void setDefaultImageFast() {
-        try {
-            XImage.setImageToLabel(lblImage, "/icons_and_images/User.png");
-            lblImage.setText("");
-        } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText("No Image");
-        }
-    }
-
-    private void setPlaceholderImageFast(String imageName) {
-        try {
-            XImage.setImageToLabel(lblImage, "/icons_and_images/Unknown person.png");
-            lblImage.setText("");
-        } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText(imageName);
-        }
-    }
-
-    /**
-     * ✅ CACHE: Invalidate cache after CRUD operations
-     */
-    private void invalidateCache() {
-        isCacheValid = false;
-        employeeCache.clear();
-    }
 
     /**
      * ✅ OPTIMIZED: Enhanced create với cache management
@@ -1662,12 +1380,12 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 
         try {
             if (isFormEmpty()) {
-                XDialog.alert("⚠️ Vui lòng nhập thông tin nhân viên!");
+                XDialog.warning("Vui lòng nhập thông tin nhân viên!", "Cảnh báo");
                 return;
             }
 
             validateEmployee();
-            UserAccount newEmployee = getForm();
+            UserAccount newEmployee = getFormForCreate();
             validateUniqueEmployeeId(newEmployee.getUser_id());
             validateUniqueUsername(newEmployee.getUsername());
             validateBusinessRules(newEmployee);
@@ -1675,17 +1393,16 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             // Create in database
             userDAO.create(newEmployee);
 
-            // Invalidate cache and refresh
-            invalidateCache();
-            fillToTableWithCache();
+            // Refresh table
+            fillToTable();
             clearForNewEntry();
 
-            XDialog.alert("✅ Tạo nhân viên thành công!\nMã: " + newEmployee.getUser_id());
+            XDialog.success("Tạo nhân viên thành công! Mã: " + newEmployee.getUser_id(), "Thành công");
 
         } catch (RuntimeException e) {
-            XDialog.alert("❌ " + e.getMessage());
+            XDialog.error(e.getMessage(), "Lỗi");
         } catch (Exception e) {
-            XDialog.alert("❌ Lỗi hệ thống: " + e.getMessage());
+            XDialog.error("Lỗi hệ thống: " + e.getMessage(), "Lỗi");
             e.printStackTrace();
         } finally {
             isProcessing = false;
@@ -1705,7 +1422,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
 
             UserAccount existingEmployee = userDAO.findById(updatedEmployee.getUser_id());
             if (existingEmployee == null) {
-                XDialog.alert("Không tìm thấy nhân viên với mã: " + updatedEmployee.getUser_id());
+                XDialog.error("Không tìm thấy nhân viên với mã: " + updatedEmployee.getUser_id(), "Lỗi");
                 return;
             }
 
@@ -1724,67 +1441,27 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             // Update in database
             userDAO.update(updatedEmployee);
 
-            // Invalidate cache and refresh
-            invalidateCache();
-            fillToTableWithCache();
+            // Refresh table
+            fillToTable();
             clearFormButKeepImage();
 
-            XDialog.alert("✅ Cập nhật nhân viên thành công!");
+            XDialog.success("Cập nhật nhân viên thành công!", "Thành công");
 
         } catch (RuntimeException e) {
-            XDialog.alert("❌ " + e.getMessage());
+            XDialog.error(e.getMessage(), "Lỗi");
         } catch (Exception e) {
-            XDialog.alert("❌ Lỗi khi cập nhật: " + e.getMessage());
+            XDialog.error("Lỗi khi cập nhật: " + e.getMessage(), "Lỗi");
             e.printStackTrace();
         } finally {
             isProcessing = false;
         }
     }
 
-    /**
-     * ✅ DEBOUNCED: Filter với debouncing để tránh lag - updated for search support
-     */
-    private void performFilterAndFill() {
-        // Check if there's an active search
-        String currentSearch = getCurrentSearchKeyword();
-        if (!currentSearch.isEmpty()) {
-            // Apply search filter instead of normal filter
-            if (debounceTimer != null && debounceTimer.isRunning()) {
-                debounceTimer.restart();
-            } else {
-                filterEmployeesByName(currentSearch);
-            }
-        } else {
-            // Normal table population
-            if (debounceTimer != null && debounceTimer.isRunning()) {
-                debounceTimer.restart();
-            } else {
-                populateTableFromCache();
-            }
-        }
-    }
 
-    /**
-     * ✅ INITIALIZE: Call this in constructor to setup performance
-     */
-    private void setupPerformanceOptimizations() {
-        initializePerformanceCache();
-        loadRolesWithCache();
-        
-        // Không cần filtering nữa vì txtStatus và txtRole chỉ để hiển thị
-        // txtStatus.addActionListener(e -> debounceTimer.restart());
-        // txtRole.addActionListener(e -> debounceTimer.restart());
-    }
 
-    /**
-     * ✅ PRODUCTION: Load image instantly (thay thế testLoadImage)
-     */
-    private void preloadDefaultImages() {
-        // Preload các ảnh mặc định để performance tốt hơn
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            setDefaultImageFast();
-        });
-    }
+
+
+
 
     /**
      * ✅ OPTIMIZED: Validate employee (required by EmployeeController)
@@ -1980,11 +1657,10 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
 
     /**
-     * ✅ OPTIMIZED: Get employees from cache hoặc DB nếu cache empty
+     * ✅ SIMPLIFIED: Get employees from database
      */
     private List<UserAccount> getEmployeesFromCacheOrDB() {
-        return (employeeCache != null && !employeeCache.isEmpty() && isCacheValid) ? 
-            employeeCache : userDAO.findAll();
+        return userDAO.findAll();
     }
 
     /**
@@ -2061,15 +1737,17 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             }
         });
         
-        // Set border to indicate clickable area
-        lblImage.setBorder(javax.swing.BorderFactory.createTitledBorder(
-            javax.swing.BorderFactory.createLineBorder(new java.awt.Color(100, 149, 237), 2),
-            "Click để chọn ảnh",
-            javax.swing.border.TitledBorder.CENTER,
-            javax.swing.border.TitledBorder.BOTTOM,
-            new java.awt.Font("Arial", java.awt.Font.ITALIC, 10),
-            new java.awt.Color(100, 149, 237)
-        ));
+        // Set border to indicate clickable area (after size is locked)
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            lblImage.setBorder(javax.swing.BorderFactory.createTitledBorder(
+                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(100, 149, 237), 2),
+                "Click để chọn ảnh",
+                javax.swing.border.TitledBorder.CENTER,
+                javax.swing.border.TitledBorder.BOTTOM,
+                new java.awt.Font("Arial", java.awt.Font.ITALIC, 10),
+                new java.awt.Color(100, 149, 237)
+            ));
+        });
     }
     
     /**
@@ -2125,7 +1803,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                         
                         // Show success message
                         XDialog.alert(
-                            "✅ Đã chọn ảnh thành công!\n" +
+                            "Đã chọn ảnh thành công!\n" +
                             "File: " + savedImageName,
                             "Thông báo"
                         );
@@ -2135,7 +1813,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             
         } catch (Exception e) {
             XDialog.alert(
-                "❌ Lỗi khi chọn ảnh: " + e.getMessage(),
+                "Lỗi khi chọn ảnh: " + e.getMessage(),
                 "Lỗi"
             );
             e.printStackTrace();
@@ -2232,7 +1910,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             return newFileName;
             
         } catch (Exception e) {
-            XDialog.alert("❌ Lỗi lưu ảnh: " + e.getMessage(), "Lỗi");
+            XDialog.alert("Lỗi lưu ảnh: " + e.getMessage(), "Lỗi");
             e.printStackTrace();
             return null;
         }
@@ -2287,290 +1965,39 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
     
     /**
-     * ✅ FROZEN LAYOUT: Enhanced setForm to preserve size and prevent layout changes
+     * ✅ FIXED: setForm with image size protection
      */
     @Override
     public void setForm(UserAccount entity) {
         if (entity == null) return;
         
-        try {
-            // ✅ FREEZE: Prevent any layout changes during form update
-            freezeLayout();
-            setIgnoreRepaint(true);
-            
-            // ✅ DISABLE: ComboBox repaint to prevent layout triggers
-            cboStatus.setIgnoreRepaint(true);
-            cboRole.setIgnoreRepaint(true);
-            
-            // Basic info - lightweight operations only
-            txtIdEmployee.setText(entity.getUser_id());
-            txtNameAccount.setText(entity.getUsername());
-            txtPassword.setText(entity.getPass());
-            txtNameEmployee.setText(entity.getFullName());
-            txtPhoneNumber.setText(entity.getPhone_number());
-            txtEmail.setText(entity.getEmail());
-
-            // Gender handling - optimized
-            if (entity.getGender() != null) {
-                if (entity.getGender() == 1) {
-                    chkMale.setSelected(true);
-                    chkFemale.setSelected(false);
-                } else if (entity.getGender() == 0) {
-                    chkMale.setSelected(false);
-                    chkFemale.setSelected(true);
-                } else {
-                    groupGioiTinh.clearSelection();
-                }
-            } else {
-                groupGioiTinh.clearSelection();
-            }
-
-            // Status và role - silent updates
-            setStatusComboBoxSilent(entity.getIs_enabled());
-            setRoleComboBoxSilent(entity.getRole_id());
-
-            // Image handling - defer to later
-            if (entity.getImage() != null && !entity.getImage().trim().isEmpty()) {
-                loadEmployeeImageSilent(entity.getImage());
-            } else {
-                setDefaultImageSilent();
-            }
-
-            // Skip displayRoleInfo to avoid console spam
-            
-        } finally {
-            // ✅ RESTORE: Re-enable layout and maintain frozen size
-            setIgnoreRepaint(false);
-            
-            // ✅ RESTORE: ComboBox repaint
-            cboStatus.setIgnoreRepaint(false);
-            cboRole.setIgnoreRepaint(false);
-            
-            // ✅ ENFORCE: Keep table at frozen size
-            if (frozenTableSize != null) {
-                jScrollPane1.setSize(frozenTableSize);
-                jScrollPane1.setPreferredSize(frozenTableSize);
-            }
-            
-            // Keep layout frozen after form update
-            repaint();
-        }
-    }
-    
-    /**
-     * ✅ SILENT: Load image without affecting layout - FIXED SIZE
-     */
-    private void loadEmployeeImageSilent(String imageName) {
-        try {
-            if (imageName != null && !imageName.trim().isEmpty()) {
-                String imagePath = "/icons_and_images/imageEmployee/" + imageName;
-                if (getClass().getResource(imagePath) != null) {
-                    // Only update if different
-                    if (!imageName.equals(lblImage.getToolTipText())) {
-                        setImageWithFixedSize(imagePath);
-                        lblImage.setToolTipText(imageName); // Store for comparison
-                    }
-                } else {
-                    setDefaultImageSilent();
-                }
-            } else {
-                setDefaultImageSilent();
-            }
-        } catch (Exception e) {
-            // Silent fail
-        }
-    }
-    
-    /**
-     * ✅ SILENT: Set default image without layout changes - FIXED SIZE
-     */
-    private void setDefaultImageSilent() {
-        try {
-            if (!"default".equals(lblImage.getToolTipText())) {
-                setImageWithFixedSize("/icons_and_images/User.png");
-                lblImage.setToolTipText("default"); // Mark as default
-            }
-        } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText("No Image");
-            lblImage.setToolTipText("error");
-            
-            // ✅ ENFORCE: Keep size even on error
-            if (originalImageSize != null) {
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-            }
-        }
-    }
-    
-    /**
-     * ✅ FIXED SIZE: Set image to label without changing label dimensions
-     */
-    private void setImageWithFixedSize(String imagePath) {
-        try {
-            // ✅ SAFETY: Ensure originalImageSize is available
-            if (originalImageSize == null) {
-                captureInitialImageSize();
-                if (originalImageSize == null) {
-                    // Ultimate fallback
-                    originalImageSize = new java.awt.Dimension(116, 167);
-                    System.out.println("⚠️ Using ultimate fallback image size: " + originalImageSize);
-                }
-            }
-            
-            // Load and scale image to fit the fixed label size
-            java.net.URL imageURL = getClass().getResource(imagePath);
-            if (imageURL != null) {
-                javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
-                
-                // ✅ VALIDATION: Check if image loaded successfully
-                if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
-                    // Scale image to fit the original label size
-                    java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
-                        originalImageSize.width, 
-                        originalImageSize.height, 
-                        java.awt.Image.SCALE_SMOOTH
-                    );
-                    
-                    javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
-                    
-                    // Set the scaled icon
-                    lblImage.setIcon(scaledIcon);
-                    lblImage.setText("");
-                } else {
-                    // Image không load được
-                    lblImage.setIcon(null);
-                    lblImage.setText("No Image");
-                }
-                
-                // ✅ ENFORCE: Keep the original size regardless of image content
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-                
-                System.out.println("🖼️ Set image with fixed size: " + originalImageSize + " for path: " + imagePath);
-                
-            } else {
-                // Fallback to text if image not found
-                lblImage.setIcon(null);
-                lblImage.setText("No Image");
-                
-                // ✅ STILL ENFORCE: Keep size even when no image
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-            }
-        } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText("Error");
-            
-            // ✅ ENFORCE: Keep size even on error
-            if (originalImageSize != null) {
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-            }
-            
-            System.err.println("❌ Error setting image: " + e.getMessage());
-        }
-    }
-    
-    // =============================================================================
-    // LAYOUT FREEZE PROTECTION
-    // =============================================================================
-    
-    /**
-     * ✅ FREEZE: Prevent any layout changes
-     */
-    private void freezeLayout() {
-        if (layoutFrozen) return;
+        // ✅ LOCK: Fix image size BEFORE loading new image
+        lockImageSize();
         
-        try {
-            layoutFrozen = true;
-            
-            // ✅ INITIALIZE: Set frozen table size if not already set
-            if (frozenTableSize == null) {
-                frozenTableSize = new java.awt.Dimension(jScrollPane1.getSize());
-                System.out.println("📐 Captured table size for freezing: " + frozenTableSize);
-            }
-            
-            // ✅ DISABLE: Auto-resize capabilities
-            jScrollPane1.setPreferredSize(frozenTableSize);
-            jScrollPane1.setMinimumSize(frozenTableSize);
-            jScrollPane1.setMaximumSize(frozenTableSize);
-            tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-            
-            // ✅ LOCK: Window resize
-            setResizable(false);
-            
-        } catch (Exception e) {
-            System.err.println("Error freezing layout: " + e.getMessage());
-        }
+        // Basic info
+        txtIdEmployee.setText(entity.getUser_id());
+        txtNameAccount.setText(entity.getUsername());
+        txtPassword.setText(entity.getPass());
+        txtNameEmployee.setText(entity.getFullName());
+        txtPhoneNumber.setText(entity.getPhone_number());
+        txtEmail.setText(entity.getEmail());
+
+        // Gender handling
+        setGenderCheckboxes(entity.getGender());
+
+        // Status and role
+        setStatusComboBox(entity.getIs_enabled());
+        setRoleComboBox(entity.getRole_id());
+
+        // Image handling with size protection
+        loadEmployeeImageWithSizeProtection(entity.getImage());
     }
     
-    /**
-     * ✅ ENFORCE: Force table to stay at frozen size
-     */
-    private void enforceTableSize() {
-        if (frozenTableSize != null) {
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                try {
-                    java.awt.Dimension currentSize = jScrollPane1.getSize();
-                    if (!currentSize.equals(frozenTableSize)) {
-                        // ✅ FIX: Enforce table size more aggressively
-                        jScrollPane1.setSize(frozenTableSize);
-                        jScrollPane1.setPreferredSize(frozenTableSize);
-                        jScrollPane1.setMinimumSize(frozenTableSize);
-                        jScrollPane1.setMaximumSize(frozenTableSize);
-                        
-                        // ✅ FIX: Ensure table itself maintains size
-                        tableInfo.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-                        tableInfo.setPreferredSize(new java.awt.Dimension(frozenTableSize.width - 20, frozenTableSize.height - 20));
-                        
-                        // ✅ FIX: Re-apply column widths to ensure they don't get reset
-                        setColumnWidths();
-                        
-                        // ✅ FIX: Force layout update
-                        jScrollPane1.validate();
-                        jScrollPane1.repaint();
-                        
-                        System.out.println("🔒 Enforced table size: " + frozenTableSize + " (was: " + currentSize + ")");
-                    }
-                } catch (Exception e) {
-                    System.err.println("Error enforcing table size: " + e.getMessage());
-                }
-            });
-        }
-    }
+
     
-    /**
-     * ✅ SETUP: Periodic size enforcement to prevent table expansion
-     */
-    private void setupSizeEnforcementTimer() {
-        try {
-            // Create timer that runs every 500ms to check and enforce table size
-            sizeEnforcementTimer = new javax.swing.Timer(500, e -> {
-                if (frozenTableSize != null) {
-                    java.awt.Dimension currentSize = jScrollPane1.getSize();
-                    if (!currentSize.equals(frozenTableSize)) {
-                        System.out.println("⚠️ Table size drift detected: " + currentSize + " -> " + frozenTableSize);
-                        enforceTableSize();
-                    }
-                }
-            });
-            
-            sizeEnforcementTimer.setRepeats(true);
-            sizeEnforcementTimer.start();
-            
-            System.out.println("✅ Size enforcement timer started - will prevent table expansion");
-            
-        } catch (Exception e) {
-            System.err.println("Error setting up size enforcement timer: " + e.getMessage());
-        }
-    }
+    // =============================================================================
+// SIMPLIFIED LAYOUT MANAGEMENT - RESPECT .FORM CONSTRAINTS
+// =============================================================================
     
 
     // =============================================================================
@@ -2578,25 +2005,16 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     // =============================================================================
     
     /**
-     * ✅ SETUP: Initialize Status ComboBox với các tùy chọn
+     * ✅ CONSOLIDATED: Setup both ComboBoxes without size overrides
      */
-    private void setupStatusComboBox() {
+    private void setupComboBoxes() {
+        // Status ComboBox - replace .form dummy data
         cboStatus.removeAllItems();
         cboStatus.addItem("Hoạt động");
         cboStatus.addItem("Không hoạt động");
         cboStatus.setSelectedIndex(0); // Default: Hoạt động
         
-        // ✅ FIX: Set fixed size để không bị tràn layout
-        java.awt.Dimension fixedSize = new java.awt.Dimension(150, 25);
-        cboStatus.setPreferredSize(fixedSize);
-        cboStatus.setMinimumSize(fixedSize);
-        cboStatus.setMaximumSize(fixedSize);
-    }
-    
-    /**
-     * ✅ SETUP: Initialize Role ComboBox với data từ database
-     */
-    private void setupRoleComboBox() {
+        // Role ComboBox - replace .form dummy data with real data
         cboRole.removeAllItems();
         try {
             List<UserRole> roles = roleDAO.findAll();
@@ -2611,11 +2029,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             cboRole.setSelectedIndex(1); // Default: Staff
         }
         
-        // ✅ FIX: Set fixed size để không bị tràn layout
-        java.awt.Dimension fixedSize = new java.awt.Dimension(150, 25);
-        cboRole.setPreferredSize(fixedSize);
-        cboRole.setMinimumSize(fixedSize);
-        cboRole.setMaximumSize(fixedSize);
+        // ✅ RESPECT .FORM: Let .form handle sizing (width=180px from .form)
+        System.out.println("✅ ComboBoxes setup with real data, respecting .form constraints");
     }
     
     /**
@@ -2688,62 +2103,61 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
     
     /**
-     * ✅ SEARCH: Perform search with debouncing
+     * ✅ OPTIMIZED: Fast search without debouncing
      */
     private void performSearch() {
-        // Chỉ search nếu không phải placeholder text
         String searchText = txtSearch.getText();
         if (!searchText.equals("Tìm theo tên nhân viên...")) {
-            // Debounce search để tránh lag khi gõ nhanh
-            if (debounceTimer != null) debounceTimer.stop();
-            
-            debounceTimer = new javax.swing.Timer(200, e -> {
-                filterEmployeesByName(searchText.trim());
-            });
-            debounceTimer.setRepeats(false);
-            debounceTimer.start();
+            filterEmployeesByName(searchText.trim());
         }
     }
     
     /**
-     * ✅ FILTER: Filter employees by name (basic version)
+     * ✅ OPTIMIZED: Fast search with cached data
      */
     private void filterEmployeesByName(String searchKeyword) {
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            try {
-                DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
-                model.setRowCount(0);
-                
-                // Get all employees
-                List<UserAccount> employees = userDAO.findAll();
-                
-                if (searchKeyword.isEmpty()) {
-                    // Hiển thị tất cả nếu không có từ khóa
-                    for (UserAccount emp : employees) {
-                        model.addRow(createRowData(emp));
-                    }
-                } else {
-                    // Filter theo tên
-                    for (UserAccount emp : employees) {
-                        if (emp.getFullName() != null && 
-                            emp.getFullName().toLowerCase().contains(searchKeyword.toLowerCase())) {
-                            model.addRow(createRowData(emp));
-                        }
+        try {
+            DefaultTableModel model = (DefaultTableModel) tableInfo.getModel();
+            model.setRowCount(0);
+            
+            // Get all employees (có thể cache để tăng tốc)
+            List<UserAccount> employees = userDAO.findAll();
+            
+            if (searchKeyword.isEmpty()) {
+                // Hiển thị tất cả nếu không có từ khóa
+                for (UserAccount emp : employees) {
+                    model.addRow(new Object[]{
+                        emp.getUser_id(), emp.getUsername(), emp.getPass(),
+                        emp.getFullName(), emp.getGender() == 1 ? "Nam" : "Nữ",
+                        emp.getPhone_number(), emp.getEmail(),
+                        emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động",
+                        roleMap.getOrDefault(emp.getRole_id(), "N/A"),
+                        emp.getCreated_date() != null ? 
+                            new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(emp.getCreated_date()) : "N/A"
+                    });
+                }
+            } else {
+                // Filter theo tên
+                String keyword = searchKeyword.toLowerCase();
+                for (UserAccount emp : employees) {
+                    if (emp.getFullName() != null && 
+                        emp.getFullName().toLowerCase().contains(keyword)) {
+                        model.addRow(new Object[]{
+                            emp.getUser_id(), emp.getUsername(), emp.getPass(),
+                            emp.getFullName(), emp.getGender() == 1 ? "Nam" : "Nữ",
+                            emp.getPhone_number(), emp.getEmail(),
+                            emp.getIs_enabled() == 1 ? "Hoạt động" : "Không hoạt động",
+                            roleMap.getOrDefault(emp.getRole_id(), "N/A"),
+                            emp.getCreated_date() != null ? 
+                                new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(emp.getCreated_date()) : "N/A"
+                        });
                     }
                 }
-                
-                // ✅ FIX: Re-apply column widths after search filtering
-                setColumnWidths();
-                
-                // ✅ FIX: Ensure table size is maintained
-                if (frozenTableSize != null) {
-                    enforceTableSize();
-                }
-                
-            } catch (Exception e) {
-                System.err.println("❌ Search error: " + e.getMessage());
             }
-        });
+            
+        } catch (Exception e) {
+            System.err.println("❌ Search error: " + e.getMessage());
+        }
     }
     
     /**
@@ -2761,89 +2175,31 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
     }
     
     /**
-     * ✅ ULTRA SILENT: Set Status ComboBox without ANY layout changes
+     * ✅ SIMPLE: Set Status ComboBox value
      */
-    private void setStatusComboBoxSilent(Integer isEnabled) {
-        try {
-            // ✅ DISABLE: All events and repaints
-            java.awt.event.ActionListener[] listeners = cboStatus.getActionListeners();
-            for (java.awt.event.ActionListener listener : listeners) {
-                cboStatus.removeActionListener(listener);
-            }
-            
-            // ✅ FREEZE: Current size before change
-            java.awt.Dimension currentSize = cboStatus.getSize();
-            cboStatus.setIgnoreRepaint(true);
-            
-            if (isEnabled != null) {
-                String targetValue = isEnabled == 1 ? "Hoạt động" : "Không hoạt động";
-                if (!targetValue.equals(cboStatus.getSelectedItem())) {
-                    cboStatus.setSelectedItem(targetValue);
-                }
-            } else {
-                if (cboStatus.getSelectedIndex() != 0) {
-                    cboStatus.setSelectedIndex(0);
-                }
-            }
-            
-            // ✅ ENFORCE: Restore exact size
-            cboStatus.setSize(currentSize);
-            cboStatus.setPreferredSize(currentSize);
-            
-            // ✅ RESTORE: Events and repaint
-            cboStatus.setIgnoreRepaint(false);
-            for (java.awt.event.ActionListener listener : listeners) {
-                cboStatus.addActionListener(listener);
-            }
-        } catch (Exception e) {
-            // Silent fail - restore repaint anyway
-            cboStatus.setIgnoreRepaint(false);
+    private void setStatusComboBox(Integer isEnabled) {
+        if (isEnabled != null) {
+            String targetValue = isEnabled == 1 ? "Hoạt động" : "Không hoạt động";
+            cboStatus.setSelectedItem(targetValue);
+        } else {
+            cboStatus.setSelectedIndex(0);
         }
     }
     
     /**
-     * ✅ ULTRA SILENT: Set Role ComboBox without ANY layout changes
+     * ✅ SIMPLE: Set Role ComboBox value
      */
-    private void setRoleComboBoxSilent(String roleId) {
-        try {
-            // ✅ DISABLE: All events and repaints
-            java.awt.event.ActionListener[] listeners = cboRole.getActionListeners();
-            for (java.awt.event.ActionListener listener : listeners) {
-                cboRole.removeActionListener(listener);
-            }
-            
-            // ✅ FREEZE: Current size before change
-            java.awt.Dimension currentSize = cboRole.getSize();
-            cboRole.setIgnoreRepaint(true);
-            
-            if (roleId != null) {
-                for (int i = 0; i < cboRole.getItemCount(); i++) {
-                    String item = cboRole.getItemAt(i);
-                    if (item.startsWith(roleId + " - ")) {
-                        if (cboRole.getSelectedIndex() != i) {
-                            cboRole.setSelectedIndex(i);
-                        }
-                        break;
-                    }
-                }
-            } else {
-                if (cboRole.getItemCount() > 0 && cboRole.getSelectedIndex() != 0) {
-                    cboRole.setSelectedIndex(0);
+    private void setRoleComboBox(String roleId) {
+        if (roleId != null) {
+            for (int i = 0; i < cboRole.getItemCount(); i++) {
+                String item = cboRole.getItemAt(i);
+                if (item.startsWith(roleId + " - ")) {
+                    cboRole.setSelectedIndex(i);
+                    break;
                 }
             }
-            
-            // ✅ ENFORCE: Restore exact size
-            cboRole.setSize(currentSize);
-            cboRole.setPreferredSize(currentSize);
-            
-            // ✅ RESTORE: Events and repaint
-            cboRole.setIgnoreRepaint(false);
-            for (java.awt.event.ActionListener listener : listeners) {
-                cboRole.addActionListener(listener);
-            }
-        } catch (Exception e) {
-            // Silent fail - restore repaint anyway
-            cboRole.setIgnoreRepaint(false);
+        } else if (cboRole.getItemCount() > 0) {
+            cboRole.setSelectedIndex(0);
         }
     }
 

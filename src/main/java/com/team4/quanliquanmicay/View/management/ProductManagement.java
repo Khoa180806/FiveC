@@ -15,6 +15,9 @@ import com.team4.quanliquanmicay.Impl.ProductDAOImpl;
 import static com.team4.quanliquanmicay.util.XValidation.isEmpty;
 import static com.team4.quanliquanmicay.util.XValidation.isNumber;
 import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XValidation;
+
+import java.util.List;
 
 /**
  *
@@ -57,18 +60,29 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 fillToTable();
                 fillUnitsByCategory();
                 if (cboUnit.getItemCount() > 0) cboUnit.setSelectedIndex(0);
+                // Lock layout sau khi thay đổi category
+                lockEntireLayout();
             }
         });
         fillUnitsByCategory();
         createCategoryTabs(); // Tạo tabpanel cho từng loại món
         fillToTable();
         setupSearchFunctionality();
+        createResourceDirectories(); // Tạo thư mục resources nếu cần
         setupImageSelection(); // Thêm setup cho chọn ảnh
-        captureInitialImageSize(); // Capture kích thước ban đầu của ảnh
+        initializeImageLabel(); // Khởi tạo label ảnh với kích thước cố định
+        lockEntireLayout(); // Lock toàn bộ layout để tránh shift
+        // Disable button update ban đầu
+        btnUpdate.setEnabled(false);
+        
+        // Kiểm tra và sửa lỗi đường dẫn null
+        validateAndFixResourcePaths();
         // Đảm bảo khi đổi trạng thái thì có thể cập nhật
         cboStatus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUpdate.setEnabled(true);
+                if (btnUpdate.isEnabled()) { // Chỉ enable nếu đã có product được chọn
+                    btnUpdate.setEnabled(true);
+                }
             }
         });
         
@@ -144,7 +158,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
 
         jLabel6.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         jLabel6.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/Search.png"))); // NOI18N
+        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Search.png"))); // NOI18N
         jLabel6.setToolTipText("");
 
         txtSearch.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
@@ -192,6 +206,8 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 return canEdit [columnIndex];
             }
         });
+        tableInfo.getTableHeader().setResizingAllowed(false);
+        tableInfo.getTableHeader().setReorderingAllowed(false);
         tableInfo.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 tableInfoMouseClicked(evt);
@@ -466,7 +482,7 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 437, Short.MAX_VALUE)
         );
 
         pack();
@@ -490,8 +506,6 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
         System.out.println("Button Update clicked!");
-        // Thêm xác nhận khi cập nhật
-        if (!XDialog.confirm("Bạn có chắc chắn muốn cập nhật sản phẩm này?", "Xác nhận cập nhật")) return;
         update();
     }//GEN-LAST:event_btnUpdateActionPerformed
 
@@ -608,6 +622,13 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     @Override
     public void setForm(Product entity) {
         if (entity == null) return;
+        
+        // ABSOLUTE LOCK SIZE NGAY LẬP TỨC để tránh tràn
+        absoluteLockImageSize();
+        
+        // Lock toàn bộ layout để tránh components bị đẩy
+        lockEntireLayout();
+        
         fillStatus();
         txtProduct_Id.setText(entity.getProductId());
         txtProduct_Id.setEditable(false);
@@ -642,11 +663,30 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         } else {
             txtDiscount.setText("0");
         }
+        // Enable button update khi có dữ liệu sản phẩm
+        btnUpdate.setEnabled(true);
         // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
         String imageName = "";
         try { imageName = entity.getImage(); } catch (Exception ex) { imageName = ""; }
         setCurrentImageName(imageName); // Lưu tên ảnh hiện tại
-        fillProductImage(imageName);
+        
+        // Force refresh image display với size cố định
+        final String finalImageName = imageName; // Make final for lambda
+        
+        // LOCK SIZE NGAY LẬP TỨC trước khi queue
+        final java.awt.Dimension ABSOLUTE_LOCK_SIZE = new java.awt.Dimension(200, 200);
+        lblImage.setSize(ABSOLUTE_LOCK_SIZE);
+        lblImage.setPreferredSize(ABSOLUTE_LOCK_SIZE);
+        lblImage.setMinimumSize(ABSOLUTE_LOCK_SIZE);
+        lblImage.setMaximumSize(ABSOLUTE_LOCK_SIZE);
+        
+        java.awt.EventQueue.invokeLater(() -> {
+            // TRIPLE LOCK SIZE trong event queue
+            absoluteLockImageSize();
+            
+            fillProductImage(finalImageName);
+            absoluteLockImageSize(); // Lock again after image load
+        });
     }
 
     @Override
@@ -839,52 +879,36 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     public void create() {
         try {
             Product product = getForm();
-            invalidateProductCache();
-            if (!isProductCacheValid || productCache.isEmpty()) {
-                productCache = productDAO.findAll();
-                isProductCacheValid = true;
-            }
-            // Kiểm tra hợp lệ cơ bản
-            if (product.getProductId() == null || product.getProductId().trim().isEmpty()) {
-                XDialog.alert("Vui lòng nhập mã món!");
+            
+            // Kiểm tra tên sản phẩm đã tồn tại chưa
+            List<Product> existingProducts = productDAO.findAll();
+            boolean nameExists = existingProducts.stream()
+                .anyMatch(p -> p.getProductName().equalsIgnoreCase(product.getProductName()));
+            
+            if (nameExists) {
+                XDialog.warning("Tên sản phẩm đã tồn tại!", "Cảnh báo");
                 return;
             }
-            if (product.getProductName() == null || product.getProductName().trim().isEmpty()) {
-                XDialog.alert("Vui lòng nhập tên món!");
-                return;
+            
+            // Hiển thị dialog xác nhận thêm
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn thêm sản phẩm '" + product.getProductName() + "'?", 
+                "Xác nhận thêm"
+            );
+            
+            if (confirm) {
+                productDAO.create(product);
+                XDialog.success("Thêm sản phẩm thành công!", "Thành công");
+                // Invalidate cache để load dữ liệu mới từ database
+                invalidateProductCache();
+                fillToTable();
+                clear();
             }
-            // Kiểm tra trùng mã (chuẩn hóa)
-            if (getProductFromCache(product.getProductId().trim()) != null) {
-                XDialog.alert("Mã món đã tồn tại!");
-                return;
-            }
-            // Kiểm tra trùng tên món trong cùng loại
-            for (Product p : productCache) {
-                if (p.getProductName().trim().equalsIgnoreCase(product.getProductName().trim()) && p.getCategoryId().equals(product.getCategoryId())) {
-                    XDialog.alert("Tên món đã tồn tại trong cùng loại!");
-                    return;
-                }
-            }
-            // Kiểm tra đơn vị
-            if (product.getUnit() == null || product.getUnit().trim().isEmpty()) {
-                XDialog.alert("Vui lòng chọn đơn vị!");
-                return;
-            }
-            // Kiểm tra discount
-            if (product.getDiscount() < 0 || product.getDiscount() > 1) {
-                XDialog.alert("Giảm giá phải từ 0 đến 100!");
-                return;
-            }
-            productDAO.create(product);
-            invalidateProductCache();
-            fillToTable();
-            clear();
-            XDialog.alert("Thêm món thành công!");
         } catch (RuntimeException e) {
-            return;
+            // Validation errors từ getForm() được handle ở đây
+            // Error dialog đã được hiển thị trong getForm()
         } catch (Exception e) {
-            XDialog.alert("Lỗi khi thêm món: " + e.getMessage());
-            e.printStackTrace();
+            XDialog.error("Lỗi khi thêm sản phẩm: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -892,48 +916,37 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     public void update() {
         try {
             Product product = getForm();
-            if (product.getProductId() == null || product.getProductId().trim().isEmpty()) {
-                XDialog.alert("Vui lòng nhập mã món!");
+            
+            // Kiểm tra tên sản phẩm đã tồn tại chưa (trừ chính nó)
+            List<Product> existingProducts = productDAO.findAll();
+            boolean nameExists = existingProducts.stream()
+                .anyMatch(p -> p.getProductName().equalsIgnoreCase(product.getProductName()) 
+                    && !p.getProductId().equals(product.getProductId()));
+            
+            if (nameExists) {
+                XDialog.warning("Tên sản phẩm đã tồn tại!", "Cảnh báo");
                 return;
             }
-            if (product.getProductName() == null || product.getProductName().trim().isEmpty()) {
-                XDialog.alert("Vui lòng nhập tên món!");
-                return;
+            
+            // Hiển thị dialog xác nhận cập nhật
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn cập nhật sản phẩm '" + product.getProductName() + "'?", 
+                "Xác nhận cập nhật"
+            );
+            
+            if (confirm) {
+                productDAO.update(product);
+                XDialog.success("Cập nhật sản phẩm thành công!", "Thành công");
+                // Invalidate cache để load dữ liệu mới từ database
+                invalidateProductCache();
+                fillToTable();
+                clear();
             }
-            if (product.getUnit() == null || product.getUnit().trim().isEmpty()) {
-                XDialog.alert("Vui lòng chọn đơn vị!");
-                return;
-            }
-            if (product.getDiscount() < 0 || product.getDiscount() > 1) {
-                XDialog.alert("Giảm giá phải từ 0 đến 100!");
-                return;
-            }
-            if (product.getPrice() <= 0) {
-                XDialog.alert("Vui lòng nhập giá lớn hơn 0!");
-                return;
-            }
-            // Kiểm tra tồn tại mã món
-            if (getProductFromCache(product.getProductId().trim()) == null) {
-                XDialog.alert("Mã món không tồn tại!");
-                return;
-            }
-            // Kiểm tra trùng tên món trong cùng loại (trừ chính nó)
-            for (Product p : productCache) {
-                if (!p.getProductId().equals(product.getProductId()) && p.getProductName().trim().equalsIgnoreCase(product.getProductName().trim()) && p.getCategoryId().equals(product.getCategoryId())) {
-                    XDialog.alert("Tên món đã tồn tại trong cùng loại!");
-                    return;
-                }
-            }
-            productDAO.update(product);
-            invalidateProductCache();
-            fillToTable();
-            clear();
-            XDialog.alert("Cập nhật món thành công!");
         } catch (RuntimeException e) {
-            return;
+            // Validation errors từ getForm() được handle ở đây
+            // Error dialog đã được hiển thị trong getForm()
         } catch (Exception e) {
-            XDialog.alert("Lỗi khi cập nhật món: " + e.getMessage());
-            e.printStackTrace();
+            XDialog.error("Lỗi khi cập nhật sản phẩm: " + e.getMessage(), "Lỗi");
         }
     }
 
@@ -949,9 +962,14 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         // Giữ cboCate như cũ, chỉ fill lại đơn vị
         fillUnitsByCategory();
         if (cboUnit.getItemCount() > 0) cboUnit.setSelectedIndex(0);
+        // Disable button update khi clear form
+        btnUpdate.setEnabled(false);
         // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
         setCurrentImageName(""); // Reset tên ảnh
         fillProductImage(""); // Clear image
+        
+        // Lock layout sau khi clear
+        lockEntireLayout();
     }
 
     @Override
@@ -972,7 +990,31 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
 
     @Override
     public void delete() {
-        // Để trống vì chức năng xóa đã loại bỏ khỏi giao diện
+        try {
+            Product product = getForm();
+            if (product == null || XValidation.isEmpty(product.getProductId())) {
+                XDialog.error("Vui lòng chọn sản phẩm cần xóa!", "Lỗi");
+                return;
+            }
+            
+            // Hiển thị dialog xác nhận xóa
+            boolean confirm = XDialog.confirm(
+                "Bạn có chắc chắn muốn xóa sản phẩm '" + product.getProductName() + "'?\n" +
+                "Hành động này không thể hoàn tác!", 
+                "Xác nhận xóa"
+            );
+            
+            if (confirm) {
+                productDAO.deleteById(product.getProductId());
+                XDialog.success("Xóa sản phẩm thành công!", "Thành công");
+                // Invalidate cache để load dữ liệu mới từ database
+                invalidateProductCache();
+                fillToTable();
+                clear();
+            }
+        } catch (Exception e) {
+            XDialog.error("Lỗi khi xóa sản phẩm: " + e.getMessage(), "Lỗi");
+        }
     }
 
     private Product getProductFromCache(String productId) {
@@ -1070,7 +1112,13 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                         if (row >= 0) {
                             String productId = (String) categoryTable.getValueAt(row, 0);
                             Product product = getProductFromCache(productId);
+                            
+                            // Đảm bảo ảnh không tràn TRƯỚC khi setForm
+                            absoluteLockImageSize();
+                            java.awt.EventQueue.invokeLater(() -> {
+                                absoluteLockImageSize();
                             setForm(product);
+                            });
                         }
                     }
                 });
@@ -1087,6 +1135,9 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
         
         // Set kích thước cố định cho tabbed pane
         jTabbedPane1.setPreferredSize(new java.awt.Dimension(700, 250));
+        
+        // Lock layout sau khi tạo tabs
+        lockEntireLayout();
     }
 
     private void setupSearchFunctionality() {
@@ -1389,8 +1440,15 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                     String savedImageName = processSelectedImage(selectedFile);
                     
                     if (savedImageName != null) {
-                        // Load and display the new image
+                        // Set current image name first
+                        setCurrentImageName(savedImageName);
+                        
+                        // Force refresh the image display
+                        java.awt.EventQueue.invokeLater(() -> {
                         fillProductImage(savedImageName);
+                            lblImage.revalidate();
+                            lblImage.repaint();
+                        });
                         
                         // Show success message
                         XDialog.alert(
@@ -1471,16 +1529,17 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
             String newFileName = "prod_" + timestamp + "." + fileExtension;
             
-            // Create target directory in resources (for development)
+            // Create target directory in resources based on category
             // Note: In production, you might want to save to external directory
-            String resourcePath = "src/main/resources/icons_and_images/product/";
+            String categoryFolder = getCategoryFolderName();
+            String resourcePath = "src/main/resources/icons_and_images/" + categoryFolder + "/";
             java.io.File targetDir = new java.io.File(resourcePath);
             
             if (!targetDir.exists()) {
                 boolean created = targetDir.mkdirs();
                 if (!created) {
                     // Try alternative path
-                    targetDir = new java.io.File("resources/icons_and_images/product/");
+                    targetDir = new java.io.File("resources/icons_and_images/" + categoryFolder + "/");
                     if (!targetDir.exists()) {
                         targetDir.mkdirs();
                     }
@@ -1495,10 +1554,18 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
             java.awt.image.BufferedImage processedImage = resizeImageIfNeeded(originalImage);
             
             // Save processed image
-            javax.imageio.ImageIO.write(processedImage, fileExtension, targetFile);
+            boolean saved = javax.imageio.ImageIO.write(processedImage, fileExtension, targetFile);
             
-            // Lưu tên ảnh mới
-            setCurrentImageName(newFileName);
+            if (!saved) {
+                throw new Exception("Không thể lưu file ảnh");
+            }
+            
+            // Verify file was created
+            if (!targetFile.exists() || targetFile.length() == 0) {
+                throw new Exception("File ảnh không được tạo thành công");
+            }
+            
+            System.out.println("✅ Image saved successfully: " + targetFile.getAbsolutePath());
             
             return newFileName;
             
@@ -1562,6 +1629,44 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     }
     
     /**
+     * ✅ GET CATEGORY FOLDER NAME: Map category name to folder name
+     */
+    private String getCategoryFolderName() {
+        String selectedCategory = (String) cboCate.getSelectedItem();
+        if (selectedCategory == null) {
+            return "product"; // Default fallback
+        }
+        
+        // Map category names to folder names
+        switch (selectedCategory.toLowerCase()) {
+            case "mì":
+            case "mi":
+                return "MI";
+            case "nước uống":
+            case "nuoc uong":
+                return "NUOCUONG";
+            case "ăn vặt":
+            case "an vat":
+                return "ANVAT";
+            case "khai vị":
+            case "khai vi":
+                return "KhaiVi";
+            case "lẩu":
+            case "lau":
+                return "LAU";
+            case "combo":
+                return "Combo";
+            case "thêm":
+            case "them":
+                return "Them";
+            case "pancha":
+                return "Pancha";
+            default:
+                return "product"; // Default fallback
+        }
+    }
+    
+    /**
      * ✅ SET CURRENT IMAGE: Set current image name
      */
     private void setCurrentImageName(String imageName) {
@@ -1569,103 +1674,142 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
     }
     
     /**
-     * ✅ CAPTURE: Capture initial image label size
+     * ✅ INITIALIZE: Khởi tạo label ảnh với kích thước cố định ngay từ đầu
      */
-    private void captureInitialImageSize() {
+    private void initializeImageLabel() {
         try {
-            // Wait for the component to be properly laid out
-            java.awt.EventQueue.invokeLater(() -> {
-                if (lblImage != null) {
-                    originalImageSize = lblImage.getSize();
-                    if (originalImageSize.width <= 0 || originalImageSize.height <= 0) {
-                        // Fallback size if not properly initialized
-                        originalImageSize = new java.awt.Dimension(204, 200);
-                    }
-                }
-            });
+            final java.awt.Dimension FIXED_SIZE = new java.awt.Dimension(200, 200);
+            
+            // Đặt size cố định ngay từ đầu
+            lblImage.setSize(FIXED_SIZE);
+            lblImage.setPreferredSize(FIXED_SIZE);
+            lblImage.setMinimumSize(FIXED_SIZE);
+            lblImage.setMaximumSize(FIXED_SIZE);
+            
+            // Set layout properties
+            lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+            lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+            
+            // Set default placeholder
+            setNoImagePlaceholder();
+            
+            // Force layout update
+            lblImage.revalidate();
+            lblImage.repaint();
+            
+            // Apply overflow prevention
+            preventImageOverflow();
+            
+            // Store original size
+            originalImageSize = FIXED_SIZE;
+            
         } catch (Exception e) {
-            originalImageSize = new java.awt.Dimension(204, 200);
+            System.out.println("❌ Error initializing image label: " + e.getMessage());
+            originalImageSize = new java.awt.Dimension(200, 200);
         }
     }
     
     /**
-     * ✅ SET IMAGE WITH FIXED SIZE: Set image with controlled size
+     * ✅ SET IMAGE WITH FIXED SIZE: Set image with controlled size and strict layout
      */
     private void setImageWithFixedSize(String imagePath) {
         try {
-            // ✅ SAFETY: Ensure originalImageSize is available
-            if (originalImageSize == null) {
-                captureInitialImageSize();
-                if (originalImageSize == null) {
-                    // Ultimate fallback
-                    originalImageSize = new java.awt.Dimension(204, 200);
-                }
-            }
+            // Kích thước cố định TUYỆT ĐỐI 200x200
+            final java.awt.Dimension FIXED_SIZE = new java.awt.Dimension(200, 200);
+            
+            // ABSOLUTE LOCK SIZE trước khi làm bất cứ gì
+            absoluteLockImageSize();
             
             // Load and scale image to fit the fixed label size
-            java.net.URL imageURL = getClass().getResource(imagePath);
+            java.net.URL imageURL = safeGetResource(imagePath);
             if (imageURL != null) {
-                javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
-                
-                // ✅ VALIDATION: Check if image loaded successfully
-                if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
-                    // Scale image to fit the original label size
-                    java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
-                        originalImageSize.width, 
-                        originalImageSize.height, 
-                        java.awt.Image.SCALE_SMOOTH
-                    );
+                try {
+                    javax.swing.ImageIcon originalIcon = new javax.swing.ImageIcon(imageURL);
                     
-                    javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
-                    
-                    // Set the scaled icon
-                    lblImage.setIcon(scaledIcon);
-                    lblImage.setText("");
-                } else {
-                    // Image không load được
-                    lblImage.setIcon(null);
-                    lblImage.setText("No Image");
+                    // ✅ VALIDATION: Check if image loaded successfully
+                    if (originalIcon.getIconWidth() > 0 && originalIcon.getIconHeight() > 0) {
+                        // Scale image to EXACT fixed size với giới hạn nghiêm ngặt
+                        java.awt.Image scaledImage = originalIcon.getImage().getScaledInstance(
+                            196, // Slightly smaller than container để tránh overflow
+                            196, 
+                            java.awt.Image.SCALE_SMOOTH
+                        );
+                        
+                        javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
+                        
+                        // LOCK SIZE lại trước khi set icon
+                        absoluteLockImageSize();
+                        
+                        // Set the scaled icon
+                        lblImage.setIcon(scaledIcon);
+                        lblImage.setText("");
+                        lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                        lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+                        
+                        // FINAL ABSOLUTE LOCK sau khi set icon
+                        absoluteLockImageSize();
+                    } else {
+                        // Image không load được
+                        setNoImagePlaceholder();
+                    }
+                } catch (Exception iconException) {
+                    System.err.println("❌ Error loading image icon: " + iconException.getMessage());
+                    setNoImagePlaceholder();
                 }
-                
-                // ✅ ENFORCE: Keep the original size regardless of image content
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-                
             } else {
                 // Fallback to text if image not found
-                lblImage.setIcon(null);
-                lblImage.setText("No Image");
-                
-                            // ✅ STILL ENFORCE: Keep size even when no image
-            if (originalImageSize != null) {
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
+                System.err.println("❌ Image URL is null for path: " + imagePath);
+                setNoImagePlaceholder();
             }
-            }
-        } catch (Exception e) {
-            lblImage.setIcon(null);
-            lblImage.setText("Error");
             
-            // ✅ ENFORCE: Keep size even on error
-            if (originalImageSize != null) {
-                lblImage.setSize(originalImageSize);
-                lblImage.setPreferredSize(originalImageSize);
-                lblImage.setMinimumSize(originalImageSize);
-                lblImage.setMaximumSize(originalImageSize);
-            }
+            // ✅ ENFORCE FINAL: Đảm bảo size không thay đổi
+            absoluteLockImageSize();
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error in setImageWithFixedSize: " + e.getMessage());
+            setNoImagePlaceholder();
+            absoluteLockImageSize();
         }
+    }
+    
+    /**
+     * ✅ NO IMAGE PLACEHOLDER: Set placeholder when no image available
+     */
+    private void setNoImagePlaceholder() {
+        // ABSOLUTE LOCK trước khi set placeholder
+        absoluteLockImageSize();
+        
+            lblImage.setIcon(null);
+        lblImage.setText("<html><center>Chưa có ảnh<br/>Click để chọn</center></html>");
+        lblImage.setFont(new java.awt.Font("Arial", java.awt.Font.ITALIC, 12));
+        lblImage.setForeground(java.awt.Color.GRAY);
+        lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+        
+        // FINAL LOCK sau khi set placeholder
+        absoluteLockImageSize();
     }
     
     // ====== FILL ẢNH SẢN PHẨM TƯƠNG TỰ NHÂN VIÊN ======
     private void fillProductImage(String imageName) {
         try {
+            System.out.println("🔍 fillProductImage called with: " + imageName);
+            System.out.println("📏 Current lblImage size BEFORE: " + lblImage.getSize());
+            
+            // Đảm bảo kích thước cố định trước khi load ảnh
+            enforceFixedImageSize();
+            
             if (imageName != null && !imageName.trim().isEmpty()) {
-                // Thử tìm ảnh trong các thư mục khác nhau
+                // Thử tìm ảnh trong các thư mục khác nhau - ưu tiên folder đồ ăn trực tiếp
                 String[] paths = {
+                    "/icons_and_images/MI/" + imageName,
+                    "/icons_and_images/NUOCUONG/" + imageName,
+                    "/icons_and_images/ANVAT/" + imageName,
+                    "/icons_and_images/KhaiVi/" + imageName,
+                    "/icons_and_images/LAU/" + imageName,
+                    "/icons_and_images/Combo/" + imageName,
+                    "/icons_and_images/Them/" + imageName,
+                    "/icons_and_images/Pancha/" + imageName,
                     "/icons_and_images/" + imageName,
                     "/icons_and_images/product/" + imageName,
                     "/icons_and_images/product/mi/" + imageName,
@@ -1675,24 +1819,401 @@ public class ProductManagement extends javax.swing.JFrame implements ProductCont
                 
                 boolean found = false;
                 for (String path : paths) {
-                    if (getClass().getResource(path) != null) {
-                        setImageWithFixedSize(path);
-                        found = true;
-                        break;
+                    System.out.println("🔍 Trying path: " + path);
+                    try {
+                        java.net.URL imageURL = safeGetResource(path);
+                        if (imageURL != null) {
+                            System.out.println("✅ Found image at: " + path);
+                            setImageWithFixedSize(path);
+                            found = true;
+                            break;
+                        } else {
+                            System.out.println("❌ Image URL is null for path: " + path);
+                        }
+                    } catch (Exception urlException) {
+                        System.err.println("❌ Error getting resource URL for path: " + path + " - " + urlException.getMessage());
                     }
                 }
                 
                 if (!found) {
-                    // Nếu không tìm thấy, dùng ảnh mặc định
-                    setImageWithFixedSize("/icons_and_images/Best.png");
+                    System.out.println("❌ Image not found in resources, trying external file");
+                    // Thử tìm file trong thư mục resources external
+                    if (tryLoadExternalImage(imageName)) {
+                        found = true;
+                    } else {
+                        System.out.println("❌ External image not found, using placeholder");
+                        setNoImagePlaceholder();
+                    }
                 }
             } else {
-                // Không có tên ảnh - dùng ảnh mặc định
-                setImageWithFixedSize("/icons_and_images/Best.png");
+                // Không có tên ảnh - dùng placeholder
+                System.out.println("ℹ️ No image name provided, using placeholder");
+                setNoImagePlaceholder();
             }
+            
+            // Đảm bảo kích thước cố định sau khi load ảnh
+            enforceFixedImageSize();
+            System.out.println("📏 Final lblImage size AFTER: " + lblImage.getSize());
+            
         } catch (Exception e) {
-            // Nếu lỗi, dùng ảnh unknown
-            setImageWithFixedSize("/icons_and_images/Unknown person.png");
+            System.out.println("❌ Error in fillProductImage: " + e.getMessage());
+            e.printStackTrace();
+            // Nếu lỗi, dùng placeholder và vẫn giữ kích thước cố định
+            setNoImagePlaceholder();
+            enforceFixedImageSize();
         }
     }
+    
+    /**
+     * ✅ TRY LOAD EXTERNAL: Thử load ảnh từ file system
+     */
+    private boolean tryLoadExternalImage(String imageName) {
+        try {
+            // Thử các đường dẫn có thể có của file ảnh vừa lưu - cập nhật theo cấu trúc thư mục mới
+            String[] externalPaths = {
+                "src/main/resources/icons_and_images/MI/" + imageName,
+                "src/main/resources/icons_and_images/NUOCUONG/" + imageName,
+                "src/main/resources/icons_and_images/ANVAT/" + imageName,
+                "src/main/resources/icons_and_images/KhaiVi/" + imageName,
+                "src/main/resources/icons_and_images/LAU/" + imageName,
+                "src/main/resources/icons_and_images/Combo/" + imageName,
+                "src/main/resources/icons_and_images/Them/" + imageName,
+                "src/main/resources/icons_and_images/Pancha/" + imageName,
+                "src/main/resources/icons_and_images/product/" + imageName,
+                "src/main/resources/icons_and_images/product/mi/" + imageName,
+                "src/main/resources/icons_and_images/product/drink/" + imageName,
+                "src/main/resources/icons_and_images/product/more/" + imageName,
+                "resources/icons_and_images/MI/" + imageName,
+                "resources/icons_and_images/NUOCUONG/" + imageName,
+                "resources/icons_and_images/ANVAT/" + imageName,
+                "resources/icons_and_images/KhaiVi/" + imageName,
+                "resources/icons_and_images/LAU/" + imageName,
+                "resources/icons_and_images/Combo/" + imageName,
+                "resources/icons_and_images/Them/" + imageName,
+                "resources/icons_and_images/Pancha/" + imageName,
+                "resources/icons_and_images/product/" + imageName,
+                "resources/icons_and_images/product/mi/" + imageName,
+                "resources/icons_and_images/product/drink/" + imageName,
+                "resources/icons_and_images/product/more/" + imageName,
+                "src/main/resources/icons_and_images/" + imageName,
+                "resources/icons_and_images/" + imageName
+            };
+            
+            for (String path : externalPaths) {
+                java.io.File imageFile = new java.io.File(path);
+                System.out.println("🔍 Trying external path: " + imageFile.getAbsolutePath());
+                
+                if (imageFile.exists() && imageFile.canRead()) {
+                    System.out.println("✅ Found external image: " + path);
+                    
+                    try {
+                        // Load image từ file system với size cố định
+                        java.awt.image.BufferedImage bufferedImage = javax.imageio.ImageIO.read(imageFile);
+                        if (bufferedImage != null) {
+                            
+                            // ABSOLUTE LOCK trước khi load ảnh
+                            absoluteLockImageSize();
+                            
+                            // Scale image nhỏ hơn để tránh overflow
+                            java.awt.Image scaledImage = bufferedImage.getScaledInstance(
+                                196, 196, java.awt.Image.SCALE_SMOOTH);
+                            javax.swing.ImageIcon scaledIcon = new javax.swing.ImageIcon(scaledImage);
+                            
+                            // LOCK lại trước khi set icon
+                            absoluteLockImageSize();
+                            
+                            lblImage.setIcon(scaledIcon);
+                            lblImage.setText("");
+                            lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+                            lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+                            
+                            // FINAL LOCK sau khi set icon
+                            absoluteLockImageSize();
+                            
+                            return true;
+                        }
+                    } catch (Exception imageException) {
+                        System.err.println("❌ Error reading image file: " + imageException.getMessage());
+                        continue; // Thử file tiếp theo
+                    }
+                }
+            }
+            
+            return false;
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error loading external image: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * ✅ ENFORCE: Đảm bảo kích thước cố định cho lblImage (MẠNH MẼ)
+     */
+    private void enforceFixedImageSize() {
+        final java.awt.Dimension FIXED_SIZE = new java.awt.Dimension(200, 200);
+        
+        // Set tất cả size properties
+        lblImage.setSize(FIXED_SIZE);
+        lblImage.setPreferredSize(FIXED_SIZE);
+        lblImage.setMinimumSize(FIXED_SIZE);
+        lblImage.setMaximumSize(FIXED_SIZE);
+        
+        // Force revalidate và repaint
+        lblImage.revalidate();
+        lblImage.repaint();
+    }
+    
+    /**
+     * ✅ VALIDATE RESOURCE PATH: Kiểm tra và tạo thư mục resources nếu cần
+     */
+    private boolean validateResourcePath(String imagePath) {
+        try {
+            java.net.URL url = safeGetResource(imagePath);
+            return url != null;
+        } catch (Exception e) {
+            System.err.println("❌ Error validating resource path: " + imagePath + " - " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * ✅ CREATE RESOURCE DIRECTORIES: Tạo thư mục resources nếu chưa có
+     */
+    private void createResourceDirectories() {
+        try {
+            String[] directories = {
+                "src/main/resources/icons_and_images/MI",
+                "src/main/resources/icons_and_images/NUOCUONG",
+                "src/main/resources/icons_and_images/ANVAT",
+                "src/main/resources/icons_and_images/KhaiVi",
+                "src/main/resources/icons_and_images/LAU",
+                "src/main/resources/icons_and_images/Combo",
+                "src/main/resources/icons_and_images/Them",
+                "src/main/resources/icons_and_images/Pancha",
+                "src/main/resources/icons_and_images/product",
+                "src/main/resources/icons_and_images/product/mi",
+                "src/main/resources/icons_and_images/product/drink",
+                "src/main/resources/icons_and_images/product/more"
+            };
+            
+            for (String dirPath : directories) {
+                java.io.File dir = new java.io.File(dirPath);
+                if (!dir.exists()) {
+                    boolean created = dir.mkdirs();
+                    if (created) {
+                        System.out.println("✅ Created directory: " + dirPath);
+                    } else {
+                        System.err.println("❌ Failed to create directory: " + dirPath);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error creating resource directories: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * ✅ SAFE RESOURCE LOADING: Load resource một cách an toàn, tránh lỗi null
+     */
+    private java.net.URL safeGetResource(String path) {
+        try {
+            if (path == null || path.trim().isEmpty()) {
+                System.err.println("❌ Resource path is null or empty");
+                return null;
+            }
+            
+            java.net.URL url = getClass().getResource(path);
+            if (url == null) {
+                System.err.println("❌ Resource not found: " + path);
+                return null;
+            }
+            
+            return url;
+        } catch (Exception e) {
+            System.err.println("❌ Error loading resource: " + path + " - " + e.getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * ✅ VALIDATE AND FIX RESOURCE PATHS: Kiểm tra và sửa lỗi đường dẫn null
+     */
+    private void validateAndFixResourcePaths() {
+        try {
+            System.out.println("🔍 Validating resource paths...");
+            
+            // Kiểm tra các đường dẫn icon quan trọng
+            String[] criticalPaths = {
+                "/icons_and_images/icon/Search.png",
+                "/icons_and_images/icon/Exit.png",
+                "/icons_and_images/icon/Help.png"
+            };
+            
+            for (String path : criticalPaths) {
+                java.net.URL url = safeGetResource(path);
+                if (url == null) {
+                    System.err.println("⚠️ Critical resource missing: " + path);
+                } else {
+                    System.out.println("✅ Resource found: " + path);
+                }
+            }
+            
+            System.out.println("✅ Resource validation completed");
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error during resource validation: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * ✅ PREVENT OVERFLOW: Ngăn chặn hoàn toàn việc ảnh tràn layout
+     */
+    private void preventImageOverflow() {
+        try {
+            final java.awt.Dimension ABSOLUTE_FIXED_SIZE = new java.awt.Dimension(200, 200);
+            
+            // TUYỆT ĐỐI không cho phép thay đổi size
+            lblImage.setSize(ABSOLUTE_FIXED_SIZE);
+            lblImage.setPreferredSize(ABSOLUTE_FIXED_SIZE);
+            lblImage.setMinimumSize(ABSOLUTE_FIXED_SIZE);
+            lblImage.setMaximumSize(ABSOLUTE_FIXED_SIZE);
+            
+            // Lock layout của parent container
+            java.awt.Container parent = lblImage.getParent();
+            if (parent != null && parent instanceof javax.swing.JPanel) {
+                javax.swing.JPanel parentPanel = (javax.swing.JPanel) parent;
+                parentPanel.setPreferredSize(parentPanel.getSize());
+            }
+            
+            // Set border để giới hạn vùng hiển thị
+            lblImage.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(100, 149, 237), 2),
+                javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2)
+            ));
+            
+                    System.out.println("🔒 Prevented image overflow - Absolute size: " + ABSOLUTE_FIXED_SIZE);
+        
+    } catch (Exception e) {
+        System.out.println("❌ Error preventing image overflow: " + e.getMessage());
+    }
+}
+
+/**
+ * ✅ ABSOLUTE LOCK: Khóa hoàn toàn layout để không bao giờ tràn
+ */
+private void absoluteLockImageSize() {
+    try {
+        final java.awt.Dimension ABSOLUTE_SIZE = new java.awt.Dimension(200, 200);
+        
+        // Set tất cả size properties với priority cao nhất
+        lblImage.setSize(ABSOLUTE_SIZE);
+        lblImage.setPreferredSize(ABSOLUTE_SIZE);
+        lblImage.setMinimumSize(ABSOLUTE_SIZE);
+        lblImage.setMaximumSize(ABSOLUTE_SIZE);
+        
+        // Set alignment
+        lblImage.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblImage.setVerticalAlignment(javax.swing.SwingConstants.CENTER);
+        
+        // Disable any auto-resizing
+        lblImage.setOpaque(true);
+        lblImage.setAutoscrolls(false);
+        
+        // Lock parent layout if possible
+        java.awt.Container parent = lblImage.getParent();
+        if (parent != null) {
+            if (parent.getLayout() instanceof javax.swing.GroupLayout) {
+                // For GroupLayout, we need to be more careful
+                parent.invalidate();
+            } else {
+                parent.setPreferredSize(parent.getSize());
+            }
+        }
+        
+        System.out.println("🔐 ABSOLUTE LOCK applied - Size: " + ABSOLUTE_SIZE);
+        
+    } catch (Exception e) {
+        System.out.println("❌ Error in absolute lock: " + e.getMessage());
+    }
+}
+
+/**
+ * ✅ LOCK ENTIRE LAYOUT: Lock toàn bộ layout để tránh components bị đẩy
+ */
+private void lockEntireLayout() {
+    try {
+        // Lock tất cả text fields với preferred size
+        java.awt.Dimension fieldSize = new java.awt.Dimension(150, 22);
+        txtProduct_Id.setPreferredSize(fieldSize);
+        txtProduct_Id.setMinimumSize(fieldSize);
+        txtProduct_Id.setMaximumSize(fieldSize);
+        
+        txtNameProduct.setPreferredSize(fieldSize);
+        txtNameProduct.setMinimumSize(fieldSize);
+        txtNameProduct.setMaximumSize(fieldSize);
+        
+        txtPrice.setPreferredSize(fieldSize);
+        txtPrice.setMinimumSize(fieldSize);
+        txtPrice.setMaximumSize(fieldSize);
+        
+        txtDiscount.setPreferredSize(fieldSize);
+        txtDiscount.setMinimumSize(fieldSize);
+        txtDiscount.setMaximumSize(fieldSize);
+        
+        // Lock comboboxes
+        java.awt.Dimension comboSize = new java.awt.Dimension(150, 22);
+        cboCate.setPreferredSize(comboSize);
+        cboCate.setMinimumSize(comboSize);
+        cboCate.setMaximumSize(comboSize);
+        
+        cboUnit.setPreferredSize(comboSize);
+        cboUnit.setMinimumSize(comboSize);
+        cboUnit.setMaximumSize(comboSize);
+        
+        cboStatus.setPreferredSize(comboSize);
+        cboStatus.setMinimumSize(comboSize);
+        cboStatus.setMaximumSize(comboSize);
+        
+        // Lock text area
+        java.awt.Dimension textAreaSize = new java.awt.Dimension(150, 50);
+        txtAreNote.setPreferredSize(textAreaSize);
+        txtAreNote.setMinimumSize(textAreaSize);
+        txtAreNote.setMaximumSize(textAreaSize);
+        
+        // Lock buttons
+        java.awt.Dimension buttonSize = new java.awt.Dimension(100, 50);
+        btnSave.setPreferredSize(buttonSize);
+        btnSave.setMinimumSize(buttonSize);
+        btnSave.setMaximumSize(buttonSize);
+        
+        btnUpdate.setPreferredSize(buttonSize);
+        btnUpdate.setMinimumSize(buttonSize);
+        btnUpdate.setMaximumSize(buttonSize);
+        
+        btnClear.setPreferredSize(buttonSize);
+        btnClear.setMinimumSize(buttonSize);
+        btnClear.setMaximumSize(buttonSize);
+        
+        // Lock main panels
+        if (jPanel5 != null) {
+            java.awt.Dimension panelSize = jPanel5.getPreferredSize();
+            if (panelSize.width > 0 && panelSize.height > 0) {
+                jPanel5.setPreferredSize(panelSize);
+                jPanel5.setMinimumSize(panelSize);
+                jPanel5.setMaximumSize(panelSize);
+            }
+        }
+        
+        // Force layout validation
+        this.revalidate();
+        
+        System.out.println("🔒 Entire layout locked successfully");
+        
+    } catch (Exception e) {
+        System.out.println("❌ Error locking entire layout: " + e.getMessage());
+    }
+}
+
+
 }
