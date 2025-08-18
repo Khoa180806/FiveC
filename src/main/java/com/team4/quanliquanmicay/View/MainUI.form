@@ -722,7 +722,7 @@
                           <Color blue="2b" green="27" red="86" type="rgb"/>
                         </Property>
                         <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                          <Image iconType="3" name="/icons_and_images/icons8-five-64.png"/>
+                          <Image iconType="3" name="/icons_and_images/icon/icons8-five-64.png"/>
                         </Property>
                         <Property name="text" type="java.lang.String" value="FIVE C "/>
                       </Properties>

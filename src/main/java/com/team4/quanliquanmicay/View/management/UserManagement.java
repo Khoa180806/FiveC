@@ -1008,7 +1008,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
      */
     private void setPlaceholderImage(String imageName) {
         try {
-            String placeholderPath = "/icons_and_images/Unknown person.png";
+            String placeholderPath = "/icons_and_images/icon/Unknown person.png";
             if (getClass().getResource(placeholderPath) != null) {
                 XImage.setImageToLabel(lblImage, placeholderPath);
                 lblImage.setText("");
@@ -1038,7 +1038,7 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         lockImageSize();
         
         try {
-            XImage.setImageToLabel(lblImage, "/icons_and_images/User.png");
+            XImage.setImageToLabel(lblImage, "/icons_and_images/icon/User.png");
             lblImage.setText("");
             lblImage.setToolTipText("Click để chọn ảnh nhân viên");
         } catch (Exception e) {

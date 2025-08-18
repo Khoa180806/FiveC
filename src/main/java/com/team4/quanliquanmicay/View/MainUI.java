@@ -692,7 +692,7 @@ public class MainUI extends javax.swing.JFrame {
 
         lblLogo.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         lblLogo.setForeground(new java.awt.Color(134, 39, 43));
-        lblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icons8-five-64.png"))); // NOI18N
+        lblLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/icons8-five-64.png"))); // NOI18N
         lblLogo.setText("FIVE C ");
 
         javax.swing.GroupLayout pnlLogoLayout = new javax.swing.GroupLayout(pnlLogo);
