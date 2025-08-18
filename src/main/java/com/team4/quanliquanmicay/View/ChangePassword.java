@@ -11,6 +11,7 @@ import com.team4.quanliquanmicay.util.XAuth;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XValidation;
+import javax.swing.text.JTextComponent;
 import com.team4.quanliquanmicay.Entity.UserAccount;
 import java.awt.Color;
 /**
@@ -293,17 +294,17 @@ public void save() {
 
     if (XValidation.isEmpty(username)) {
         missingFields.append("• Vui lòng điền thông tin tên tài khoản\n");
-        txtUsername.setBackground(errorBg);
+        setInlineError(txtUsername, "Vui lòng nhập tài khoản", errorBg);
         hasError = true;
     }
     if (XValidation.isEmpty(newpass)) {
         missingFields.append("• Vui lòng điền thông tin mật khẩu mới\n");
-        txtNewpass.setBackground(errorBg);
+        setInlineError(txtNewpass, "Vui lòng nhập mật khẩu", errorBg);
         hasError = true;
     }
     if (XValidation.isEmpty(confirm)) {
         missingFields.append("• Vui lòng điền thông tin xác nhận mật khẩu mới\n");
-        txtConfirm.setBackground(errorBg);
+        setInlineError(txtConfirm, "Vui lòng nhập xác nhận mật khẩu", errorBg);
         hasError = true;
     }
 
@@ -346,17 +347,67 @@ public void save() {
 
 private void addInputListeners() {
     Color defaultBg = Color.WHITE;
-    java.awt.event.KeyAdapter resetColorListener = new java.awt.event.KeyAdapter() {
+    attachFieldHandlers(txtUsername, defaultBg);
+    attachFieldHandlers(txtNewpass, defaultBg);
+    attachFieldHandlers(txtConfirm, defaultBg);
+}
+
+private void setInlineError(JTextComponent field, String message, Color errorBg) {
+    field.setBackground(errorBg);
+    field.setForeground(new java.awt.Color(102, 0, 0));
+    // Với JPasswordField: tắt echoChar để hiện thông báo thay vì dấu chấm
+    if (field instanceof javax.swing.JPasswordField) {
+        javax.swing.JPasswordField pf = (javax.swing.JPasswordField) field;
+        if (field.getClientProperty("defaultEchoChar") == null) {
+            field.putClientProperty("defaultEchoChar", Character.valueOf(pf.getEchoChar()));
+        }
+        pf.setEchoChar((char) 0);
+    }
+    field.setText(message);
+    field.putClientProperty("inlineError", Boolean.TRUE);
+}
+
+private void attachFieldHandlers(JTextComponent field, Color defaultBg) {
+    final java.awt.Color defaultFg = field.getForeground();
+    field.addFocusListener(new java.awt.event.FocusAdapter() {
+        @Override
+        public void focusGained(java.awt.event.FocusEvent e) {
+            Object flag = field.getClientProperty("inlineError");
+            if (Boolean.TRUE.equals(flag)) {
+                field.setText("");
+                field.putClientProperty("inlineError", Boolean.FALSE);
+                // Khôi phục echoChar cho JPasswordField khi người dùng bắt đầu nhập
+                if (field instanceof javax.swing.JPasswordField) {
+                    javax.swing.JPasswordField pf = (javax.swing.JPasswordField) field;
+                    Object ch = field.getClientProperty("defaultEchoChar");
+                    if (ch instanceof Character) {
+                        pf.setEchoChar(((Character) ch).charValue());
+                    }
+                }
+            }
+            field.setBackground(defaultBg);
+            field.setForeground(defaultFg);
+        }
+    });
+    field.addKeyListener(new java.awt.event.KeyAdapter() {
         @Override
         public void keyReleased(java.awt.event.KeyEvent e) {
-            javax.swing.JTextField field = (javax.swing.JTextField) e.getSource();
             if (!field.getText().trim().isEmpty()) {
                 field.setBackground(defaultBg);
+                field.setForeground(defaultFg);
+                // Nếu còn cờ inlineError thì hủy và khôi phục echoChar
+                if (Boolean.TRUE.equals(field.getClientProperty("inlineError"))) {
+                    field.putClientProperty("inlineError", Boolean.FALSE);
+                    if (field instanceof javax.swing.JPasswordField) {
+                        javax.swing.JPasswordField pf = (javax.swing.JPasswordField) field;
+                        Object ch = field.getClientProperty("defaultEchoChar");
+                        if (ch instanceof Character) {
+                            pf.setEchoChar(((Character) ch).charValue());
+                        }
+                    }
+                }
             }
         }
-    };
-    txtUsername.addKeyListener(resetColorListener);
-    txtNewpass.addKeyListener(resetColorListener);
-    txtConfirm.addKeyListener(resetColorListener);
+    });
 }
 }
