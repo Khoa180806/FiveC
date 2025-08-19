@@ -19,4 +19,10 @@ public interface CustomerDAO extends CrudDAO<Customer, String> {
      * Sort customers by point level in descending order
      */
     List<Customer> sortByPointDesc();
+
+    // Kiểm tra tồn tại theo số điện thoại
+    boolean existsByPhone(String phoneNumber);
+
+    // Cập nhật cho phép đổi số điện thoại (PK) và cascade sang BILL
+    void updateWithPhoneChange(String oldPhoneNumber, Customer entity);
 }

@@ -331,7 +331,8 @@ public class CustomerManagement extends javax.swing.JFrame {
             customerName = XValidation.sanitizeInput(customerName);
             levelRanking = XValidation.sanitizeInput(levelRanking);
             
-            // Cập nhật customer object
+            // Cập nhật customer object (giữ lại số cũ để xử lý đổi số)
+            String oldPhone = selectedCustomer.getPhone_number();
             selectedCustomer.setPhone_number(phoneNumber);
             selectedCustomer.setCustomer_name(customerName);
             selectedCustomer.setPoint_level(pointLevel);
@@ -340,7 +341,13 @@ public class CustomerManagement extends javax.swing.JFrame {
             // Cập nhật database
             showLoadingIndicator(true);
             customerController.setForm(selectedCustomer);
-            customerController.update();
+            // Nếu đổi số điện thoại (PK), cần cập nhật cascade
+            if (oldPhone != null && !oldPhone.equals(phoneNumber)) {
+                // Dùng DAO trực tiếp để thực hiện cập nhật PK + cascade BILL
+                new com.team4.quanliquanmicay.Impl.CustomerDAOImpl().updateWithPhoneChange(oldPhone, selectedCustomer);
+            } else {
+                customerController.update();
+            }
             
             XDialog.success("Cập nhật thông tin khách hàng thành công!", "Thành công");
             loadAllCustomers(); // Refresh table
