@@ -1388,6 +1388,8 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             UserAccount newEmployee = getFormForCreate();
             validateUniqueEmployeeId(newEmployee.getUser_id());
             validateUniqueUsername(newEmployee.getUsername());
+            validateUniquePhone(newEmployee.getPhone_number());
+            validateUniqueEmail(newEmployee.getEmail());
             validateBusinessRules(newEmployee);
 
             // Create in database
@@ -1426,8 +1428,10 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                 return;
             }
 
-            // Validate username không trùng với nhân viên khác
+            // Validate username/phone/email không trùng với nhân viên khác
             validateUniqueUsernameForUpdate(updatedEmployee.getUsername(), updatedEmployee.getUser_id());
+            validateUniquePhoneForUpdate(updatedEmployee.getPhone_number(), updatedEmployee.getUser_id());
+            validateUniqueEmailForUpdate(updatedEmployee.getEmail(), updatedEmployee.getUser_id());
             validateBusinessRules(updatedEmployee);
 
             // Preserve important fields
@@ -1634,6 +1638,24 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
         }
     }
 
+    private void validateUniquePhone(String phone) {
+        if (phone == null || phone.trim().isEmpty()) return; // đã check not empty elsewhere
+        List<UserAccount> all = getEmployeesFromCacheOrDB();
+        for (UserAccount emp : all) {
+            if (emp.getPhone_number() != null && emp.getPhone_number().equalsIgnoreCase(phone.trim()))
+                throw new RuntimeException("Số điện thoại '" + phone + "' đã được sử dụng!");
+        }
+    }
+
+    private void validateUniqueEmail(String email) {
+        if (email == null || email.trim().isEmpty()) return;
+        List<UserAccount> all = getEmployeesFromCacheOrDB();
+        for (UserAccount emp : all) {
+            if (emp.getEmail() != null && emp.getEmail().equalsIgnoreCase(email.trim()))
+                throw new RuntimeException("Email '" + email + "' đã được sử dụng!");
+        }
+    }
+
     /**
      * ✅ VALIDATION: Check username trùng lặp (for UPDATE) - optimized with cache
      */
@@ -1653,6 +1675,26 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             throw e; // Re-throw validation errors
         } catch (Exception e) {
             throw new RuntimeException("Lỗi kiểm tra tên đăng nhập: " + e.getMessage());
+        }
+    }
+
+    private void validateUniquePhoneForUpdate(String phone, String currentUserId) {
+        if (phone == null || phone.trim().isEmpty()) return;
+        List<UserAccount> all = getEmployeesFromCacheOrDB();
+        for (UserAccount emp : all) {
+            if (emp.getPhone_number() != null && emp.getPhone_number().equalsIgnoreCase(phone.trim()) &&
+                !emp.getUser_id().equals(currentUserId))
+                throw new RuntimeException("Số điện thoại '" + phone + "' đã được sử dụng bởi nhân viên khác!");
+        }
+    }
+
+    private void validateUniqueEmailForUpdate(String email, String currentUserId) {
+        if (email == null || email.trim().isEmpty()) return;
+        List<UserAccount> all = getEmployeesFromCacheOrDB();
+        for (UserAccount emp : all) {
+            if (emp.getEmail() != null && emp.getEmail().equalsIgnoreCase(email.trim()) &&
+                !emp.getUser_id().equals(currentUserId))
+                throw new RuntimeException("Email '" + email + "' đã được sử dụng bởi nhân viên khác!");
         }
     }
 
