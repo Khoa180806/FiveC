@@ -26,6 +26,13 @@ import com.team4.quanliquanmicay.Controller.BillManagementController;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XValidation;
 import com.team4.quanliquanmicay.util.XAuth;
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import java.awt.Color;
+import java.awt.Component;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 
 /**
  *
@@ -47,6 +54,20 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        // Cấu hình bảng chi tiết để có thể tự co giãn theo nội dung
+        configureBillDetailTableForAutoSizing();
+        
+        // Thiết lập màu chữ cho combobox trạng thái (cả item được chọn và danh sách xổ xuống)
+        cboStatus.setForeground(new java.awt.Color(102, 102, 102));
+        cboStatus.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                comp.setForeground(new Color(102, 102, 102));
+                return comp;
+            }
+        });
         
         // Khởi tạo các DAO
         billDAO = new BillDAOImpl();
@@ -271,6 +292,7 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
                     ""
                 };
                 model.addRow(row);
+                packTableColumns(tblBillDetail, 12);
                 return;
             }
             
@@ -292,10 +314,101 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
             
             System.out.println("✅ Đã load " + billDetails.size() + " món ăn vào bảng chi tiết");
             
+            // Sau khi load xong dữ liệu, tính lại bề rộng các cột dựa theo nội dung thực tế
+            packTableColumns(tblBillDetail, 12);
+            
         } catch (Exception e) {
             System.err.println("❌ Lỗi khi tải chi tiết hóa đơn: " + e.getMessage());
             e.printStackTrace();
             XDialog.error("Lỗi khi tải chi tiết hóa đơn: " + e.getMessage(), "Lỗi");
+        }
+    }
+
+    /**
+     * Cho phép các cột của bảng chi tiết tự do thay đổi kích thước và bật chế độ
+     * không auto-stretch, để width của mỗi cột bám theo preferred width.
+     */
+    private void configureBillDetailTableForAutoSizing() {
+        try {
+            tblBillDetail.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+            if (tblBillDetail.getColumnModel().getColumnCount() == 0) return;
+            for (int c = 0; c < tblBillDetail.getColumnModel().getColumnCount(); c++) {
+                TableColumn col = tblBillDetail.getColumnModel().getColumn(c);
+                col.setMinWidth(15);
+                col.setMaxWidth(Integer.MAX_VALUE);
+                col.setResizable(true);
+            }
+        } catch (Exception ignore) {
+        }
+    }
+
+    /**
+     * Tính toán lại bề rộng từng cột dựa theo kích thước nội dung và header.
+     * margin: thêm một khoảng đệm nhỏ để tránh chữ dính sát biên.
+     */
+    private void packTableColumns(JTable table, int margin) {
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        int columnCount = table.getColumnCount();
+        if (columnCount == 0) return;
+
+        int[] requiredWidths = new int[columnCount];
+        int totalRequired = 0;
+
+        for (int c = 0; c < columnCount; c++) {
+            TableColumn column = table.getColumnModel().getColumn(c);
+            int width = 0;
+
+            TableCellRenderer headerRenderer = column.getHeaderRenderer();
+            if (headerRenderer == null && table.getTableHeader() != null) {
+                headerRenderer = table.getTableHeader().getDefaultRenderer();
+            }
+            if (headerRenderer != null) {
+                java.awt.Component headerComp = headerRenderer.getTableCellRendererComponent(table, column.getHeaderValue(), false, false, 0, c);
+                width = Math.max(width, headerComp.getPreferredSize().width);
+            }
+
+            for (int r = 0; r < table.getRowCount(); r++) {
+                TableCellRenderer cellRenderer = table.getCellRenderer(r, c);
+                java.awt.Component comp = table.prepareRenderer(cellRenderer, r, c);
+                int pref = comp.getPreferredSize().width + table.getIntercellSpacing().width;
+                width = Math.max(width, pref);
+            }
+
+            int finalWidth = width + margin;
+            requiredWidths[c] = finalWidth;
+            totalRequired += finalWidth;
+        }
+
+        int availableWidth = 0;
+        java.awt.Component parent = table.getParent();
+        if (parent instanceof javax.swing.JViewport) {
+            availableWidth = ((javax.swing.JViewport) parent).getExtentSize().width;
+        }
+        if (availableWidth <= 0) {
+            availableWidth = table.getVisibleRect().width;
+        }
+        if (availableWidth <= 0) {
+            availableWidth = table.getWidth();
+        }
+
+        if (availableWidth > 0 && totalRequired < availableWidth) {
+            double scale = (double) availableWidth / (double) totalRequired;
+            int used = 0;
+            for (int c = 0; c < columnCount; c++) {
+                TableColumn column = table.getColumnModel().getColumn(c);
+                int scaled = (int) Math.floor(requiredWidths[c] * scale);
+                if (c == columnCount - 1) {
+                    scaled = Math.max(scaled, availableWidth - used);
+                }
+                used += scaled;
+                column.setPreferredWidth(scaled);
+            }
+        } else {
+            for (int c = 0; c < columnCount; c++) {
+                TableColumn column = table.getColumnModel().getColumn(c);
+                column.setPreferredWidth(requiredWidths[c]);
+            }
         }
     }
 
@@ -1158,9 +1271,14 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
 
         btnUpdate.setBackground(new java.awt.Color(204, 204, 204));
         btnUpdate.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        btnUpdate.setForeground(new java.awt.Color(153, 153, 153));
+        btnUpdate.setForeground(new java.awt.Color(102, 102, 102));
         btnUpdate.setText("Cập Nhật");
         btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
 
         btnRemove.setBackground(new java.awt.Color(204, 204, 204));
         btnRemove.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
@@ -1470,6 +1588,10 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
    if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) 
           this.dispose(); // Đóng cửa sổ hiện tại
     }//GEN-LAST:event_btnExitActionPerformed
+
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnUpdateActionPerformed
 
     /**
      * @param args the command line arguments

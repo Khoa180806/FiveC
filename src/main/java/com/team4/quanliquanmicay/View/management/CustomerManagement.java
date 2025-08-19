@@ -16,6 +16,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.Color;
+import java.awt.Component;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 
 /**
  *
@@ -42,6 +46,17 @@ public class CustomerManagement extends javax.swing.JFrame {
         
         // Initialize controller and table model
         customerController = new CustomerManagementController();
+        
+        // Thiết lập màu chữ cho combobox sắp xếp điểm (cả item được chọn và danh sách xổ xuống)
+        cbo_SortPoint.setForeground(new java.awt.Color(102, 102, 102));
+        cbo_SortPoint.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                comp.setForeground(new Color(102, 102, 102));
+                return comp;
+            }
+        });
         initializeTable();
         setupEventListeners();
         loadAllCustomers();

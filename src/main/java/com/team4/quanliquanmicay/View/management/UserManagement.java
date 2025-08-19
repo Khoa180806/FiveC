@@ -1210,8 +1210,31 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
                 }
             }
 
-            // 6. Thực hiện xóa
-            userDAO.deleteById(userId);
+            // 6. Thực hiện xóa (fallback: vô hiệu hóa nếu dính ràng buộc FK)
+            try {
+                userDAO.deleteById(userId);
+            } catch (RuntimeException ex) {
+                if (isForeignKeyViolation(ex)) {
+                    boolean deactivate = XDialog.confirm(
+                            "Nhân viên này đang được tham chiếu bởi dữ liệu khác (ví dụ: hóa đơn) nên không thể xóa.\n\n"
+                            + "Bạn có muốn VÔ HIỆU HÓA tài khoản này thay vì xóa?",
+                            "Ràng buộc dữ liệu"
+                    );
+                    if (deactivate) {
+                        employee.setIs_enabled(0);
+                        userDAO.update(employee);
+                        fillToTable();
+                        clear();
+                        XDialog.alert(
+                                "Đã vô hiệu hóa nhân viên thay vì xóa.\nMã: " + userId + "\nTên: " + fullName,
+                                "Đã vô hiệu hóa"
+                        );
+                        return;
+                    }
+                }
+                // Không phải lỗi FK: ném tiếp cho khối catch ngoài xử lý
+                throw ex;
+            }
 
             // 7. Refresh bảng
             // Refresh table
@@ -1236,6 +1259,24 @@ public class UserManagement extends javax.swing.JFrame implements EmployeeContro
             );
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Nhận diện lỗi ràng buộc khóa ngoại (ORA-02292, FK_BILL_USER, integrity constraint ...)
+     */
+    private boolean isForeignKeyViolation(Throwable ex) {
+        Throwable t = ex;
+        while (t != null) {
+            String msg = t.getMessage();
+            if (msg != null) {
+                String lower = msg.toLowerCase();
+                if (lower.contains("ora-02292") || lower.contains("integrity constraint") || lower.contains("fk_bill_user")) {
+                    return true;
+                }
+            }
+            t = t.getCause();
+        }
+        return false;
     }
 
     @Override
