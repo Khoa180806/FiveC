@@ -738,7 +738,7 @@ public class MainUI extends javax.swing.JFrame {
         btnExit.setBackground(new java.awt.Color(119, 50, 5));
         btnExit.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnExit.setForeground(new java.awt.Color(204, 204, 204));
-        btnExit.setText("Thoát ");
+        btnExit.setText("ĐĂNG XUẤT");
         btnExit.setToolTipText("");
         btnExit.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
         btnExit.addActionListener(new java.awt.event.ActionListener() {
@@ -956,8 +956,9 @@ public class MainUI extends javax.swing.JFrame {
 
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
-         if (XDialog.confirm("Bạn có chắc chắn muốn thoát khỏi ứng dụng không?", "Xác nhận thoát")) 
+         if (XDialog.confirm("Bạn có chắc chắn muốn đăng xuất không?", "Xác nhận đăng xuất")) 
           this.dispose(); // Đóng cửa sổ hiện tại
+          new LoginUI().setVisible(true);
     }//GEN-LAST:event_btnExitActionPerformed
 
     private void btnHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHelpActionPerformed
