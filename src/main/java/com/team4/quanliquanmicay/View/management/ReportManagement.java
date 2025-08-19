@@ -23,6 +23,8 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.awt.FlowLayout;
 import java.awt.Component;
 import java.text.SimpleDateFormat;
@@ -37,6 +39,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.JComboBox;
 import javax.swing.JButton;
 import javax.swing.JTable;
@@ -104,6 +107,9 @@ private javax.swing.Timer searchTimer;
         XTheme.applyFullTheme();
         initComponents();
         this.setLocationRelativeTo(null);
+        
+        // Tự động điều chỉnh chiều cao tất cả panel để cao hơn text content 10%
+        adjustAllPanelHeights();
         
         // Initialize DAOs
         initializeDAOs();
@@ -6797,6 +6803,119 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
             ex.printStackTrace();
         }
     }
+    
+    /**
+     * Tự động điều chỉnh chiều cao tất cả panel để cao hơn text content 10%
+     * Ngăn chặn việc mất nội dung khi text dài
+     */
+    private void adjustAllPanelHeights() {
+        SwingUtilities.invokeLater(() -> {
+            adjustPanelHeightRecursively(this.getContentPane());
+        });
+    }
+    
+    /**
+     * Điều chỉnh chiều cao panel đệ quy cho tất cả component con
+     */
+    private void adjustPanelHeightRecursively(java.awt.Container container) {
+        for (java.awt.Component comp : container.getComponents()) {
+            if (comp instanceof JPanel) {
+                adjustSinglePanelHeight((JPanel) comp);
+            }
+            if (comp instanceof java.awt.Container) {
+                adjustPanelHeightRecursively((java.awt.Container) comp);
+            }
+        }
+    }
+    
+    /**
+     * Điều chỉnh chiều cao của một panel cụ thể
+     */
+    private void adjustSinglePanelHeight(JPanel panel) {
+        try {
+            // Tính toán chiều cao cần thiết dựa trên text content
+            int requiredHeight = calculateRequiredHeight(panel);
+            
+            // Tăng thêm 10% để đảm bảo không bị cắt text
+            int adjustedHeight = (int) (requiredHeight * 1.1);
+            
+            // Lấy chiều cao hiện tại
+            Dimension currentSize = panel.getPreferredSize();
+            int currentHeight = currentSize.height;
+            
+            // Chỉ điều chỉnh nếu chiều cao mới lớn hơn hiện tại
+            if (adjustedHeight > currentHeight) {
+                panel.setPreferredSize(new Dimension(currentSize.width, adjustedHeight));
+                panel.setMinimumSize(new Dimension(currentSize.width, adjustedHeight));
+                
+                // Debug log
+                System.out.println("🔧 Adjusted panel height: " + panel.getName() + 
+                    " from " + currentHeight + " to " + adjustedHeight + 
+                    " (required: " + requiredHeight + ")");
+            }
+        } catch (Exception e) {
+            // Log lỗi nhưng không crash app
+            System.err.println("⚠️ Error adjusting panel height for " + panel.getName() + ": " + e.getMessage());
+        }
+    }
+    
+    /**
+     * Tính toán chiều cao cần thiết dựa trên text content trong panel
+     */
+    private int calculateRequiredHeight(JPanel panel) {
+        int maxHeight = 0;
+        
+        // Duyệt qua tất cả component con để tìm text content
+        for (java.awt.Component comp : panel.getComponents()) {
+            int compHeight = getComponentRequiredHeight(comp);
+            maxHeight = Math.max(maxHeight, compHeight);
+        }
+        
+        // Nếu không có component con, sử dụng chiều cao mặc định
+        if (maxHeight == 0) {
+            maxHeight = panel.getPreferredSize().height;
+        }
+        
+        return maxHeight;
+    }
+    
+    /**
+     * Tính toán chiều cao cần thiết cho một component cụ thể
+     */
+    private int getComponentRequiredHeight(java.awt.Component comp) {
+        if (comp instanceof JLabel) {
+            JLabel label = (JLabel) comp;
+            String text = label.getText();
+            if (text != null && !text.isEmpty()) {
+                // Tính toán chiều cao dựa trên text và font
+                FontMetrics fm = label.getFontMetrics(label.getFont());
+                int textHeight = fm.getHeight();
+                int lineCount = countLines(text);
+                return textHeight * lineCount + 10; // +10 cho padding
+            }
+        } else if (comp instanceof JTextField) {
+            JTextField textField = (JTextField) comp;
+            return textField.getPreferredSize().height + 10;
+        } else if (comp instanceof JComboBox) {
+            JComboBox<?> comboBox = (JComboBox<?>) comp;
+            return comboBox.getPreferredSize().height + 10;
+        } else if (comp instanceof JButton) {
+            JButton button = (JButton) comp;
+            return button.getPreferredSize().height + 10;
+        } else if (comp instanceof JTable) {
+            JTable table = (JTable) comp;
+            return table.getPreferredSize().height + 20;
+        }
+        
+        // Component khác: sử dụng chiều cao mặc định
+        return comp.getPreferredSize().height;
+    }
+    
+    /**
+     * Đếm số dòng trong text (xử lý \n)
+     */
+    private int countLines(String text) {
+        if (text == null || text.isEmpty()) return 1;
+        return text.split("\n").length;
+    }
 }
-
-
