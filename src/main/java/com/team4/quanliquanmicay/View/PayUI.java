@@ -1139,7 +1139,8 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         }
         
         // Hiển thị form chọn phương thức thanh toán
-        PaymentMethodUI paymentMethodDialog = new PaymentMethodUI(this, totalAmount);
+        String billCode = currentBill != null ? String.valueOf(currentBill.getBill_id()) : "";
+        PaymentMethodUI paymentMethodDialog = new PaymentMethodUI(this, totalAmount, billCode);
         paymentMethodDialog.setVisible(true);
         
         // Kiểm tra xem người dùng có chọn phương thức thanh toán không

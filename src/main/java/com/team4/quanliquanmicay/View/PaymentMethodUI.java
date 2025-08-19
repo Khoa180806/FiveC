@@ -4,9 +4,12 @@ import com.team4.quanliquanmicay.DAO.PaymentMethodDAO;
 import com.team4.quanliquanmicay.Entity.PaymentMethod;
 import com.team4.quanliquanmicay.Impl.PaymentMethodDAOImpl;
 import com.team4.quanliquanmicay.util.XDialog;
+import com.team4.quanliquanmicay.util.XQR;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.List;
 
 /**
@@ -17,6 +20,7 @@ public class PaymentMethodUI extends JDialog {
     private final PaymentMethodDAO paymentMethodDAO;
     private PaymentMethod selectedPaymentMethod;
     private final double totalAmount;
+    private final String billCode; // Mã hóa đơn
     
     // UI Components
     private JLabel lblTitle;
@@ -27,10 +31,13 @@ public class PaymentMethodUI extends JDialog {
     private JTextArea txtNote;
     private JButton btnConfirm;
     private JButton btnCancel;
+
+    // Bank config: sử dụng trực tiếp từ XQR (cấu hình tĩnh)
     
-    public PaymentMethodUI(Frame parent, double totalAmount) {
+    public PaymentMethodUI(Frame parent, double totalAmount, String billCode) {
         super(parent, "Chọn Phương Thức Thanh Toán", true);
         this.totalAmount = totalAmount;
+        this.billCode = billCode != null ? billCode : "";
         this.paymentMethodDAO = new PaymentMethodDAOImpl();
         this.selectedPaymentMethod = null;
         
@@ -39,7 +46,7 @@ public class PaymentMethodUI extends JDialog {
         setupEventHandlers();
         
         // Thiết lập dialog
-        this.setSize(450, 350);
+        this.setSize(500, 450);
         this.setLocationRelativeTo(parent);
         this.setResizable(false);
     }
@@ -63,7 +70,7 @@ public class PaymentMethodUI extends JDialog {
         mainPanel.setBackground(new Color(204, 164, 133));
         mainPanel.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(15, 15, 15, 15);
+        gbc.insets = new Insets(6, 15, 6, 15);
         
         // Thông tin tổng tiền
         lblAmount = new JLabel("Tổng tiền thanh toán:");
@@ -75,7 +82,7 @@ public class PaymentMethodUI extends JDialog {
         lblAmountValue = new JLabel(formatCurrency(totalAmount));
         lblAmountValue.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblAmountValue.setForeground(new Color(255, 215, 0)); // Màu vàng
-        lblAmountValue.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        lblAmountValue.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
         lblAmountValue.setOpaque(true);
         lblAmountValue.setBackground(new Color(255, 255, 255, 50));
         gbc.gridx = 0; gbc.gridy = 1; gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -90,47 +97,49 @@ public class PaymentMethodUI extends JDialog {
         
         cboPaymentMethod = new JComboBox<>();
         cboPaymentMethod.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        cboPaymentMethod.setPreferredSize(new Dimension(250, 30));
+        cboPaymentMethod.setPreferredSize(new Dimension(400, 30));
         cboPaymentMethod.setRenderer(new PaymentMethodRenderer());
         gbc.gridx = 0; gbc.gridy = 3; gbc.fill = GridBagConstraints.HORIZONTAL;
         mainPanel.add(cboPaymentMethod, gbc);
         
-        // Ghi chú
-        JLabel lblNote = new JLabel("Ghi chú (tùy chọn):");
+        // Ghi chú chi tiết (vẫn giữ TextArea như cũ)
+        JLabel lblNote = new JLabel("Ghi chú chi tiết (tùy chọn):");
         lblNote.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblNote.setForeground(Color.WHITE);
         gbc.gridx = 0; gbc.gridy = 4; gbc.fill = GridBagConstraints.NONE;
         mainPanel.add(lblNote, gbc);
         
-        txtNote = new JTextArea(3, 20);
+        txtNote = new JTextArea(8, 35);
         txtNote.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         txtNote.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         txtNote.setLineWrap(true);
         txtNote.setWrapStyleWord(true);
         
         JScrollPane scrollNote = new JScrollPane(txtNote);
-        scrollNote.setPreferredSize(new Dimension(250, 70));
+        scrollNote.setPreferredSize(new Dimension(400, 150));
+        scrollNote.setMinimumSize(new Dimension(400, 150));
+        scrollNote.setMaximumSize(new Dimension(400, 150));
         gbc.gridx = 0; gbc.gridy = 5; gbc.fill = GridBagConstraints.HORIZONTAL;
         mainPanel.add(scrollNote, gbc);
         
         // Panel buttons
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(new Color(204, 164, 133));
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 15));
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 12, 10));
         
         btnConfirm = new JButton("Xác nhận thanh toán");
         btnConfirm.setBackground(new Color(204, 255, 204));
         btnConfirm.setForeground(new Color(0, 153, 0));
         btnConfirm.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnConfirm.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
-        btnConfirm.setPreferredSize(new Dimension(150, 35));
+        btnConfirm.setPreferredSize(new Dimension(180, 35));
         
         btnCancel = new JButton("Hủy");
         btnCancel.setBackground(new Color(255, 179, 179));
         btnCancel.setForeground(new Color(153, 0, 0));
         btnCancel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnCancel.setBorder(BorderFactory.createLineBorder(Color.WHITE, 2));
-        btnCancel.setPreferredSize(new Dimension(100, 35));
+        btnCancel.setPreferredSize(new Dimension(120, 35));
         
         buttonPanel.add(btnConfirm);
         buttonPanel.add(btnCancel);
@@ -175,9 +184,6 @@ public class PaymentMethodUI extends JDialog {
     private void setupEventHandlers() {
         btnConfirm.addActionListener(evt -> handleConfirm());
         btnCancel.addActionListener(evt -> handleCancel());
-        
-        // Hiển thị thông tin chi tiết khi chọn phương thức
-        cboPaymentMethod.addActionListener(evt -> updatePaymentMethodInfo());
     }
     
     private void handleConfirm() {
@@ -199,9 +205,26 @@ public class PaymentMethodUI extends JDialog {
             message.append("Ghi chú: ").append(note).append("\n");
         }
         
-        message.append("\nBạn có chắc chắn muốn thanh toán không?");
-        
-        if (XDialog.confirm(message.toString(), "Xác nhận thanh toán")) {
+        message.append("\nBạn có chắc chắn muốn tiếp tục với phương thức này?");
+
+        if (!XDialog.confirm(message.toString(), "Xác nhận thanh toán")) {
+            return;
+        }
+
+        int methodId = selectedPaymentMethod.getPayment_method_id();
+        boolean accepted = true;
+        switch (methodId) {
+            case 1: // Tiền mặt
+                accepted = showCashPaymentDialog();
+                break;
+            case 2: // Chuyển khoản
+                accepted = showTransferPaymentDialog();
+                break;
+            default:
+                accepted = true; // các phương thức khác không có UI phụ
+        }
+
+        if (accepted) {
             this.dispose();
         }
     }
@@ -212,34 +235,137 @@ public class PaymentMethodUI extends JDialog {
             this.dispose();
         }
     }
-    
-    private void updatePaymentMethodInfo() {
-        PaymentMethod method = (PaymentMethod) cboPaymentMethod.getSelectedItem();
-        if (method != null) {
-            // Cập nhật ghi chú mặc định theo phương thức
-            switch (method.getPayment_method_id()) {
-                case 1: // Tiền mặt
-                    txtNote.setText("Thanh toán bằng tiền mặt tại quầy");
-                    break;
-                case 2: // Chuyển khoản
-                    txtNote.setText("Chuyển khoản qua ngân hàng");
-                    break;
-                case 3: // Thẻ tín dụng
-                    txtNote.setText("Thanh toán bằng thẻ tín dụng");
-                    break;
-                case 4: // Ví điện tử
-                    txtNote.setText("Thanh toán qua ví điện tử");
-                    break;
-                case 5: // QR Code
-                    txtNote.setText("Thanh toán bằng mã QR");
-                    break;
-                default:
-                    txtNote.setText("");
-                    break;
+
+    // UI phụ: Tiền mặt (nhập tiền nhận và xem tiền thối)
+    private boolean showCashPaymentDialog() {
+        final JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(this), "Thanh toán tiền mặt", Dialog.ModalityType.APPLICATION_MODAL);
+        dlg.setLayout(new GridBagLayout());
+        GridBagConstraints g = new GridBagConstraints();
+        g.insets = new Insets(6, 10, 6, 10);
+        g.gridx = 0; g.gridy = 0; g.anchor = GridBagConstraints.WEST;
+
+        JLabel lblTotal = new JLabel("Tổng tiền: " + formatCurrency(totalAmount));
+        lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        dlg.add(lblTotal, g);
+
+        g.gridy++;
+        JLabel lblRecv = new JLabel("Tiền khách đưa:");
+        dlg.add(lblRecv, g);
+
+        g.gridy++; g.fill = GridBagConstraints.HORIZONTAL;
+        JTextField txtRecv = new JTextField();
+        txtRecv.setPreferredSize(new Dimension(220, 28));
+        dlg.add(txtRecv, g);
+
+        g.gridy++; g.fill = GridBagConstraints.NONE;
+        JLabel lblChange = new JLabel("Tiền thối:");
+        dlg.add(lblChange, g);
+
+        g.gridy++; g.fill = GridBagConstraints.HORIZONTAL;
+        JTextField txtChangeLocal = new JTextField();
+        txtChangeLocal.setEditable(false);
+        txtChangeLocal.setPreferredSize(new Dimension(220, 28));
+        dlg.add(txtChangeLocal, g);
+
+        txtRecv.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                try {
+                    String digits = txtRecv.getText().replaceAll("[^0-9]", "");
+                    double recv = digits.isEmpty() ? 0 : Double.parseDouble(digits);
+                    double change = Math.max(0, recv - totalAmount);
+                    txtChangeLocal.setText(formatCurrency(change));
+                } catch (Exception ex) {
+                    txtChangeLocal.setText(formatCurrency(0));
+                }
             }
-        }
+        });
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 8));
+        JButton ok = new JButton("Xác nhận");
+        JButton cancel = new JButton("Hủy");
+        btnPanel.add(ok); btnPanel.add(cancel);
+
+        g.gridy++;
+        dlg.add(btnPanel, g);
+
+        final boolean[] accepted = {false};
+        ok.addActionListener(ev -> {
+            String digits = txtRecv.getText().replaceAll("[^0-9]", "");
+            double recv = digits.isEmpty() ? 0 : Double.parseDouble(digits);
+            if (recv < totalAmount) {
+                XDialog.alert("Tiền nhận chưa đủ!", "Cảnh báo");
+                return;
+            }
+            accepted[0] = true;
+            dlg.dispose();
+        });
+        cancel.addActionListener(ev -> dlg.dispose());
+
+        dlg.pack();
+        dlg.setLocationRelativeTo(this);
+        dlg.setResizable(false);
+        dlg.setVisible(true);
+        return accepted[0];
     }
-    
+
+    // UI phụ: Chuyển khoản (hiển thị QR theo số tiền và ghi chú)
+    private boolean showTransferPaymentDialog() {
+        final JDialog dlg = new JDialog(SwingUtilities.getWindowAncestor(this), "Thanh toán chuyển khoản", Dialog.ModalityType.APPLICATION_MODAL);
+        dlg.setLayout(new GridBagLayout());
+        GridBagConstraints g = new GridBagConstraints();
+        g.insets = new Insets(8, 15, 8, 15);
+        g.gridx = 0; g.gridy = 0; g.anchor = GridBagConstraints.CENTER;
+
+        JLabel lblTotal = new JLabel("Số tiền: " + formatCurrency(totalAmount));
+        lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        dlg.add(lblTotal, g);
+
+
+
+        g.gridy++; g.fill = GridBagConstraints.NONE; g.anchor = GridBagConstraints.CENTER;
+        JLabel lblQr = new JLabel();
+        lblQr.setPreferredSize(new Dimension(200, 200));
+        lblQr.setHorizontalAlignment(SwingConstants.CENTER);
+        lblQr.setVerticalAlignment(SwingConstants.CENTER);
+        lblQr.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        dlg.add(lblQr, g);
+
+        Runnable refreshQr = () -> {
+            String addInfo = "Thanh toan hoa don " + billCode;
+            ImageIcon icon = XQR.buildAndFetchVietQrIcon(totalAmount, addInfo, "compact", 200);
+            if (icon != null) {
+                lblQr.setIcon(icon);
+                lblQr.setText("");
+            } else {
+                lblQr.setIcon(null);
+                lblQr.setText("Không tải được QR");
+            }
+        };
+        refreshQr.run();
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 8));
+        JButton ok = new JButton("Đã chuyển khoản");
+        JButton cancel = new JButton("Hủy");
+        btnPanel.add(ok); btnPanel.add(cancel);
+
+        g.gridy++;
+        dlg.add(btnPanel, g);
+
+        final boolean[] accepted = {false};
+        ok.addActionListener(ev -> {
+            accepted[0] = true;
+            dlg.dispose();
+        });
+        cancel.addActionListener(ev -> dlg.dispose());
+
+        dlg.pack();
+        dlg.setLocationRelativeTo(this);
+        dlg.setResizable(false);
+        dlg.setVisible(true);
+        return accepted[0];
+    }
+
     /**
      * Custom renderer cho JComboBox PaymentMethod
      */
@@ -252,16 +378,6 @@ public class PaymentMethodUI extends JDialog {
             if (value instanceof PaymentMethod) {
                 PaymentMethod method = (PaymentMethod) value;
                 setText(method.getMethod_name());
-                
-                // Thêm icon tùy theo phương thức
-                switch (method.getPayment_method_id()) {
-                    case 1: setText("💵 " + method.getMethod_name()); break;
-                    case 2: setText("🏦 " + method.getMethod_name()); break;
-                    case 3: setText("💳 " + method.getMethod_name()); break;
-                    case 4: setText("📱 " + method.getMethod_name()); break;
-                    case 5: setText("📱 " + method.getMethod_name()); break;
-                    default: setText(method.getMethod_name()); break;
-                }
             }
             
             return this;
@@ -286,6 +402,13 @@ public class PaymentMethodUI extends JDialog {
      * Getter cho ghi chú
      */
     public String getNote() {
-        return txtNote.getText().trim();
+        return txtNote != null ? txtNote.getText().trim() : "";
+    }
+    
+    /**
+     * Getter cho mã hóa đơn
+     */
+    public String getBillCode() {
+        return billCode;
     }
 }
