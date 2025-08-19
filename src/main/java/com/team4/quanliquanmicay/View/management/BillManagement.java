@@ -29,6 +29,10 @@ import com.team4.quanliquanmicay.util.XAuth;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import java.awt.Color;
+import java.awt.Component;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 
 /**
  *
@@ -53,6 +57,17 @@ public class BillManagement extends javax.swing.JFrame implements BillManagement
         
         // Cấu hình bảng chi tiết để có thể tự co giãn theo nội dung
         configureBillDetailTableForAutoSizing();
+        
+        // Thiết lập màu chữ cho combobox trạng thái (cả item được chọn và danh sách xổ xuống)
+        cboStatus.setForeground(new java.awt.Color(102, 102, 102));
+        cboStatus.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                comp.setForeground(new Color(102, 102, 102));
+                return comp;
+            }
+        });
         
         // Khởi tạo các DAO
         billDAO = new BillDAOImpl();
