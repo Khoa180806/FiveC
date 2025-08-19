@@ -956,9 +956,10 @@ public class MainUI extends javax.swing.JFrame {
 
 
     private void btnExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExitActionPerformed
-         if (XDialog.confirm("Bạn có chắc chắn muốn đăng xuất không?", "Xác nhận đăng xuất")) 
-          this.dispose(); // Đóng cửa sổ hiện tại
-          new LoginUI().setVisible(true);
+         if (XDialog.confirm("Bạn có chắc chắn muốn đăng xuất không?", "Xác nhận đăng xuất")) {
+             this.dispose(); // Đóng cửa sổ hiện tại
+             new com.team4.quanliquanmicay.View.Login().setVisible(true);
+         }
     }//GEN-LAST:event_btnExitActionPerformed
 
     private void btnHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHelpActionPerformed
