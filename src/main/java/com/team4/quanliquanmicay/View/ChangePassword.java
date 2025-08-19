@@ -50,7 +50,7 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
         txtNewpass = new javax.swing.JPasswordField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        txtUsername = new javax.swing.JPasswordField();
+        txtUsername = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(204, 204, 204));
@@ -262,7 +262,7 @@ this.save();        // TODO add your handling code here:
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPasswordField txtConfirm;
     private javax.swing.JPasswordField txtNewpass;
-    private javax.swing.JPasswordField txtUsername;
+    private javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
 
     
