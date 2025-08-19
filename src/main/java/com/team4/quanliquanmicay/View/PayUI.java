@@ -1574,12 +1574,21 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
                 return false;
             }
             
+            // Xác thực bill còn tồn tại (tránh FK do bill tạo tay không hợp lệ)
+            Integer billExists = com.team4.quanliquanmicay.util.XJdbc.getValue(
+                "SELECT 1 FROM BILL WHERE bill_id = ?", Integer.class, bill.getBill_id());
+            if (billExists == null) {
+                XDialog.error("Hóa đơn không tồn tại trong database! Vui lòng tải lại.", "Lỗi");
+                return false;
+            }
+
             // Tạo payment history với phương thức thanh toán đã chọn
             PaymentHistory payment = new PaymentHistory();
             // Không cần set payment_history_id vì là IDENTITY (auto-increment)
             payment.setPayment_method_id(paymentMethod.getPayment_method_id());
             payment.setPayment_date(new Date());
-            payment.setTotal_amount(totalAmount);
+            // PRICE là NUMBER(9,0) -> tổng tiền làm tròn số nguyên
+            payment.setTotal_amount(Math.round(totalAmount));
             payment.setStatus("Thành công");
             payment.setNote(note != null && !note.trim().isEmpty() ? note : "Thanh toán hóa đơn bàn " + tableNumber);
 

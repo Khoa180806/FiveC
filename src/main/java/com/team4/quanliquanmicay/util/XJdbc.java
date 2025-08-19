@@ -38,7 +38,8 @@ public class XJdbc {
                 props.setProperty("user", username);
                 props.setProperty("password", password);
                 props.setProperty("oracle.net.CONNECT_TIMEOUT", "10000"); // 10 giây timeout
-                props.setProperty("oracle.jdbc.ReadTimeout", "30000"); // 30 giây read timeout
+                // Tăng thời gian timeout đọc để tránh ORA-18730 khi thực hiện nhiều INSERT/UPDATE liên tiếp
+                props.setProperty("oracle.jdbc.ReadTimeout", "60000"); // 60 giây read timeout
                 props.setProperty("oracle.net.TNS_ADMIN", "");
                 
                 connection = DriverManager.getConnection(dburl, props);
@@ -207,6 +208,8 @@ public class XJdbc {
     private static PreparedStatement getStmt(String sql, Object... values) throws SQLException {
         var conn = XJdbc.openConnection();
         var stmt = sql.trim().startsWith("{") ? conn.prepareCall(sql) : conn.prepareStatement(sql);
+        // Thiết lập timeout cho câu lệnh để tránh treo gây ORA-18730 khi gặp lock/chờ quá lâu
+        try { stmt.setQueryTimeout(30); } catch (Exception ignore) {}
         for (int i = 0; i < values.length; i++) {
             stmt.setObject(i + 1, values[i]);
         }
