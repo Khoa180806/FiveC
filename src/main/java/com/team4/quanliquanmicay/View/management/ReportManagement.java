@@ -3775,16 +3775,22 @@ private javax.swing.Timer searchTimer;
             empStatsContainer = new JPanel(new GridLayout(1, 4, 25, 10));
             empStatsContainer.setBackground(Color.WHITE);
             empStatsContainer.setBorder(BorderFactory.createEmptyBorder(0, 12, 12, 12));
-            empStatsContainer.setPreferredSize(new Dimension(10, 170)); // TĂNG TỪ 140 LÊN 170
-            empStatsContainer.setMinimumSize(new Dimension(10, 170));   // TĂNG TỪ 140 LÊN 170
+                    // Tăng height lên 10% để đảm bảo đủ không gian cho các stat card
+        int baseStatsHeight = 170;
+        int adjustedStatsHeight = (int)(baseStatsHeight * 1.1); // Tăng 10%
+        empStatsContainer.setPreferredSize(new Dimension(10, adjustedStatsHeight));
+        empStatsContainer.setMinimumSize(new Dimension(10, adjustedStatsHeight));
             mainContent.add(empStatsContainer);
 
             // Container cho biểu đồ phụ (số hóa đơn và TB/HĐ) - CHỈ HIỂN THỊ KHI TÍCH NĂNG SUẤT
             empSecondaryChartContainer = new JPanel(new BorderLayout());
             empSecondaryChartContainer.setBackground(Color.WHITE);
             empSecondaryChartContainer.setBorder(BorderFactory.createEmptyBorder(0, 12, 12, 12));
-            empSecondaryChartContainer.setPreferredSize(new Dimension(10, 300));
-            empSecondaryChartContainer.setMinimumSize(new Dimension(10, 300));
+                    // Tăng height lên 10% để đảm bảo đủ không gian cho biểu đồ
+        int baseChartHeight = 300;
+        int adjustedChartHeight = (int)(baseChartHeight * 1.1); // Tăng 10%
+        empSecondaryChartContainer.setPreferredSize(new Dimension(10, adjustedChartHeight));
+        empSecondaryChartContainer.setMinimumSize(new Dimension(10, adjustedChartHeight));
             empSecondaryChartContainer.setVisible(false); // MẶC ĐỊNH ẨN
             mainContent.add(empSecondaryChartContainer);
 
@@ -6108,6 +6114,11 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
             chart.getLegend().setItemFont(new Font("Tahoma", Font.PLAIN, 11));
             
             ChartPanel panel = XChart.createChartPanel(chart);
+            // Đặt preferred size cho ChartPanel để đảm bảo đủ không gian hiển thị
+            int baseMainChartHeight = 300;
+            int adjustedMainChartHeight = (int)(baseMainChartHeight * 1.1); // Tăng 10%
+            panel.setPreferredSize(new Dimension(800, adjustedMainChartHeight));
+            panel.setMinimumSize(new Dimension(800, adjustedMainChartHeight));
             empChartContainer.removeAll();
             empChartContainer.add(panel, BorderLayout.CENTER);
             empChartContainer.revalidate();
@@ -6185,10 +6196,18 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
             // Tạo tabbed pane cho 2 biểu đồ phụ
             javax.swing.JTabbedPane secondaryTabs = new javax.swing.JTabbedPane();
             secondaryTabs.setFont(new Font("Tahoma", Font.BOLD, 12));
+            // Tăng height của tabbed pane để đảm bảo đủ không gian cho các tab
+            secondaryTabs.setPreferredSize(new Dimension(600, 320));
+            secondaryTabs.setMinimumSize(new Dimension(600, 320));
+            secondaryTabs.setMaximumSize(new Dimension(600, 320));
             
             // Tab 1: Số hóa đơn
             JPanel ordersPanel = new JPanel(new BorderLayout());
             ordersPanel.setBackground(Color.WHITE);
+            // Tăng height của panel để đảm bảo đủ không gian cho biểu đồ
+            ordersPanel.setPreferredSize(new Dimension(600, 300));
+            ordersPanel.setMinimumSize(new Dimension(600, 300));
+            ordersPanel.setMaximumSize(new Dimension(600, 300));
             
             DefaultCategoryDataset ordersDataset = new DefaultCategoryDataset();
             for (Map.Entry<String, Double> entry : sortedByRevenue) {
@@ -6239,11 +6258,21 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
             ordersRenderer.setMaximumBarWidth(0.8);
             
             ChartPanel ordersChartPanel = XChart.createChartPanel(ordersChart);
+            // Đặt preferred size cho ChartPanel để đảm bảo đủ không gian hiển thị
+            int baseChartPanelHeight = 250;
+            int adjustedChartPanelHeight = (int)(baseChartPanelHeight * 1.1); // Tăng 10%
+            ordersChartPanel.setPreferredSize(new Dimension(600, adjustedChartPanelHeight));
+            ordersChartPanel.setMinimumSize(new Dimension(600, adjustedChartPanelHeight));
+            ordersChartPanel.setMaximumSize(new Dimension(600, adjustedChartPanelHeight));
             ordersPanel.add(ordersChartPanel, BorderLayout.CENTER);
             
             // Tab 2: Doanh thu trung bình trên hóa đơn
             JPanel avgPanel = new JPanel(new BorderLayout());
             avgPanel.setBackground(Color.WHITE);
+            // Tăng height của panel để đảm bảo đủ không gian cho biểu đồ
+            avgPanel.setPreferredSize(new Dimension(600, 300));
+            avgPanel.setMinimumSize(new Dimension(600, 300));
+            avgPanel.setMaximumSize(new Dimension(600, 300));
             
             DefaultCategoryDataset avgDataset = new DefaultCategoryDataset();
             for (Map.Entry<String, Double> entry : sortedByRevenue) {
@@ -6298,6 +6327,10 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
             avgRenderer.setMaximumBarWidth(0.8);
             
             ChartPanel avgChartPanel = XChart.createChartPanel(avgChart);
+            // Đặt preferred size cho ChartPanel để đảm bảo đủ không gian hiển thị
+            avgChartPanel.setPreferredSize(new Dimension(600, adjustedChartPanelHeight));
+            avgChartPanel.setMinimumSize(new Dimension(600, adjustedChartPanelHeight));
+            avgChartPanel.setMaximumSize(new Dimension(600, adjustedChartPanelHeight));
             avgPanel.add(avgChartPanel, BorderLayout.CENTER);
             
             // Thêm các tab vào tabbed pane
@@ -6324,9 +6357,12 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
         ));
         
         // TĂNG CHIỀU CAO VÀ CHIỀU RỘNG CỦA CARD ĐỂ TEXT KHÔNG BỊ CẮT
-        card.setPreferredSize(new Dimension(400, 250)); // TĂNG CHIỀU RỘNG TỪ 350 LÊN 400, CHIỀU CAO TỪ 140 LÊN 160
-        card.setMinimumSize(new Dimension(380, 230));   // TĂNG CHIỀU RỘNG TỪ 330 LÊN 380, CHIỀU CAO TỪ 130 LÊN 150
-        card.setMaximumSize(new Dimension(400, 250));
+        // Tăng height lên 10% để đảm bảo đủ không gian cho nội dung
+        int baseCardHeight = 250;
+        int adjustedCardHeight = (int)(baseCardHeight * 1.1); // Tăng 10%
+        card.setPreferredSize(new Dimension(400, adjustedCardHeight));
+        card.setMinimumSize(new Dimension(380, (int)(230 * 1.1)));   // Tăng 10%
+        card.setMaximumSize(new Dimension(400, adjustedCardHeight));
    
         // KÍCH THƯỚC TITLE VỪA PHẢI - ĐẢM BẢO CÙNG ĐỘ ĐẬM
         JLabel titleLabel = new JLabel(title);
@@ -6352,10 +6388,12 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
         valueLabel.setVerticalAlignment(SwingConstants.CENTER);
         valueLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         
-        // SỬA: Tăng height của value label từ 120 lên 140
-        valueLabel.setPreferredSize(new Dimension(300, 140)); // Tăng từ 120 lên 140
-        valueLabel.setMaximumSize(new Dimension(300, 140));  // Tăng từ 120 lên 140
-        valueLabel.setMinimumSize(new Dimension(280, 140));  // Tăng từ 120 lên 140
+        // SỬA: Tăng height của value label lên 10% so với nội dung để tránh bị che
+        int baseHeight = 140; // Height cơ bản
+        int adjustedHeight = (int)(baseHeight * 1.1); // Tăng 10%
+        valueLabel.setPreferredSize(new Dimension(300, adjustedHeight));
+        valueLabel.setMaximumSize(new Dimension(300, adjustedHeight));
+        valueLabel.setMinimumSize(new Dimension(280, adjustedHeight));
 
         card.add(titleLabel, BorderLayout.NORTH);
         card.add(valueLabel, BorderLayout.CENTER);
@@ -6765,6 +6803,11 @@ private JFreeChart createGeneralBarChart(List<Bill> bills, TimeRange range) {
             chart.getLegend().setItemFont(new Font("Tahoma", Font.PLAIN, 11));
             
             ChartPanel panel = XChart.createChartPanel(chart);
+            // Đặt preferred size cho ChartPanel để đảm bảo đủ không gian hiển thị
+            int baseMainChartHeight2 = 300;
+            int adjustedMainChartHeight2 = (int)(baseMainChartHeight2 * 1.1); // Tăng 10%
+            panel.setPreferredSize(new Dimension(800, adjustedMainChartHeight2));
+            panel.setMinimumSize(new Dimension(800, adjustedMainChartHeight2));
             empChartContainer.removeAll();
             empChartContainer.add(panel, BorderLayout.CENTER);
             empChartContainer.revalidate();
