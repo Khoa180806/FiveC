@@ -5,6 +5,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Lớp tiện ích hỗ trợ làm việc với CSDL quan hệ
@@ -23,13 +26,23 @@ public class XJdbc {
      */
     public static Connection openConnection() {
         var driver = "oracle.jdbc.driver.OracleDriver";
-        var dburl = "jdbc:oracle:thin:@localhost:1521:XE";
+        var dburl = "jdbc:oracle:thin:@127.0.0.1:1521/XE";
         var username = "SYSTEM";
-        var password = "sa123";
+        var password = "root123";
         try {
             if (!XJdbc.isReady()) {
                 Class.forName(driver);
-                connection = DriverManager.getConnection(dburl, username, password);
+                
+                // Thêm properties để cải thiện kết nối
+                java.util.Properties props = new java.util.Properties();
+                props.setProperty("user", username);
+                props.setProperty("password", password);
+                props.setProperty("oracle.net.CONNECT_TIMEOUT", "10000"); // 10 giây timeout
+                // Tăng thời gian timeout đọc để tránh ORA-18730 khi thực hiện nhiều INSERT/UPDATE liên tiếp
+                props.setProperty("oracle.jdbc.ReadTimeout", "60000"); // 60 giây read timeout
+                props.setProperty("oracle.net.TNS_ADMIN", "");
+                
+                connection = DriverManager.getConnection(dburl, props);
                 System.out.println("Kết nối database thành công!");
             }
         } catch (ClassNotFoundException e) {
@@ -38,15 +51,29 @@ public class XJdbc {
             throw new RuntimeException("Oracle JDBC Driver không tồn tại", e);
         } catch (SQLException e) {
             System.err.println("Lỗi kết nối database: " + e.getMessage());
+            System.err.println("Mã lỗi: " + e.getErrorCode());
             System.err.println("Hãy kiểm tra:");
             System.err.println("1. Oracle Database đã được cài đặt và chạy chưa?");
             System.err.println("2. Listener đã được khởi động chưa?");
-            System.err.println("3. Thông tin kết nối có đúng không?");
-            System.err.println("   - Host: localhost");
+            System.err.println("3. Firewall có chặn port 1521 không?");
+            System.err.println("4. Network connectivity đến 127.0.0.1:1521");
+            System.err.println("5. Thông tin kết nối có đúng không?");
+            System.err.println("   - Host: 127.0.0.1");
             System.err.println("   - Port: 1521");
-            System.err.println("   - SID: XE");
+            System.err.println("   - Service: XE");
             System.err.println("   - Username: SYSTEM");
-            System.err.println("   - Password: sa123");
+            System.err.println("   - Password: root123");
+            
+            // Thêm thông tin debug
+            if (e.getErrorCode() == 12170) {
+                System.err.println("ORA-12170: TNS:Connect timeout occurred");
+                System.err.println("Nguyên nhân có thể:");
+                System.err.println("- Oracle listener không chạy");
+                System.err.println("- Firewall chặn kết nối");
+                System.err.println("- IP 127.0.0.1 không đúng");
+                System.err.println("- Port 1521 bị chặn");
+            }
+            
             throw new RuntimeException("Không thể kết nối đến database", e);
         }
         return connection;
@@ -78,16 +105,18 @@ public class XJdbc {
     }
 
     /**
-     * Thao tác dữ liệu
-     *
-     * @param sql câu lệnh SQL (INSERT, UPDATE, DELETE)
-     * @param values các giá trị cung cấp cho các tham số trong SQL
-     * @return số lượng bản ghi đã thực hiện
-     * @throws RuntimeException không thực thi được câu lệnh SQL
+     * Interface xử lý ResultSet, dùng cho các hàm truy vấn an toàn resource
+     */
+    @FunctionalInterface
+    public interface ResultSetHandler<T> {
+        T handle(ResultSet rs) throws SQLException;
+    }
+
+    /**
+     * Thao tác dữ liệu (INSERT, UPDATE, DELETE) - Đảm bảo đóng resource
      */
     public static int executeUpdate(String sql, Object... values) {
-        try {
-            var stmt = XJdbc.getStmt(sql, values);
+        try (PreparedStatement stmt = getStmt(sql, values)) {
             return stmt.executeUpdate();
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
@@ -95,54 +124,92 @@ public class XJdbc {
     }
 
     /**
-     * Truy vấn dữ liệu
-     *
-     * @param sql câu lệnh SQL (SELECT)
-     * @param values các giá trị cung cấp cho các tham số trong SQL
-     * @return tập kết quả truy vấn
-     * @throws RuntimeException không thực thi được câu lệnh SQL
+     * Truy vấn dữ liệu, xử lý qua handler, đảm bảo đóng resource
+     * @param sql câu lệnh SQL
+     * @param handler lambda xử lý ResultSet
+     * @param values tham số
+     * @return kết quả handler trả về
      */
-    public static ResultSet executeQuery(String sql, Object... values) {
-        try {
-            var stmt = XJdbc.getStmt(sql, values);
-            return stmt.executeQuery();
+    public static <T> T executeQuery(String sql, ResultSetHandler<T> handler, Object... values) {
+        try (PreparedStatement stmt = getStmt(sql, values);
+             ResultSet rs = stmt.executeQuery()) {
+            return handler.handle(rs);
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
     }
 
     /**
-     * Truy vấn một giá trị
-     *
-     * @param <T> kiểu dữ liệu kết quả
-     * @param sql câu lệnh SQL (SELECT)
-     * @param values các giá trị cung cấp cho các tham số trong SQL
-     * @return giá trị truy vấn hoặc null
-     * @throws RuntimeException không thực thi được câu lệnh SQL
+     * Truy vấn lấy giá trị đầu tiên (1 dòng, 1 cột)
      */
     public static <T> T getValue(String sql, Object... values) {
-        try {
-            var resultSet = XJdbc.executeQuery(sql, values);
-            if (resultSet.next()) {
-                return (T) resultSet.getObject(1);
+        return executeQuery(sql, rs -> {
+            if (rs.next()) return (T) rs.getObject(1);
+            return null;
+        }, values);
+    }
+
+    /**
+     * Truy vấn lấy giá trị đầu tiên với chuyển đổi kiểu an toàn
+     */
+    public static <T> T getValue(String sql, Class<T> type, Object... values) {
+        return executeQuery(sql, rs -> {
+            if (rs.next()) {
+                Object result = rs.getObject(1);
+                if (result == null) return null;
+                
+                // Handle number conversions safely
+                if (type == Integer.class) {
+                    if (result instanceof Number) {
+                        return (T) Integer.valueOf(((Number) result).intValue());
+                    }
+                } else if (type == Long.class) {
+                    if (result instanceof Number) {
+                        return (T) Long.valueOf(((Number) result).longValue());
+                    }
+                } else if (type == java.math.BigDecimal.class) {
+                    if (result instanceof Number) {
+                        return (T) new java.math.BigDecimal(result.toString());
+                    }
+                } else if (type == String.class) {
+                    return (T) result.toString();
+                }
+                
+                // Default: try direct cast
+                return (T) result;
             }
             return null;
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
+        }, values);
+    }
+
+    /**
+     * Truy vấn trả về list object (dùng cho mapping entity)
+     * @param sql câu lệnh SQL
+     * @param mapper lambda map 1 row -> object
+     * @param values tham số
+     * @return list object
+     */
+    public static <T> List<T> queryList(String sql, Function<ResultSet, T> mapper, Object... values) {
+        return executeQuery(sql, rs -> {
+            List<T> list = new ArrayList<>();
+            try {
+                while (rs.next()) list.add(mapper.apply(rs));
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            return list;
+        }, values);
     }
 
     /**
      * Tạo PreparedStatement từ câu lệnh SQL/PROC
-     *
-     * @param sql câu lệnh SQL/PROC
-     * @param values các giá trị cung cấp cho các tham số trong SQL/PROC
-     * @return đối tượng đã tạo
-     * @throws SQLException không tạo được PreparedStatement
+     * (Chỉ dùng nội bộ, luôn đóng ở các hàm bên trên)
      */
     private static PreparedStatement getStmt(String sql, Object... values) throws SQLException {
         var conn = XJdbc.openConnection();
         var stmt = sql.trim().startsWith("{") ? conn.prepareCall(sql) : conn.prepareStatement(sql);
+        // Thiết lập timeout cho câu lệnh để tránh treo gây ORA-18730 khi gặp lock/chờ quá lâu
+        try { stmt.setQueryTimeout(30); } catch (Exception ignore) {}
         for (int i = 0; i < values.length; i++) {
             stmt.setObject(i + 1, values[i]);
         }
@@ -156,33 +223,13 @@ public class XJdbc {
             XJdbc.openConnection();
             System.out.println("Kết nối thành công! Có thể chạy các demo.");
             
-            // Uncomment các dòng sau khi database đã sẵn sàng
-            // demo1();
-            // demo2();
-            // demo3();
-            
-            // String sql = "INSERT INTO CATE (category_id, category_name) VALUES(?, ?)";
-            // XJdbc.executeUpdate(sql, "C01", "Loại 1");
-            // XJdbc.executeUpdate(sql, "C02", "Loại 2");
+  
             
         } catch (Exception e) {
             System.err.println("Không thể kết nối database: " + e.getMessage());
             System.err.println("Vui lòng kiểm tra cấu hình database và thử lại.");
         } finally {
             XJdbc.closeConnection();
-        }
-    }
-
-    private static void demo1() {
-        // Lấy tất cả user có role là 'ADMIN'
-        String sql = "SELECT * FROM USER_ACCOUNT WHERE role_id = ?";
-        var rs = XJdbc.executeQuery(sql, "ADMIN");
-        try {
-            while (rs.next()) {
-                System.out.println("Username: " + rs.getString("username"));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
     }
 
