@@ -319,7 +319,7 @@
         <Component class="javax.swing.JButton" name="jButton1">
           <Properties>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/icons_and_images/Exit.png"/>
+              <Image iconType="3" name="/icons_and_images/icon/Exit.png"/>
             </Property>
           </Properties>
         </Component>

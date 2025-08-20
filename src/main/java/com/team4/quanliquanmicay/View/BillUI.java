@@ -796,27 +796,10 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         try {
             System.out.println("DEBUG: Starting createNewBillForTable for table " + tableNumber);
             
-            // Tạo PaymentHistory tạm thời để có payment_history_id hợp lệ
-            String createPaymentSql = "INSERT INTO PAYMENT_HISTORY(payment_method_id, total_amount, status, note) VALUES(?, ?, ?, ?)";
-            Object[] paymentValues = {
-                1, // Tiền mặt (default)
-                0.0,
-                "Chưa thanh toán",
-                "Hóa đơn bàn " + tableNumber + " - Chưa thanh toán"
-            };
+            // KHÔNG ép tạo PAYMENT_HISTORY tạm (tránh FK lỗi). Bill mới sẽ để NULL payment_history_id
+            Integer lastPaymentId = null;
             
-            System.out.println("DEBUG: Inserting payment history...");
-            XJdbc.executeUpdate(createPaymentSql, paymentValues);
-            
-            // Lấy payment_history_id vừa tạo (ID cao nhất)
-            System.out.println("DEBUG: Getting last payment_history_id...");
-            String getLastIdSql = "SELECT MAX(payment_history_id) FROM PAYMENT_HISTORY";
-            
-            // Use the new safe type conversion method
-            Integer lastPaymentId = XJdbc.getValue(getLastIdSql, Integer.class);
-            System.out.println("DEBUG: Got payment_history_id: " + lastPaymentId);
-            
-            // Tạo Bill mới với payment_history_id vừa tạo
+            // Tạo Bill mới với payment_history_id = NULL
             Bill newBill = new Bill();
             newBill.setUser_id(userId);
             newBill.setTable_number(tableNumber);
@@ -824,8 +807,7 @@ public class BillUI extends javax.swing.JFrame implements BillController {
             newBill.setCheckin(new Date());
             newBill.setTotal_amount(0.0);
             newBill.setPhone_number(null);
-            // Use fallback if lastPaymentId is null
-            newBill.setPayment_history_id(lastPaymentId != null ? lastPaymentId : 1);
+            newBill.setPayment_history_id(null);
             
             System.out.println("DEBUG: Creating bill with status: " + newBill.getStatus() + " (type: " + newBill.getStatus().getClass().getSimpleName() + ")");
             
@@ -986,6 +968,11 @@ public class BillUI extends javax.swing.JFrame implements BillController {
         btnPayment.setForeground(new java.awt.Color(0, 51, 51));
         btnPayment.setText("Thanh Toán");
         btnPayment.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255), 3));
+        btnPayment.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPaymentActionPerformed(evt);
+            }
+        });
 
         jPanel2.setBackground(new java.awt.Color(204, 164, 133));
         jPanel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255, 255, 255)));
@@ -1152,6 +1139,10 @@ public class BillUI extends javax.swing.JFrame implements BillController {
 
         }
     }//GEN-LAST:event_btnExitActionPerformed
+
+    private void btnPaymentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPaymentActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnPaymentActionPerformed
 
     /**
      * @param args the command line arguments

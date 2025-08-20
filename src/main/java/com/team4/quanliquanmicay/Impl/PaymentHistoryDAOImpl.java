@@ -21,7 +21,7 @@ public class PaymentHistoryDAOImpl implements PaymentHistoryDAO{
         Object[] values = {
            entity.getPayment_method_id(),
            entity.getTotal_amount(),
-           entity.getStatus(),
+           (entity.getStatus() == null || entity.getStatus().trim().isEmpty() ? "Thành công" : entity.getStatus().trim()),
            entity.getNote()
         };
         XJdbc.executeUpdate(createSql, values);

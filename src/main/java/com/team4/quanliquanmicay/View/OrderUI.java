@@ -633,9 +633,16 @@ public class OrderUI extends javax.swing.JFrame {
                 return;
             }
             
-            // Tính tổng tiền
+            // Verify bill tồn tại (tránh FK lỗi nếu bill được thêm tay và chưa đúng)
+            Integer billExists = XJdbc.getValue("SELECT 1 FROM BILL WHERE bill_id = ?", Integer.class, currentBill.getBill_id());
+            if (billExists == null) {
+                XDialog.error("Hóa đơn không tồn tại trong database! Vui lòng tải lại hóa đơn.", "Lỗi");
+                return;
+            }
+
+            // Tính tổng tiền (làm tròn về số nguyên vì cột PRICE là NUMBER(9,0))
             final double totalAmount = cartItems.stream()
-                .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
+                .mapToDouble(item -> Math.round(item.getProduct().getPrice()) * item.getQuantity())
                 .sum();
             
             // Hiển thị dialog xác nhận đặt món
@@ -643,16 +650,39 @@ public class OrderUI extends javax.swing.JFrame {
             Runnable[] actions = {
                 () -> {
                     try {
-                        // Lưu bill details
+                        // Lấy danh sách bill details hiện tại để kiểm tra trùng lặp
+                        List<BillDetails> existingDetails = billDetailsDAO.findByBillId(currentBill.getBill_id());
+                        
+                        // Xử lý từng item trong giỏ hàng
                         for (CartItem item : cartItems) {
-                            BillDetails detail = new BillDetails();
-                            detail.setBill_id(currentBill.getBill_id());
-                            detail.setProduct_id(item.getProduct().getProductId());
-                            detail.setAmount(item.getQuantity());
-                            detail.setPrice(item.getProduct().getPrice());
-                            detail.setDiscount(item.getProduct().getDiscount());
+                            // Kiểm tra xem món này đã có trong bill chưa (cùng product_id)
+                            BillDetails existingDetail = findExistingDetail(existingDetails, item.getProduct().getProductId());
                             
-                            billDetailsDAO.create(detail);
+                            if (existingDetail != null) {
+                                // Nếu đã có, cập nhật số lượng và tổng tiền
+                                existingDetail.setAmount(existingDetail.getAmount() + item.getQuantity());
+                                billDetailsDAO.update(existingDetail);
+                                System.out.println("DEBUG: Cập nhật món trùng lặp - " + item.getProduct().getProductName() + 
+                                    ", số lượng mới: " + existingDetail.getAmount());
+                            } else {
+                                // Nếu chưa có, tạo mới
+                                BillDetails detail = new BillDetails();
+                                detail.setBill_id(currentBill.getBill_id());
+                                detail.setProduct_id(item.getProduct().getProductId());
+                                detail.setAmount(item.getQuantity());
+                                // PRICE là NUMBER(9,0) => làm tròn an toàn
+                                detail.setPrice(Math.round(item.getProduct().getPrice()));
+                                // Chuẩn hóa discount vào [0,1]
+                                double d = item.getProduct().getDiscount();
+                                if (d > 1) d = d / 100.0; // nếu lỡ lưu 10, 5 -> quy về 0.10, 0.05
+                                if (d < 0) d = 0;
+                                if (d > 1) d = 1;
+                                detail.setDiscount(d);
+                                
+                                billDetailsDAO.create(detail);
+                                System.out.println("DEBUG: Tạo món mới - " + item.getProduct().getProductName() + 
+                                    ", số lượng: " + item.getQuantity());
+                            }
                         }
                         
                         // Cập nhật tổng tiền cho bill
@@ -691,8 +721,23 @@ public class OrderUI extends javax.swing.JFrame {
         }
     }
     
+    /**
+     * Tìm bill detail đã tồn tại với cùng product_id
+     */
+    private BillDetails findExistingDetail(List<BillDetails> existingDetails, String productId) {
+        if (existingDetails == null || existingDetails.isEmpty()) {
+            return null;
+        }
+        
+        for (BillDetails detail : existingDetails) {
+            if (detail.getProduct_id().equals(productId)) {
+                return detail;
+            }
+        }
+        
+        return null;
+    }
 
-    
     /**
      * Format tiền tệ
      */

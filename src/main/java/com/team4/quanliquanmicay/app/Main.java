@@ -8,5 +8,12 @@ package com.team4.quanliquanmicay.app;
  * @author Asus
  */
 public class Main {
-    
+    public static void main(String[] args) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new com.team4.quanliquanmicay.View.Welcome().setVisible(true);
+            }
+        });
+    }
 }

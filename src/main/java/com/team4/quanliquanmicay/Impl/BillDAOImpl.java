@@ -32,7 +32,7 @@ public class BillDAOImpl implements BillDAO {
         System.out.println("  Status Value: " + statusValue + " => '" + statusText + "'");
         
         // Sử dụng SQL phù hợp tùy theo có payment_history_id hay không
-        if (entity.getPayment_history_id() != null) {
+        if (entity.getPayment_history_id() != null && entity.getPayment_history_id() > 0) {
             Object[] values = {
                 entity.getUser_id(),
                 entity.getPhone_number(),
@@ -71,7 +71,7 @@ public class BillDAOImpl implements BillDAO {
         Object[] values = {
             entity.getUser_id(),
             entity.getPhone_number(),
-            entity.getPayment_history_id(),
+            (entity.getPayment_history_id() != null && entity.getPayment_history_id() > 0) ? entity.getPayment_history_id() : null,
             entity.getTable_number(),
             entity.getTotal_amount(),
             convertToTimestamp(entity.getCheckin()),
@@ -111,7 +111,10 @@ public class BillDAOImpl implements BillDAO {
                     bill.setBill_id(rs.getInt("bill_id"));
                     bill.setUser_id(rs.getString("user_id"));
                     bill.setPhone_number(rs.getString("phone_number"));
-                    bill.setPayment_history_id(rs.getInt("payment_history_id"));
+                    {
+                        Object ph = rs.getObject("payment_history_id");
+                        bill.setPayment_history_id(ph == null ? null : ((Number) ph).intValue());
+                    }
                     bill.setTable_number(rs.getInt("table_number"));
                     bill.setTotal_amount(rs.getDouble("total_amount"));
                     bill.setCheckin(rs.getDate("checkin"));
@@ -146,7 +149,10 @@ public class BillDAOImpl implements BillDAO {
                     bill.setBill_id(rs.getInt("bill_id"));
                     bill.setUser_id(rs.getString("user_id"));
                     bill.setPhone_number(rs.getString("phone_number"));
-                    bill.setPayment_history_id(rs.getInt("payment_history_id"));
+                    {
+                        Object ph2 = rs.getObject("payment_history_id");
+                        bill.setPayment_history_id(ph2 == null ? null : ((Number) ph2).intValue());
+                    }
                     bill.setTable_number(rs.getInt("table_number"));
                     bill.setTotal_amount(rs.getDouble("total_amount"));
                     bill.setCheckin(rs.getDate("checkin"));
@@ -174,7 +180,10 @@ public class BillDAOImpl implements BillDAO {
                     b.setBill_id(rs.getInt("bill_id"));
                     b.setUser_id(rs.getString("user_id"));
                     b.setPhone_number(rs.getString("phone_number"));
-                    b.setPayment_history_id(rs.getInt("payment_history_id"));
+                    {
+                        Object ph3 = rs.getObject("payment_history_id");
+                        b.setPayment_history_id(ph3 == null ? null : ((Number) ph3).intValue());
+                    }
                     b.setTable_number(rs.getInt("table_number"));
                     b.setTotal_amount(rs.getDouble("total_amount"));
                     b.setCheckin(rs.getDate("checkin"));
@@ -201,7 +210,10 @@ public class BillDAOImpl implements BillDAO {
                     b.setBill_id(rs.getInt("bill_id"));
                     b.setUser_id(rs.getString("user_id"));
                     b.setPhone_number(rs.getString("phone_number"));
-                    b.setPayment_history_id(rs.getInt("payment_history_id"));
+                    {
+                        Object ph4 = rs.getObject("payment_history_id");
+                        b.setPayment_history_id(ph4 == null ? null : ((Number) ph4).intValue());
+                    }
                     b.setTable_number(rs.getInt("table_number"));
                     b.setTotal_amount(rs.getDouble("total_amount"));
                     b.setCheckin(rs.getDate("checkin"));

@@ -55,7 +55,7 @@ public class Welcome extends javax.swing.JFrame implements WelcomeCotroller{
         });
 
         SwingUtilities.invokeLater(() -> {
-            com.team4.quanliquanmicay.util.XImage.setImageToLabel(jLabel4, "/icons_and_images/z6810531607696_a2974bb8a766d61fe1f24293cd57ffb8.jpg");
+            com.team4.quanliquanmicay.util.XImage.setImageToLabel(jLabel4, "/icons_and_images/icon/Welcome.jpg");
         });
     }
 

@@ -588,7 +588,7 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         JButton btnTable = new JButton();
         btnTable.setContentAreaFilled(false);
         btnTable.setOpaque(true);
-        btnTable.setText(String.format("Bàn #%d", tableNumber));
+        btnTable.setText(String.format("#%d", tableNumber));
         btnTable.setPreferredSize(new Dimension(120, 120));
         btnTable.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 22));
         btnTable.setOpaque(true);
@@ -598,6 +598,8 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         btnTable.setRolloverEnabled(false);
 
         final int buttonStatus = (table != null) ? table.getStatus() : -1;
+        // Lưu status vào clientProperty để có thể reset nhanh màu nền về đúng trạng thái
+        btnTable.putClientProperty("status", buttonStatus);
 
         if (table == null) {
             btnTable.setEnabled(false);
@@ -652,6 +654,8 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
                 @Override
                 public void mousePressed(java.awt.event.MouseEvent evt) {
                     if (btnTable.isEnabled()) {
+                        // Đảm bảo chỉ có 1 nút đậm tại mọi thời điểm
+                        resetAllNonSelectedButtons(btnTable);
                         btnTable.setBackground(getPressedColorByStatus(buttonStatus));
                         btnTable.repaint();
                     }
@@ -681,14 +685,10 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         if (selectedButton != null && selectedButton != btnTable) {
             selectedButton.setBorder(javax.swing.BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2));
             selectedButton.setBorderPainted(true);
-            TableForCustomer oldTable = tableDAO.findById(selectedTableNumber);
-            if (oldTable != null) {
-                switch (oldTable.getStatus()) {
-                    case 0: selectedButton.setBackground(Color.decode("#bdbdbd")); break; // Xám nhạt
-                    case 1: selectedButton.setBackground(Color.decode("#27ae60")); break; // Xanh lá
-                    case 2: selectedButton.setBackground(Color.decode("#f5f5f5")); break; // Xám trắng
-                    default: selectedButton.setBackground(new Color(55, 71, 79));
-                }
+            Object st = selectedButton.getClientProperty("status");
+            int oldStatus = (st instanceof Integer) ? (Integer) st : -1;
+            if (oldStatus >= 0) {
+                selectedButton.setBackground(getBaseColorByStatus(oldStatus));
             }
         }
 
@@ -710,6 +710,36 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
 
         // Load thông tin hóa đơn của bàn này
         loadBillForTable(tableNumber);
+    }
+
+    /**
+     * Reset toàn bộ nút khác về màu cơ bản theo status để đảm bảo chỉ có 1 nút đậm.
+     */
+    private void resetAllNonSelectedButtons(JButton current) {
+        // Tab 1
+        for (int i = 0; i < pnPayment.getComponentCount(); i++) {
+            if (pnPayment.getComponent(i) instanceof JButton) {
+                JButton b = (JButton) pnPayment.getComponent(i);
+                if (b != current && b != selectedButton) {
+                    Object st = b.getClientProperty("status");
+                    if (st instanceof Integer) {
+                        b.setBackground(getBaseColorByStatus((Integer) st));
+                    }
+                }
+            }
+        }
+        // Tab 2
+        for (int i = 0; i < jPanel5.getComponentCount(); i++) {
+            if (jPanel5.getComponent(i) instanceof JButton) {
+                JButton b = (JButton) jPanel5.getComponent(i);
+                if (b != current && b != selectedButton) {
+                    Object st = b.getClientProperty("status");
+                    if (st instanceof Integer) {
+                        b.setBackground(getBaseColorByStatus((Integer) st));
+                    }
+                }
+            }
+        }
     }
     
     /**
@@ -1109,7 +1139,8 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
         }
         
         // Hiển thị form chọn phương thức thanh toán
-        PaymentMethodUI paymentMethodDialog = new PaymentMethodUI(this, totalAmount);
+        String billCode = currentBill != null ? String.valueOf(currentBill.getBill_id()) : "";
+        PaymentMethodUI paymentMethodDialog = new PaymentMethodUI(this, totalAmount, billCode);
         paymentMethodDialog.setVisible(true);
         
         // Kiểm tra xem người dùng có chọn phương thức thanh toán không
@@ -1544,12 +1575,21 @@ public class PayUI extends javax.swing.JFrame implements PaymentController {
                 return false;
             }
             
+            // Xác thực bill còn tồn tại (tránh FK do bill tạo tay không hợp lệ)
+            Integer billExists = com.team4.quanliquanmicay.util.XJdbc.getValue(
+                "SELECT 1 FROM BILL WHERE bill_id = ?", Integer.class, bill.getBill_id());
+            if (billExists == null) {
+                XDialog.error("Hóa đơn không tồn tại trong database! Vui lòng tải lại.", "Lỗi");
+                return false;
+            }
+
             // Tạo payment history với phương thức thanh toán đã chọn
             PaymentHistory payment = new PaymentHistory();
             // Không cần set payment_history_id vì là IDENTITY (auto-increment)
             payment.setPayment_method_id(paymentMethod.getPayment_method_id());
             payment.setPayment_date(new Date());
-            payment.setTotal_amount(totalAmount);
+            // PRICE là NUMBER(9,0) -> tổng tiền làm tròn số nguyên
+            payment.setTotal_amount(Math.round(totalAmount));
             payment.setStatus("Thành công");
             payment.setNote(note != null && !note.trim().isEmpty() ? note : "Thanh toán hóa đơn bàn " + tableNumber);
 

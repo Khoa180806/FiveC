@@ -11,6 +11,7 @@ import com.team4.quanliquanmicay.util.XAuth;
 import com.team4.quanliquanmicay.util.XDialog;
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XValidation;
+import javax.swing.text.JTextComponent;
 import com.team4.quanliquanmicay.Entity.UserAccount;
 import java.awt.Color;
 /**
@@ -45,11 +46,11 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        txtUsername = new javax.swing.JTextField();
         txtConfirm = new javax.swing.JPasswordField();
         txtNewpass = new javax.swing.JPasswordField();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
+        txtUsername = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(204, 204, 204));
@@ -64,20 +65,18 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(102, 102, 102));
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Unknown person.png"))); // NOI18N
+        jLabel2.setIcon(null);
         jLabel2.setText("Tên Tài Khoản :");
 
         jLabel3.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(204, 204, 204));
-        jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Lock.png"))); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(102, 102, 102));
+        jLabel3.setIcon(null);
         jLabel3.setText("Mật Khẩu Mới :");
 
         jLabel4.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel4.setForeground(new java.awt.Color(204, 204, 204));
-        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/Open lock.png"))); // NOI18N
+        jLabel4.setForeground(new java.awt.Color(102, 102, 102));
+        jLabel4.setIcon(null);
         jLabel4.setText("Xác Nhận Mật Khẩu Mới :");
-
-        txtUsername.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
 
         txtConfirm.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
 
@@ -109,52 +108,57 @@ public class ChangePassword extends javax.swing.JFrame implements ChangePassword
             }
         });
 
+        txtUsername.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        txtUsername.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtUsernameActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 354, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                            .addGap(313, 313, 313)
-                            .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(18, 18, 18)
-                            .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(jPanel2Layout.createSequentialGroup()
-                            .addGap(43, 43, 43)
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel3))
-                                .addGroup(jPanel2Layout.createSequentialGroup()
-                                    .addComponent(jLabel2)
-                                    .addGap(80, 80, 80)))
-                            .addGap(18, 18, 18)
-                            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(txtConfirm, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                                .addComponent(txtNewpass, javax.swing.GroupLayout.Alignment.LEADING)))))
+                .addGap(313, 313, 313)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(19, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                            .addComponent(jLabel3)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(txtNewpass, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                            .addComponent(jLabel2)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel2Layout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(txtConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(71, 71, 71))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(68, 68, 68)
+                .addGap(60, 60, 60)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addGap(67, 67, 67)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel2)
+                    .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(19, 19, 19)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(txtNewpass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(txtConfirm, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 102, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -206,6 +210,10 @@ this.save();        // TODO add your handling code here:
          this.dispose();
         }
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void txtUsernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtUsernameActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtUsernameActionPerformed
 
     /**
      * @param args the command line arguments
@@ -286,17 +294,17 @@ public void save() {
 
     if (XValidation.isEmpty(username)) {
         missingFields.append("• Vui lòng điền thông tin tên tài khoản\n");
-        txtUsername.setBackground(errorBg);
+        setInlineError(txtUsername, "Vui lòng nhập tài khoản", errorBg);
         hasError = true;
     }
     if (XValidation.isEmpty(newpass)) {
         missingFields.append("• Vui lòng điền thông tin mật khẩu mới\n");
-        txtNewpass.setBackground(errorBg);
+        setInlineError(txtNewpass, "Vui lòng nhập mật khẩu", errorBg);
         hasError = true;
     }
     if (XValidation.isEmpty(confirm)) {
         missingFields.append("• Vui lòng điền thông tin xác nhận mật khẩu mới\n");
-        txtConfirm.setBackground(errorBg);
+        setInlineError(txtConfirm, "Vui lòng nhập xác nhận mật khẩu", errorBg);
         hasError = true;
     }
 
@@ -339,17 +347,67 @@ public void save() {
 
 private void addInputListeners() {
     Color defaultBg = Color.WHITE;
-    java.awt.event.KeyAdapter resetColorListener = new java.awt.event.KeyAdapter() {
+    attachFieldHandlers(txtUsername, defaultBg);
+    attachFieldHandlers(txtNewpass, defaultBg);
+    attachFieldHandlers(txtConfirm, defaultBg);
+}
+
+private void setInlineError(JTextComponent field, String message, Color errorBg) {
+    field.setBackground(errorBg);
+    field.setForeground(new java.awt.Color(102, 0, 0));
+    // Với JPasswordField: tắt echoChar để hiện thông báo thay vì dấu chấm
+    if (field instanceof javax.swing.JPasswordField) {
+        javax.swing.JPasswordField pf = (javax.swing.JPasswordField) field;
+        if (field.getClientProperty("defaultEchoChar") == null) {
+            field.putClientProperty("defaultEchoChar", Character.valueOf(pf.getEchoChar()));
+        }
+        pf.setEchoChar((char) 0);
+    }
+    field.setText(message);
+    field.putClientProperty("inlineError", Boolean.TRUE);
+}
+
+private void attachFieldHandlers(JTextComponent field, Color defaultBg) {
+    final java.awt.Color defaultFg = field.getForeground();
+    field.addFocusListener(new java.awt.event.FocusAdapter() {
+        @Override
+        public void focusGained(java.awt.event.FocusEvent e) {
+            Object flag = field.getClientProperty("inlineError");
+            if (Boolean.TRUE.equals(flag)) {
+                field.setText("");
+                field.putClientProperty("inlineError", Boolean.FALSE);
+                // Khôi phục echoChar cho JPasswordField khi người dùng bắt đầu nhập
+                if (field instanceof javax.swing.JPasswordField) {
+                    javax.swing.JPasswordField pf = (javax.swing.JPasswordField) field;
+                    Object ch = field.getClientProperty("defaultEchoChar");
+                    if (ch instanceof Character) {
+                        pf.setEchoChar(((Character) ch).charValue());
+                    }
+                }
+            }
+            field.setBackground(defaultBg);
+            field.setForeground(defaultFg);
+        }
+    });
+    field.addKeyListener(new java.awt.event.KeyAdapter() {
         @Override
         public void keyReleased(java.awt.event.KeyEvent e) {
-            javax.swing.JTextField field = (javax.swing.JTextField) e.getSource();
             if (!field.getText().trim().isEmpty()) {
                 field.setBackground(defaultBg);
+                field.setForeground(defaultFg);
+                // Nếu còn cờ inlineError thì hủy và khôi phục echoChar
+                if (Boolean.TRUE.equals(field.getClientProperty("inlineError"))) {
+                    field.putClientProperty("inlineError", Boolean.FALSE);
+                    if (field instanceof javax.swing.JPasswordField) {
+                        javax.swing.JPasswordField pf = (javax.swing.JPasswordField) field;
+                        Object ch = field.getClientProperty("defaultEchoChar");
+                        if (ch instanceof Character) {
+                            pf.setEchoChar(((Character) ch).charValue());
+                        }
+                    }
+                }
             }
         }
-    };
-    txtUsername.addKeyListener(resetColorListener);
-    txtNewpass.addKeyListener(resetColorListener);
-    txtConfirm.addKeyListener(resetColorListener);
+    });
 }
 }

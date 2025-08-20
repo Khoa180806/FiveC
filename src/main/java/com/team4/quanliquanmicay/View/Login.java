@@ -37,7 +37,7 @@ public class Login extends javax.swing.JFrame implements LoginController{
         
         txtPassword.setEchoChar('*');
         // Set icon mắt mở với kích thước 20x20
-        javax.swing.ImageIcon eyeOpenIcon = new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/iconEyeOpen.png"));
+        javax.swing.ImageIcon eyeOpenIcon = new javax.swing.ImageIcon(getClass().getResource("/icons_and_images/icon/iconEyeClose.png"));
         java.awt.Image eyeOpenImg = eyeOpenIcon.getImage().getScaledInstance(30, 30, java.awt.Image.SCALE_SMOOTH);
         lblShowPassword.setIcon(new javax.swing.ImageIcon(eyeOpenImg));
         

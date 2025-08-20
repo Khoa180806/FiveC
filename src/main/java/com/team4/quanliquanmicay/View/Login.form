@@ -164,7 +164,7 @@
                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/icons_and_images/Unknown person.png"/>
+                  <Image iconType="3" name="/icons_and_images/icon/Unknown person.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="T&#xea;n &#x111;&#x103;ng nh&#x1ead;p :"/>
               </Properties>
@@ -188,7 +188,7 @@
                   <Color blue="ff" green="ff" red="ff" type="rgb"/>
                 </Property>
                 <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                  <Image iconType="3" name="/icons_and_images/Lock.png"/>
+                  <Image iconType="3" name="/icons_and_images/icon/Lock.png"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="M&#x1ead;t Kh&#x1ea9;u :"/>
               </Properties>

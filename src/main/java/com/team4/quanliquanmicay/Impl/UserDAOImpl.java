@@ -30,7 +30,7 @@ public class UserDAOImpl implements UserDAO {
             entity.getPhone_number(),
             entity.getImage(),
             entity.getIs_enabled(),
-            entity.getCreated_date() != null ? entity.getCreated_date() : new java.util.Date(),
+            new java.sql.Timestamp((entity.getCreated_date() != null ? entity.getCreated_date() : new java.util.Date()).getTime()),
             entity.getRole_id()
         };
         
@@ -49,7 +49,7 @@ public class UserDAOImpl implements UserDAO {
             entity.getPhone_number(),
             entity.getImage(),
             entity.getIs_enabled(),
-            entity.getCreated_date() != null ? entity.getCreated_date() : new java.util.Date(),
+            new java.sql.Timestamp((entity.getCreated_date() != null ? entity.getCreated_date() : new java.util.Date()).getTime()),
             entity.getRole_id(),
             entity.getUser_id()
         };

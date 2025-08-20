@@ -16,6 +16,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.Color;
+import java.awt.Component;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 
 /**
  *
@@ -42,6 +46,17 @@ public class CustomerManagement extends javax.swing.JFrame {
         
         // Initialize controller and table model
         customerController = new CustomerManagementController();
+        
+        // Thiết lập màu chữ cho combobox sắp xếp điểm (cả item được chọn và danh sách xổ xuống)
+        cbo_SortPoint.setForeground(new java.awt.Color(102, 102, 102));
+        cbo_SortPoint.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                comp.setForeground(new Color(102, 102, 102));
+                return comp;
+            }
+        });
         initializeTable();
         setupEventListeners();
         loadAllCustomers();
@@ -331,7 +346,8 @@ public class CustomerManagement extends javax.swing.JFrame {
             customerName = XValidation.sanitizeInput(customerName);
             levelRanking = XValidation.sanitizeInput(levelRanking);
             
-            // Cập nhật customer object
+            // Cập nhật customer object (giữ lại số cũ để xử lý đổi số)
+            String oldPhone = selectedCustomer.getPhone_number();
             selectedCustomer.setPhone_number(phoneNumber);
             selectedCustomer.setCustomer_name(customerName);
             selectedCustomer.setPoint_level(pointLevel);
@@ -340,7 +356,13 @@ public class CustomerManagement extends javax.swing.JFrame {
             // Cập nhật database
             showLoadingIndicator(true);
             customerController.setForm(selectedCustomer);
-            customerController.update();
+            // Nếu đổi số điện thoại (PK), cần cập nhật cascade
+            if (oldPhone != null && !oldPhone.equals(phoneNumber)) {
+                // Dùng DAO trực tiếp để thực hiện cập nhật PK + cascade BILL
+                new com.team4.quanliquanmicay.Impl.CustomerDAOImpl().updateWithPhoneChange(oldPhone, selectedCustomer);
+            } else {
+                customerController.update();
+            }
             
             XDialog.success("Cập nhật thông tin khách hàng thành công!", "Thành công");
             loadAllCustomers(); // Refresh table

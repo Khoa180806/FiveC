@@ -6,7 +6,6 @@ package com.team4.quanliquanmicay.View.management;
 
 import com.team4.quanliquanmicay.util.XTheme;
 import com.team4.quanliquanmicay.util.XDialog;
-import com.team4.quanliquanmicay.util.XValidation;
 import com.team4.quanliquanmicay.Entity.PaymentMethod;
 import com.team4.quanliquanmicay.DAO.PaymentMethodDAO;
 import com.team4.quanliquanmicay.Impl.PaymentMethodDAOImpl;
@@ -405,6 +404,7 @@ public class PaymentMethodManagement extends javax.swing.JFrame {
         });
 
         javax.swing.GroupLayout pnlFeatureLayout = new javax.swing.GroupLayout(pnlFeature);
+        pnlFeature.setLayout(pnlFeatureLayout);
         pnlFeatureLayout.setHorizontalGroup(
             pnlFeatureLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlFeatureLayout.createSequentialGroup()
